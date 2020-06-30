@@ -1,0 +1,123 @@
+# Default values for identity-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: cmusei/identity
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
+# Config app settings with environment vars.
+# Those most likely needing values are listed. For others,
+# see https://github.com/cmu-sei/Identity/blob/master/src/IdentityServer/appsettings.conf
+env:
+  # Supported providers: InMemory, PostgreSQL, SqlServer
+  Database__Provider: InMemory
+  Database__ConnectionString: identity_db
+  Branding__ApplicationName: Identity
+  Branding__UiHost: /ui
+  Cache__Key: idsrv
+  Cache__RedisUrl: ""
+  Cache__SharedFolder: ""
+  Logging__Console__DisableColors: true
+  Account__AdminEmail: ""
+  Account__AdminPassword: ""
+  Account__OverrideCode: ""
+  Account__Authentication__SigningCertificate: conf/signer.pfx
+  Account__Authentication__SigningCertificatePassword: ""
+  Account__Authentication__NoticeFile: "conf/notice.html"
+  AppMail__Url: ""
+  AppMail__Key: ""
+  AppMail__From: ""
+  Headers__Cors__Origins__0: ""
+  Headers__Cors__Methods__0: ""
+  Headers__Cors__Headers__0: ""
+  Headers__Cors__AllowCredentials: false
+  Headers__Forwarding__TargetHeaders: None
+
+
+conf:
+  issuers: ""
+  notice: ""
+  terms: ""
+  trouble: ""
+  seed: ""
+  signer: ""

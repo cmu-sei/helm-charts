@@ -1,0 +1,69 @@
+statesman-api:
+
+  replicaCount: 1
+
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths: []
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  ## persistence; set existing pvc or size of new pvc
+  storage:
+    existing: ""
+    size: ""
+    mode: ReadWriteOnce
+    class: default
+
+  ## application settings can be entered as env vars or json, or both
+  env:
+    Authorization__Authority: ""
+    Authorization__AppClient__ClientId: "statesman-app"
+    Authorization__AppClient__ClientSecret: ""
+    Authorization__AppClient__Scopes: "openid profile statesman-api"
+    Authorization__SwaggerClient__ClientId: "statesman-swagger"
+    Authorization__Administrators__0: ""
+    Authorization__Observers__0: ""
+    Headers__Forwarding__TargetHeaders: "All"
+
+statesman-ui:
+  replicaCount: 1
+
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths: []
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # limits:
+    #   cpu: 50m
+    #   memory: 50Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 50Mi
+
+  ## settings.json
+  settings: ""
