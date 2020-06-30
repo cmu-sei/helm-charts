@@ -8,8 +8,55 @@ metadata:
 data:
   nginx.sh: |-
     #!/bin/sh
-    sed -i "s,\},    text\/yaml yml yaml\;\n\}," /etc/nginx/mime.types
-    sed -i "s,localhost;,localhost;\n    location ~ /\\\.git \{return 404;\}," /etc/nginx/conf.d/default.conf
+    ## append mime type values
+    sed -i "s,\},," /etc/nginx/mime.types
+    {{- range .Values.mimeTypes }}
+    echo {{ . | quote }} >> /etc/nginx/mime.types
+    {{- end }}
+    echo "}" >> /etc/nginx/mime.types
+
+  nginx-default.conf: |
+    server {
+      listen       80;
+      server_name  localhost;
+
+      # hide hidden
+      location ~ /\. { return 404; }
+
+      # Wide-open CORS config for nginx
+      location / {
+        root /html{{ .Values.rootFolder }};
+        index index.html;
+
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            #
+            # Custom headers and headers various browsers *should* be OK with but aren't
+            #
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            #
+            # Tell client that this pre-flight info is valid for 20 days
+            #
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        if ($request_method = 'POST') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+        }
+        if ($request_method = 'GET') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+        }
+      }
+    }
 
   job.sh: |-
     #!/bin/sh

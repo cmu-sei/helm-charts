@@ -5,10 +5,18 @@
 replicaCount: 1
 
 ## giturl is the url of the git repository to serve as a static site
-giturl: "https://github.com/cmu-sei/identity-ui.git"
+giturl: ""
 
 ## gitbranch sets which repo branch to publish
 gitbranch: ""
+
+## root sets which repo folder to serve as root. (lead with "/")
+# rootFolder: /site1
+rootFolder: ""
+
+## mimeTypes provides a list of additional mime types
+mimeTypes:
+# - text/yaml yml yaml;
 
 ## pollInterval sets minutes between git pull
 pollInterval: 5
