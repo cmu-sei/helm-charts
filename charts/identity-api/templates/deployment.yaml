@@ -15,8 +15,7 @@ spec:
     metadata:
     {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        consistency/check: {{ randAlphaNum 8 | quote }}
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
@@ -48,14 +47,16 @@ spec:
             - mountPath: /app/wwwroot/javatar
               name: {{ include "identity-api.name" . }}-vol
               subPath: {{ include "identity-api.fullname" . }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+          # livenessProbe:
+          #   initialDelaySeconds: 30
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
+          # readinessProbe:
+          #   initialDelaySeconds: 30
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

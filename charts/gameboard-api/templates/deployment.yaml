@@ -15,7 +15,7 @@ spec:
     metadata:
     {{- with .Values.podAnnotations }}
       annotations:
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        consistency/check: {{ randAlphaNum 8 | quote }}
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
@@ -45,14 +45,14 @@ spec:
             - mountPath: /app/appsettings.Production.json
               name: {{ include "gameboard-api.name" . }}-conf
               subpath: appsettings.json
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
