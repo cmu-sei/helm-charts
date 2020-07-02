@@ -44,7 +44,7 @@ spec:
           volumeMounts:
             - mountPath: /app/appsettings.Production.json
               name: {{ include "gameboard-api.name" . }}-conf
-              subpath: appsettings.json
+              subPath: appsettings.json
           # livenessProbe:
           #   httpGet:
           #     path: /
@@ -70,4 +70,4 @@ spec:
       volumes:
       - name: {{ include "gameboard-api.name" . }}-conf
         configMap:
-          name: {{ include "gameboard-api.fullname" . }}-conf
+          name: {{ include "gameboard-api.fullname" . }}

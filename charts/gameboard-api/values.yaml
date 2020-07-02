@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: cmusei/gameboard-api
+  repository: cmusei.azurecr.us/gameboard-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -83,5 +83,5 @@ affinity: {}
 # env is pod env vars
 env: {}
 
-# settings is appsettings.Production.json data
-settings: ""
+  ## settings is stringified json that gets included as appsettings.Production.json
+settings: "{}"

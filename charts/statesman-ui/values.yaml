@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: cmusei.azurecr.us/statesman-ui
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -78,5 +78,5 @@ tolerations: []
 
 affinity: {}
 
-## settings.json
-settings: ""
+  ## settings is stringified json that gets included as assets/settings.json
+settings: "{}"

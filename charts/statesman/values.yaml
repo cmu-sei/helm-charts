@@ -1,6 +1,9 @@
 statesman-api:
 
   replicaCount: 1
+  image:
+    repository: cmusei.azurecr.us/statesman-api
+    tag: ""
 
   ingress:
     enabled: false
@@ -43,6 +46,9 @@ statesman-api:
 
 statesman-ui:
   replicaCount: 1
+  image:
+    repository: cmusei.azurecr.us/statesman-ui
+    tag: ""
 
   ingress:
     enabled: false
@@ -65,5 +71,5 @@ statesman-ui:
     #   cpu: 50m
     #   memory: 50Mi
 
-  ## settings.json
-  settings: ""
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"

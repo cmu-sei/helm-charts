@@ -17,15 +17,16 @@ gameboard-api:
 
   resources: {}
     # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    #   cpu: 200m
+    #   memory: 256Mi
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
 
   ## application settings can be entered as env vars or json, or both
+  ## settings is stringified json that gets included as assets/settings.json
   env: {}
-  settings: ""
+  settings: "{}"
 
 gameboard-ui:
 
@@ -46,11 +47,11 @@ gameboard-ui:
 
   resources: {}
     # limits:
-    #   cpu: 50m
-    #   memory: 50Mi
+    #   cpu: 20m
+    #   memory: 20Mi
     # requests:
-    #   cpu: 50m
-    #   memory: 50Mi
+    #   cpu: 20m
+    #   memory: 20Mi
 
-  ## settings.json
-  settings: ""
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"

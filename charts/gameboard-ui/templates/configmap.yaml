@@ -6,5 +6,5 @@ metadata:
     {{- include "gameboard-ui.labels" . | nindent 4 }}
 
 data:
-  settings.json: |-
+  settings.json: |
 {{ .Values.settings | indent 4 }}

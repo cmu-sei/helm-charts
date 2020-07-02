@@ -39,9 +39,9 @@ spec:
               containerPort: 80
               protocol: TCP
           volumeMounts:
-            - mountPath: /var/www/assets/setting.json
+            - mountPath: /var/www/assets/settings.json
               name: {{ include "statesman-ui.name" . }}
-              subpath: settings.json
+              subPath: settings.json
           livenessProbe:
             httpGet:
               path: /
