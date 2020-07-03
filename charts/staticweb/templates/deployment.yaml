@@ -45,7 +45,7 @@ spec:
               name: {{ include "staticweb.name" . }}-entry
               subPath: nginx-default.conf
             - mountPath: /html
-              name: {{ include "staticweb.name" . }}-html
+              name: {{ include "staticweb.name" . }}-vol
           # livenessProbe:
           #   httpGet:
           #     path: /
@@ -63,7 +63,7 @@ spec:
             - mountPath: /entry.d
               name: {{ include "staticweb.name" . }}-entry
             - mountPath: /html
-              name: {{ include "staticweb.name" . }}-html
+              name: {{ include "staticweb.name" . }}-vol
 
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -82,5 +82,15 @@ spec:
         configMap:
           name: {{ include "staticweb.fullname" . }}
           defaultMode: 0775
-      - name: {{ include "staticweb.name" . }}-html
+      {{- if .Values.storage.existing }}
+      - name: {{ include "staticweb.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "staticweb.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "staticweb.fullname" . }}-pvc
+      {{- else }}
+      - name: {{ include "staticweb.name" . }}-vol
         emptyDir: {}
+      {{- end }}

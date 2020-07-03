@@ -76,6 +76,13 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
 autoscaling:
   enabled: false
   minReplicas: 1

@@ -34,6 +34,10 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /var/www/ui/assets/settings.env.json
+              name: {{ include "identity-ui.name" . }}-conf
+              subPath: settings.json
           ports:
             - name: http
               containerPort: 80
@@ -60,3 +64,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: {{ include "identity-ui.name" . }}-conf
+        configMap:
+          name: {{ include "identity-ui.fullname" . }}

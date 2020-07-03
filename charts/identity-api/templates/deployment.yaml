@@ -46,7 +46,10 @@ spec:
               name: {{ include "identity-api.name" . }}-conf
             - mountPath: /app/wwwroot/javatar
               name: {{ include "identity-api.name" . }}-vol
-              subPath: {{ include "identity-api.fullname" . }}
+              subPath: {{ include "identity-api.fullname" . }}/javatar
+            - mountPath: /app/data
+              name: {{ include "identity-api.name" . }}-vol
+              subPath: {{ include "identity-api.fullname" . }}/data
           # livenessProbe:
           #   initialDelaySeconds: 30
           #   httpGet:
