@@ -95,3 +95,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+files: {}
+binaryFiles: {}

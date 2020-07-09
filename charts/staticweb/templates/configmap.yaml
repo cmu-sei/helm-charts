@@ -19,6 +19,8 @@ data:
     server {
       listen       80;
       server_name  localhost;
+      error_page 403 404 /404.html;
+      error_page 500 501 502 503 504 /500.html;
 
       # hide hidden
       location ~ /\. { return 404; }
@@ -63,26 +65,25 @@ data:
 
     giturl={{ .Values.giturl }}
     branch={{ .Values.gitbranch }}
-    poll={{ .Values.pollInterval }}
+    poll={{ .Values.pollInterval | default 10 }}
 
-    if [ -z "$giturl" ]; then
-      echo no giturl provided.
-      exit 1
+    if [ -n "$giturl" ]; then
+
+      repo=$(echo $giturl | awk -F/ '{print $NF}' | sed  s,.git,,)
+
+      ## get tools
+      apk update && apk add git
+
+      ## get source
+      cd /html
+      git clone $giturl .
+      if [ -n "$branch" ]; then
+        git checkout $branch
+        git pull
+      fi
+
+      echo "*/$poll * * * * cd /html && git pull" >> /etc/crontabs/root
+
     fi
-
-    repo=$(echo $giturl | awk -F/ '{print $NF}' | sed  s,.git,,)
-
-    ## get tools
-    apk update && apk add git
-
-    ## get source
-    cd /html
-    git clone $giturl .
-    if [ -n "$branch" ]; then
-      git checkout $branch
-      git pull
-    fi
-
-    echo "*/$poll * * * * cd /html && git pull" >> /etc/crontabs/root
 
     crond -f -d8 > /proc/1/fd/1 2> /proc/1/fd/2

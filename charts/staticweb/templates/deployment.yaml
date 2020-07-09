@@ -44,8 +44,13 @@ spec:
             - mountPath: /etc/nginx/conf.d/default.conf
               name: {{ include "staticweb.name" . }}-entry
               subPath: nginx-default.conf
+            {{- if .Values.giturl }}
             - mountPath: /html
               name: {{ include "staticweb.name" . }}-vol
+            {{- else }}
+            - mountPath: /html
+              name: {{ include "staticweb.name" . }}-docs
+            {{- end }}
           # livenessProbe:
           #   httpGet:
           #     path: /
@@ -56,6 +61,7 @@ spec:
           #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.giturl }}
         - name: {{ .Chart.Name }}-job
           image: alpine
           command: [ "/entry.d/job.sh" ]
@@ -64,7 +70,7 @@ spec:
               name: {{ include "staticweb.name" . }}-entry
             - mountPath: /html
               name: {{ include "staticweb.name" . }}-vol
-
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -82,6 +88,9 @@ spec:
         configMap:
           name: {{ include "staticweb.fullname" . }}
           defaultMode: 0775
+      - name: {{ include "staticweb.name" . }}-docs
+        configMap:
+          name: {{ include "staticweb.fullname" . }}-docs
       {{- if .Values.storage.existing }}
       - name: {{ include "staticweb.name" . }}-vol
         persistentVolumeClaim:
