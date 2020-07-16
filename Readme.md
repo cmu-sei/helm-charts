@@ -10,11 +10,11 @@ Example usage:
 
 ```bash
 # add this helm repo:
-$ helm repo add foundry https://helm.cyberforce.site/charts
+$ helm repo add sei https://helm.cyberforce.site/charts
 
 # grab and edit values as desired
-$ helm show values foundry/identity > identity.values.yaml
+$ helm show values sei/identity > identity.values.yaml
 
 # deploy
-$ helm install idsrv foundry/identity -f identity.values.yaml
+$ helm install idsrv sei/identity -f identity.values.yaml
 ```
