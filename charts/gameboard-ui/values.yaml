@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: cmusei.azurecr.us/gameboard-ui
-  tag: "1.0.40"
+  tag: "2.0.3"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -77,5 +77,17 @@ tolerations: []
 
 affinity: {}
 
-  ## settings is stringified json that gets included as assets/settings.json
+## basehref is the path to the app; if serving the app as a virtual folder,
+## add the path here.  Ensure a final `/`!
+# basehref: /gb/event1/
+basehref: ""
+
+## openGraph is string of html head metadata (single line!)
+openGraph: ""
+
+## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+## its contents will be merged into index.html head element.
+faviconsUrl: ""
+
+## settings is stringified json that gets included as assets/settings.json
 settings: "{}"

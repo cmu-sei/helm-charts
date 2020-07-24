@@ -38,6 +38,9 @@ spec:
             - mountPath: /var/www/ui/assets/settings.env.json
               name: {{ include "identity-ui.name" . }}-conf
               subPath: settings.json
+            - mountPath: /docker-entrypoint.d/90-basehref
+              name: {{ include "identity-ui.name" . }}-conf
+              subPath: setbase.sh
           ports:
             - name: http
               containerPort: 80
