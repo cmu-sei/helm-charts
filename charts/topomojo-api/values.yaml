@@ -87,7 +87,7 @@ affinity: {}
 
 # Config app settings with environment vars.
 # Those most likely needing values are listed. For others,
-# see https://github.com/cmu-sei/TopoMojo/master/src/TopoMojo.Web/appsettings.conf
+# see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Web/appsettings.conf
 env: {}
   # Database__Provider: InMemory
   # Database__ConnectionString: topomojo_db
