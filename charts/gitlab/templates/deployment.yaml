@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab.fullname" . }}
+  labels:
+    {{- include "gitlab.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "gitlab.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "gitlab.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gitlab.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: {{- toYaml .Values.command | nindent 10 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "gitlab.fullname" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.applyCertificates.enabled }}
+            - mountPath: /etc/gitlab/trusted-certs
+              name: certificates
+            {{- end }}
+            - mountPath: /var/opt/gitlab
+              name: gitlab-data
+            - mountPath: /var/log/gitlab
+              name: gitlab-logs
+            - mountPath: /etc/gitlab
+              name: gitlab-config
+            - mountPath: /conf
+              name: {{ include "gitlab.fullname" . }}-conf
+            - name: gitlab-password
+              mountPath: "/secrets"
+      volumes:
+        {{- if .Values.applyCertificates.enabled }}
+        - name: certificates
+          persistentVolumeClaim:
+            claimName: {{ .Values.applyCertificates.pvcName }}
+        {{- end }}
+        - name: gitlab-data
+          persistentVolumeClaim:
+            claimName: gitlab-data
+        - name: gitlab-config
+          persistentVolumeClaim:
+            claimName: gitlab-config
+        - name: gitlab-logs
+          persistentVolumeClaim:
+            claimName: gitlab-logs
+        - name: {{ include "gitlab.fullname" . }}-conf
+          configMap:
+            name: {{ include "gitlab.fullname" . }}-conf
+        - name: gitlab-password
+          secret:
+            secretName: gitlab-root
+            items:
+            - key: initial_root_password
+              path: initial_root_password
+              mode: 0777
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

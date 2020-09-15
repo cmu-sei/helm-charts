@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "caster-api.fullname" . }}
+  labels:
+    {{- include "caster-api.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "caster-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "caster-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "caster-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: {{- toYaml .Values.command | nindent 10 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "caster-api.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.applyCertificates.enabled }}
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
+            {{- end }}
+            - mountPath: /etc/gitconfig
+              subPath: gitconfig
+              name: {{ include "caster-api.fullname" . }}-gitconfig
+            - mountPath: /terraform
+              name: terraform
+            - mountPath: /install-terraform.sh
+              subPath: install-terraform.sh
+              name: {{ include "caster-api.fullname" . }}-terraform-installation
+      volumes:
+        {{- if .Values.applyCertificates.enabled }}
+        - name: certificates
+          persistentVolumeClaim:
+            claimName: {{ .Values.applyCertificates.pvcName }}
+        {{- end }}
+        - name: terraform
+          persistentVolumeClaim:
+            claimName: caster-terraform
+        - name: {{ include "caster-api.fullname" . }}-terraform-installation
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-terraform-installation
+            defaultMode: 0755
+        - name: {{ include "caster-api.fullname" . }}-gitconfig
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-gitconfig
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
