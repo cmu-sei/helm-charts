@@ -215,9 +215,14 @@ vm-api:
     ClientSettings__urls__playerApi: "https://player.example.com"
 
     # VCenter settings
-    # DsName denotes the DataStore name
-    # BaseFolder is the folder inside the DataStore to use
-    # TODO - Document setting up DsName AND BaseFolder
+    #
+    # A privileged vCenter used is required to read and write files
+    #
+    # A datastore needs to be created for Player to store files.  This is
+    # typically an NFS share in the format:  <DATASTORE>/player/
+    #
+    # - DsName denotes the DataStore name
+    # - BaseFolder is the folder inside the DataStore to use
     Vsphere__Host: "vcenter.example.com"
     Vsphere__Username: "player-account@vsphere.local"
     Vsphere__Password: 
