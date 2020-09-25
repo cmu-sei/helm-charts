@@ -113,28 +113,3 @@ alloy-ui:
       "PlayerUIAddress": "https://player.example.com",
       "UseLocalAuthStorage": true
     }'
-
-
-alloy-psql:
-  # storage - either true with an existing pvc (ReadWriteOnce) name, or false for emptyDir
-  storage:
-    existing: false
-    name: ""
-
-  env:
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
-    
-    # Create an Admin password, which is required for Postgres to start.
-    # This password is NOT used in the deployment, but is required for the container.
-    POSTGRES_PASSWORD: ADMINPASSWORD
-
-  # Set the PASSWORD in single quotes to the password desired for the Alloy API connection string
-  settings: "CREATE DATABASE alloy_api;
-  CREATE USER alloy_dbu WITH PASSWORD 'PASSWORD';
-  GRANT ALL PRIVILEGES ON DATABASE alloy_api TO alloy_dbu;
-  ALTER USER alloy_dbu WITH SUPERUSER;"

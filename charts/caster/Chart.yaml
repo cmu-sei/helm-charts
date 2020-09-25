@@ -12,9 +12,6 @@ dependencies:
 - name: caster-ui
   version: "0.1.0"
   repository: https://helm.cyberforce.site/charts
-- name: caster-psql
-  version: "0.1.0"
-  repository: https://helm.cyberforce.site/charts
 - name: gitlab
   version: "0.1.0"
   repository: https://helm.cyberforce.site/charts

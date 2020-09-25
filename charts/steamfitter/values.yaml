@@ -128,27 +128,3 @@ steamfitter-ui:
       },
       "UseLocalAuthStorage": true
   }'
-
-steamfitter-psql:
-  # storage - either true with an existing pvc (ReadWriteOnce) name, or false for emptyDir
-  storage:
-    existing: false
-    name: ""
-
-  env:
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
-    # Create an Admin password, which is required for Postgres to start.
-    # This password is NOT used in the deployment, but is required for the container.
-    POSTGRES_PASSWORD: ADMINPASSWORD
-
-  # Set the PASSWORD in single quotes to the password desired for:
-  # - The Steamfitter API connection string
-  settings: "CREATE DATABASE steamfitter_api;
-  CREATE USER steamfitter_dbu WITH PASSWORD 'PASSWORD';
-  GRANT ALL PRIVILEGES ON DATABASE steamfitter_api TO steamfitter_dbu;
-  ALTER USER steamfitter_dbu WITH SUPERUSER;"

@@ -329,37 +329,3 @@ console-ui:
       { "width": 800, "height": 600 }
     ]
   }'
-
-player-psql:
-  # storage - either true with an existing pvc (ReadWriteOnce) name, or false for emptyDir
-  storage:
-    existing: false
-    name: ""
-
-  env:
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
-    # Create an Admin password, which is required for Postgres to start.
-    # This password is NOT used in the deployment, but is required for the container.
-    POSTGRES_PASSWORD: ADMINPASSWORD
-
-  # Set the PASSWORD in single quotes to the password desired for:
-  # - The player API connection string
-  # - The VM App API connection string
-  settings: "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";
-
-  CREATE DATABASE player_db;
-  CREATE USER player_dbu WITH PASSWORD 'PASSWORD';
-  GRANT ALL PRIVILEGES ON DATABASE player_db TO player_dbu;
-  CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\" WITH SCHEMA player_db;
-  ALTER USER player_dbu WITH SUPERUSER;
-
-  CREATE DATABASE vm_db;
-  CREATE USER vm_dbu WITH PASSWORD 'PASSWORD';
-  GRANT ALL PRIVILEGES ON DATABASE vm_db TO vm_dbu;
-  CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\" WITH SCHEMA vm_db;
-  ALTER USER vm_dbu WITH SUPERUSER;"
