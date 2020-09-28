@@ -30,12 +30,9 @@ caster-api:
          - example.com
 
   # If this deployment needs to trust non-public certificates,
-  # - Enable this option
-  # - Place the certificates in a Volume and create a PV and PVC for them
-  # - Enter the name for the PVC as pvcName
-  applyCertificates:
-    enabled: false
-    pvcName: ""
+  # create a configMap with the needed certifcates and specify
+  # the configMap name here
+  certificateMap: ""
 
   # Gets placed in /etc/gitconfig to allow immediate Gitlab access via access token
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
@@ -189,12 +186,9 @@ gitlab:
 
 
   # If this deployment needs to trust non-public certificates,
-  # - Enable this option
-  # - Place the certificates in a Volume and create a PV and PVC for them
-  # - Enter the name for the PVC as pvcName
-  applyCertificates:
-    enabled: false
-    pvcName: ""
+  # create a configMap with the needed certifcates and specify
+  # the configMap name here
+  certificateMap: ""
 
   # Initial Root Password for Gitlab container, must be set
   initialRootPassword: ""

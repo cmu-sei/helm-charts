@@ -50,12 +50,9 @@ ingress:
   #      - chart-example.local
 
 # If this deployment needs to trust non-public certificates,
-# - Enable this option
-# - Place the certificates in a Volume and create a PV and PVC for them
-# - Enter the name for the PVC as pvcName
-applyCertificates:
-  enabled: false
-  pvcName: ""
+# create a configMap with the needed certifcates and specify
+# the configMap name here
+certificateMap: ""
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

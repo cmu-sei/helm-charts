@@ -51,10 +51,6 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            {{- if .Values.applyCertificates.enabled }}
-            - mountPath: /usr/local/share/ca-certificates
-              name: certificates
-            {{- end }}
             - mountPath: /etc/gitconfig
               subPath: gitconfig
               name: {{ include "caster-api.fullname" . }}-gitconfig
@@ -63,12 +59,17 @@ spec:
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
               name: {{ include "caster-api.fullname" . }}-terraform-installation
+            {{ if .Values.certificateMap }}
+            - mountPath: /usr/local/share/ca-certificates/custom_certs.crt
+              subPath: custom_certs.crt
+              name: certificates
+            {{- end }}
       volumes:
-        {{- if .Values.applyCertificates.enabled }}
+        {{ if .Values.certificateMap }}
         - name: certificates
-          persistentVolumeClaim:
-            claimName: {{ .Values.applyCertificates.pvcName }}
-        {{- end }}
+          configMap:
+            name: {{ .Values.certificateMap }}
+        {{- end }}}
         - name: terraform
           persistentVolumeClaim:
             claimName: caster-terraform

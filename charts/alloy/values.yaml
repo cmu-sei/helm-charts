@@ -23,12 +23,9 @@ alloy-api:
          - example.com
 
   # If this deployment needs to trust non-public certificates,
-  # - Enable this option
-  # - Place the certificates in a Volume and create a PV and PVC for them
-  # - Enter the name for the PVC as pvcName
-  applyCertificates:
-    enabled: false
-    pvcName: ""
+  # create a configMap with the needed certifcates and specify
+  # the configMap name here
+  certificateMap: ""
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,

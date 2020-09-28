@@ -52,8 +52,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            {{- if .Values.applyCertificates.enabled }}
-            - mountPath: /etc/gitlab/trusted-certs
+            {{ if .Values.certificateMap }}
+            - mountPath: /usr/local/share/ca-certificates/custom_certs.crt
+              subPath: custom_certs.crt
               name: certificates
             {{- end }}
             - mountPath: /var/opt/gitlab
@@ -67,10 +68,10 @@ spec:
             - name: gitlab-password
               mountPath: "/secrets"
       volumes:
-        {{- if .Values.applyCertificates.enabled }}
+        {{ if .Values.certificateMap }}
         - name: certificates
-          persistentVolumeClaim:
-            claimName: {{ .Values.applyCertificates.pvcName }}
+          configMap:
+            name: {{ .Values.certificateMap }}
         {{- end }}
         - name: gitlab-data
           persistentVolumeClaim:

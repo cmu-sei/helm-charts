@@ -51,16 +51,17 @@ spec:
           #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.applyCertificates.enabled }}
+          {{ if .Values.certificateMap }}
           volumeMounts:
-            - mountPath: /usr/local/share/ca-certificates
+            - mountPath: /usr/local/share/ca-certificates/custom_certs.crt
+              subPath: custom_certs.crt
               name: certificates
           {{- end }}
-      {{- if .Values.applyCertificates.enabled }}
+      {{ if .Values.certificateMap }}
       volumes:
         - name: certificates
-          persistentVolumeClaim:
-            claimName: {{ .Values.applyCertificates.pvcName }}
+          configMap:
+            name: {{ .Values.certificateMap }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
