@@ -60,8 +60,7 @@ spec:
               subPath: install-terraform.sh
               name: {{ include "caster-api.fullname" . }}-terraform-installation
             {{ if .Values.certificateMap }}
-            - mountPath: /usr/local/share/ca-certificates/custom_certs.crt
-              subPath: custom_certs.crt
+            - mountPath: /usr/local/share/ca-certificates
               name: certificates
             {{- end }}
       volumes:
@@ -69,7 +68,7 @@ spec:
         - name: certificates
           configMap:
             name: {{ .Values.certificateMap }}
-        {{- end }}}
+        {{- end }}
         - name: terraform
           persistentVolumeClaim:
             claimName: caster-terraform
