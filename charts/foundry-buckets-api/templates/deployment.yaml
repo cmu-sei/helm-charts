@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "foundry-buckets-api.fullname" . }}
+  labels:
+    {{- include "foundry-buckets-api.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "foundry-buckets-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "foundry-buckets-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "foundry-buckets-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: Options__StorageLocal__Path
+            value: content
+          envFrom:
+            - secretRef:
+                name: {{ include "foundry-buckets-api.fullname" . }}
+          volumeMounts:
+            - mountPath: /app/conf
+              name: {{ include "foundry-buckets-api.name" . }}-conf
+            - mountPath: /app/content
+              name: {{ include "foundry-buckets-api.name" . }}-vol
+              subPath: {{ include "foundry-buckets-api.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ include "foundry-buckets-api.name" . }}-conf
+        configMap:
+          name: {{ include "foundry-buckets-api.fullname" . }}
+      {{- if .Values.storage.existing }}
+      - name: {{ include "foundry-buckets-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "foundry-buckets-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "foundry-buckets-api.fullname" . }}-pvc
+      {{- else }}
+      - name: {{ include "foundry-buckets-api.name" . }}-vol
+        emptyDir: {}
+      {{- end }}
