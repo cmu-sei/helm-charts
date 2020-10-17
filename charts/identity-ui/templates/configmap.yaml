@@ -8,10 +8,3 @@ metadata:
 data:
   settings.json: |
 {{ .Values.settings | indent 4 }}
-
-  setbase.sh: |
-    #!/bin/sh
-{{- if .Values.basehref }}
-    basehref={{ .Values.basehref }}
-    sed -i "s,base\ href=\"/\",base\ href=\"$basehref\"," /var/www/index.html
-{{- end}}

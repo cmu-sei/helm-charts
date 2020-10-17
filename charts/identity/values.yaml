@@ -93,3 +93,11 @@ identity-ui:
     # requests:
     #   cpu: 50m
     #   memory: 50Mi
+  ## basehref is the path to the app; if serving the app as a virtual folder,
+  
+  ## add the path here.
+  # basehref: /ui
+  basehref: ""
+
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
