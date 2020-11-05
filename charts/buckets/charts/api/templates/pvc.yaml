@@ -1,0 +1,15 @@
+{{- if .Values.storage.size }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "api.fullname" . }}
+  labels:
+    {{- include "api.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - {{ .Values.storage.mode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size | quote }}
+  storageClassName: {{ .Values.storage.class }}
+{{- end -}}
