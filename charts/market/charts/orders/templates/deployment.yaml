@@ -79,7 +79,7 @@ spec:
       {{- else if .Values.storage.size }}
       - name: {{ include "orders.name" . }}-vol
         persistentVolumeClaim:
-          claimName: {{ include "orders.fullname" . }}-pvc
+          claimName: {{ include "orders.fullname" . }}
       {{- else }}
       - name: {{ include "orders.name" . }}-vol
         emptyDir: {}
