@@ -86,7 +86,7 @@ spec:
       {{- else if .Values.storage.size }}
       - name: {{ include "topomojo-api.name" . }}-vol
         persistentVolumeClaim:
-          claimName: {{ include "topomojo-api.fullname" . }}-pvc
+          claimName: {{ include "topomojo-api.fullname" . }}
       {{- else }}
       - name: {{ include "topomojo-api.name" . }}-vol
         emptyDir: {}

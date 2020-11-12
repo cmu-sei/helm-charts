@@ -82,7 +82,7 @@ spec:
       {{- else if .Values.storage.size }}
       - name: {{ include "api.name" . }}-vol
         persistentVolumeClaim:
-          claimName: {{ include "api.fullname" . }}-pvc
+          claimName: {{ include "api.fullname" . }}
       {{- else }}
       - name: {{ include "api.name" . }}-vol
         emptyDir: {}
