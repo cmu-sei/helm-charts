@@ -11,10 +11,14 @@ data:
 
   customize.sh: |
     #!/bin/sh
-    index=/var/www/index.html
+    set -e
+    src=/var/www
 {{- if .Values.basehref }}
-    basehref={{ .Values.basehref }}
-    sed -i "s,base\ href=\"/\",base\ href=\"$basehref\"," $index
+    basehref=`echo {{ .Values.basehref }} | sed -e s,^/,, -e s,/$,,`
+    sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
+    dst=$src/$basehref
+    mkdir -p `dirname $dst`
+    ln -s $src $dst
 {{- end}}
 
 {{- if .Values.openGraph }}
