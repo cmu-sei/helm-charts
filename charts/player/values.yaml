@@ -16,7 +16,7 @@ player-api:
     hosts:
       - host: player.example.com
         paths:
-        - /(notifications|swagger|applications|views|teams|users|roles|me|permissions|application-templates|application-instances|view-memberships|team-memberships)
+        - /(hubs|swagger|api)
     tls:
       - secretName: ""
         hosts:
@@ -48,8 +48,7 @@ player-api:
     CorsPolicy__Origins__2: "https://osticket.example.com"
 
     # Connection String to database
-    # If the Helm release is named "player", the defaults should work after filling in a password
-    ConnectionStrings__PostgreSQL: "Server=player-player-psql;Port=5432;Database=player_api;Username=player_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -99,7 +98,7 @@ player-ui:
       "silent_redirect_uri": "https://player.example.com/auth-callback-silent/"
     },
     "NotificationsSettings": {
-      "url": "https://player.example.com/notifications",
+      "url": "https://player.example.com/hubs",
       "number_to_display": 4
     },
     "AppTitle": "Crucible",
@@ -182,8 +181,7 @@ vm-api:
     no_proxy: .local
 
     # Connection String to database
-    # If the Helm release is named "player", the defaults should work after filling in a password
-    ConnectionStrings__PostgreSQL: "Server=player-player-psql;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"
 
     # CORS policy settings.
     # The first entry should be the URL to VM App
@@ -255,7 +253,7 @@ vm-ui:
   settings: '{
       "ApiUrl": "https://vm.example.com/api",
       "DeployApiUrl": "",
-      "ApiPlayerUrl": "https://player.example.com",
+      "ApiPlayerUrl": "https://player.example.com/api",
       "WelderUrl": "",
       "OIDCSettings": {
           "authority": "https://identity.example.com",

@@ -16,7 +16,7 @@ alloy-api:
     hosts:
       - host: caster.example.com
         paths:
-        - /(api|swagger|directories|events|eventtemplates|views|users|scenariotemplates)
+        - /(api|swagger)
     tls:
       - secretName: ""
         hosts:
@@ -45,8 +45,7 @@ alloy-api:
     CorsPolicy__Origins__1: http://site2.com
 
     # Connection String to database
-    # If the Helm release is named "alloy", the defaults should work after filling in a password
-    ConnectionStrings__PostgreSQL: "Server=alloy-alloy-psql;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;"
   
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com

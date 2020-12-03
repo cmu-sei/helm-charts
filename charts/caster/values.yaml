@@ -78,8 +78,7 @@ caster-api:
     CorsPolicy__Origins__0: "https://caster.example.com"
 
     # Connection String to database
-    # If the Helm release is named "caster", the defaults should work after filling in a password
-    ConnectionStrings__PostgreSQL: "Server=caster-caster-psql;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com

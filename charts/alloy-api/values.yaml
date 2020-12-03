@@ -98,7 +98,7 @@ env:
   Logging__Console__LogLevel__Microsoft: Error
   Logging__Console__LogLevel__System: Error
 
-  ConnectionStrings__PostgreSQL: "<connection string>"
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL

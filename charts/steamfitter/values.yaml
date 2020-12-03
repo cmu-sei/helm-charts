@@ -16,7 +16,7 @@ steamfitter-api:
     hosts:
       - host: steamfitter.example.com
         paths:
-        - /(api|swagger|bondagents|views|tasks|results|scenariotemplates|scenarios|sessions|users|vms|dispatchtaskresults|me/|exerciseagents|permissions|userpermissions|hubs)
+        - /(api|swagger|hubs)
     tls:
       - secretName: ""
         hosts:
@@ -40,8 +40,7 @@ steamfitter-api:
     no_proxy: .local
 
     # Connection String to database
-    # If the Helm release is named "steamfitter", the defaults should work after filling in a password
-    ConnectionStrings__PostgreSQL: "Server=steamfitter-steamfitter-psql;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
 
     # CORS policy settings.
     # The first entry should be the URL to Steamfitter
