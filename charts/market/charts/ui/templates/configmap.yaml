@@ -32,7 +32,12 @@ data:
 {{- end}}
 
 {{- if .Values.basehref }}
-    basehref={{ .Values.basehref }}
-    sed -i "s,base\ href=\"/\",base\ href=\"$basehref\"," $index
-    ln -s /var/www /var/www${basehref}
+    src=/var/www
+    basehref=`echo $APP_BASEHREF | sed -e s,^/,, -e s,/$,,`
+    if [ -n "$basehref" ]; then
+      sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
+      dst=$src/$basehref
+      mkdir -p `dirname $dst`
+      ln -s $src $dst
+    fi
 {{- end}}
