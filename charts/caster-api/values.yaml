@@ -96,7 +96,6 @@ env:
   no_proxy: 
 
   SKIP_TERRAFORM_INSTALLATION: false
-  CRUCIBLE_PROVIDER_DEPLOYMENT: caster-terraform-crucible-provider.default.svc.local
 
   VSPHERE_SERVER: 
   VSPHERE_USER: 

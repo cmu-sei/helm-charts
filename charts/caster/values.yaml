@@ -1,9 +1,3 @@
-terraform-crucible-provider:
-  image:
-    # Terraform Crucible Provider version
-    tag: "2.0.2"
-
-
 caster-api:
 
   # Docker image release version
@@ -57,11 +51,6 @@ caster-api:
     # for more information on the installation process.
     SKIP_TERRAFORM_INSTALLATION: false
 
-    # Kubernetes DNS address for the "terraform-crucible-provider" deployment
-    # This helps bootstrap initial Terraform installation
-    # Note:  Example DNS name based on Helm release called "caster" in the "default" namespace
-    CRUCIBLE_PROVIDER_DEPLOYMENT: caster-terraform-crucible-provider.default.svc.cluster.local
-
     # VSphere settings:
     # TODO - Document VSphere user role requirements
     VSPHERE_SERVER: vcenter.example.com
@@ -101,7 +90,7 @@ caster-api:
     # - DefaultVersion - The default version to be used.
     # - GitlabApiUrl - URL to the deployed Gitlab instance
     # - TODO - Add link to Installation Documentation on how to get GItlabTaken and GitlabGroupId
-    Terraform__DefaultVersion: "0.13.1"
+    Terraform__DefaultVersion: "0.14.0"
     Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
     Terraform__GitlabToken: "TuyAi5abFvbSLpoDc9C2"
     Terraform__GitlabGroupId: 6
@@ -206,7 +195,9 @@ gitlab:
 
   # - external_url - The external URL that users will type to access Gitlab
   # - gitlab_rails["env"] - The required proxy settings
-  # - gitlab_rails["db_password"] - The password chosen for the Postgres database above
+  # - gitlab_rails["db_host"] - The URL to the Postgres database
+  # - gitlab_rails["db_username"] - The username chosen for the Postgres database
+  # - gitlab_rails["db_password"] - The password chosen for the Postgres database
   # - gitlab_rails["omniauth_providers"]["args"]["issuer"] - The URL of the Identity server
   # - gitlab_rails["omniauth_providers"]["args"]["client_options"]["host"] - The URL of the Identity server without https://
   # - gitlab_rails["omniauth_providers"]["args"]["client_options"]["redirect_uri"] - The URL of redirect URI for Gitlab
@@ -237,6 +228,8 @@ gitlab:
   gitlab_rails["db_encoding"] = "unicode";
 
   gitlab_rails["db_host"] = "caster-caster-psql";
+
+  postgresql['db_sslmode'] = 'require';
 
   gitlab_rails["db_password"] = "password";
 

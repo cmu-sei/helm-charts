@@ -55,7 +55,7 @@ spec:
               subPath: gitconfig
               name: {{ include "caster-api.fullname" . }}-gitconfig
             - mountPath: /terraform
-              name: terraform
+              name: 
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
               name: {{ include "caster-api.fullname" . }}-terraform-installation

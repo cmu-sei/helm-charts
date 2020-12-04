@@ -7,7 +7,7 @@ fi
 if [ ! -d $Terraform__BinaryPath ]; then
 
     # Install Unzip
-    apt-get update && apt-get install -y unzip
+    apt-get update && apt-get install -y unzip wget
 
     # Create Terraform directories
     mkdir -p "$Terraform__RootWorkingDirectory"
@@ -46,7 +46,7 @@ if [ ! -d $Terraform__BinaryPath ]; then
     echo "Installing Terraform vsphere provider..."
     mkdir -p "$Terraform__PluginDirectory/registry.terraform.io/hashicorp/vsphere"
     cd "$Terraform__PluginDirectory/registry.terraform.io/hashicorp/vsphere"
-    TERRAFORM_VSPHERE_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform-provider-vsphere/releases/latest | jq -r .name)
+    TERRAFORM_VSPHERE_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform-provider-vsphere/releases/latest | jq -r .tag_name)
     curl -s -O "https://releases.hashicorp.com/terraform-provider-vsphere/${TERRAFORM_VSPHERE_VERSION:1}/terraform-provider-vsphere_${TERRAFORM_VSPHERE_VERSION:1}_linux_amd64.zip"
     mkdir -p "$Terraform__PluginDirectory/registry.terraform.io/-/vsphere"
     cp "terraform-provider-vsphere_${TERRAFORM_VSPHERE_VERSION:1}_linux_amd64.zip" "$Terraform__PluginDirectory/registry.terraform.io/-/vsphere"
@@ -54,12 +54,16 @@ if [ ! -d $Terraform__BinaryPath ]; then
 
     # Install Terraform Crucible provider
     echo "Installing Terraform Crucible provider..."
-    CRUCIBLE_PROVIDER_VERSION=$(curl -s "$CRUCIBLE_PROVIDER_DEPLOYMENT")
+    CRUCIBLE_PROVIDER_VERSION=$(curl -s https://api.github.com/repos/cmu-sei/Terraform.Provider.Player/releases/latest | jq -r .tag_name)
     mkdir -p "$Terraform__PluginDirectory/registry.terraform.io/-/crucible/$CRUCIBLE_PROVIDER_VERSION/linux_amd64"
     cd "$Terraform__PluginDirectory/registry.terraform.io/-/crucible/$CRUCIBLE_PROVIDER_VERSION/linux_amd64"
-    curl -s -O "$CRUCIBLE_PROVIDER_DEPLOYMENT/linux_amd64/terraform-provider-crucible_$CRUCIBLE_PROVIDER_VERSION"
+
+    PROVIDER_DOWNLOAD_URL=$(curl -s https://api.github.com/repos/cmu-sei/Terraform.Provider.Player/releases/latest | jq -r '.assets | .[] |  .browser_download_url' | grep linux_amd64)
+    wget "$PROVIDER_DOWNLOAD_URL"
+    chmod 755 *
+
     mkdir -p "$Terraform__PluginDirectory/registry.terraform.local/sei/crucible/$CRUCIBLE_PROVIDER_VERSION/linux_amd64"
-    cp "terraform-provider-crucible_$CRUCIBLE_PROVIDER_VERSION" "$Terraform__PluginDirectory/registry.terraform.local/sei/crucible/$CRUCIBLE_PROVIDER_VERSION/linux_amd64"
+    cp * "$Terraform__PluginDirectory/registry.terraform.local/sei/crucible/$CRUCIBLE_PROVIDER_VERSION/linux_amd64"
     echo "Done."
 else
     echo "Terraform already installed."
