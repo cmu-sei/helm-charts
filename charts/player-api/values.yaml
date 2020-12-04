@@ -85,7 +85,7 @@ tolerations: []
 
 affinity: {}
 
-command: [ "bash", "-c", "update-ca-certificates && dotnet S3.Player.Api.dll" ]
+command: [ "bash", "-c", "update-ca-certificates && dotnet Player.Api.dll" ]
 
 # env is pod env vars
 env:
@@ -134,7 +134,7 @@ env:
   SeedData__Permissions__1__Description: "Can edit an Exercise, Add/Remove Teams/Members, etc"
   SeedData__Permissions__1__ReadOnly: true
 
-  SeedData__SystemAdminIds__0: "9fd3c38e-58b0-4af1-80d1-1895af91f1f9"
+  SeedData__SystemAdminIds__0: ""
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
