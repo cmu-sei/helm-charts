@@ -187,6 +187,13 @@ gitlab:
   # Initial Root Password for Gitlab container, must be set
   initialRootPassword: ""
 
+  # storage - either an existing pvc, the size for a new pvc, or emptyDir
+  storage:
+    existing: ""
+    size: ""
+    mode: ReadWriteOnce
+    class: default
+
   env:
     GITLAB_OMNIBUS_CONFIG: "from_file('/conf/gitlab.rb')"
     https_proxy: ""

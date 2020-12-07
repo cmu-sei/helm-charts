@@ -57,11 +57,14 @@ spec:
               name: certificates
             {{- end }}
             - mountPath: /var/opt/gitlab
-              name: gitlab-data
+              name: {{ include "gitlab.name" . }}-vol
+              subPath: {{ include "gitlab.fullname" . }}/data
             - mountPath: /var/log/gitlab
-              name: gitlab-logs
+              name: {{ include "gitlab.name" . }}-vol
+              subPath: {{ include "gitlab.fullname" . }}/logs
             - mountPath: /etc/gitlab
-              name: gitlab-config
+              name: {{ include "gitlab.name" . }}-vol
+              subPath: {{ include "gitlab.fullname" . }}/config
             - mountPath: /conf
               name: {{ include "gitlab.fullname" . }}-conf
             - name: gitlab-password
@@ -72,15 +75,18 @@ spec:
           configMap:
             name: {{ .Values.certificateMap }}
         {{- end }}
-        - name: gitlab-data
+        {{- if .Values.storage.existing }}
+        - name: {{ include "gitlab.name" . }}-vol
           persistentVolumeClaim:
-            claimName: gitlab-data
-        - name: gitlab-config
+            claimName: {{ .Values.storage.existing }}
+        {{- else if .Values.storage.size }}
+        - name: {{ include "gitlab.name" . }}-vol
           persistentVolumeClaim:
-            claimName: gitlab-config
-        - name: gitlab-logs
-          persistentVolumeClaim:
-            claimName: gitlab-logs
+            claimName: {{ include "gitlab.fullname" . }}
+        {{- else }}
+        - name: {{ include "gitlab.name" . }}-vol
+          emptyDir: {}
+        {{- end }}
         - name: {{ include "gitlab.fullname" . }}-conf
           configMap:
             name: {{ include "gitlab.fullname" . }}-conf

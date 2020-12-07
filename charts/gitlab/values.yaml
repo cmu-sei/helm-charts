@@ -72,6 +72,13 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
 nodeSelector: {}
 
 tolerations: []

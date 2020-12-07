@@ -79,6 +79,8 @@ st2:
     # Provide a default name for the sensor
     sensors:
       - name: stackstorm-sensor
+        serviceAccount:
+          attach: false
 
 secrets:
   st2:
