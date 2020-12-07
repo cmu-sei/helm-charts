@@ -85,6 +85,13 @@ tolerations: []
 
 affinity: {}
 
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
 gitconfig: ""
 
 env:

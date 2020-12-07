@@ -55,7 +55,8 @@ spec:
               subPath: gitconfig
               name: {{ include "caster-api.fullname" . }}-gitconfig
             - mountPath: /terraform
-              name: 
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
               name: {{ include "caster-api.fullname" . }}-terraform-installation
@@ -69,9 +70,18 @@ spec:
           configMap:
             name: {{ .Values.certificateMap }}
         {{- end }}
-        - name: terraform
+        {{- if .Values.storage.existing }}
+        - name: {{ include "caster-api.name" . }}-vol
           persistentVolumeClaim:
-            claimName: caster-terraform
+            claimName: {{ .Values.storage.existing }}
+        {{- else if .Values.storage.size }}
+        - name: {{ include "caster-api.name" . }}-vol
+          persistentVolumeClaim:
+            claimName: {{ include "caster-api.fullname" . }}
+        {{- else }}
+        - name: {{ include "caster-api.name" . }}-vol
+          emptyDir: {}
+        {{- end }}
         - name: {{ include "caster-api.fullname" . }}-terraform-installation
           configMap:
             name: {{ include "caster-api.fullname" . }}-terraform-installation

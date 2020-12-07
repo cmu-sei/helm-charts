@@ -23,6 +23,13 @@ caster-api:
         hosts:
          - example.com
 
+  # storage - either an existing pvc, the size for a new pvc, or emptyDir
+  storage:
+    existing: ""
+    size: ""
+    mode: ReadWriteOnce
+    class: default
+
   # If this deployment needs to trust non-public certificates,
   # create a configMap with the needed certifcates and specify
   # the configMap name here
@@ -152,7 +159,6 @@ caster-ui:
   }'
 
 gitlab:
-
   # Docker image release version
   image:
     tag: "13.2.3-ce.0"
@@ -182,12 +188,13 @@ gitlab:
   initialRootPassword: ""
 
   env:
-    https_proxy: proxy.example.com:9000
-    http_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
+    GITLAB_OMNIBUS_CONFIG: "from_file('/conf/gitlab.rb')"
+    https_proxy: ""
+    http_proxy: ""
+    HTTP_PROXY: ""
+    HTTPS_PROXY: ""
+    NO_PROXY: ""
+    no_proxy: ""
 
   # The following are Gitlab configuration settings that should be reviewed carefully.
 
@@ -229,7 +236,9 @@ gitlab:
 
   gitlab_rails["db_host"] = "caster-caster-psql";
 
-  postgresql['db_sslmode'] = 'require';
+  postgresql["db_sslmode"] = "require";
+
+  gitlab_rails["db_username"] = "gitlab";
 
   gitlab_rails["db_password"] = "password";
 
