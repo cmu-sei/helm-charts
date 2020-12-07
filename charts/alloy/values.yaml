@@ -14,7 +14,7 @@ alloy-api:
       nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: caster.example.com
+      - host: alloy.example.com
         paths:
         - /(api|swagger)
     tls:
