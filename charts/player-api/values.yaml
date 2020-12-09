@@ -131,9 +131,9 @@ env:
   SeedData__Permissions__0__Value: 'true'
   SeedData__Permissions__0__Description: 'Can do anything'
   SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Key: ExerciseAdmin
+  SeedData__Permissions__1__Key: ViewAdmin
   SeedData__Permissions__1__Value: 'true'
-  SeedData__Permissions__1__Description: 'Can edit an Exercise, Add/Remove Teams/Members, etc'
+  SeedData__Permissions__1__Description: 'Can edit an View, Add/Remove Teams/Members, etc'
   SeedData__Permissions__1__ReadOnly: true
 
   SeedData__SystemAdminIds__0: ''
