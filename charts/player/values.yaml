@@ -31,13 +31,13 @@ player-api:
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/player.api/S3.Player.Api/appsettings.json
   env:
-    # Proxy Settings
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
+    # Proxy Settings - Set these in your values file if you are behind a proxy.
+    # http_proxy: proxy.example.com:9000
+    # https_proxy: proxy.example.com:9000
+    # HTTP_PROXY: proxy.example.com:9000
+    # HTTPS_PROXY: proxy.example.com:9000
+    # NO_PROXY: .local
+    # no_proxy: .local
 
     # CORS policy settings.
     # The first entry should be the URL to player

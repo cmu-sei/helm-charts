@@ -8,11 +8,11 @@ image:
   repository: cmusei/vm-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: ''
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,14 +21,16 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -42,7 +44,8 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -54,8 +57,9 @@ ingress:
   #      - chart-example.local
 
   consoleIngress:
-    name: ""
-    annotations: {}
+    name: ''
+    annotations:
+      {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
@@ -69,9 +73,10 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ""
+certificateMap: ''
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -96,16 +101,16 @@ tolerations: []
 
 affinity: {}
 
-command: [ "bash", "-c", "update-ca-certificates && dotnet Player.Vm.Api.dll" ]
+command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Vm.Api.dll']
 
 # env is pod env vars
 env:
-  http_proxy: ""
-  https_proxy: ""
-  HTTP_PROXY: ""
-  HTTPS_PROXY: ""
-  NO_PROXY: ""
-  no_proxy: ""
+  # http_proxy: ""
+  # https_proxy: ""
+  # HTTP_PROXY: ""
+  # HTTPS_PROXY: ""
+  # NO_PROXY: ""
+  # no_proxy: ""
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information
@@ -115,38 +120,38 @@ env:
   Logging__Console__LogLevel__Microsoft: Error
   Logging__Console__LogLevel__System: Error
 
-  ConnectionStrings__PostgreSQL: ""
+  ConnectionStrings__PostgreSQL: ''
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  CorsPolicy__Origins__0: ""
-  CorsPolicy__Origins__1: ""
-  CorsPolicy__Methods__0: ""
-  CorsPolicy__Headers__0: ""
+  CorsPolicy__Origins__0: ''
+  CorsPolicy__Origins__1: ''
+  CorsPolicy__Methods__0: ''
+  CorsPolicy__Headers__0: ''
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ""
-  Authorization__AuthorizationUrl: ""
-  Authorization__AuthorizationScope: "vm-api player-api"
+  Authorization__Authority: ''
+  Authorization__AuthorizationUrl: ''
+  Authorization__AuthorizationScope: 'vm-api player-api'
   Authorization__ClientId: vm-api-dev
-  Authorization__ClientName: "VM API"
-  Authorization__ClientSecret: ""
+  Authorization__ClientName: 'VM API'
+  Authorization__ClientSecret: ''
   Authorization__RequireHttpsMetaData: false
 
-  IsoUpload__BasePath: "/app/isos/player"
+  IsoUpload__BasePath: '/app/isos/player'
   IsoUpload_MaxFileSize: 6000000000
 
-  ClientSettings__urls__playerApi: ""
+  ClientSettings__urls__playerApi: ''
 
-  Vsphere__Host: ""
-  Vsphere__Username: ""
-  Vsphere__Password: ""
-  Vsphere__DsName: ""
-  Vsphere__BaseFolder: "player"
+  Vsphere__Host: ''
+  Vsphere__Username: ''
+  Vsphere__Password: ''
+  Vsphere__DsName: ''
+  Vsphere__BaseFolder: 'player'
   Vsphere__Timeout: 30
   Vsphere__ConnectionRetryIntervalSeconds: 60
   Vsphere__ConnectionRefreshIntervalMinutes: 20
@@ -156,13 +161,13 @@ env:
   Vsphere__ReCheckTaskProgressIntervalMilliseconds: 1000
 
   RewriteHost__RewriteHost: false
-  RewriteHost__RewriteHostUrl: ""
-  RewriteHost__RewriteHostQueryParam: "vmhost"
+  RewriteHost__RewriteHostUrl: ''
+  RewriteHost__RewriteHostQueryParam: 'vmhost'
 
-  IdentityClient__TokenUrl: ""
-  IdentityClient__ClientId: "player-vm-admin"
-  IdentityClient__Scope: "player-api vm-api"
-  IdentityClient__Username: ""
-  IdentityClient__Password: ""
+  IdentityClient__TokenUrl: ''
+  IdentityClient__ClientId: 'player-vm-admin'
+  IdentityClient__Scope: 'player-api vm-api'
+  IdentityClient__Username: ''
+  IdentityClient__Password: ''
   IdentityClient__MaxRetryDelaySeconds: 120
   IdentityClient__TokenRefreshSeconds: 600

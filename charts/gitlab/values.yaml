@@ -3,11 +3,11 @@ replicaCount: 1
 image:
   repository: gitlab/gitlab-ce
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: ''
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -16,14 +16,16 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -37,7 +39,8 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -51,9 +54,10 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ""
+certificateMap: ''
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -74,8 +78,8 @@ autoscaling:
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
 storage:
-  existing: ""
-  size: ""
+  existing: ''
+  size: ''
   mode: ReadWriteOnce
   class: default
 
@@ -85,20 +89,18 @@ tolerations: []
 
 affinity: {}
 
-command: [ "bash", "-c", "update-ca-certificates && /assets/wrapper" ]
+command: ['bash', '-c', 'update-ca-certificates && /assets/wrapper']
 
-
-initialRootPassword: ""
+initialRootPassword: ''
 
 env:
   GITLAB_OMNIBUS_CONFIG: "from_file('/conf/gitlab.rb')"
-  https_proxy: ""
-  http_proxy: ""
-  HTTP_PROXY: ""
-  HTTPS_PROXY: ""
-  NO_PROXY: ""
-  no_proxy: ""
-
+  # https_proxy: ""
+  # http_proxy: ""
+  # HTTP_PROXY: ""
+  # HTTPS_PROXY: ""
+  # NO_PROXY: ""
+  # no_proxy: ""
 # settings: 'external_url "";
 # gitlab_rails["initial_root_password"] = File.read("/secrets/initial_root_password");
 # gitlab_rails["env"] = {

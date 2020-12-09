@@ -8,11 +8,11 @@ image:
   repository: cmusei/fite-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: ''
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,14 +21,16 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -42,7 +44,8 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -53,7 +56,8 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -72,7 +76,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command: [ "bash", "-c", "update-ca-certificates && dotnet Fite.Api.dll" ]
+command: ['bash', '-c', 'update-ca-certificates && dotnet Fite.Api.dll']
 
 nodeSelector: {}
 
@@ -80,14 +84,13 @@ tolerations: []
 
 affinity: {}
 
-
 env:
-  http_proxy: 
-  https_proxy: 
-  HTTP_PROXY: 
-  HTTPS_PROXY: 
-  NO_PROXY: 
-  no_proxy: 
+  # http_proxy:
+  # https_proxy:
+  # HTTP_PROXY:
+  # HTTPS_PROXY:
+  # NO_PROXY:
+  # no_proxy:
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information
@@ -97,38 +100,37 @@ env:
   Logging__Console__LogLevel__Microsoft: Error
   Logging__Console__LogLevel__System: Error
 
-  ConnectionStrings__PostgreSQL: ""
+  ConnectionStrings__PostgreSQL: ''
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
   CorsPolicy__Origins__0: http://localhost:4401
-  CorsPolicy__Methods__0: ""
-  CorsPolicy__Headers__0: ""
+  CorsPolicy__Methods__0: ''
+  CorsPolicy__Headers__0: ''
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ""
-  Authorization__AuthorizationUrl: ""
-  Authorization__AuthorizationScope: "fite-api"
+  Authorization__Authority: ''
+  Authorization__AuthorizationUrl: ''
+  Authorization__AuthorizationScope: 'fite-api'
   Authorization__ClientId: fite-api
-  Authorization__ClientName: "FITE API"
-  Authorization__ClientSecret: ""
+  Authorization__ClientName: 'FITE API'
+  Authorization__ClientSecret: ''
   Authorization__RequireHttpsMetaData: false
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  SeedData__Permissions__0__Id: "00000000-0000-0000-0000-000000000001"
-  SeedData__Permissions__0__Key: "SystemAdmin"
-  SeedData__Permissions__0__Value: "true"
-  SeedData__Permissions__0__Description: "Has Full Rights.  Can do everything."
+  SeedData__Permissions__0__Id: '00000000-0000-0000-0000-000000000001'
+  SeedData__Permissions__0__Key: 'SystemAdmin'
+  SeedData__Permissions__0__Value: 'true'
+  SeedData__Permissions__0__Description: 'Has Full Rights.  Can do everything.'
   SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Id: "00000000-0000-0000-0000-000000000002"
-  SeedData__Permissions__1__Key: "ContentDeveloper"
-  SeedData__Permissions__1__Value: "true"
-  SeedData__Permissions__1__Description: "Can create/edit/delete an Exercise/Directory/Workspace/File/Module"
+  SeedData__Permissions__1__Id: '00000000-0000-0000-0000-000000000002'
+  SeedData__Permissions__1__Key: 'ContentDeveloper'
+  SeedData__Permissions__1__Value: 'true'
+  SeedData__Permissions__1__Description: 'Can create/edit/delete an Exercise/Directory/Workspace/File/Module'
   SeedData__Permissions__1__ReadOnly: true
-

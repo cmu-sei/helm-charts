@@ -45,12 +45,12 @@ caster-api:
   # see https://github.com/cmu-sei/crucible/blob/master/caster.api/src/Caster.Api/appsettings.json
   env:
     # Proxy Settings
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
+    # http_proxy: proxy.example.com:9000
+    # https_proxy: proxy.example.com:9000
+    # HTTP_PROXY: proxy.example.com:9000
+    # HTTPS_PROXY: proxy.example.com:9000
+    # NO_PROXY: .local
+    # no_proxy: .local
 
     # This deployment comes built in with a script to install Terraform and the necessary
     # plugins to run Caster properly.  Internet access is required for this script to run properly.

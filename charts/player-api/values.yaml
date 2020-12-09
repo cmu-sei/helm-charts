@@ -8,11 +8,11 @@ image:
   repository: cmusei/player-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: ''
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,14 +21,16 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -42,7 +44,8 @@ service:
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -53,14 +56,13 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ""
+certificateMap: ''
 
-
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -85,16 +87,16 @@ tolerations: []
 
 affinity: {}
 
-command: [ "bash", "-c", "update-ca-certificates && dotnet Player.Api.dll" ]
+command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Api.dll']
 
 # env is pod env vars
 env:
-  http_proxy: ""
-  https_proxy: ""
-  HTTP_PROXY: ""
-  HTTPS_PROXY: ""
-  NO_PROXY: ""
-  no_proxy: ""
+  # http_proxy: ""
+  # https_proxy: ""
+  # HTTP_PROXY: ""
+  # HTTPS_PROXY: ""
+  # NO_PROXY: ""
+  # no_proxy: ""
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information
@@ -104,41 +106,41 @@ env:
   Logging__Console__LogLevel__Microsoft: Error
   Logging__Console__LogLevel__System: Error
 
-  ConnectionStrings__PostgreSQL: ""
+  ConnectionStrings__PostgreSQL: ''
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  CorsPolicy__Origins__0: ""
-  CorsPolicy__Methods__0: ""
-  CorsPolicy__Headers__0: ""
+  CorsPolicy__Origins__0: ''
+  CorsPolicy__Methods__0: ''
+  CorsPolicy__Headers__0: ''
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ""
-  Authorization__AuthorizationUrl: ""
-  Authorization__AuthorizationScope: "player-api"
+  Authorization__Authority: ''
+  Authorization__AuthorizationUrl: ''
+  Authorization__AuthorizationScope: 'player-api'
   Authorization__ClientId: player-api-dev
-  Authorization__ClientName: "Player API"
-  Authorization__ClientSecret: ""
+  Authorization__ClientName: 'Player API'
+  Authorization__ClientSecret: ''
   Authorization__RequireHttpsMetaData: false
 
   SeedData__Permissions__0__Key: SystemAdmin
-  SeedData__Permissions__0__Value: "true"
-  SeedData__Permissions__0__Description: "Can do anything"
+  SeedData__Permissions__0__Value: 'true'
+  SeedData__Permissions__0__Description: 'Can do anything'
   SeedData__Permissions__0__ReadOnly: true
   SeedData__Permissions__1__Key: ExerciseAdmin
-  SeedData__Permissions__1__Value: "true"
-  SeedData__Permissions__1__Description: "Can edit an Exercise, Add/Remove Teams/Members, etc"
+  SeedData__Permissions__1__Value: 'true'
+  SeedData__Permissions__1__Description: 'Can edit an Exercise, Add/Remove Teams/Members, etc'
   SeedData__Permissions__1__ReadOnly: true
 
-  SeedData__SystemAdminIds__0: ""
+  SeedData__SystemAdminIds__0: ''
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  Notifications__UserIconUrl: "/assets/img/SP_Icon_User.png"
-  Notifications__SystemIconUrl: "/assets/img/SP_Icon_Alert.png"
-  Notifications__HelpDeskApplicationName: "Help Desk"
+  Notifications__UserIconUrl: '/assets/img/SP_Icon_User.png'
+  Notifications__SystemIconUrl: '/assets/img/SP_Icon_Alert.png'
+  Notifications__HelpDeskApplicationName: 'Help Desk'

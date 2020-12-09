@@ -32,12 +32,12 @@ steamfitter-api:
   # see https://github.com/cmu-sei/crucible/blob/master/steamfitter.api/Steamfitter.Api/appsettings.json
   env:
     # Proxy Settings
-    https_proxy: proxy.example.com:9000
-    http_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
+    # https_proxy: proxy.example.com:9000
+    # http_proxy: proxy.example.com:9000
+    # HTTP_PROXY: proxy.example.com:9000
+    # HTTPS_PROXY: proxy.example.com:9000
+    # NO_PROXY: .local
+    # no_proxy: .local
 
     # Connection String to database
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
