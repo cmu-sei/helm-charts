@@ -104,6 +104,7 @@ env:
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
+  Database__SeedFile: ""
 
   CorsPolicy__Origins__0: http://localhost:4401
   CorsPolicy__Methods__0: ''
@@ -134,3 +135,6 @@ env:
   SeedData__Permissions__1__Value: 'true'
   SeedData__Permissions__1__Description: 'Can create/edit/delete an Exercise/Directory/Workspace/File/Module'
   SeedData__Permissions__1__ReadOnly: true
+
+conf:
+  seed: ""

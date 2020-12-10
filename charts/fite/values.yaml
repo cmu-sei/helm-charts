@@ -47,6 +47,10 @@ fite-api:
     Authorization__ClientId: fite-api
     Authorization__ClientName: 'FITE API'
 
+  # Seed data configuration.  Documentation on seed data TBD when FITE gets open-sourced
+  conf:
+    seed: ""
+
 fite-ui:
   # Docker image release version
   image:

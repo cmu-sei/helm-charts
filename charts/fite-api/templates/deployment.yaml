@@ -49,8 +49,15 @@ spec:
           #   httpGet:
           #     path: /
           #     port: http
+          volumeMounts:
+            - mountPath: /app/conf
+              name: {{ include "fite-api.name" . }}-conf
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: {{ include "fite-api.name" . }}-conf
+          configMap:
+            name: {{ include "fite-api.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
