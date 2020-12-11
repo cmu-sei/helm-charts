@@ -1,11 +1,10 @@
-# Default values for identity-api.
+# Default values for ui.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: cmusei/identity
+  repository: cmusei/identity-ui
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -47,7 +46,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/ui"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -59,11 +58,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 20m
+  #   memory: 20Mi
   # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 10m
+  #   memory: 10Mi
 
 autoscaling:
   enabled: false
@@ -78,46 +77,8 @@ tolerations: []
 
 affinity: {}
 
-# storage - either an existing pvc, the size for a new pvc, or emptyDir
-storage:
-  existing: ""
-  size: ""
-  mode: ReadWriteOnce
-  class: default
+## basehref is path to the app
+basehref: /ui
 
-# Config app settings with environment vars.
-# Those most likely needing values are listed. For others,
-# see https://github.com/cmu-sei/Identity/blob/master/src/IdentityServer/appsettings.conf
-env:
-  # Supported providers: InMemory, PostgreSQL, SqlServer
-  Database__Provider: InMemory
-  Database__ConnectionString: identity_db
-  Branding__ApplicationName: Identity
-  Branding__UiHost: /ui
-  Cache__Key: idsrv
-  Cache__RedisUrl: ""
-  Cache__SharedFolder: ""
-  Logging__Console__DisableColors: true
-  Account__AdminEmail: ""
-  Account__AdminPassword: ""
-  Account__OverrideCode: ""
-  Account__Authentication__SigningCertificate: conf/signer.pfx
-  Account__Authentication__SigningCertificatePassword: ""
-  Account__Authentication__NoticeFile: "conf/notice.html"
-  AppMail__Url: ""
-  AppMail__Key: ""
-  AppMail__From: ""
-  Headers__Cors__Origins__0: ""
-  Headers__Cors__Methods__0: ""
-  Headers__Cors__Headers__0: ""
-  Headers__Cors__AllowCredentials: false
-  Headers__Forwarding__TargetHeaders: None
-
-
-conf:
-  issuers: ""
-  notice: ""
-  terms: ""
-  trouble: ""
-  seed: ""
-  signer: ""
+## settings is stringified json that gets included as assets/settings.json
+settings: "{}"

@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "identity-ui.fullname" . }}
+  name: {{ include "ui.fullname" . }}
   labels:
-    {{- include "identity-ui.labels" . | nindent 4 }}
+    {{- include "ui.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "identity-ui.selectorLabels" . | nindent 6 }}
+      {{- include "ui.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -19,13 +19,13 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "identity-ui.selectorLabels" . | nindent 8 }}
+        {{- include "ui.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "identity-ui.serviceAccountName" . }}
+      serviceAccountName: {{ include "ui.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -39,7 +39,7 @@ spec:
               value: {{ .Values.basehref  | quote }}
           volumeMounts:
             - mountPath: /var/www/assets/settings.env.json
-              name: {{ include "identity-ui.name" . }}-conf
+              name: {{ include "ui.name" . }}-conf
               subPath: settings.json
           ports:
             - name: http
@@ -68,6 +68,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "identity-ui.name" . }}-conf
+      - name: {{ include "ui.name" . }}-conf
         configMap:
-          name: {{ include "identity-ui.fullname" . }}
+          name: {{ include "ui.fullname" . }}

@@ -1,10 +1,11 @@
-# Default values for identity-ui.
+# Default values for api.
 # This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: cmusei/identity-ui
+  repository: cmusei/identity
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -46,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/api"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -58,11 +59,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 50m
-  #   memory: 50Mi
+  #   cpu: 200m
+  #   memory: 512Mi
   # requests:
-  #   cpu: 50m
-  #   memory: 50Mi
+  #   cpu: 100m
+  #   memory: 256Mi
 
 autoscaling:
   enabled: false
@@ -77,10 +78,46 @@ tolerations: []
 
 affinity: {}
 
-## basehref is the path to the app; if serving the app as a virtual folder,
-## add the path here.
-# basehref: /ui
-basehref: ""
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
 
-## settings is stringified json that gets included as assets/settings.json
-settings: "{}"
+# Config app settings with environment vars.
+# Those most likely needing values are listed. For others,
+# see https://github.com/cmu-sei/Identity/blob/master/src/IdentityServer/appsettings.conf
+env:
+  # Supported providers: InMemory, PostgreSQL, SqlServer
+  Database__Provider: InMemory
+  Database__ConnectionString: identity_db
+  Branding__ApplicationName: Identity
+  Branding__UiHost: /ui
+  Cache__Key: idsrv
+  Cache__RedisUrl: ""
+  Cache__SharedFolder: ""
+  Logging__Console__DisableColors: true
+  Account__AdminEmail: ""
+  Account__AdminPassword: ""
+  Account__OverrideCode: ""
+  Account__Authentication__SigningCertificate: conf/signer.pfx
+  Account__Authentication__SigningCertificatePassword: ""
+  Account__Authentication__NoticeFile: "conf/notice.html"
+  AppMail__Url: ""
+  AppMail__Key: ""
+  AppMail__From: ""
+  Headers__Cors__Origins__0: ""
+  Headers__Cors__Methods__0: ""
+  Headers__Cors__Headers__0: ""
+  Headers__Cors__AllowCredentials: false
+  Headers__Forwarding__TargetHeaders: All
+
+
+conf:
+  issuers: ""
+  notice: ""
+  terms: ""
+  trouble: ""
+  seed: ""
+  signer: ""

@@ -1,9 +1,42 @@
-identity-api:
+api:
 
   replicaCount: 1
 
   image:
+    repository: cmusei/identity
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
 
   ingress:
     enabled: false
@@ -12,21 +45,38 @@ identity-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
 
   resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    #   cpu: 200m
+    #   memory: 512Mi
     # requests:
     #   cpu: 100m
-    #   memory: 128Mi
+    #   memory: 256Mi
 
-  ## persistence; set existing pvc or size of new pvc
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
     existing: ""
     size: ""
@@ -59,7 +109,7 @@ identity-api:
     Headers__Cors__Methods__0: ""
     Headers__Cors__Headers__0: ""
     Headers__Cors__AllowCredentials: false
-    Headers__Forwarding__TargetHeaders: None
+    Headers__Forwarding__TargetHeaders: All
 
   conf:
     issuers: ""
@@ -69,9 +119,46 @@ identity-api:
     seed: ""
     signer: ""
 
-identity-ui:
+
+ui:
 
   replicaCount: 1
+
+  image:
+    repository: cmusei/identity-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
 
   ingress:
     enabled: false
@@ -80,24 +167,39 @@ identity-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/ui"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
 
   resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     # limits:
-    #   cpu: 50m
-    #   memory: 50Mi
+    #   cpu: 20m
+    #   memory: 20Mi
     # requests:
-    #   cpu: 50m
-    #   memory: 50Mi
-  ## basehref is the path to the app; if serving the app as a virtual folder,
-  
-  ## add the path here.
-  # basehref: /ui
-  basehref: ""
+    #   cpu: 10m
+    #   memory: 10Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  ## basehref is path to the app
+  basehref: /ui
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
