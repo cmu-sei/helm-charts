@@ -48,7 +48,7 @@ topomojo-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api", "/hub", "/docs"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -67,11 +67,11 @@ topomojo-api:
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    #   cpu: 200m
+    #   memory: 512Mi
     # requests:
     #   cpu: 100m
-    #   memory: 128Mi
+    #   memory: 256Mi
 
   autoscaling:
     enabled: false
@@ -88,13 +88,14 @@ topomojo-api:
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/TopoMojo/master/src/TopoMojo.Web/appsettings.conf
+  # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Web/appsettings.conf
   env: {}
     # Database__Provider: InMemory
     # Database__ConnectionString: topomojo_db
     # Branding__ApplicationName: TopoMojo
     # Branding__Title: TopoMojo
     # Branding__IncludeSwagger: true
+    # Branding__PathBase: ""
     # Cache__SharedFolder: ""
     # FileUpload__IsoRoot: tm
     # FileUpload__TopoRoot: tm
@@ -184,7 +185,7 @@ topomojo-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -196,11 +197,11 @@ topomojo-ui:
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    #   cpu: 20m
+    #   memory: 20Mi
     # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    #   cpu: 10m
+    #   memory: 10Mi
 
   autoscaling:
     enabled: false
@@ -214,6 +215,16 @@ topomojo-ui:
   tolerations: []
 
   affinity: {}
+
+  ## basehref is path to the app
+  basehref: ""
+
+  ## openGraph is string of html head metadata (single line!)
+  openGraph: ""
+
+  ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+  ## its contents will be merged into index.html head element.
+  faviconsUrl: ""
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"

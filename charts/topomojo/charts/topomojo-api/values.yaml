@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/api", "/hub", "/docs"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -66,11 +66,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 200m
+  #   memory: 512Mi
   # requests:
   #   cpu: 100m
-  #   memory: 128Mi
+  #   memory: 256Mi
 
 autoscaling:
   enabled: false
@@ -94,6 +94,7 @@ env: {}
   # Branding__ApplicationName: TopoMojo
   # Branding__Title: TopoMojo
   # Branding__IncludeSwagger: true
+  # Branding__PathBase: ""
   # Cache__SharedFolder: ""
   # FileUpload__IsoRoot: tm
   # FileUpload__TopoRoot: tm
