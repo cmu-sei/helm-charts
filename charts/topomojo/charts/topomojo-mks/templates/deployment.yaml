@@ -37,6 +37,13 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          volumeMounts:
+            - mountPath: /var/www/assets/settings.json
+              name: {{ include "topomojo-mks.name" . }}
+              subPath: settings.json
+            - mountPath: /docker-entrypoint.d/90-customize.sh
+              name: {{ include "topomojo-mks.name" . }}
+              subPath: customize.sh
           livenessProbe:
             httpGet:
               path: /
@@ -59,3 +66,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: {{ include "topomojo-mks.name" . }}
+        configMap:
+          name: {{ include "topomojo-mks.fullname" . }}
+          defaultMode: 0775

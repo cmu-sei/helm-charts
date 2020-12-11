@@ -10,7 +10,6 @@ data:
 {{ .Values.settings | indent 4 }}
 
   customize.sh: |
-
 {{- if .Values.basehref }}
     src=/var/www
     basehref=`echo {{ .Values.basehref }} | sed -e s,^/,, -e s,/$,,`
