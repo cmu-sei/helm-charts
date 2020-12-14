@@ -125,16 +125,5 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  SeedData__Permissions__0__Id: '00000000-0000-0000-0000-000000000001'
-  SeedData__Permissions__0__Key: 'SystemAdmin'
-  SeedData__Permissions__0__Value: 'true'
-  SeedData__Permissions__0__Description: 'Has Full Rights.  Can do everything.'
-  SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Id: '00000000-0000-0000-0000-000000000002'
-  SeedData__Permissions__1__Key: 'ContentDeveloper'
-  SeedData__Permissions__1__Value: 'true'
-  SeedData__Permissions__1__Description: 'Can create/edit/delete an Exercise/Directory/Workspace/File/Module'
-  SeedData__Permissions__1__ReadOnly: true
-
 conf:
   seed: ""
