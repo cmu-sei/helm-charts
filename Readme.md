@@ -10,7 +10,7 @@ Example usage:
 
 ```bash
 # add this helm repo:
-$ helm repo add sei https://helm.cyberforce.site/charts
+$ helm repo add sei https://helm.cmusei.dev/charts
 
 # grab and edit values as desired
 $ helm show values sei/identity > identity.values.yaml
