@@ -13,7 +13,7 @@ data:
 
 {{- if .Values.basehref }}
     src=/var/www
-    basehref=`echo {{ .Values.basehref }} | sed -e s,^/,, -e s,/$,,`
+    basehref=`echo -n {{ .Values.basehref | quote }} | sed -e s,^/,, -e s,/$,,`
     if [ -n "$basehref" ]; then
       sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
       dst=$src/$basehref
@@ -23,13 +23,13 @@ data:
 {{- end }}
 
 {{- if .Values.openGraph }}
-    meta=$(echo {{ .Values.openGraph }} | sed -e 's/[/\&]/\\&/g')
-    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $index
+    meta=$(echo -n "{{ .Values.openGraph | quote }}" | sed -e 's/[/\&]/\&/g')
+    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $src/index.html
 {{- end}}
 
 {{- if .Values.faviconsUrl }}
     curl -o /tmp/favicons.tgz {{ .Values.faviconsUrl }}
     tar xzf /tmp/favicons.tgz -C /var/www
-    meta=$(cat /var/www/favicon.html | sed -e 's/[/\&]/\\&/g')
-    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $index
+    meta=$(cat /var/www/favicon.html | sed -e 's/[/\&]/\&/g')
+    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $src/index.html
 {{- end}}
