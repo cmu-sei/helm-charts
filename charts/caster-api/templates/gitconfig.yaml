@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "caster-api.fullname" . }}-gitconfig
+data:
+  gitconfig: |-
+{{ .Values.gitconfig | nindent 4 }}

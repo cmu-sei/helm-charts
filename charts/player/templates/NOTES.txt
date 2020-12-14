@@ -1,0 +1,1 @@
+Course charted for {{ include "player.fullname" . }}.

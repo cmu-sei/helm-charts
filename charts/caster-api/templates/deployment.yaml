@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "caster-api.fullname" . }}
+  labels:
+    {{- include "caster-api.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "caster-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "caster-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "caster-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: {{- toYaml .Values.command | nindent 10 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "caster-api.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /etc/gitconfig
+              subPath: gitconfig
+              name: {{ include "caster-api.fullname" . }}-gitconfig
+            - mountPath: /terraform
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
+            - mountPath: /install-terraform.sh
+              subPath: install-terraform.sh
+              name: {{ include "caster-api.fullname" . }}-terraform-installation
+            {{ if .Values.certificateMap }}
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
+            {{- end }}
+      volumes:
+        {{ if .Values.certificateMap }}
+        - name: certificates
+          configMap:
+            name: {{ .Values.certificateMap }}
+        {{- end }}
+        {{- if .Values.storage.existing }}
+        - name: {{ include "caster-api.name" . }}-vol
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.existing }}
+        {{- else if .Values.storage.size }}
+        - name: {{ include "caster-api.name" . }}-vol
+          persistentVolumeClaim:
+            claimName: {{ include "caster-api.fullname" . }}
+        {{- else }}
+        - name: {{ include "caster-api.name" . }}-vol
+          emptyDir: {}
+        {{- end }}
+        - name: {{ include "caster-api.fullname" . }}-terraform-installation
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-terraform-installation
+            defaultMode: 0755
+        - name: {{ include "caster-api.fullname" . }}-gitconfig
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-gitconfig
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

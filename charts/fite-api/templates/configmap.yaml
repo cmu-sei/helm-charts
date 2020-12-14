@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fite-api.fullname" . }}
+  labels:
+    {{- include "fite-api.labels" . | nindent 4 }}
+
+data:
+  seed.json: |-
+{{ .Values.conf.seed | indent 4 }}
