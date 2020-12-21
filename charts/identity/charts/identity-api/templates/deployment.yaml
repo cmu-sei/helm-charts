@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "identity-api.fullname" . }}
+  labels:
+    {{- include "identity-api.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "identity-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        consistency/check: {{ randAlphaNum 8 | quote }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "identity-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "identity-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "identity-api.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/conf
+              name: {{ include "identity-api.name" . }}-conf
+            - mountPath: /app/wwwroot/javatar
+              name: {{ include "identity-api.name" . }}-vol
+              subPath: {{ include "identity-api.fullname" . }}/javatar
+            - mountPath: /app/data
+              name: {{ include "identity-api.name" . }}-vol
+              subPath: {{ include "identity-api.fullname" . }}/data
+          # livenessProbe:
+          #   initialDelaySeconds: 30
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
+          # readinessProbe:
+          #   initialDelaySeconds: 30
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ include "identity-api.name" . }}-conf
+        configMap:
+          name: {{ include "identity-api.fullname" . }}
+      {{- if .Values.storage.existing }}
+      - name: {{ include "identity-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "identity-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "identity-api.fullname" . }}
+      {{- else }}
+      - name: {{ include "identity-api.name" . }}-vol
+        emptyDir: {}
+      {{- end }}

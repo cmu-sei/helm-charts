@@ -1,4 +1,4 @@
-api:
+buckets-api:
   # Default values for foundry-buckets-api.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -9,7 +9,7 @@ api:
     repository: cmusei.azurecr.us/buckets-api
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.4.2"
+    # tag: "1.4.2"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -97,7 +97,7 @@ api:
   binaryFiles: {}
 
 
-ui:
+buckets-ui:
   # Default values for foundry-buckets-ui.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -108,7 +108,7 @@ ui:
     repository: cmusei.azurecr.us/buckets-ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.4.2"
+    # tag: "1.4.2"
 
   imagePullSecrets: []
   nameOverride: ""
