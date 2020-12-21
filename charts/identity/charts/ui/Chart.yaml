@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: 1.3.8
-description: A Helm chart for Kubernetes
-name: ui
-type: application
-version: 0.1.3

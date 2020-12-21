@@ -1,4 +1,4 @@
-api:
+groups-api:
   # Default values for api.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -9,7 +9,7 @@ api:
     repository: cmusei.azurecr.us/api
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.1.1"
+    # tag: "1.1.1"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -89,7 +89,7 @@ api:
   # (these should be in base64 here)
   binaryFiles: {}
 
-ui:
+groups-ui:
   # Default values for ui.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -100,7 +100,7 @@ ui:
     repository: cmusei.azurecr.us/ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.1.0"
+    # tag: "1.1.0"
 
   imagePullSecrets: []
   nameOverride: ""

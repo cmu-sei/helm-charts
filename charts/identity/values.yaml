@@ -1,4 +1,4 @@
-api:
+identity-api:
 
   replicaCount: 1
 
@@ -120,7 +120,7 @@ api:
     signer: ""
 
 
-ui:
+identity-ui:
 
   replicaCount: 1
 
