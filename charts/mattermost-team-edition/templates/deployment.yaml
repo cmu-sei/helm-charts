@@ -38,6 +38,19 @@ spec:
         imagePullPolicy: {{ .Values.initContainerImage.imagePullPolicy }}
         command: ["sh", "-c", "until curl --max-time 10 http://{{ .Release.Name }}-mysql:3306; do echo waiting for {{ .Release.Name }}-mysql; sleep 5; done;"]
       {{- end }}
+      {{ if .Values.persistence.config.enabled }}
+      - name: "init-config"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+        command: ["sh", "-c", "if [ ! -e config/config.json ]; then cp config.json config/; fi"]
+        volumeMounts:
+        - mountPath: /mattermost/config.json
+          name: config-json
+          subPath: config.json
+        - mountPath: /mattermost/config
+          name: mattermost-data
+          subPath: {{ include "mattermost-team-edition.fullname" . }}/config
+      {{- end }}
       {{- if .Values.extraInitContainers }}
       {{- .Values.extraInitContainers | toYaml | nindent 6 }}
       {{- end }}
@@ -74,16 +87,21 @@ spec:
         - mountPath: /mattermost/bin/mattermost-custom-start
           name: config-entry
           subPath: entryscript
-        - mountPath: /mattermost/config/config.json
+        {{ if .Values.persistence.config.enabled }}
+        - mountPath: /mattermost/config
+          name: mattermost-data
+          subPath: {{ include "mattermost-team-edition.fullname" . }}/config
+        {{- else }}
+         - mountPath: /mattermost/config/config.json
           name: config-json
           subPath: config.json
+        {{- end }}
         - mountPath: /mattermost/data
           name: mattermost-data
-          subPath: mattermost
-        # - mountPath: /mattermost/data
-        #   name: mattermost-data
-        # - mountPath: /mattermost/{{ trimPrefix "./" .Values.configJSON.PluginSettings.Directory }}
-        #   name: mattermost-data
+          subPath: {{ include "mattermost-team-edition.fullname" . }}/data
+        - mountPath: /mattermost/{{ trimPrefix "./" .Values.configJSON.PluginSettings.Directory }}
+          name: mattermost-data
+          subPath: {{ include "mattermost-team-edition.fullname" . }}/plugins
         {{- if .Values.extraVolumeMounts -}}
         {{ .Values.extraVolumeMounts | toYaml | nindent 8 }}
         {{- end }}
@@ -107,14 +125,25 @@ spec:
       {{ else }}
         emptyDir: {}
       {{ end }}
-      # - name: mattermost-plugins
-      # {{ if .Values.persistence.plugins.enabled }}
-      #   persistentVolumeClaim:
-      #     {{ if .Values.persistence.plugins.existingClaim }}
-      #     claimName: {{.Values.persistence.plugins.existingClaim }}
-      #     {{ else }}
-      #     claimName: {{ default (include "mattermost-team-edition.fullname" .) }}-plugins
-      #     {{ end }}
-      # {{ else }}
-      #   emptyDir: {}
-      # {{ end }}
+      - name: mattermost-plugins
+      {{ if .Values.persistence.plugins.enabled }}
+        persistentVolumeClaim:
+          {{ if .Values.persistence.plugins.existingClaim }}
+          claimName: {{.Values.persistence.plugins.existingClaim }}
+          {{ else }}
+          claimName: {{ default (include "mattermost-team-edition.fullname" .) }}-plugins
+          {{ end }}
+      {{ else }}
+        emptyDir: {}
+      {{ end }}
+      - name: mattermost-config
+      {{ if .Values.persistence.config.enabled }}
+        persistentVolumeClaim:
+          {{ if .Values.persistence.config.existingClaim }}
+          claimName: {{.Values.persistence.config.existingClaim }}
+          {{ else }}
+          claimName: {{ default (include "mattermost-team-edition.fullname" .) }}-config
+          {{ end }}
+      {{ else }}
+        emptyDir: {}
+      {{ end }}
