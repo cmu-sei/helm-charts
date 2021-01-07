@@ -41,7 +41,7 @@ persistence:
   # existingClaim: ""
   ## If persist config is enabled, the initial config.json is copied into a 
   config:
-    enabled: true
+    enabled: false
     size: 1Gi
     # storageClass:
     accessMode: ReadWriteOnce
