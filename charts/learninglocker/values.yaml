@@ -1,0 +1,91 @@
+# Default values for learninglocker.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  repository: fundocker/learninglocker
+  tag: v6.1.1
+  pullPolicy: IfNotPresent
+
+storage:
+  existing: ""
+
+siteadmin:
+  organization: "default"
+  email: "administrator@this.ws"
+  password: ""
+
+ui:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+  storage:
+    existing: false
+    size: 0
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+api:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+  storage:
+    existing: false
+    size: 0
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+worker:
+  replicaCount: 1
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+xapi:
+  replicaCount: 1
+  image:
+    repository: fundocker/xapi-service
+    tag: v3.6.1
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+ingress:
+  enabled: false
+  host: ""
+  cert_issuer: ""
+  secretName: ""
+  annotations: {}
+
+env:
+  NODE_ENV: production
+  SITE_URL: localhost
+  UI_PORT: 3000
+  API_PORT: 8080
+  APP_SECRET: ""
+  MONGODB_PATH: mongodb://mongodb:27017/learninglocker_v2
+  REDIS_URL: redis://redis:6379/0
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_DB: 0
+  REDIS_PREFIX: learninglocker
+  LOG_MIN_LEVEL: info
+  WINSTON_CLOUDWATCH_ENABLED: false
+  SMTP_HOST: ""
+  SMTP_PORT: ""
+  SMTP_SECURED: ""
+  SMTP_USER: ""
+  SMTP_PASS: ""
+  QUEUE_PROVIDER: REDIS
+  FS_REPO: local

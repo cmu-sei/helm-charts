@@ -1,0 +1,81 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "learninglocker.fullname" . -}}
+{{- $ingressPath := .Values.ingress.path -}}
+apiVersion:  networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app: {{ include "learninglocker.name" . }}
+    chart: {{ include "learninglocker.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    {{- if .Values.ingress.cert_issuer }}
+    certmanager.k8s.io/cluster-issuer: {{ .Values.ingress.cert_issuer }}
+    ingress.kubernetes.io/ssl-redirect: "true"
+    {{- end }}
+{{- with .Values.ingress.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.cert_issuer }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.secretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /data
+            backend:
+              serviceName: {{ $fullName }}-xapi
+              servicePort: http
+          - path: /
+            backend:
+              serviceName: {{ $fullName }}-ui
+              servicePort: http
+{{- end }}
+
+---
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "learninglocker.fullname" . -}}
+{{- $ingressPath := .Values.ingress.path -}}
+apiVersion:  networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-api
+  labels:
+    app: {{ include "learninglocker.name" . }}
+    chart: {{ include "learninglocker.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    {{- if .Values.ingress.cert_issuer }}
+    certmanager.k8s.io/cluster-issuer: {{ .Values.ingress.cert_issuer }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    {{- end }}
+{{- with .Values.ingress.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.cert_issuer }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.secretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /api/?(.*)
+            backend:
+              serviceName: {{ $fullName }}-api
+              servicePort: http
+{{- end }}

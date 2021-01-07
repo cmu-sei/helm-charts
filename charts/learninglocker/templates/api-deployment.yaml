@@ -1,0 +1,80 @@
+{{- $appName := include "learninglocker.name" . -}}
+{{- $appFullName := include "learninglocker.fullname" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $appFullName }}-api
+  labels:
+    app: {{ $appName }}
+    component: api
+    chart: {{ include "learninglocker.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+      component: api
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+        component: api
+        release: {{ .Release.Name }}
+    spec:
+      # initContainers:
+      #   - name: {{ .Chart.Name }}-api-entry
+      #     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      #     imagePullPolicy: {{ .Values.image.pullPolicy }}
+      #     command: ["tar", "xf", "storage.tar"]
+      containers:
+        - name: {{ .Chart.Name }}-api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - node
+            - api/dist/server
+          envFrom:
+            - secretRef:
+                name: {{ $appFullName }}-env
+          volumeMounts:
+            - name: {{ $appName }}-vol
+              subPath: learninglocker
+              mountPath: /app/storage
+          ports:
+            - name: http
+              containerPort: {{ .Values.env.API_PORT }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+{{ toYaml .Values.api.resources | indent 12 }}
+    {{- with .Values.api.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.api.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.api.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      {{- if .Values.storage.existing }}
+      - name: {{ $appName }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else }}
+      - name: {{ $appName }}-vol
+        emptyDir: {}
+      {{- end }}

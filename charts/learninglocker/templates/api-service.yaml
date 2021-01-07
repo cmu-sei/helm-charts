@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "learninglocker.fullname" . }}-api
+  labels:
+    app: {{ include "learninglocker.name" . }}
+    component: api
+    chart: {{ include "learninglocker.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "learninglocker.name" . }}
+    component: api
+    release: {{ .Release.Name }}

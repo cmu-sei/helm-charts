@@ -1,0 +1,33 @@
+{{- $appName := include "learninglocker.name" . -}}
+{{- $appFullName := include "learninglocker.fullname" . -}}
+{{- if .Values.siteadmin.password -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $appFullName }}-init
+  labels:
+    app: {{ $appName }}
+    component: worker
+    chart: {{ $appFullName }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ttlSecondsAfterFinished: 90
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: {{ .Chart.Name }}-init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - node
+            - cli/dist/server
+            - createSiteAdmin
+            - {{ .Values.siteadmin.email }}
+            - {{ .Values.siteadmin.organization }}
+            - {{ .Values.siteadmin.password }}
+          envFrom:
+            - secretRef:
+                name: {{ $appFullName }}-env
+{{ end }}
