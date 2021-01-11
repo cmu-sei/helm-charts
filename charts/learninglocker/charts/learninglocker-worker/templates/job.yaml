@@ -1,14 +1,12 @@
-{{- $appName := include "learninglocker.name" . -}}
-{{- $appFullName := include "learninglocker.fullname" . -}}
 {{- if .Values.siteadmin.password -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $appFullName }}-init
+  name: {{ include "learninglocker-worker.fullname" . }}-init
   labels:
-    app: {{ $appName }}
+    app: {{ include "learninglocker-worker.name" . }}
     component: worker
-    chart: {{ $appFullName }}
+    chart: {{ include "learninglocker-worker.fullname" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
@@ -29,5 +27,5 @@ spec:
             - {{ .Values.siteadmin.password }}
           envFrom:
             - secretRef:
-                name: {{ $appFullName }}-env
+                name: {{ include "learninglocker-worker.fullname" . }}
 {{ end }}

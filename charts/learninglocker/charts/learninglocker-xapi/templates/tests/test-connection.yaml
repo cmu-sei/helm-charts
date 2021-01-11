@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "learninglocker-xapi.fullname" . }}-test-connection"
+  labels:
+    {{- include "learninglocker-xapi.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "learninglocker-xapi.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
