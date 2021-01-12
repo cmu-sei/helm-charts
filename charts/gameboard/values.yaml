@@ -18,10 +18,10 @@ gameboard-api:
   resources: {}
     # limits:
     #   cpu: 200m
-    #   memory: 256Mi
+    #   memory: 512Mi
     # requests:
     #   cpu: 100m
-    #   memory: 128Mi
+    #   memory: 256Mi
 
   ## application settings can be entered as env vars or json, or both
   ## settings is stringified json that gets included as assets/settings.json
@@ -39,7 +39,7 @@ gameboard-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -50,8 +50,20 @@ gameboard-ui:
     #   cpu: 20m
     #   memory: 20Mi
     # requests:
-    #   cpu: 20m
-    #   memory: 20Mi
+    #   cpu: 10m
+    #   memory: 10Mi
+
+  ## basehref is the path to the app; if serving the app as a virtual folder,
+  ## add the path here.
+  # basehref: /gb/event1/
+  basehref: ""
+
+  ## openGraph is string of html head metadata (single line!)
+  openGraph: ""
+
+  ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+  ## its contents will be merged into index.html head element.
+  faviconsUrl: ""
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
