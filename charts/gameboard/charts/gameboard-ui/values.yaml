@@ -82,7 +82,8 @@ affinity: {}
 # basehref: /gb/event1/
 basehref: ""
 
-## openGraph is string of html head metadata (single line!)
+## openGraph is string of html head metadata (single line!). 
+## If expanding, use `>-` to ensure no crlf. 
 openGraph: ""
 
 ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
