@@ -1,4 +1,4 @@
-statesman-api:
+api:
 
   replicaCount: 1
   image:
@@ -12,7 +12,7 @@ statesman-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api", "/hub"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -34,17 +34,17 @@ statesman-api:
     class: default
 
   ## application settings can be entered as env vars or json, or both
-  env:
-    Authorization__Authority: ""
-    Authorization__AppClient__ClientId: "statesman-app"
-    Authorization__AppClient__ClientSecret: ""
-    Authorization__AppClient__Scopes: "openid profile statesman-api"
-    Authorization__SwaggerClient__ClientId: "statesman-swagger"
-    Authorization__Administrators__0: ""
-    Authorization__Observers__0: ""
-    Headers__Forwarding__TargetHeaders: "All"
+  env: {}
+    # Authorization__Authority: ""
+    # Authorization__AppClient__ClientId: "statesman-app"
+    # Authorization__AppClient__ClientSecret: ""
+    # Authorization__AppClient__Scopes: "openid profile statesman-api"
+    # Authorization__SwaggerClient__ClientId: "statesman-swagger"
+    # Authorization__Administrators__0: ""
+    # Authorization__Observers__0: ""
+    # Headers__Forwarding__TargetHeaders: "All"
 
-statesman-ui:
+ui:
   replicaCount: 1
   image:
     repository: cmusei.azurecr.us/statesman-ui
@@ -57,7 +57,7 @@ statesman-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -65,11 +65,75 @@ statesman-ui:
 
   resources: {}
     # limits:
-    #   cpu: 50m
-    #   memory: 50Mi
+    #   cpu: 20m
+    #   memory: 20Mi
     # requests:
-    #   cpu: 50m
-    #   memory: 50Mi
+    #   cpu: 10m
+    #   memory: 10Mi
+  
+  ## basehref is the path to the app; if serving the app as a virtual folder
+  # basehref: /app/one  
+  basehref: ""
+
+  ## openGraph is string of html head metadata (single line!)
+  # openGraph: >-
+  #   <!-- Open Graph info for link previews -->
+  #   <meta property="og:title" content="AppNmae" />
+  #   <meta property="og:type" content="website" />
+  #   <meta property="og:url" content="https://some.url" />
+  #   <meta property="og:image" content="https://some.url/logo.png" />
+  #   <meta property="og:description" content="description" />
+
+  ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+  ## its contents will be merged into index.html head element.
+  # faviconsUrl: "https://some.url/favs.tgz"
+
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+mks:
+  replicaCount: 1
+  image:
+    repository: cmusei.azurecr.us/statesman-mks
+    tag: ""
+
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths: ["/mks"]
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # limits:
+    #   cpu: 20m
+    #   memory: 20Mi
+    # requests:
+    #   cpu: 10m
+    #   memory: 10Mi
+  
+  ## basehref is the path to the app; if serving the app as a virtual folder
+  # basehref: /app/one  
+  basehref: "/mks"
+
+  ## openGraph is string of html head metadata (single line!)
+  # openGraph: >-
+  #   <!-- Open Graph info for link previews -->
+  #   <meta property="og:title" content="AppNmae" />
+  #   <meta property="og:type" content="website" />
+  #   <meta property="og:url" content="https://some.url" />
+  #   <meta property="og:image" content="https://some.url/logo.png" />
+  #   <meta property="og:description" content="description" />
+
+  ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+  ## its contents will be merged into index.html head element.
+  # faviconsUrl: "https://some.url/favs.tgz"
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
