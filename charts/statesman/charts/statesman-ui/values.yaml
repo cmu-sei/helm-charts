@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -59,11 +59,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 50m
-  #   memory: 50Mi
+  #   cpu: 20m
+  #   memory: 20Mi
   # requests:
-  #   cpu: 50m
-  #   memory: 50Mi
+  #   cpu: 10m
+  #   memory: 10Mi
 
 autoscaling:
   enabled: false
@@ -78,5 +78,21 @@ tolerations: []
 
 affinity: {}
 
-  ## settings is stringified json that gets included as assets/settings.json
+## basehref is path to the app
+basehref: ""
+
+## openGraph is string of html head metadata (single line!)
+# openGraph: >-
+#   <!-- Open Graph info for link previews -->
+#   <meta property="og:title" content="AppNmae" />
+#   <meta property="og:type" content="website" />
+#   <meta property="og:url" content="https://some.url" />
+#   <meta property="og:image" content="https://some.url/logo.png" />
+#   <meta property="og:description" content="description" />
+
+## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+## its contents will be merged into index.html head element.
+# faviconsUrl: "https://some.url/favs.tgz"
+
+## settings is stringified json that gets included as assets/settings.json
 settings: "{}"
