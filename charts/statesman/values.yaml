@@ -1,4 +1,4 @@
-api:
+statesman-api:
 
   replicaCount: 1
   image:
@@ -44,7 +44,7 @@ api:
     # Authorization__Observers__0: ""
     # Headers__Forwarding__TargetHeaders: "All"
 
-ui:
+statesman-ui:
   replicaCount: 1
   image:
     repository: cmusei.azurecr.us/statesman-ui
@@ -70,9 +70,9 @@ ui:
     # requests:
     #   cpu: 10m
     #   memory: 10Mi
-  
+
   ## basehref is the path to the app; if serving the app as a virtual folder
-  # basehref: /app/one  
+  # basehref: /app/one
   basehref: ""
 
   ## openGraph is string of html head metadata (single line!)
@@ -91,7 +91,7 @@ ui:
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
 
-mks:
+statesman-mks:
   replicaCount: 1
   image:
     repository: cmusei.azurecr.us/statesman-mks
@@ -117,9 +117,9 @@ mks:
     # requests:
     #   cpu: 10m
     #   memory: 10Mi
-  
+
   ## basehref is the path to the app; if serving the app as a virtual folder
-  # basehref: /app/one  
+  # basehref: /app/one
   basehref: "/mks"
 
   ## openGraph is string of html head metadata (single line!)
