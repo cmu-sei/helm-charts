@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "statesman-api.name" -}}
+{{- define "statesman-mks.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -11,7 +11,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "statesman-api.fullname" -}}
+{{- define "statesman-mks.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -27,16 +27,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "statesman-api.chart" -}}
+{{- define "statesman-mks.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "statesman-api.labels" -}}
-helm.sh/chart: {{ include "statesman-api.chart" . }}
-{{ include "statesman-api.selectorLabels" . }}
+{{- define "statesman-mks.labels" -}}
+helm.sh/chart: {{ include "statesman-mks.chart" . }}
+{{ include "statesman-mks.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -46,17 +46,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "statesman-api.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "statesman-api.name" . }}
+{{- define "statesman-mks.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "statesman-mks.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "statesman-api.serviceAccountName" -}}
+{{- define "statesman-mks.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "statesman-api.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "statesman-mks.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "statesman-api.fullname" . }}
+  name: {{ include "statesman-ui.fullname" . }}
   labels:
-    {{- include "statesman-api.labels" . | nindent 4 }}
+    {{- include "statesman-ui.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "statesman-api.selectorLabels" . | nindent 6 }}
+      {{- include "statesman-ui.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -19,13 +19,13 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "statesman-api.selectorLabels" . | nindent 8 }}
+        {{- include "statesman-ui.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "statesman-api.serviceAccountName" . }}
+      serviceAccountName: {{ include "statesman-ui.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -40,10 +40,10 @@ spec:
               protocol: TCP
           volumeMounts:
             - mountPath: /var/www/assets/settings.json
-              name: {{ include "statesman-api.name" . }}
+              name: {{ include "statesman-ui.name" . }}
               subPath: settings.json
             - mountPath: /docker-entrypoint.d/90-customize.sh
-              name: {{ include "statesman-api.name" . }}
+              name: {{ include "statesman-ui.name" . }}
               subPath: customize.sh
           livenessProbe:
             httpGet:
@@ -68,7 +68,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "statesman-api.name" . }}
+      - name: {{ include "statesman-ui.name" . }}
         configMap:
-          name: {{ include "statesman-api.fullname" . }}
+          name: {{ include "statesman-ui.fullname" . }}
           defaultMode: 0755
