@@ -10,34 +10,25 @@ data:
 {{ .Values.settings | indent 4 }}
 
   customize.sh: |
-    #!/bin/sh
-    index=/var/www/index.html
-
-{{- if .Values.openGraph }}
-    meta={{ .Values.openGraph }}
-    sed -i "s,</head>,${meta}," $index
-
-    cat <<EOF > /tmp/og
-{{ .Values.openGraph | indent 4 }}
-    EOF
-{{- end}}
-
-{{- if .Values.faviconsUrl }}
-    curl -o /tmp/favicons.tgz {{ .Values.faviconsUrl }}
-    tar xzf /tmp/favicons.tgz -C /var/www
-    meta=$(cat /var/www/favicon.html)
-    if [ -n "$meta" ]; then
-      sed -i "s,</head>,${meta}," $index
-    fi
-{{- end}}
-
-{{- if .Values.basehref }}
     src=/var/www
-    basehref=`echo $APP_BASEHREF | sed -e s,^/,, -e s,/$,,`
+{{- if .Values.basehref }}
+    basehref=`echo -n {{ .Values.basehref | quote }} | sed -e s,^/,, -e s,/$,,`
     if [ -n "$basehref" ]; then
       sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
       dst=$src/$basehref
       mkdir -p `dirname $dst`
       ln -s $src $dst
     fi
+{{- end }}
+
+{{- if .Values.openGraph }}
+    meta=$(echo -n {{ .Values.openGraph | quote }} | sed -e 's/[/\&]/\\&/g')
+    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $src/index.html
+{{- end}}
+
+{{- if .Values.faviconsUrl }}
+    curl -o /tmp/favicons.tgz {{ .Values.faviconsUrl | quote }}
+    tar xzf /tmp/favicons.tgz -C /var/www
+    meta=$(cat /var/www/favicon.html | sed -e 's/[/\&]/\\&/g')
+    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $src/index.html
 {{- end}}

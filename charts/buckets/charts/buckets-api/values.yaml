@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: cmusei.azurecr.us/buckets-api
+  repository: cmusei/buckets-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  # tag: "1.4.2"
+  # tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/api"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

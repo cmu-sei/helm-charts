@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: cmusei.azurecr.us/foundry/portal-api
+  repository: cmusei/portal-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.7.5"
+  # tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/api"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -60,10 +60,10 @@ resources: {}
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
   #   cpu: 200m
-  #   memory: 256Mi
+  #   memory: 512Mi
   # requests:
   #   cpu: 100m
-  #   memory: 128Mi
+  #   memory: 256Mi
 
 autoscaling:
   enabled: false
