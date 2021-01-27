@@ -52,6 +52,9 @@ caster-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # This deployment comes built in with a script to install Terraform and the necessary
     # plugins to run Caster properly.  Internet access is required for this script to run properly.
     # It's recommended that this should remain false.  Please see the file "terraform-installation.tpl"

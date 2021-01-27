@@ -111,6 +111,9 @@ env:
   # NO_PROXY:
   # no_proxy:
 
+  ## If hosting in virtual directory, specify path base
+  PathBase: ""
+
   SKIP_TERRAFORM_INSTALLATION: false
 
   VSPHERE_SERVER:

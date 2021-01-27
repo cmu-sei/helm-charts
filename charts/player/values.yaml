@@ -39,6 +39,9 @@ player-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # CORS policy settings.
     # The first entry should be the URL to player
     # The second entry should be the URL to VM App
@@ -173,12 +176,15 @@ vm-api:
   # see https://github.com/cmu-sei/crucible/blob/master/vm.api/S3.VM.Api/appsettings.json
   env:
     # Proxy Settings
-    http_proxy: proxy.example.com:9000
-    https_proxy: proxy.example.com:9000
-    HTTP_PROXY: proxy.example.com:9000
-    HTTPS_PROXY: proxy.example.com:9000
-    NO_PROXY: .local
-    no_proxy: .local
+    # http_proxy: proxy.example.com:9000
+    # https_proxy: proxy.example.com:9000
+    # HTTP_PROXY: proxy.example.com:9000
+    # HTTPS_PROXY: proxy.example.com:9000
+    # NO_PROXY: .local
+    # no_proxy: .local
+
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
 
     # Connection String to database
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"

@@ -39,6 +39,9 @@ steamfitter-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # Connection String to database
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
 

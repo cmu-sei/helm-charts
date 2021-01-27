@@ -33,6 +33,9 @@ fite-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # CORS policy settings.
     # The first entry should be the URL to FITE
     CorsPolicy__Origins__0: https://fite.example.com
