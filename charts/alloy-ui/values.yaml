@@ -79,7 +79,8 @@ tolerations: []
 affinity: {}
 
 # env is pod env vars
-env: {}
+env: 
+  APP_BASEHREF: ""
 
 ## settings is stringified json that gets included as appsettings.Production.json
 # settings: '{

@@ -2,13 +2,13 @@ apiVersion: v2
 name: alloy
 description: A Helm chart for Kubernetes
 type: application
-version: 0.1.0
+version: 1.0.0
 appVersion: 1.0.0
 
 dependencies:
 - name: alloy-api
-  version: "0.1.0"
+  version: "1.0.0"
   repository: https://helm.cyberforce.site/charts
 - name: alloy-ui
-  version: "0.1.0"
+  version: "1.0.0"
   repository: https://helm.cyberforce.site/charts

@@ -85,6 +85,9 @@ alloy-ui:
         hosts:
           - example.com
 
+  env: 
+    APP_BASEHREF: ""
+
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and
   # some basic configuration

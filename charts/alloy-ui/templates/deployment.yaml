@@ -32,7 +32,10 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}          
+          envFrom:
+            - secretRef:
+                name: {{ include "alloy-ui.fullname" . }}
           ports:
             - name: http
               containerPort: 80
