@@ -37,6 +37,9 @@ alloy-api:
     # HTTPS_PROXY: proxy.example.com:9000
     # NO_PROXY: .local
     # no_proxy: .local
+    
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
 
     # CORS policy settings.
     # The first entry should be the URL to Alloy
@@ -86,6 +89,7 @@ alloy-ui:
           - example.com
 
   env: 
+    ## basehref is path to the app
     APP_BASEHREF: ""
 
   # Config app settings with a JSON file.

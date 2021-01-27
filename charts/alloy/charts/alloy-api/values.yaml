@@ -93,6 +93,9 @@ env:
   # HTTPS_PROXY:
   # NO_PROXY:
   # no_proxy:
+  
+  ## If hosting in virtual directory, specify path base
+  PathBase: ""
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information

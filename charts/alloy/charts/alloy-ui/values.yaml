@@ -80,6 +80,7 @@ affinity: {}
 
 # env is pod env vars
 env: 
+  ## basehref is path to the app
   APP_BASEHREF: ""
 
 ## settings is stringified json that gets included as appsettings.Production.json
