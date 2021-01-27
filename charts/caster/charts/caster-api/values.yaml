@@ -142,6 +142,7 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
+  # database requires the 'uuid-ossp' extension installed
   ConnectionStrings__PostgreSQL: ''
   Database__AutoMigrate: true
   Database__DevModeRecreate: false

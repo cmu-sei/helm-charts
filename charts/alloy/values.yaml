@@ -47,7 +47,7 @@ alloy-api:
     CorsPolicy__Origins__1: http://site2.com
 
     # Connection String to database
-    # database needs the 'uuid-ossp' extension installed
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: 'Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;'
 
     # OAuth2 Identity Client for Application

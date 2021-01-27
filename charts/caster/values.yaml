@@ -77,6 +77,7 @@ caster-api:
     CorsPolicy__Origins__0: "https://caster.example.com"
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
 
     # OAuth2 Identity Client for Application

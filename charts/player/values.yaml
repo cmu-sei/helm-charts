@@ -51,6 +51,7 @@ player-api:
     CorsPolicy__Origins__2: "https://osticket.example.com"
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
@@ -187,6 +188,7 @@ vm-api:
     PathBase: ""
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"
 
     # CORS policy settings.

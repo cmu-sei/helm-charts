@@ -43,6 +43,7 @@ steamfitter-api:
     PathBase: ""
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
 
     # CORS policy settings.
