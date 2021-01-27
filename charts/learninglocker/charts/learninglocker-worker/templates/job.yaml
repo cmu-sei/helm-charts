@@ -1,0 +1,31 @@
+{{- if .Values.siteadmin.password -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "learninglocker-worker.fullname" . }}-init
+  labels:
+    app: {{ include "learninglocker-worker.name" . }}
+    component: worker
+    chart: {{ include "learninglocker-worker.fullname" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ttlSecondsAfterFinished: 90
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: {{ .Chart.Name }}-init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - node
+            - cli/dist/server
+            - createSiteAdmin
+            - {{ .Values.siteadmin.email }}
+            - {{ .Values.siteadmin.organization }}
+            - {{ .Values.siteadmin.password }}
+          envFrom:
+            - secretRef:
+                name: {{ include "learninglocker-worker.fullname" . }}
+{{ end }}
