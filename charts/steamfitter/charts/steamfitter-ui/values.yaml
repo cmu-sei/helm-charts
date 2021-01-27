@@ -78,6 +78,10 @@ tolerations: []
 
 affinity: {}
 
+env: 
+  ## basehref is path to the app
+  APP_BASEHREF: ""
+
 # settings: '{
 #     "ApiUrl": "http://host.docker.internal:4400",
 #     "VmApiUrl": "http://host.docker.internal:4302/api",

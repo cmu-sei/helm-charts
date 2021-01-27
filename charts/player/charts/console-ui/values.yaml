@@ -78,6 +78,10 @@ tolerations: []
 
 affinity: {}
 
+env: 
+  ## basehref is path to the app
+  APP_BASEHREF: ""
+
 # settings: '{
 #   "ConsoleApiUrl": "http://localhost:4302/api/",
 #   "OIDCSettings": {

@@ -145,6 +145,10 @@ caster-ui:
         hosts:
          - example.com
 
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
+
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client
   settings: '{

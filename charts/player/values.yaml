@@ -86,6 +86,10 @@ player-ui:
         hosts:
          - example.com
 
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
+
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and
   # some basic configuration
@@ -256,6 +260,10 @@ vm-ui:
         hosts:
          - example.com
 
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
+
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client
   settings: '{
@@ -297,6 +305,10 @@ console-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and some basic settings
