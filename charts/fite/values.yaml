@@ -33,11 +33,15 @@ fite-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # CORS policy settings.
     # The first entry should be the URL to FITE
     CorsPolicy__Origins__0: https://fite.example.com
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: 'Server=postgres;Port=5432;Database=fite_api;Username=fite_dbu;Password=;'
 
     # OAuth2 Identity Client for Application
@@ -70,6 +74,10 @@ fite-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and

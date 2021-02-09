@@ -37,6 +37,9 @@ alloy-api:
     # HTTPS_PROXY: proxy.example.com:9000
     # NO_PROXY: .local
     # no_proxy: .local
+    
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
 
     # CORS policy settings.
     # The first entry should be the URL to Alloy
@@ -44,6 +47,7 @@ alloy-api:
     CorsPolicy__Origins__1: http://site2.com
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: 'Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;'
 
     # OAuth2 Identity Client for Application
@@ -84,6 +88,10 @@ alloy-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and

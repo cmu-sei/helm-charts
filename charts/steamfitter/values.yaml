@@ -39,7 +39,11 @@ steamfitter-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter_dbu;Password=;"
 
     # CORS policy settings.
@@ -105,6 +109,10 @@ steamfitter-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client

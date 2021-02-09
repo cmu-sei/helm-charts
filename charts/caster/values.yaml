@@ -52,6 +52,9 @@ caster-api:
     # NO_PROXY: .local
     # no_proxy: .local
 
+    ## If hosting in virtual directory, specify path base
+    PathBase: ""
+
     # This deployment comes built in with a script to install Terraform and the necessary
     # plugins to run Caster properly.  Internet access is required for this script to run properly.
     # It's recommended that this should remain false.  Please see the file "terraform-installation.tpl"
@@ -74,6 +77,7 @@ caster-api:
     CorsPolicy__Origins__0: "https://caster.example.com"
 
     # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
@@ -140,6 +144,10 @@ caster-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  env: 
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client
