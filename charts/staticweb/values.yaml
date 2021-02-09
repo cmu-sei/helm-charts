@@ -70,11 +70,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 20m
+  #   memory: 20Mi
   # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 10m
+  #   memory: 10Mi
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
 storage:
