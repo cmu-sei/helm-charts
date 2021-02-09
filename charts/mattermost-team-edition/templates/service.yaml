@@ -5,7 +5,7 @@ metadata:
   annotations:
 {{ toYaml .Values.service.annotations | indent 4 }}
 {{- end }}
-  name: {{ include "mattermost-team-edition.name" . }}
+  name: {{ include "mattermost-team-edition.fullname" . }}
   labels:
     app.kubernetes.io/name: {{ include "mattermost-team-edition.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

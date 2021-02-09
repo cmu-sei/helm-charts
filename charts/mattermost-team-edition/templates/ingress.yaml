@@ -1,6 +1,6 @@
 {{ $ingress := .Values.ingress }}
 {{ if $ingress.enabled }}
-{{ $serviceName := include "mattermost-team-edition.name" . }}
+{{ $serviceName := include "mattermost-team-edition.fullname" . }}
 {{ $servicePort := .Values.service.externalPort }}
 apiVersion: {{ include "mattermost-team-edition.ingress.apiVersion" . }}
 kind: Ingress
