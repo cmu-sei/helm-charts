@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: cmusei.azurecr.us/gameboard-ui
-  tag: "2.0.3"
+  repository: gameboard-ui
+  #tag: "2.1.0"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -46,7 +46,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -58,11 +58,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 20m
+  #   memory: 20Mi
   # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 10m
+  #   memory: 10Mi
 
 autoscaling:
   enabled: false
@@ -78,11 +78,12 @@ tolerations: []
 affinity: {}
 
 ## basehref is the path to the app; if serving the app as a virtual folder,
-## add the path here.  Ensure a final `/`!
+## add the path here.
 # basehref: /gb/event1/
 basehref: ""
 
-## openGraph is string of html head metadata (single line!)
+## openGraph is string of html head metadata (single line!). 
+## If expanding, use `>-` to ensure no crlf. 
 openGraph: ""
 
 ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
