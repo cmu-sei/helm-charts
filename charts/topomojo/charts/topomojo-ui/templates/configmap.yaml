@@ -10,8 +10,8 @@ data:
 {{ .Values.settings | indent 4 }}
 
   customize.sh: |
-{{- if .Values.basehref }}
     src=/var/www
+{{- if .Values.basehref }}
     basehref=`echo -n {{ .Values.basehref | quote }} | sed -e s,^/,, -e s,/$,,`
     if [ -n "$basehref" ]; then
       sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
