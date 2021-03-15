@@ -89,6 +89,14 @@ affinity: {}
 
 command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Api.dll']
 
+
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
 # env is pod env vars
 env:
   # http_proxy: ""
@@ -148,3 +156,14 @@ env:
   Notifications__UserIconUrl: '/assets/img/SP_Icon_User.png'
   Notifications__SystemIconUrl: '/assets/img/SP_Icon_Alert.png'
   Notifications__HelpDeskApplicationName: 'Help Desk'
+
+  FileUpload__basePath: '/fileupload'
+  FileUpload__maxSize: '64000000'
+  FileUpload__allowedExtensions__0: '.pdf'
+  FileUpload__allowedExtensions__1: '.png'
+  FileUpload__allowedExtensions__2: '.jpg'
+  FileUpload__allowedExtensions__3: '.jpeg'
+  FileUpload__allowedExtensions__4: '.doc'
+  FileUpload__allowedExtensions__5: '.docx'
+  FileUpload__allowedExtensions__6: '.gif'
+  FileUpload__allowedExtensions__7: '.txt'

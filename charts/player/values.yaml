@@ -27,6 +27,16 @@ player-api:
   # the configMap name here
   certificateMap: ""
 
+  
+
+  # storage - either an existing pvc, the size for a new pvc, or emptyDir
+  # this is used to store uploaded files
+  storage:
+    existing: ""
+    size: ""
+    mode: ReadWriteOnce
+    class: default
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/player.api/S3.Player.Api/appsettings.json
@@ -271,6 +281,7 @@ vm-ui:
       "DeployApiUrl": "",
       "ApiPlayerUrl": "https://player.example.com/api",
       "WelderUrl": "",
+      "UserFollowUrl": "https://console.example.com/user/{userId}/view/{viewId}/console",
       "OIDCSettings": {
           "authority": "https://identity.example.com",
           "client_id": "vm-ui-dev",
