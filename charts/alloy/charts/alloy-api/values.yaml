@@ -136,6 +136,7 @@ env:
   ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
   ClientSettings__BackgroundTimerIntervalSeconds: 60
+  ClientSettings__BackgroundTimerHealthSeconds: 180
   ClientSettings__CasterCheckIntervalSeconds: 30
   ClientSettings__CasterPlanningMaxWaitMinutes: 15
   ClientSettings__CasterDeployMaxWaitMinutes: 120

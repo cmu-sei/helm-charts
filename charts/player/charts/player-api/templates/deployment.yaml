@@ -41,26 +41,41 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{ if .Values.certificateMap }}
           volumeMounts:
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
+            - mountPath: /fileupload
+              name: {{ include "player-api.fullname" . }}-vol
+              subPath: {{ include "player-api.fullname" . }}/fileuploads
           {{- end }}
       {{ if .Values.certificateMap }}
       volumes:
         - name: certificates
           configMap:
             name: {{ .Values.certificateMap }}
+        {{- if .Values.storage.existing }}
+        - name: {{ include "player-api.fullname" . }}-vol
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.existing }}
+        {{- else if .Values.storage.size }}
+        - name: {{ include "player-api.fullname" . }}-vol
+          persistentVolumeClaim:
+            claimName: {{ include "player-api.name" . }}
+        {{- else }}
+        - name: {{ include "player-api.fullname" . }}-vol
+          emptyDir: {}
+        {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

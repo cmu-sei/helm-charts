@@ -163,6 +163,7 @@ env:
   Vsphere__LogConsoleAccess: false
   Vsphere__CheckTaskProgressIntervalMilliseconds: 5000
   Vsphere__ReCheckTaskProgressIntervalMilliseconds: 1000
+  Vsphere__HealthAllowanceSeconds: 180
 
   RewriteHost__RewriteHost: false
   RewriteHost__RewriteHostUrl: ''

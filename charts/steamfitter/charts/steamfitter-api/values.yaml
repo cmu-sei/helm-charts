@@ -150,6 +150,7 @@ env:
   VmTaskProcessing__ApiBaseUrl:
   VmTaskProcessing__VmListUpdateIntervalMinutes: 5
   VmTaskProcessing__HealthCheckSeconds: 30
+  VmTaskProcessing__HealthCheckTimeoutSeconds: 90
   VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
   VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
   VmTaskProcessing__ExpirationCheckSeconds: 30
