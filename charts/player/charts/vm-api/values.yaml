@@ -140,6 +140,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'vm-api player-api'
   Authorization__ClientId: vm-api-dev
   Authorization__ClientName: 'VM API'
