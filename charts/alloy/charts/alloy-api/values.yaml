@@ -121,6 +121,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'alloy-api player-api caster-api steamfitter-api vm-api'
   Authorization__ClientId: alloy-api-dev
   Authorization__ClientName: 'Alloy API'

@@ -67,6 +67,7 @@ player-api:
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
     Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
+    Authorization__TokenUrl: https://identity.example.com/connect/token
     Authorization__AuthorizationScope: "player-api"
     Authorization__ClientId: player-api-dev
     Authorization__ClientName: "Player API"
@@ -110,7 +111,7 @@ player-ui:
       "client_id": "player-ui-dev",
       "redirect_uri": "https://player.example.com/auth-callback/",
       "post_logout_redirect_uri": "https://player.example.com",
-      "response_type": "id_token token",
+      "response_type": "code",
       "scope": "openid profile player-api",
       "automaticSilentRenew": true,
       "silent_redirect_uri": "https://player.example.com/auth-callback-silent/"
@@ -214,6 +215,7 @@ vm-api:
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
     Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
+    Authorization__TokenUrl: https://identity.example.com/connect/token
     Authorization__AuthorizationScope: "vm-api player-api"
     Authorization__ClientId: vm-api-dev
     Authorization__ClientName: "VM API"
@@ -287,7 +289,7 @@ vm-ui:
           "client_id": "vm-ui-dev",
           "redirect_uri": "https://vm.example.com/auth-callback/",
           "post_logout_redirect_uri": "https://vm.example.com",
-          "response_type": "id_token token",
+          "response_type": "code",
           "scope": "openid profile player-api vm-api",
           "automaticSilentRenew": true,
           "silent_redirect_uri": "https://vm.example.com/auth-callback-silent/"
@@ -330,7 +332,7 @@ console-ui:
       "client_id": "vm-console-ui-dev",
       "redirect_uri": "https://console.example.com/auth-callback/",
       "post_logout_redirect_uri": "https://console.example.com",
-      "response_type": "id_token token",
+      "response_type": "code",
       "scope": "openid profile player-api vm-api vm-console-api",
       "automaticSilentRenew": true,
       "silent_redirect_uri": "https://console.example.com/auth-callback-silent/"

@@ -150,6 +150,7 @@ env:
 
   Authorization__Authority:
   Authorization__AuthorizationUrl:
+  Authorization__TokenUrl: 
   Authorization__AuthorizationScope: 'caster-api'
   Authorization__ClientId: caster-api-dev
   Authorization__ClientName: 'Caster API'

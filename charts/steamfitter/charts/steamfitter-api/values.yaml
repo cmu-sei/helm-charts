@@ -124,6 +124,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'player-api steamfitter-api vm-api'
   Authorization__ClientId: steamfitter-api-dev
   Authorization__ClientName: 'Steamfitter API'

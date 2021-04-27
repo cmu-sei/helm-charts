@@ -133,6 +133,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'player-api'
   Authorization__ClientId: player-api-dev
   Authorization__ClientName: 'Player API'
