@@ -1,14 +1,11 @@
+{{- if .Values.cacert }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "gameboard-api.fullname" . }}
+  name: {{ include "topomojo-api.fullname" . }}
   labels:
-    {{- include "gameboard-api.labels" . | nindent 4 }}
-
+    {{- include "topomojo-api.labels" . | nindent 4 }}
 data:
-  appsettings.json: |
-{{ .Values.settings | indent 4 }}
-{{- if .Values.cacert }}
   ca-cert.crt: |
 {{ .Values.cacert | indent 4 }}
   start.sh: |
@@ -17,5 +14,5 @@ data:
     cp /start/ca-cert.crt /usr/local/share/ca-certificates
     update-ca-certificates
     cd /app
-    dotnet Gameboard.Api.dll
+    dotnet TopoMojo.Web.dll
 {{- end }}

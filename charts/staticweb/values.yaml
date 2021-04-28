@@ -98,3 +98,11 @@ affinity: {}
 
 files: {}
 binaryFiles: {}
+
+# cacert - add custom CA certificate
+# cacert: |-
+#   -----BEGIN CERTIFICATE-----
+#   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
+#   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
+#   …
+#   -----END CERTIFICATE-----

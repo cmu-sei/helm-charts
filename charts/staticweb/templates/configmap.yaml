@@ -14,6 +14,15 @@ data:
     echo {{ . | quote }} >> /etc/nginx/mime.types
     {{- end }}
     echo "}" >> /etc/nginx/mime.types
+  
+  {{- if .Values.cacert }}
+  update-trust.sh: |-
+    #!/bin/sh
+    cat << EOF > /usr/local/share/ca-certificates/cacert.crt
+    {{ .Values.cacert | indent 4 | trim }}
+    EOF
+    update-ca-certificates
+  {{- end }}
 
   nginx-default.conf: |
     server {
@@ -72,7 +81,12 @@ data:
       repo=$(echo $giturl | awk -F/ '{print $NF}' | sed  s,.git,,)
 
       ## get tools
-      apk update && apk add git
+      apk update && apk add git || exit 1
+
+      {{- if .Values.cacert }}
+      # update CA trust
+      /entry.d/update-trust.sh
+      {{- end }}
 
       ## get source
       cd /html

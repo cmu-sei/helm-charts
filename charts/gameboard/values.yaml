@@ -23,6 +23,14 @@ gameboard-api:
     #   cpu: 100m
     #   memory: 256Mi
 
+  # cacert - add custom CA certificate
+  # cacert: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
+  #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
+  #   …
+  #   -----END CERTIFICATE-----
+
   ## application settings can be entered as env vars or json, or both
   ## settings is stringified json that gets included as assets/settings.json
   env: {}

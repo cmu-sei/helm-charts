@@ -86,6 +86,14 @@ topomojo-api:
 
   affinity: {}
 
+  # cacert - add custom CA certificate
+  # cacert: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
+  #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
+  #   …
+  #   -----END CERTIFICATE-----
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Web/appsettings.conf
