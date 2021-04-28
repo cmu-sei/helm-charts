@@ -34,6 +34,10 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.cacert }}
+          command: ["/bin/sh"]
+          args: ["/start/start.sh"]
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "gameboard-api.fullname" . }}
@@ -42,6 +46,14 @@ spec:
               containerPort: 80
               protocol: TCP
           volumeMounts:
+          {{- if .Values.cacert }}
+            - mountPath: /start/start.sh
+              name: {{ include "gameboard-api.name" . }}-conf
+              subPath: start.sh  
+            - mountPath: /start/ca-cert.crt
+              name: {{ include "gameboard-api.name" . }}-conf
+              subPath: ca-cert.crt
+          {{- end }}
             - mountPath: /app/appsettings.Production.json
               name: {{ include "gameboard-api.name" . }}-conf
               subPath: appsettings.json

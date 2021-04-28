@@ -33,3 +33,18 @@ files:
       </body>
     </html>
 ```
+
+To trust a private certificate authority, add the certificate to `cacert:`
+
+Example:
+```yaml
+  cacert: |-
+    -----BEGIN CERTIFICATE-----
+    MIIGZDCCBMygAwIBAgIJAJVKt2jh/CCaMA0GCSqGSIb3DQEBDQUAMIHKMQswCQYD
+    VQQGEwJVUzEVMBMGA1UECBMMUGVubnN5bHZhbmlhMRMwEQYDVQQHEwpQaXR0c2J1
+    …
+    eCdf0fDwd3GQOjQl46HVhLaj8WkKOKAsRw3qXz4vxcje9T6Vr0eVmRoW3W7zCRFO
+    C13gD46YCVk=
+    -----END CERTIFICATE-----
+
+```
