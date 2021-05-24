@@ -1,18 +1,18 @@
-# Default values for fite-api.
+# Default values for gallery-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: cmusei/fite-api
+  repository: cmusei/gallery-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ''
+  tag: ""
 
 imagePullSecrets: []
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,16 +21,14 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
 podAnnotations: {}
 
-podSecurityContext:
-  {}
+podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  {}
+securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -44,8 +42,7 @@ service:
 
 ingress:
   enabled: false
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -56,8 +53,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -76,41 +72,44 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Fite.Api.dll']
-
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
 
-env:
-  # http_proxy:
-  # https_proxy:
-  # HTTP_PROXY:
-  # HTTPS_PROXY:
-  # NO_PROXY:
-  # no_proxy:
+# If this deployment needs to trust non-public certificates,
+# create a configMap with the needed certifcates and specify
+# the configMap name here
+certificateMap: ''
 
-  ## If hosting in virtual directory, specify path base
-  PathBase: ""
+command: ['bash', '-c', 'update-ca-certificates && dotnet Api.dll']
+
+# env is pod env vars
+env:
+  # http_proxy: ""
+  # https_proxy: ""
+  # HTTP_PROXY: ""
+  # HTTPS_PROXY: ""
+  # NO_PROXY: ""
+  # no_proxy: ""
 
   Logging__IncludeScopes: false
-  Logging__Debug__LogLevel__Default: Information
-  Logging__Debug__LogLevel__Microsoft: Error
-  Logging__Debug__LogLevel__System: Error
-  Logging__Console__LogLevel__Default: Information
-  Logging__Console__LogLevel__Microsoft: Error
-  Logging__Console__LogLevel__System: Error
+  Logging__Debug__LogLevel__Default: Warning
+  Logging__Debug__LogLevel__Microsoft: Warning
+  Logging__Debug__LogLevel__System: Warning
+  Logging__Console__LogLevel__Default: Warning
+  Logging__Console__LogLevel__Microsoft: Warning
+  Logging__Console__LogLevel__System: Warning
 
   # database requires the 'uuid-ossp' extension installed
   ConnectionStrings__PostgreSQL: ''
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
-  Database__SeedFile: ""
+  Database__SeedFile: seed-data.json
 
-  CorsPolicy__Origins__0: http://localhost:4401
+  CorsPolicy__Origins__0: ''
   CorsPolicy__Methods__0: ''
   CorsPolicy__Headers__0: ''
   CorsPolicy__AllowAnyOrigin: false
@@ -121,14 +120,11 @@ env:
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
   Authorization__TokenUrl: ''
-  Authorization__AuthorizationScope: 'fite-api'
-  Authorization__ClientId: fite-api
-  Authorization__ClientName: 'FITE API'
+  Authorization__AuthorizationScope: 'gallery'
+  Authorization__ClientId: gallery.swagger
+  Authorization__ClientName: 'Gallery API Swagger'
   Authorization__ClientSecret: ''
   Authorization__RequireHttpsMetaData: false
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
-
-conf:
-  seed: ""
