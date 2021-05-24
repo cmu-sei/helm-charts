@@ -120,6 +120,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'fite-api'
   Authorization__ClientId: fite-api
   Authorization__ClientName: 'FITE API'
