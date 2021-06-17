@@ -121,6 +121,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'alloy-api player-api caster-api steamfitter-api vm-api'
   Authorization__ClientId: alloy-api-dev
   Authorization__ClientName: 'Alloy API'
@@ -136,6 +137,7 @@ env:
   ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
   ClientSettings__BackgroundTimerIntervalSeconds: 60
+  ClientSettings__BackgroundTimerHealthSeconds: 180
   ClientSettings__CasterCheckIntervalSeconds: 30
   ClientSettings__CasterPlanningMaxWaitMinutes: 15
   ClientSettings__CasterDeployMaxWaitMinutes: 120

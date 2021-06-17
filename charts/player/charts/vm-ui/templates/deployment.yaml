@@ -38,7 +38,7 @@ spec:
                 name: {{ include "vm-ui.fullname" . }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           # livenessProbe:
           #   httpGet:

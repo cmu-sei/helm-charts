@@ -124,6 +124,7 @@ env:
 
   Authorization__Authority: ''
   Authorization__AuthorizationUrl: ''
+  Authorization__TokenUrl: ''
   Authorization__AuthorizationScope: 'player-api steamfitter-api vm-api'
   Authorization__ClientId: steamfitter-api-dev
   Authorization__ClientName: 'Steamfitter API'
@@ -150,6 +151,7 @@ env:
   VmTaskProcessing__ApiBaseUrl:
   VmTaskProcessing__VmListUpdateIntervalMinutes: 5
   VmTaskProcessing__HealthCheckSeconds: 30
+  VmTaskProcessing__HealthCheckTimeoutSeconds: 90
   VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
   VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
   VmTaskProcessing__ExpirationCheckSeconds: 30

@@ -33,6 +33,10 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.cacert }}
+          command: ["/bin/sh"]
+          args: ["/start/start.sh"]
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "topomojo-api.fullname" . }}
@@ -53,8 +57,14 @@ spec:
           #     path: /api/version
           #     port: http
           volumeMounts:
-            # - mountPath: /app/conf
-            #   name: {{ include "topomojo-api.name" . }}-conf
+          {{- if .Values.cacert }}
+            - mountPath: /start/start.sh
+              name: {{ include "topomojo-api.name" . }}-conf
+              subPath: start.sh  
+            - mountPath: /start/ca-cert.crt
+              name: {{ include "topomojo-api.name" . }}-conf
+              subPath: ca-cert.crt
+          {{- end }}
             - mountPath: /app/wwwroot/docs
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}/_docs
@@ -76,9 +86,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      # - name: {{ include "topomojo-api.name" . }}-conf
-      #   configMap:
-      #     name: {{ include "topomojo-api.fullname" . }}
+      {{- if .Values.cacert }}
+      - name: {{ include "topomojo-api.name" . }}-conf
+        configMap:
+          name: {{ include "topomojo-api.fullname" . }}
+      {{- end }}
       {{- if .Values.storage.existing }}
       - name: {{ include "topomojo-api.name" . }}-vol
         persistentVolumeClaim:
