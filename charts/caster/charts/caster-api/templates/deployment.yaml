@@ -51,9 +51,14 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /etc/gitconfig
-              subPath: gitconfig
-              name: {{ include "caster-api.fullname" . }}-gitconfig
+            - mountPath: /root/.git-credentials
+              subPath: .git-credentials
+              name: {{ include "caster-api.fullname" . }}-gitcredentials
+            {{ if .Values.terraformrc.enabled }}
+            - mountPath: /root/.terraformrc
+              subPath: .terraformrc
+              name: {{ include "caster-api.fullname" . }}-terraformrc
+            {{- end }}
             - mountPath: /terraform
               name: {{ include "caster-api.name" . }}-vol
               subPath: {{ include "caster-api.fullname" . }}/terraform
@@ -63,6 +68,11 @@ spec:
             {{ if .Values.certificateMap }}
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
+            {{- end }}
+            {{ if .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}
+            - mountPath: /etc/azurerm/certs
+              name: {{ include "caster-api.fullname" . }}-azurecert
+              readOnly: true
             {{- end }}
       volumes:
         {{ if .Values.certificateMap }}
@@ -86,9 +96,19 @@ spec:
           configMap:
             name: {{ include "caster-api.fullname" . }}-terraform-installation
             defaultMode: 0755
-        - name: {{ include "caster-api.fullname" . }}-gitconfig
+        - name: {{ include "caster-api.fullname" . }}-gitcredentials
           configMap:
-            name: {{ include "caster-api.fullname" . }}-gitconfig
+            name: {{ include "caster-api.fullname" . }}-gitcredentials
+        {{ if .Values.terraformrc.enabled }}
+        - name: {{ include "caster-api.fullname" . }}-terraformrc
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-terraformrc
+        {{- end }}
+        {{ if .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}
+        - name: {{ include "caster-api.fullname" . }}-azurecert
+          secret:
+            secretName: {{ .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}        
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

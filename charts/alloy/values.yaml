@@ -15,7 +15,7 @@ alloy-api:
     hosts:
       - host: alloy.example.com
         paths:
-          - /(api|swagger)
+          - /(api|swagger/hubs)
     tls:
       - secretName: ''
         hosts:

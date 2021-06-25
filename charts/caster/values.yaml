@@ -23,6 +23,23 @@ caster-api:
         hosts:
          - example.com
 
+  # Use a .terraformrc file to overwrite standard Terraform configuration
+  # https://www.terraform.io/docs/cli/config/config-file.html
+  # NOTE:  If enabled,  Terraform__PluginDirectory environment variable must be set to empty explicitly
+  terraformrc:
+      enabled: false
+      value: |
+        plugin_cache_dir = "/terraform/plugin-cache"
+        provider_installation {
+            filesystem_mirror {
+                path = "/terraform/plugins/linux_amd64"
+                include = []
+            }
+            direct {
+                include = []
+            }
+        }
+
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
     existing: ""
@@ -35,10 +52,9 @@ caster-api:
   # the configMap name here
   certificateMap: ""
 
-  # Gets placed in /etc/gitconfig to allow immediate Gitlab access via access token
+  # Gets placed in /root/.git-credentials to allow immediate Gitlab access via access token
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
-  gitconfig: '[url "https://git-access-token:TOKEN@gitlab.example.com/"]
-        insteadOf = https://gitlab.example.com/'
+  gitcredentials: 'https://git-access-token:TOKEN@gitlab.example.com'
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
@@ -67,6 +83,61 @@ caster-api:
     VSPHERE_USER: caster-account@vsphere.local
     VSPHERE_PASSWORD: 
     VSPHERE_ALLOW_UNVERIFIED_SSL: true
+
+    # === Terraform Crucible Provider Section ===
+    # These variables only need filled in if you are using the following provider:
+    # https://registry.terraform.io/providers/cmu-sei/crucible/latest
+
+    # An Identity Service account with Caster Admin privileges
+    SEI_CRUCIBLE_USERNAME: ''
+    SEI_CRUCIBLE_PASSWORD: ''
+
+    # URL to the Identity Server Auth endpoint
+    SEI_CRUCIBLE_AUTH_URL: https://identity.example.com/connect/authorize
+    # URL to the Identity Server Token endpoint
+    SEI_CRUCIBLE_TOK_URL: https://identity.example.com/connect/token
+
+    # Identity Client information
+    SEI_CRUCIBLE_CLIENT_ID: player.provider
+    SEI_CRUCIBLE_CLIENT_SECRET: ''
+
+    # URLs to Player API and VM API
+    SEI_CRUCIBLE_VM_API_URL: https://vm.example.com/api/
+    SEI_CRUCIBLE_PLAYER_API_URL: https://player.example.com/
+
+    # === End Terraform Crucible Provider Section ===
+
+    # === Terraform Identity Provider Section ===
+    # These variables only need filled in if you are using the following provider:
+    # https://registry.terraform.io/providers/cmu-sei/identity/latest
+
+    # URL to the Identity Server Auth endpoint
+    SEI_IDENTITY_TOK_URL: https://identity.example.com/connect/token
+    # URL to the Identity Server API endpoint
+    SEI_IDENTITY_API_URL: https://id.example.com/api/
+    
+    # Identity Client information
+    SEI_IDENTITY_CLIENT_ID: terraform-identity-provider    
+    SEI_IDENTITY_CLIENT_SECRET: ''
+
+    # === End Terraform Identity Provider Section ===
+
+    # === Terraform Azure Provider Section ===
+    # These variables only need filled in if you are using the following provider:
+    # https://registry.terraform.io/providers/hashicorp/azurerm/latest
+
+    # Fill in with secret name of certificate, which will get placed in /etc/azurerm/certs,
+    # with the filename being the name of the file used to create the secret.
+    # This will then get used in ARM_CLIENT_CERTIFICATE_PATH
+    ARM_CLIENT_CERTIFICATE_SECRET: ''
+
+    # Remaining documentation provided by the plugin
+    ARM_CLIENT_CERTIFICATE_PATH: ''
+    ARM_CLIENT_ID: ''
+    ARM_ENVIRONMENT: ''
+    ARM_SKIP_PROVIDER_REGISTRATION: ''
+    ARM_SUBSCRIPTION_ID: ''
+    ARM_TENANT_ID: ''
 
     # See here for more information regarding AllowedHosts
     # https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.hostfiltering.hostfilteringoptions.allowedhosts?view=aspnetcore-3.1
