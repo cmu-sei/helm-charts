@@ -69,11 +69,6 @@ spec:
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
             {{- end }}
-            {{ if .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}
-            - mountPath: /etc/azurerm/certs
-              name: {{ include "caster-api.fullname" . }}-azurecert
-              readOnly: true
-            {{- end }}
       volumes:
         {{ if .Values.certificateMap }}
         - name: certificates
@@ -103,11 +98,6 @@ spec:
         - name: {{ include "caster-api.fullname" . }}-terraformrc
           configMap:
             name: {{ include "caster-api.fullname" . }}-terraformrc
-        {{- end }}
-        {{ if .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}
-        - name: {{ include "caster-api.fullname" . }}-azurecert
-          secret:
-            secretName: {{ .Values.env.ARM_CLIENT_CERTIFICATE_SECRET }}        
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
