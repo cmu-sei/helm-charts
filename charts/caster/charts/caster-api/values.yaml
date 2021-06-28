@@ -101,7 +101,22 @@ storage:
   mode: ReadWriteOnce
   class: default
 
-gitconfig: ''
+gitcredentials: ''
+
+# Use a .terraformrc file to overwrite standard Terraform configuration
+terraformrc:
+    enabled: false
+    value: |
+      plugin_cache_dir = "/terraform/plugin-cache"
+      provider_installation {
+          filesystem_mirror {
+              path = "/terraform/plugins/linux_amd64"
+              include = []
+          }
+          direct {
+              include = []
+          }
+      }
 
 env:
   # http_proxy:
@@ -120,6 +135,25 @@ env:
   VSPHERE_USER:
   VSPHERE_PASSWORD:
   VSPHERE_ALLOW_UNVERIFIED_SSL: true
+
+  SEI_CRUCIBLE_USERNAME: ''
+  SEI_CRUCIBLE_PASSWORD: ''
+  SEI_CRUCIBLE_AUTH_URL: ''
+  SEI_CRUCIBLE_TOK_URL: ''
+  SEI_CRUCIBLE_CLIENT_ID: ''
+  SEI_CRUCIBLE_CLIENT_SECRET: ''
+  SEI_CRUCIBLE_VM_API_URL: ''
+  SEI_CRUCIBLE_PLAYER_API_URL: ''
+  SEI_IDENTITY_TOK_URL: ''
+  SEI_IDENTITY_CLIENT_ID: ''
+  SEI_IDENTITY_CLIENT_SECRET: ''
+  SEI_IDENTITY_API_URL: ''
+  ARM_CLIENT_CERTIFICATE_PATH: ''
+  ARM_CLIENT_ID: ''
+  ARM_ENVIRONMENT: ''
+  ARM_SKIP_PROVIDER_REGISTRATION: ''
+  ARM_SUBSCRIPTION_ID: ''
+  ARM_TENANT_ID: ''
 
   AllowedHosts: '*'
 
