@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gametracker-api.fullname" . }}
+  labels:
+    {{- include "gametracker-api.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "gametracker-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "gametracker-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gametracker-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.cacert }}
+          command: ["/bin/sh"]
+          args: ["/start/start.sh"]
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "gametracker-api.fullname" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   initialDelaySeconds: 120
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
+          # readinessProbe:
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 10
+          #   failureThreshold: 10
+          #   httpGet:
+          #     path: /api/version
+          #     port: http
+          volumeMounts:
+          {{- if .Values.cacert }}
+            - mountPath: /start
+              name: {{ include "gametracker-api.name" . }}-conf
+          {{- end }}
+            - mountPath: /app/wwwroot/docs
+              name: {{ include "gametracker-api.name" . }}-vol
+              subPath: {{ include "gametracker-api.fullname" . }}/_docs
+            - mountPath: /mnt/tm
+              name: {{ include "gametracker-api.name" . }}-vol
+              subPath: {{ include "gametracker-api.fullname" . }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.cacert }}
+      - name: {{ include "gametracker-api.name" . }}-conf
+        configMap:
+          name: {{ include "gametracker-api.fullname" . }}
+      {{- end }}
+      {{- if .Values.storage.existing }}
+      - name: {{ include "gametracker-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "gametracker-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "gametracker-api.fullname" . }}
+      {{- else }}
+      - name: {{ include "gametracker-api.name" . }}-vol
+        emptyDir: {}
+      {{- end }}
