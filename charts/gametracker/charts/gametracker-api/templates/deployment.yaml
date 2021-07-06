@@ -61,9 +61,15 @@ spec:
             - mountPath: /start
               name: {{ include "gametracker-api.name" . }}-conf
           {{- end }}
-            - mountPath: /app/wwwroot/docs
+            - mountPath: /app/.dpk
               name: {{ include "gametracker-api.name" . }}-vol
-              subPath: {{ include "gametracker-api.fullname" . }}/_docs
+              subPath: {{ include "gametracker-api.fullname" . }}/.dpk
+            - mountPath: /app/wwwroot/doc
+              name: {{ include "gametracker-api.name" . }}-vol
+              subPath: {{ include "gametracker-api.fullname" . }}/doc
+            - mountPath: /app/wwwroot/img
+              name: {{ include "gametracker-api.name" . }}-vol
+              subPath: {{ include "gametracker-api.fullname" . }}/img
             - mountPath: /mnt/tm
               name: {{ include "gametracker-api.name" . }}-vol
               subPath: {{ include "gametracker-api.fullname" . }}
