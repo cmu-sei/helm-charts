@@ -17,9 +17,9 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
           - name: DBONLY
-            value: migrateAndExit
+            value: "true"
           - name: APP_DBONLY
-            value: migrateAndExit
+            value: "true"
           - name: Database__ConnectionString
             value: {{ .Values.migrations.Database__ConnectionString | default .Values.env.Database__ConnectionString }}
           {{ range $k, $v := .Values.migrations.env }}
