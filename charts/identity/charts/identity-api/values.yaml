@@ -121,3 +121,8 @@ conf:
   trouble: ""
   seed: ""
   signer: ""
+
+migrations:
+  restartPolicy: Never
+  Database__ConnectionString: ""
+  env: {}

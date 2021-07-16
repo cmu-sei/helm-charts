@@ -28,6 +28,13 @@ spec:
       serviceAccountName: {{ include "identity-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: "{{ .Chart.Name }}-init"
+          image: "groundnuty/k8s-wait-for:1.3"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "job"
+            - "{{ include "identity-api.fullname" . }}-{{ .Release.Revision}}"
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

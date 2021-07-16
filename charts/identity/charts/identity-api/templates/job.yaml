@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "identity-api.fullname" . }}-{{ .Release.Revision }}
+  labels:
+    {{- include "identity-api.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        {{- include "identity-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: DBONLY
+            value: migrateAndExit
+          - name: APP_DBONLY
+            value: migrateAndExit
+          - name: Database__ConnectionString
+            value: {{ .Values.migrations.Database__ConnectionString | default .Values.env.Database__ConnectionString }}
+          {{ range $k, $v := .Values.migrations.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+      restartPolicy: {{ .Values.migrations.restartPolicy }}
