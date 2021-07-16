@@ -20,6 +20,8 @@ spec:
             value: "true"
           - name: APP_DBONLY
             value: "true"
+          - name: Database__Provider
+            value: {{ .Values.migrations.Database__Provider | default .Values.env.Database__Provider }}
           - name: Database__ConnectionString
             value: {{ .Values.migrations.Database__ConnectionString | default .Values.env.Database__ConnectionString }}
           {{ range $k, $v := .Values.migrations.env }}

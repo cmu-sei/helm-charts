@@ -124,5 +124,6 @@ conf:
 
 migrations:
   restartPolicy: Never
+  Database__Provider: ""
   Database__ConnectionString: ""
   env: {}
