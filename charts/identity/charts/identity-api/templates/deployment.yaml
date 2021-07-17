@@ -59,7 +59,9 @@ spec:
             - mountPath: /app/data
               name: {{ include "identity-api.name" . }}-vol
               subPath: {{ include "identity-api.fullname" . }}/data
+          {{- if .Values.health }}
           {{- toYaml .Values.health | nindent 10 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
