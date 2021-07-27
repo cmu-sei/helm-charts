@@ -1,0 +1,34 @@
+{{- if .Values.migrations.enabled -}}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "identity-api.fullname" . }}-{{ .Release.Revision }}
+  labels:
+    {{- include "identity-api.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        {{- include "identity-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: DBONLY
+            value: "true"
+          - name: APP_DBONLY
+            value: "true"
+          - name: Database__Provider
+            value: {{ .Values.migrations.Database__Provider | default .Values.env.Database__Provider }}
+          - name: Database__ConnectionString
+            value: {{ .Values.migrations.Database__ConnectionString | default .Values.env.Database__ConnectionString }}
+          {{ range $k, $v := .Values.migrations.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+          {{- end }}
+      restartPolicy: {{ .Values.migrations.restartPolicy }}
+{{- end }}

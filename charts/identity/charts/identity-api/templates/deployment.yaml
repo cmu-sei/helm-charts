@@ -28,6 +28,15 @@ spec:
       serviceAccountName: {{ include "identity-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- if .Values.migrations.enabled }}
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:v1.4"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - "job"
+        - "{{ include "identity-api.fullname" . }}-{{ .Release.Revision}}"
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -50,16 +59,9 @@ spec:
             - mountPath: /app/data
               name: {{ include "identity-api.name" . }}-vol
               subPath: {{ include "identity-api.fullname" . }}/data
-          # livenessProbe:
-          #   initialDelaySeconds: 30
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
-          # readinessProbe:
-          #   initialDelaySeconds: 30
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
+          {{- if .Values.health }}
+          {{- toYaml .Values.health | nindent 10 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

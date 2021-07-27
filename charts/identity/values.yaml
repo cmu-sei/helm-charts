@@ -14,6 +14,8 @@ identity-api:
 
   serviceAccount:
     # Specifies whether a service account should be created
+    ## If true, also create a Role to support `migrations` (described below)
+    ## and a RoleBinding for the new serviceAccount
     create: false
     # Annotations to add to the service account
     annotations: {}
@@ -45,11 +47,25 @@ identity-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: ["/api"]
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
+
+  health: {}
+    # livenessProbe:
+    #   initialDelaySeconds: 10
+    #   httpGet:
+    #     path: /api/version
+    #     port: http
+    # startupProbe:
+    #   initialDelaySeconds: 30
+    #   httpGet:
+    #     path: /api/version
+    #     port: http
+    #   failureThreshold: 9
+    #   periodSeconds: 10
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -83,6 +99,21 @@ identity-api:
     mode: ReadWriteOnce
     class: default
 
+  ## migrations sets how data migrations run
+  ## If enabled, all replicas will wait until a single migration job runs.
+  ## this is important if running multiple replicas or if you use different
+  ## connection strings (permissions) for building the database versus using it.
+  ## If using a single connection string, no need to specify here. It will use values
+  ## from `env` below.
+  ## NOTE: the serviceAccount must have permission to `get batch.jobs`.
+  ## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
+  migrations:
+    enabled: false
+    restartPolicy: Never
+    Database__Provider: ""
+    Database__ConnectionString: ""
+    env: {}
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/Identity/blob/master/src/IdentityServer/appsettings.conf
@@ -110,6 +141,7 @@ identity-api:
     Headers__Cors__Headers__0: ""
     Headers__Cors__AllowCredentials: false
     Headers__Forwarding__TargetHeaders: All
+
 
   conf:
     issuers: ""
