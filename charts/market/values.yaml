@@ -3,10 +3,10 @@ api:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/market-api
+    repository: cmusei/portal-api
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.7.5"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -45,7 +45,7 @@ api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -91,10 +91,10 @@ ui:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/market-ui
+    repository: cmusei/portal-ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.7.5"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -133,7 +133,7 @@ ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -164,12 +164,11 @@ ui:
 
   affinity: {}
 
-  ## basehref is the path to the app; if serving the app as a virtual folder,
-  ## add the path here.  Ensure a final `/`!
-  # basehref: /gb/event1/
+  ## basehref is the path to the app
+  # basehref: /path/to/app
   basehref: ""
 
-  ## openGraph is string of html head metadata (single line!)
+  ## openGraph is string of html head metadata (single line! i.e. `>-`)
   openGraph: ""
 
   ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
@@ -184,10 +183,10 @@ comms:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/market-comms
+    repository: cmusei/portal-comms
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.4.0"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -226,7 +225,7 @@ comms:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -272,10 +271,10 @@ metrics:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/market-metrics
+    repository: cmusei/portal-metrics
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.2.0"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -314,7 +313,7 @@ metrics:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -360,10 +359,10 @@ orders:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/market-orders
+    repository: cmusei/portal-orders
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.2.1"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -402,7 +401,7 @@ orders:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:

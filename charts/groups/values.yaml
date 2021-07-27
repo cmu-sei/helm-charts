@@ -6,10 +6,10 @@ groups-api:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/api
+    repository: cmusei/groups-api
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    # tag: "1.1.1"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -48,7 +48,7 @@ groups-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/api"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -97,10 +97,10 @@ groups-ui:
   replicaCount: 1
 
   image:
-    repository: cmusei.azurecr.us/ui
+    repository: cmusei/groups-ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    # tag: "1.1.0"
+    # tag: ""
 
   imagePullSecrets: []
   nameOverride: ""
@@ -139,7 +139,7 @@ groups-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: []
+        paths: ["/"]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -170,12 +170,11 @@ groups-ui:
 
   affinity: {}
 
-  ## basehref is the path to the app; if serving the app as a virtual folder,
-  ## add the path here.  Ensure a final `/`!
-  # basehref: /gb/event1/
+  ## basehref is the path to the app
+  # basehref: /path/to/app
   basehref: ""
 
-  ## openGraph is string of html head metadata (single line!)
+  ## openGraph is string of html head metadata (single line! i.e. `>-`)
   openGraph: ""
 
   ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,

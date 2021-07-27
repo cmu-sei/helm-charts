@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: cmusei.azurecr.us/foundry/buckets-ui
+  repository: cmusei/buckets-ui
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  # tag: "1.4.2"
+  # tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/"]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -59,11 +59,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 20m
+  #   memory: 20Mi
   # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 10m
+  #   memory: 10Mi
 
 autoscaling:
   enabled: false
@@ -78,12 +78,11 @@ tolerations: []
 
 affinity: {}
 
-## basehref is the path to the app; if serving the app as a virtual folder,
-## add the path here.  Ensure a final `/`!
-# basehref: /gb/event1/
+## basehref is the path to the app
+# basehref: /path/to/app
 basehref: ""
 
-## openGraph is string of html head metadata (single line!)
+## openGraph is string of html head metadata (single line! i.e. `>-`)
 openGraph: ""
 
 ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
