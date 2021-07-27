@@ -6,7 +6,7 @@ gametracker-api:
   replicaCount: 1
 
   image:
-    repository: cmusei/gametracker-api
+    repository: cmusei/gameboard-api
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
@@ -48,11 +48,25 @@ gametracker-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: ["/api", "/hub"]
+        paths: ["/api", "/hub", "/img", "/doc" ]
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
+
+  health: {}
+    # livenessProbe:
+    #   initialDelaySeconds: 10
+    #   httpGet:
+    #     path: /api/version
+    #     port: http
+    # startupProbe:
+    #   initialDelaySeconds: 30
+    #   httpGet:
+    #     path: /api/version
+    #     port: http
+    #   failureThreshold: 9
+    #   periodSeconds: 10
 
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
@@ -86,25 +100,25 @@ gametracker-api:
 
   affinity: {}
 
-  # cacert - add custom CA certificate
-  # cacert: |-
-  #   -----BEGIN CERTIFICATE-----
-  #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
-  #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
-  #   …
-  #   -----END CERTIFICATE-----
+  ## migrations sets how data migrations run
+  ## If enabled, all replicas will wait until a single migration job runs.
+  ## this is important if running multiple replicas or if you use different
+  ## connection strings (permissions) for building the database versus using it.
+  ## If using a single connection string, no need to specify here. It will use values
+  ## from `env` below.
+  ## NOTE: the serviceAccount must have permission to `get batch.jobs`.
+  ## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
+  migrations:
+    enabled: false
+    restartPolicy: Never
+    Database__Provider: ""
+    Database__ConnectionString: ""
+    env: {}
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/gametracker/blob/master/src/gametracker/appsettings.conf
+  # see https://github.com/cmu-sei/gameboard/blob/master/src/Gameboard.Api/appsettings.conf
   env: {}
-    # Database__Provider: InMemory
-    # Database__ConnectionString: gametracker_db
-    # Branding__ApplicationName: gametracker
-    # Branding__Title: gametracker
-    # Branding__IncludeSwagger: true
-    # Branding__PathBase: ""
-    # Cache__SharedFolder: ""
     # Logging__Console__DisableColors: false
     # Logging__LogLevel__Default: Information
     # Headers__LogHeaders: false
@@ -123,7 +137,6 @@ gametracker-api:
     # Headers__Security__XContentType: nosniff
     # Headers__Security__XFrame: SAMEORIGIN
 
-
 gametracker-ui:
   # Default values for gametracker-ui.
   # This is a YAML-formatted file.
@@ -132,7 +145,7 @@ gametracker-ui:
   replicaCount: 1
 
   image:
-    repository: cmusei/gametracker-ui
+    repository: cmusei/gameboard-ui
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
@@ -211,7 +224,7 @@ gametracker-ui:
   ## openGraph is string of html head metadata (single line!)
   # openGraph: >-
   #   <!-- Open Graph info for link previews -->
-  #   <meta property="og:title" content="AppNmae" />
+  #   <meta property="og:title" content="AppName" />
   #   <meta property="og:type" content="website" />
   #   <meta property="og:url" content="https://some.url" />
   #   <meta property="og:image" content="https://some.url/logo.png" />
