@@ -16,7 +16,7 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -95,4 +95,19 @@ basehref: ""
 # faviconsUrl: "https://some.url/favs.tgz"
 
 ## settings is stringified json that gets included as assets/settings.json
-settings: "{}"
+settings: |
+  {
+    appname: 'TopoMojo',
+    oidc: {
+      client_id: 'clientid',
+      authority: 'https://your.identity.authority',
+      redirect_uri: 'https://this.site/oidc',
+      silent_redirect_uri: 'https://this.site/oidc-silent.html',
+      response_type: 'code',
+      scope: 'openid profile topomojo-api',
+      monitorSession: false,
+      loadUserInfo: true,
+      automaticSilentRenew: true,
+      useLocalStorage: true
+    }
+  }

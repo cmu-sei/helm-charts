@@ -1,18 +1,24 @@
-{{- if .Values.cacert }}
+{{- if .Values.customStart }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "topomojo-api.fullname" . }}
   labels:
     {{- include "topomojo-api.labels" . | nindent 4 }}
+{{- if .Values.customStart.files }}
 data:
-  ca-cert.crt: |
-{{ .Values.cacert | indent 4 }}
-  start.sh: |
-    #!/bin/sh
+{{- range $key, $val := .Values.customStart.files }}
+  {{ $key }}: |
+{{ $val  | indent 4}}
+{{- end }}
+{{- end }}
 
-    cp /start/ca-cert.crt /usr/local/share/ca-certificates
-    update-ca-certificates
-    cd /app
-    dotnet TopoMojo.Web.dll
+{{- if .Values.customStart.binaryFiles }}
+binaryData:
+{{- range $key, $val := .Values.customStart.binaryFiles }}
+  {{ $key }}: |
+{{ $val | indent 4}}
+{{- end }}
+{{- end }}
+
 {{- end }}

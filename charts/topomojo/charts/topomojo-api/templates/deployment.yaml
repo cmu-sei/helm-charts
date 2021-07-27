@@ -27,15 +27,24 @@ spec:
       serviceAccountName: {{ include "topomojo-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- if .Values.migrations.enabled }}
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:v1.4"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - "job"
+        - "{{ include "topomojo-api.fullname" . }}-{{ .Release.Revision}}"
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.cacert }}
-          command: ["/bin/sh"]
-          args: ["/start/start.sh"]
+          {{- if .Values.customStart }}
+          command: {{ .Values.customStart.command }}
+          args: {{ .Values.customStart.args }}
           {{- end }}
           envFrom:
             - secretRef:
@@ -44,26 +53,14 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          # livenessProbe:
-          #   initialDelaySeconds: 120
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
-          # readinessProbe:
-          #   initialDelaySeconds: 120
-          #   periodSeconds: 10
-          #   failureThreshold: 10
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
           volumeMounts:
-          {{- if .Values.cacert }}
-            - mountPath: /start/start.sh
+          {{- if .Values.customStart }}
+            - mountPath: /start
               name: {{ include "topomojo-api.name" . }}-conf
-              subPath: start.sh  
-            - mountPath: /start/ca-cert.crt
-              name: {{ include "topomojo-api.name" . }}-conf
-              subPath: ca-cert.crt
+          {{- end }}
+          {{- if .Values.existingSecret }}
+            - mountPath: /app/conf
+              name: {{ include "topomojo-api.name" . }}-extra
           {{- end }}
             - mountPath: /app/wwwroot/docs
               name: {{ include "topomojo-api.name" . }}-vol
@@ -71,6 +68,9 @@ spec:
             - mountPath: /mnt/tm
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}
+          {{- if .Values.health }}
+          {{- toYaml .Values.health | nindent 10 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -86,10 +86,15 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.cacert }}
+      {{- if .Values.customStart }}
       - name: {{ include "topomojo-api.name" . }}-conf
         configMap:
           name: {{ include "topomojo-api.fullname" . }}
+      {{- end }}
+      {{- if .Values.existingSecret }}
+      - name: {{ include "topomojo-api.name" . }}-extra
+        secret:
+          name: {{ .Values.existingSecret }}
       {{- end }}
       {{- if .Values.storage.existing }}
       - name: {{ include "topomojo-api.name" . }}-vol
