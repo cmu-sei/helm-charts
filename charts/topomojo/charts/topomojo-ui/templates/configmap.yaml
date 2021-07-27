@@ -12,13 +12,14 @@ data:
   customize.sh: |
     src=/var/www
 {{- if .Values.basehref }}
-    basehref=`echo -n {{ .Values.basehref | quote }} | sed -e s,^/,, -e s,/$,,`
-    if [ -n "$basehref" ]; then
-      sed -i "s,base\ href=\"/\",base\ href=\"/$basehref/\"," $src/index.html
-      dst=$src/$basehref
-      mkdir -p `dirname $dst`
-      ln -s $src $dst
-    fi
+    # basehref=`echo -n {{ .Values.basehref | quote }} | sed -e s,^/,, -e s,/$,,`
+    # if [ -n "$basehref" ]; then
+    #   find $src/* -name index.html -exec \
+    #     sed -i "s,base\ href=\"\(.*\)\",base\ href=\"/$basehref\1\"," {} \;
+    #   dst=$src/$basehref
+    #   mkdir -p `dirname $dst`
+    #   ln -s $src $dst
+    # fi
 {{- end }}
 
 {{- if .Values.openGraph }}

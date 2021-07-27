@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: cmusei/topomojo
+  repository: cmusei/topomojo-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -44,7 +44,6 @@ ingress:
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths: ["/api", "/hub", "/docs"]
@@ -52,6 +51,20 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+health: {}
+  # livenessProbe:
+  #   initialDelaySeconds: 10
+  #   httpGet:
+  #     path: /api/healthz
+  #     port: http
+  # startupProbe:
+  #   initialDelaySeconds: 30
+  #   httpGet:
+  #     path: /api/healthz
+  #     port: http
+  #   failureThreshold: 9
+  #   periodSeconds: 10
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
 storage:
@@ -85,26 +98,69 @@ tolerations: []
 
 affinity: {}
 
+## migrations sets how data migrations run
+## If enabled, all replicas will wait until a single migration job runs.
+## this is important if running multiple replicas or if you use different
+## connection strings (permissions) for building the database versus using it.
+## If using a single connection string, no need to specify here. It will use values
+## from `env` below.
+## NOTE: the serviceAccount must have permission to `get batch.jobs`.
+## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
+migrations:
+  enabled: false
+  restartPolicy: Never
+  Database__Provider: ""
+  Database__ConnectionString: ""
+  env: {}
+
+## customStart overrides the default start process.  Files are mounted in `/start`
+customStart: {}
+  # command: ['/bin/sh']
+  # args: ['/start/start.sh']
+  # binaryFiles: []
+  # files:
+  # - start.sh: |
+  #     #!/bin/sh
+  #     cp /start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
+  #     cd /app && dotnet TopoMojo.Api.dll
+  # - cacert.crt: ""
+
+## existingSecret references a secret already in k8s. The values are saved as files in `/app/conf`.
+existingSecret: ""
+
 # Config app settings with environment vars.
 # Those most likely needing values are listed. For others,
-# see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Web/appsettings.conf
-env: {}
+# see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf
+env:
+  # PathBase: ""
+  # Oidc__Audience: topomojo-api
+  # Oidc__Authority: http://localhost:5000
   # Database__Provider: InMemory
   # Database__ConnectionString: topomojo_db
-  # Branding__ApplicationName: TopoMojo
-  # Branding__Title: TopoMojo
-  # Branding__IncludeSwagger: true
-  # Branding__PathBase: ""
+  # Database__SeedFile: seed-data.json
+  # Database__AdminId: ""
+  # Database__AdminName: ""
+  # Cache__RedisUrl: ""
+  # Cache__Key: ""
   # Cache__SharedFolder: ""
-  # FileUpload__IsoRoot: tm
+  # OpenApi__Enabled: true
+  # OpenApi__ApiName: TopoMojo
+  # OpenApi__Client__ClientId: topomojo-swagger
   # FileUpload__TopoRoot: tm
+  # FileUpload__IsoRoot: tm/isos
   # FileUpload__DocRoot: tm/_docs
-  # FileUpload__MaxFileBytes: 0
-  # Authorization__Authority: http://localhost:5000
-  # Authorization__SwaggerClient__ClientId: topomojo-swagger
-  # ApiKeyClients__[0]__Id:
-  # ApiKeyClients__[0]__Key:
-  # Core__ConsoleHost:
+  # Core__DefaultGamespaceMinutes: 120
+  # Core__DefaultGamespaceLimit: 2
+  # Core__DefaultWorkspaceLimit: 0
+  # Core__DefaultTemplateLimit: 3
+  # Core__DefaultUserScope: everyone
+  # Core__ReplicaLimit: 5
+  # Core__NetworkHostTemplateId: 0
+  # Core__GameEngineIsoFolder: static
+  # Core__ConsoleHost: ""
+  # Core__LaunchUrl: /lp?
+  # Core__DocPath: wwwroot/docs
+  # Core__AllowUnprivilegedVmReconfigure: false
   # Pod__Url: ""
   # Pod__User: ""
   # Pod__Password: ""
@@ -113,22 +169,13 @@ env: {}
   # Pod__VmStore: ""
   # Pod__IsoStore: ""
   # Pod__DiskStore: ""
-  # Pod__ConsoleUrl: ""
-  # Pod__ExcludeNetworkMask: topomojo
+  # Pod__TicketUrlHandler: querystring
+  # Pod__Vlan__Range: ""
+  # Pod__KeepAliveMinutes: 10
+  # Pod__Sddc__ApiKey: ""
+  # Pod__Sddc__AuthUrl: ""
+  # Pod__Sddc__Url: ""
+  # Pod__Sddc__CertificatePath: ""
+  # Pod__Sddc__CertificatePassword: ""
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information
-  # Headers__LogHeaders: false
-  # Headers__Cors__Origins__[0]: ""
-  # Headers__Cors__Methods__[0]: ""
-  # Headers__Cors__Headers__[0]: ""
-  # Headers__Cors__AllowAnyOrigin: false
-  # Headers__Cors__AllowAnyMethod: false
-  # Headers__Cors__AllowAnyHeader: false
-  # Headers__Cors__AllowCredentials: false
-  # Headers__Forwarding__ForwardLimit: 1
-  # Headers__Forwarding__TargetHeaders: None
-  # Headers__Forwarding__KnownNetworks: 10.0.0.0/8 172.16.0.0/12 192.168.0.0/24 ::ffff:a00:0/104 ::ffff:b00a:0/108 ::ffff:c0d0:0/120
-  # Headers__Forwarding__KnownProxies: ::1
-  # Headers__Security__ContentSecurity: default-src 'self' 'unsafe-inline'; img-src data: 'self'
-  # Headers__Security__XContentType: nosniff
-  # Headers__Security__XFrame: SAMEORIGIN
