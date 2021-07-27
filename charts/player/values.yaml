@@ -160,6 +160,7 @@ vm-api:
   #   connections will go directly from the UI to the vCenter hosts themselves
   # - The host value here corresponds to RewriteHost__RewriteHostUrl below
   consoleIngress:
+    deployConsoleProxy: false
     name: player-connect
     annotations: 
       kubernetes.io/ingress.class: nginx

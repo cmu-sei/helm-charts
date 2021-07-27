@@ -57,6 +57,7 @@ ingress:
   #      - chart-example.local
 
   consoleIngress:
+    deployConsoleProxy: false   
     name: ''
     annotations:
       {}
