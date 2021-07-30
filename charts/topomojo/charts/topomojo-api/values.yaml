@@ -117,13 +117,13 @@ migrations:
 customStart: {}
   # command: ['/bin/sh']
   # args: ['/start/start.sh']
-  # binaryFiles: []
+  # binaryFiles: {}
   # files:
-  # - start.sh: |
+  #   start.sh: |
   #     #!/bin/sh
   #     cp /start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
   #     cd /app && dotnet TopoMojo.Api.dll
-  # - cacert.crt: ""
+  #   cacert.crt: ""
 
 ## existingSecret references a secret already in k8s. The values are saved as files in `/app/conf`.
 existingSecret: ""
@@ -172,9 +172,13 @@ env:
   # Pod__TicketUrlHandler: querystring
   # Pod__Vlan__Range: ""
   # Pod__KeepAliveMinutes: 10
+  # Pod__DebugVerbose: false
+  # Pod__IsNsxNetwork: false
+  # Pod__Sddc__ApiUrl: ""
+  # Pod__Sddc__MetadataUrl: ""
+  # Pod__Sddc__SegmentApiPath = policy/api/v1/infra/tier-1s/cgw/segments
   # Pod__Sddc__ApiKey: ""
   # Pod__Sddc__AuthUrl: ""
-  # Pod__Sddc__Url: ""
   # Pod__Sddc__CertificatePath: ""
   # Pod__Sddc__CertificatePassword: ""
   # Logging__Console__DisableColors: false
