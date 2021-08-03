@@ -14,5 +14,5 @@ data:
     cp /start/ca-cert.crt /usr/local/share/ca-certificates
     update-ca-certificates
     cd /app
-    dotnet GameTracker.dll
+    dotnet Gameboard.Api.dll
 {{- end }}
