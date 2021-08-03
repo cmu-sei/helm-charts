@@ -73,6 +73,9 @@ spec:
             - mountPath: /app/.dpk
               name: {{ include "gametracker-api.name" . }}-vol
               subPath: {{ include "gametracker-api.fullname" . }}/.dpk
+            - mountPath: /app/conf
+              name: {{ include "gametracker-api.name" . }}-vol
+              subPath: {{ include "gametracker-api.fullname" . }}/conf
             - mountPath: /app/wwwroot/doc
               name: {{ include "gametracker-api.name" . }}-vol
               subPath: {{ include "gametracker-api.fullname" . }}/doc
