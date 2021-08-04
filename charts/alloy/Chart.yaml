@@ -2,5 +2,5 @@ apiVersion: v2
 name: alloy
 description: A Helm chart for Kubernetes
 type: application
-version: 1.2.0
+version: 1.4.0
 appVersion: 3.0.0
