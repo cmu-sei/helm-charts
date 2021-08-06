@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: cmusei.azurecr.us/gameboard-api
+  repository: cmusei/gameboard-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -16,7 +16,7 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: false
+  create: true
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -47,11 +47,32 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
+      paths: ["/api", "/hub", "/img", "/doc" ]
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+health: {}
+  # livenessProbe:
+  #   initialDelaySeconds: 10
+  #   httpGet:
+  #     path: /api/version
+  #     port: http
+  # startupProbe:
+  #   initialDelaySeconds: 30
+  #   httpGet:
+  #     path: /api/version
+  #     port: http
+  #   failureThreshold: 9
+  #   periodSeconds: 10
+
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -59,11 +80,11 @@ resources: {}
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  #   cpu: 200m
+  #   memory: 512Mi
   # requests:
   #   cpu: 100m
-  #   memory: 128Mi
+  #   memory: 256Mi
 
 autoscaling:
   enabled: false
@@ -78,10 +99,39 @@ tolerations: []
 
 affinity: {}
 
-## application settings can be entered as env vars or json, or both
+## migrations sets how data migrations run
+## If enabled, all replicas will wait until a single migration job runs.
+## this is important if running multiple replicas or if you use different
+## connection strings (permissions) for building the database versus using it.
+## If using a single connection string, no need to specify here. It will use values
+## from `env` below.
+## NOTE: the serviceAccount must have permission to `get batch.jobs`.
+## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
+migrations:
+  enabled: false
+  restartPolicy: Never
+  Database__Provider: ""
+  Database__ConnectionString: ""
+  env: {}
 
-# env is pod env vars
+# Config app settings with environment vars.
+# Those most likely needing values are listed. For others,
+# see https://github.com/cmu-sei/gameboard/blob/master/src/Gameboard.Api/appsettings.conf
 env: {}
-
-  ## settings is stringified json that gets included as appsettings.Production.json
-settings: "{}"
+  # Logging__Console__DisableColors: false
+  # Logging__LogLevel__Default: Information
+  # Headers__LogHeaders: false
+  # Headers__Cors__Origins__[0]: ""
+  # Headers__Cors__Methods__[0]: ""
+  # Headers__Cors__Headers__[0]: ""
+  # Headers__Cors__AllowAnyOrigin: false
+  # Headers__Cors__AllowAnyMethod: false
+  # Headers__Cors__AllowAnyHeader: false
+  # Headers__Cors__AllowCredentials: false
+  # Headers__Forwarding__ForwardLimit: 1
+  # Headers__Forwarding__TargetHeaders: None
+  # Headers__Forwarding__KnownNetworks: 10.0.0.0/8 172.16.0.0/12 192.168.0.0/24 ::ffff:a00:0/104 ::ffff:b00a:0/108 ::ffff:c0d0:0/120
+  # Headers__Forwarding__KnownProxies: ::1
+  # Headers__Security__ContentSecurity: default-src 'self' 'unsafe-inline'; img-src data: 'self'
+  # Headers__Security__XContentType: nosniff
+  # Headers__Security__XFrame: SAMEORIGIN
