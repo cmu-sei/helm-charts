@@ -15,7 +15,6 @@ spec:
     metadata:
     {{- with .Values.podAnnotations }}
       annotations:
-        consistency/check: {{ randAlphaNum 8 | quote }}
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
@@ -28,6 +27,15 @@ spec:
       serviceAccountName: {{ include "gameboard-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      {{- if .Values.migrations.enabled }}
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:v1.4"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - "job"
+        - "{{ include "gameboard-api.fullname" . }}-{{ .Release.Revision}}"
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -45,26 +53,41 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          volumeMounts:
-          {{- if .Values.cacert }}
-            - mountPath: /start/start.sh
-              name: {{ include "gameboard-api.name" . }}-conf
-              subPath: start.sh  
-            - mountPath: /start/ca-cert.crt
-              name: {{ include "gameboard-api.name" . }}-conf
-              subPath: ca-cert.crt
-          {{- end }}
-            - mountPath: /app/appsettings.Production.json
-              name: {{ include "gameboard-api.name" . }}-conf
-              subPath: appsettings.json
           # livenessProbe:
+          #   initialDelaySeconds: 120
           #   httpGet:
-          #     path: /
+          #     path: /api/version
           #     port: http
           # readinessProbe:
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 10
+          #   failureThreshold: 10
           #   httpGet:
-          #     path: /
+          #     path: /api/version
           #     port: http
+          volumeMounts:
+          {{- if .Values.cacert }}
+            - mountPath: /start
+              name: {{ include "gameboard-api.name" . }}-conf
+          {{- end }}
+            - mountPath: /app/.dpk
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/.dpk
+            - mountPath: /app/conf
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/conf
+            - mountPath: /app/wwwroot/doc
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/doc
+            - mountPath: /app/wwwroot/img
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/img
+            - mountPath: /mnt/tm
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}
+          {{- if .Values.health }}
+          {{- toYaml .Values.health | nindent 10 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -80,6 +103,20 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- if .Values.cacert }}
       - name: {{ include "gameboard-api.name" . }}-conf
         configMap:
           name: {{ include "gameboard-api.fullname" . }}
+      {{- end }}
+      {{- if .Values.storage.existing }}
+      - name: {{ include "gameboard-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "gameboard-api.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "gameboard-api.fullname" . }}
+      {{- else }}
+      - name: {{ include "gameboard-api.name" . }}-vol
+        emptyDir: {}
+      {{- end }}

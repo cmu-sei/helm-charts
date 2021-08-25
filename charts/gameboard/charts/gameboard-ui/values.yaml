@@ -5,9 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: gameboard-ui
-  #tag: "2.1.0"
+  repository: cmusei/gameboard-ui
   pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -77,18 +78,21 @@ tolerations: []
 
 affinity: {}
 
-## basehref is the path to the app; if serving the app as a virtual folder,
-## add the path here.
-# basehref: /gb/event1/
+## basehref is path to the app
 basehref: ""
 
-## openGraph is string of html head metadata (single line!). 
-## If expanding, use `>-` to ensure no crlf. 
-openGraph: ""
+## openGraph is string of html head metadata (single line!)
+# openGraph: >-
+#   <!-- Open Graph info for link previews -->
+#   <meta property="og:title" content="AppName" />
+#   <meta property="og:type" content="website" />
+#   <meta property="og:url" content="https://some.url" />
+#   <meta property="og:image" content="https://some.url/logo.png" />
+#   <meta property="og:description" content="description" />
 
 ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
 ## its contents will be merged into index.html head element.
-faviconsUrl: ""
+# faviconsUrl: "https://some.url/favs.tgz"
 
 ## settings is stringified json that gets included as assets/settings.json
 settings: "{}"

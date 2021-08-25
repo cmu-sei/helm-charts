@@ -15,7 +15,6 @@ spec:
     metadata:
     {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
@@ -40,10 +39,10 @@ spec:
               protocol: TCP
           volumeMounts:
             - mountPath: /var/www/assets/settings.json
-              name: {{ include "gameboard-ui.name" . }}-conf
+              name: {{ include "gameboard-ui.name" . }}
               subPath: settings.json
             - mountPath: /docker-entrypoint.d/90-customize.sh
-              name: {{ include "gameboard-ui.name" . }}-conf
+              name: {{ include "gameboard-ui.name" . }}
               subPath: customize.sh
           livenessProbe:
             httpGet:
@@ -68,7 +67,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "gameboard-ui.name" . }}-conf
+      - name: {{ include "gameboard-ui.name" . }}
         configMap:
           name: {{ include "gameboard-ui.fullname" . }}
           defaultMode: 0775

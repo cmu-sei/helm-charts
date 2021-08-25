@@ -3,15 +3,15 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "gametracker-api.fullname" . }}-{{ .Release.Revision }}
+  name: {{ include "gameboard-api.fullname" . }}-{{ .Release.Revision }}
   labels:
-    {{- include "gametracker-api.labels" . | nindent 4 }}
+    {{- include "gameboard-api.labels" . | nindent 4 }}
 spec:
   backoffLimit: 1
   template:
     metadata:
       labels:
-        {{- include "gametracker-api.selectorLabels" . | nindent 8 }}
+        {{- include "gameboard-api.selectorLabels" . | nindent 8 }}
     spec:
       containers:
       - name: {{ .Chart.Name }}
