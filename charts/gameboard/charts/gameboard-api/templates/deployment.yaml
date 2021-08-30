@@ -76,9 +76,9 @@ spec:
             - mountPath: /app/conf
               name: {{ include "gameboard-api.name" . }}-vol
               subPath: {{ include "gameboard-api.fullname" . }}/conf
-            - mountPath: /app/wwwroot/doc
+            - mountPath: /app/wwwroot/docs
               name: {{ include "gameboard-api.name" . }}-vol
-              subPath: {{ include "gameboard-api.fullname" . }}/doc
+              subPath: {{ include "gameboard-api.fullname" . }}/docs
             - mountPath: /app/wwwroot/img
               name: {{ include "gameboard-api.name" . }}-vol
               subPath: {{ include "gameboard-api.fullname" . }}/img
@@ -97,9 +97,9 @@ spec:
           volumeMounts:
             - mountPath: /entry.d
               name: {{ include "gameboard-api.name" . }}-conf
-            - mountPath: /doc
+            - mountPath: /docs
               name: {{ include "gameboard-api.name" . }}-vol
-              subPath: {{ include "gameboard-api.fullname" . }}/doc
+              subPath: {{ include "gameboard-api.fullname" . }}/docs
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
