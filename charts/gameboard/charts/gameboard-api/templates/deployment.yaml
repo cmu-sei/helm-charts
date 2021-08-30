@@ -117,6 +117,7 @@ spec:
       - name: {{ include "gameboard-api.name" . }}-conf
         configMap:
           name: {{ include "gameboard-api.fullname" . }}
+          defaultMode: 0775
       {{- if .Values.storage.existing }}
       - name: {{ include "gameboard-api.name" . }}-vol
         persistentVolumeClaim:
