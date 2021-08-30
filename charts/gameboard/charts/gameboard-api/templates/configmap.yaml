@@ -35,14 +35,14 @@ data:
       {{- end }}
 
       ## get source
-      cd /html
+      cd /doc
       git clone $giturl .
       if [ -n "$branch" ]; then
         git checkout $branch
         git pull
       fi
 
-      echo "*/$poll * * * * cd /html && git pull" >> /etc/crontabs/root
+      echo "*/$poll * * * * cd /doc && git pull" >> /etc/crontabs/root
 
     fi
 
