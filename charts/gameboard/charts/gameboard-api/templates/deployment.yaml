@@ -90,6 +90,17 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.giturl }}
+        - name: {{ .Chart.Name }}-job
+          image: alpine
+          command: [ "/entry.d/job.sh" ]
+          volumeMounts:
+            - mountPath: /entry.d
+              name: {{ include "gameboard-api.name" . }}-conf
+            - mountPath: /doc
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/doc
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -103,11 +114,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.cacert }}
       - name: {{ include "gameboard-api.name" . }}-conf
         configMap:
           name: {{ include "gameboard-api.fullname" . }}
-      {{- end }}
       {{- if .Values.storage.existing }}
       - name: {{ include "gameboard-api.name" . }}-vol
         persistentVolumeClaim:

@@ -135,3 +135,10 @@ env: {}
   # Headers__Security__ContentSecurity: default-src 'self' 'unsafe-inline'; img-src data: 'self'
   # Headers__Security__XContentType: nosniff
   # Headers__Security__XFrame: SAMEORIGIN
+
+## giturl is the url of the git repository of static markdown
+giturl: ""
+## gitbranch sets which repo branch to publish
+gitbranch: ""
+## pollInterval sets minutes between git pull
+pollInterval: 5
