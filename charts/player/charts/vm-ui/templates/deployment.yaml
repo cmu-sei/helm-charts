@@ -54,10 +54,36 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "vm-ui.fullname" . }}-settings
+      {{ if eq .Values.identity.register true }}
+      initContainers:
+        - name: identity-seed
+          image: dwdraju/alpine-curl-jq
+          {{ if .Values.identity.initCommand }}
+          command: {{- toYaml .Values.identity.initCommand | nindent 10 }}
+          {{ else }}
+          command: ['/seed/seed.sh', {{ .Chart.Name }}, "/seed"]
+          {{- end }}
+          volumeMounts:
+          - name: {{ .Chart.Name }}-identity-seed
+            mountPath: /seed
+      {{- end }}
       volumes:
         - name: {{ include "vm-ui.fullname" . }}-settings
           configMap:
             name: {{ include "vm-ui.fullname" . }}
+        {{ if eq .Values.identity.register true }}
+        - name: {{ .Chart.Name }}-identity-seed
+          projected:
+            sources:
+            - configMap:
+                name: {{ include "vm-ui.fullname" . }}-seed
+            - configMap:
+                name: {{ .Values.identity.identityMap }}
+                items:
+                  - key: seed.sh
+                    path: seed.sh
+                    mode: 0777
+        {{- end }}           
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

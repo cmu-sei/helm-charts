@@ -20,3 +20,7 @@ data:
 {{ .Values.conf.issuers | indent 4 }}
   seed.json: |-
 {{ .Values.conf.seed | indent 4 }}
+{{ if .Values.conf.seedScript }}
+  seed.sh: |-
+{{ .Values.conf.seedScript | indent 4 }}
+{{- end }}

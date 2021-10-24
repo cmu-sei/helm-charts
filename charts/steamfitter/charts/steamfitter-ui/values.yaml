@@ -81,6 +81,50 @@ tolerations: []
 
 affinity: {}
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   {
+  #     "name": "steamfitter-ui",
+  #     "displayName": "Steamfitter UI",
+  #     "description": null,
+  #     "grants": "authorization_code client_credentials",
+  #     "scopes": "openid profile steamfitter-api vm-api player-api",
+  #     "enabled": true,
+  #     "requirePkce": true,
+  #     "allowAccessTokensViaBrowser": true,
+  #     "requireConsent": false,
+  #     "consentLifetime": "30d",
+  #     "alwaysIncludeUserClaimsInIdToken": false,
+  #     "identityTokenLifetime": "5m",
+  #     "accessTokenLifetime": "1h",
+  #     "authorizationCodeLifetime": "5m",
+  #     "allowOfflineAccess": false,
+  #     "updateAccessTokenClaimsOnRefresh": false,
+  #     "useOneTimeRefreshTokens": false,
+  #     "slidingRefreshTokenLifetime": "15d",
+  #     "absoluteRefreshTokenLifetime": "30d",
+  #     "published": true,
+  #     "url": "https://example.com/steamfitter",
+  #     "logoUrl": null,
+  #     "frontChannelLogoutUrl": null,
+  #     "backChannelLogoutUrl": null,
+  #     "redirectUrls": [
+  #       { "value": "https://example.com/steamfitter/auth-callback" },
+  #       { "value": "https://example.com/steamfitter/auth-callback-silent" }
+  #     ],
+  #     "postLogoutUrls": [{ "value": "https://example.com/steamfitter" }],
+  #     "corsUrls": [{ "value": "https://example.com" }],
+  #     "alwaysSendClientClaims": false,
+  #     "clientClaimsPrefix": "client_",
+  #     "claims": [],
+  #     "secrets": [],
+  #     "managers": []
+  #   }
+
 env: 
   ## basehref is path to the app
   APP_BASEHREF: ""

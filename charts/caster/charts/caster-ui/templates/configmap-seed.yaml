@@ -1,0 +1,13 @@
+{{- if eq .Values.identity.register true }}
+{{- $chartName := .Chart.Name }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "caster-ui.fullname" . }}-seed
+  labels:
+{{- include "caster-ui.labels" . | nindent 4 }}
+data:
+{{- range $key, $val := .Values.identity }}
+  {{ printf "%s-%s.json" $chartName $key }}: {{ $val | quote }}
+{{- end }}
+{{- end }}

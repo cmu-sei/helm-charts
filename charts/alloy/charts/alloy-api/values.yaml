@@ -58,7 +58,6 @@ ingress:
 # create a configMap with the needed certifcates and specify
 # the configMap name here
 certificateMap: ''
-
 resources:
   {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -86,7 +85,101 @@ tolerations: []
 affinity: {}
 
 command: ['bash', '-c', 'update-ca-certificates && dotnet Alloy.Api.dll']
+identity:
+  register: false
+  # Identity ConfigMap that contains the seed.sh script
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   [
+  #     {
+  #       "name": "alloy-api",
+  #       "displayName": "Alloy API",
+  #       "description": null,
+  #       "grants": "authorization_code client_credentials",
+  #       "scopes": "alloy-api vm-api caster-api steamfitter-api",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": false,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": false,
+  #       "url": "https://foundry.local/alloy",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "redirectUrls": [
+  #         { "value": "https://foundry.local/alloy/api/oauth2-redirect.html" }
+  #       ],
+  #       "postLogoutUrls": [{ "value": "https://foundry.local/alloy/api" }],
+  #       "corsUrls": [{ "value": "https://foundry.local" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     },
+  #     {
+  #       "name": "alloy-admin",
+  #       "displayName": "Alloy Admin",
+  #       "description": null,
+  #       "grants": "password client_credentials",
+  #       "scopes": "alloy-api caster-api steamfitter-api vm-api",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": false,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": true,
+  #       "url": "https://foundry.local/alloy",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "corsUrls": [{ "value": "https://foundry.local" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     }
+  #   ]
+  # resource: |-
+  #   {
+  #     "type": "api",
+  #     "name": "alloy-api",
+  #     "displayName": "Alloy Api",
+  #     "enabled": true,
+  #     "default": true,
+  #     "required": false,
+  #     "emphasize": false,
+  #     "showInDiscoveryDocument": true
+  #   }
 
+  # account: |-
+  #   {
+  #     "usernames": ["alloy-admin@foundry.local"],
+  #     "password": "foundry",
+  #     "manager": true
+  #   }
 # env is pod env vars
 env:
   # http_proxy:

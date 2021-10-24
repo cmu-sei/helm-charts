@@ -120,6 +120,100 @@ terraformrc:
           }
       }
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # NOTE: Since we use an external gitlab chart add identity client to dependent application caster.
+  # client: |-
+  #   [
+  #     {
+  #       "name": "caster-api",
+  #       "displayName": "Caster API",
+  #       "description": null,
+  #       "grants": "authorization_code client_credentials",
+  #       "scopes": "caster-api",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": false,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": false,
+  #       "url": "https://example.com/caster",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "redirectUrls": [
+  #         { "value": "https://example.com/caster/api/oauth2-redirect.html" }
+  #       ],
+  #       "postLogoutUrls": [{ "value": "https://example.com/caster/api" }],
+  #       "corsUrls": [{ "value": "https://example.com" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     },
+  #     {
+  #       "name": "gitlab",
+  #       "displayName": "Gitlab",
+  #       "description": null,
+  #       "grants": "authorization_code client_credentials",
+  #       "scopes": "openid profile email",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": true,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": false,
+  #       "url": "https://example.com/gitlab",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "redirectUrls": [
+  #         { "value": "https://example.com/gitlab/users/auth/identity/callback" }
+  #       ],
+  #       "postLogoutUrls": [{ "value": "https://example.com/gitlab" }],
+  #       "corsUrls": [{ "value": "https://example.com" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     }
+  #   ]
+    
+  # resource: |-
+  #   {
+  #     "type": "api",
+  #     "name": "caster-api",
+  #     "displayName": "Caster Api",
+  #     "enabled": true,
+  #     "default": true,
+  #     "required": false,
+  #     "emphasize": false,
+  #     "showInDiscoveryDocument": true
+  #   }
+
 env:
   # http_proxy:
   # https_proxy:
@@ -209,7 +303,7 @@ env:
 
   Terraform__BinaryPath: '/terraform/binaries'
   Terraform__DefaultVersion: '0.12.24'
-  Terraform__PluginDirectory: '/terraform/plugins/linux_amd64'
+  # Terraform__PluginDirectory: '/terraform/plugins/linux_amd64'
   Terraform__RootWorkingDirectory: '/terraform/root'
   Terraform__GitlabApiUrl: 'https://gitlab.com/api/v4/'
   Terraform__GitlabToken: ''

@@ -58,6 +58,61 @@ caster-api:
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
   gitcredentials: 'https://git-access-token:TOKEN@gitlab.example.com'
 
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS
+    # client: |-
+    #   {
+    #     "name": "caster-api",
+    #     "displayName": "Caster API",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "caster-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": false,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": false,
+    #     "url": "https://example.com/caster",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/caster/api/oauth2-redirect.html" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/caster/api" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
+      
+    # resource: |-
+    #   {
+    #     "type": "api",
+    #     "name": "caster-api",
+    #     "displayName": "Caster Api",
+    #     "enabled": true,
+    #     "default": true,
+    #     "required": false,
+    #     "emphasize": false,
+    #     "showInDiscoveryDocument": true
+    #   }
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/caster.api/src/Caster.Api/appsettings.json
@@ -218,23 +273,68 @@ caster-ui:
         hosts:
          - example.com
 
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS
+    # client: |-
+    #   {
+    #     "name": "caster-ui",
+    #     "displayName": "Caster UI",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "caster-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": true,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": false,
+    #     "url": "https://example.com/caster",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/caster/auth-callback" },
+    #       { "value": "https://example.com/caster/auth-callback-silent" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/caster/api" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
+      
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client
-  settings: '{
-    "ApiUrl": "https://caster.example.com",
-    "OIDCSettings": {
-      "authority": "https://identity.example.com/",
-      "client_id": "caster-ui-dev",
-      "redirect_uri": "https://caster.example.com/auth-callback/",
-      "post_logout_redirect_uri": "https://caster.example.com/",
-      "response_type": "code",
-      "scope": "openid profile email caster-api",
-      "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://caster.example.com/auth-callback-silent/"
-    },
-    "UseLocalAuthStorage": true
-  }'
+  settings: |-
+    {
+      "ApiUrl": "https://caster.example.com",
+      "OIDCSettings": {
+        "authority": "https://identity.example.com/",
+        "client_id": "caster-ui-dev",
+        "redirect_uri": "https://caster.example.com/auth-callback/",
+        "post_logout_redirect_uri": "https://caster.example.com/",
+        "response_type": "code",
+        "scope": "openid profile email caster-api",
+        "automaticSilentRenew": true,
+        "silent_redirect_uri": "https://caster.example.com/auth-callback-silent/"
+      },
+      "UseLocalAuthStorage": true
+    }

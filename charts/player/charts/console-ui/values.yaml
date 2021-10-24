@@ -81,6 +81,50 @@ tolerations: []
 
 affinity: {}
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   {
+  #     "name": "vm-console-ui",
+  #     "displayName": "VM Console UI",
+  #     "description": null,
+  #     "grants": "authorization_code client_credentials",
+  #     "scopes": "openid profile vm-api player-api",
+  #     "enabled": true,
+  #     "requirePkce": true,
+  #     "allowAccessTokensViaBrowser": true,
+  #     "requireConsent": false,
+  #     "consentLifetime": "30d",
+  #     "alwaysIncludeUserClaimsInIdToken": false,
+  #     "identityTokenLifetime": "5m",
+  #     "accessTokenLifetime": "1h",
+  #     "authorizationCodeLifetime": "5m",
+  #     "allowOfflineAccess": false,
+  #     "updateAccessTokenClaimsOnRefresh": false,
+  #     "useOneTimeRefreshTokens": false,
+  #     "slidingRefreshTokenLifetime": "15d",
+  #     "absoluteRefreshTokenLifetime": "30d",
+  #     "published": false,
+  #     "url": "https://example.com/vm",
+  #     "logoUrl": null,
+  #     "frontChannelLogoutUrl": null,
+  #     "backChannelLogoutUrl": null,
+  #     "redirectUrls": [
+  #       { "value": "https://example.com/console/auth-callback" },
+  #       { "value": "https://example.com/console/auth-callback-silent" }
+  #     ],
+  #     "postLogoutUrls": [{ "value": "https://example.com/console" }],
+  #     "corsUrls": [{ "value": "https://example.com" }],
+  #     "alwaysSendClientClaims": false,
+  #     "clientClaimsPrefix": "client_",
+  #     "claims": [],
+  #     "secrets": [],
+  #     "managers": []
+  #   }
+
 env: 
   ## basehref is path to the app
   APP_BASEHREF: ""

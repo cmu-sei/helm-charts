@@ -1,0 +1,213 @@
+{{- if eq .Values.identity.register true }}
+{{- $chartName := .Chart.Name }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "player-ui.fullname" . }}-seed
+  labels:
+{{- include "player-ui.labels" . | nindent 4 }}
+data:
+{{- range $key, $val := .Values.identity }}
+  {{ printf "%s-%s.json" $chartName $key }}: {{ $val | quote }}
+{{- end }}
+  seed.sh: |-
+    #!/bin/bash -xe
+    # 
+    # Copyright 2021 Carnegie Mellon University.
+    # Released under a BSD (SEI)-style license, please see LICENSE.md in the
+    # project root or contact permission@sei.cmu.edu for full terms.
+
+    #############################
+    #   Identity Seed Script    #
+    #############################
+
+    # Change to the current directory
+    DIRECTORY="$(dirname "$BASH_SOURCE[0]")"
+    cd $DIRECTORY
+    echo $DIRECTORY
+    CLIENT_NAME=${1:-}
+    CLIENT_FILE_NAME="${2:-$CLIENT_NAME}-client.json"
+    RESOURCE_NAME=${1:-}
+    RESOURCE_FILE_NAME="${3:-$CLIENT_NAME}-resource.json"
+    USER_FILE_NAME="${4:-$CLIENT_NAME}-user.json"
+    # http or https
+    PROTO="https"
+    DOMAIN="${DOMAIN:-foundry.local}"
+
+    echo "$RESOURCE_FILE_PATH"
+
+
+    # get access token
+    ACCESS_TOKEN=$(curl --silent --insecure --request POST \
+      --url "$PROTO://$DOMAIN/identity/connect/token" \
+      --data grant_type=password \
+      --data scope="identity-api identity-api-privileged" \
+      --data client_id=bootstrap-client \
+      --data client_secret=foundry \
+      --data username=administrator@foundry.local \
+      --data password=foundry | jq -r '.access_token')
+
+    #If Resource JSON exists. Configure Resource
+    if [[ -e "${DIRECTORY}/$RESOURCE_FILE_NAME" ]]; then
+    RESOURCE_EXISTS=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/clients?term=$RESOURCE_NAME" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json")
+      if [[ "$RESOURCE_EXISTS" != "[]" ]]; then  
+        RESOURCE_ID=$(printf '%s' "$RESOURCE_EXISTS" | jq '.[0].id')
+        RESOURCE_API_JSON=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/resource/$RESOURCE_ID" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" | jq '.')
+
+        RESOURCE_FILE_JSON=$(cat "$DIRECTORY/$RESOURCE_FILE_NAME" | jq '.')
+        RESOURCE_JSON=$(printf '%s' "$RESOURCE_API_JSON $RESOURCE_FILE_JSON" | jq '')
+        RESOURCE_ID=$(curl -v --insecure --request PUT \
+        --url "$PROTO://$DOMAIN/identity/api/client" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$RESOURCE_JSON" | jq -r '.id')
+        if [[ -n "$RESOURCE_ID" ]]; then 
+        echo "$RESOURCE_NAME Updated" 
+        fi
+      else
+        # Parse JSON for initial POST
+        INIT_RESOURCE_JSON=$(cat "$DIRECTORY/$RESOURCE_FILE_NAME" | jq '.')
+        echo "CREATING NEW RESOURCE"
+        #Create the resource, get the resource ID and full resource.
+        RESOURCE_ID=$(curl -v --insecure --request POST \
+        --url "$PROTO://$DOMAIN/identity/api/resource" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$INIT_RESOURCE_JSON" | jq -r '.id')
+        
+        RESOURCE_API_JSON=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/resource/$RESOURCE_ID" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json")
+
+        # Merge JSON
+        RESOURCE_FILE_JSON=$(cat "$DIRECTORY/$RESOURCE_FILE_NAME" | jq '.')
+        CLIENT_JSON=$(printf '%s' "$RESOURCE_API_JSON $RESOURCE_FILE_JSON" | jq -s add)
+        echo $RESOURCE_JSON
+        # PUT Update
+        RESOURCE_ID=$(curl -v --insecure --request PUT \
+        --url "$PROTO://$DOMAIN/identity/api/resource" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$RESOURCE_JSON" | jq -r '.')
+        if [[ -n "$RESOURCE_ID" ]]; then 
+          echo "Resource $RESOURCE_NAME Created with ID: $RESOURCE_ID"
+        fi
+      fi
+    fi
+
+
+    #If a client JSON file exists. Configure Client. 
+    if [[ -e "${DIRECTORY}/$CLIENT_FILE_NAME" ]]; then
+      # Check if the client exists. 
+      CLIENT_EXISTS=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/clients?term=$CLIENT_NAME" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json")
+      if [[ "$CLIENT_EXISTS" != "[]" ]]; then
+        echo "UPDATING CLIENT FROM FILE"
+        # Set Client ID, and get Client
+        CLIENT_ID=$(printf '%s' "${CLIENT_EXISTS}" | jq -r '.[0].id')
+        CLIENT_API_JSON=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/client/$CLIENT_ID" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" | jq '.')
+        # Merge JSON 
+        CLIENT_FILE_JSON=$(cat "$DIRECTORY/$CLIENT_FILE_NAME" | jq '.')
+        CLIENT_JSON=$(printf '%s' "$CLIENT_API_JSON $CLIENT_FILE_JSON" | jq -s add)
+        # PUT Update
+        CLIENT_ID=$(curl -v --insecure --request PUT \
+        --url "$PROTO://$DOMAIN/identity/api/client" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$CLIENT_JSON" | jq -r '.id')
+      else 
+        # Parse JSON for initial POST
+        INIT_CLIENT_JSON=$(cat "$DIRECTORY/$CLIENT_FILE_NAME" | jq '. | {name: .name, displayName: .displayName, enabled: .enabled, description: .description, clientUri: .clientUri}')
+        echo "CREATING NEW CLIENT"
+        #Create the Client, get the client ID and full Client.
+        CLIENT_ID=$(curl -v --insecure --request POST \
+        --url "$PROTO://$DOMAIN/identity/api/client" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$INIT_CLIENT_JSON" | jq -r '.id')
+        
+        CLIENT_API_JSON=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/client/$CLIENT_ID" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json")
+        # Merge JSON
+        CLIENT_FILE_JSON=$(cat "$DIRECTORY/$CLIENT_FILE_NAME" | jq '.')
+        CLIENT_JSON=$(printf '%s' "$CLIENT_API_JSON $CLIENT_FILE_JSON" | jq -s add)
+        echo $CLIENT_JSON
+        # PUT Update
+        CLIENT_ID=$(curl -v --insecure --request PUT \
+        --url "$PROTO://$DOMAIN/identity/api/client" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$CLIENT_JSON" | jq -r '.')
+      fi
+    fi
+
+    #If a user JSON file exists. Create User as long as it doesn't exist. 
+    if [[ -e "${DIRECTORY}/$USER_FILE_NAME" ]]; then
+      # Parse File and check for username
+      USERNAME=$(cat "$DIRECTORY/$USER_FILE_NAME" | jq -r '.usernames[0]')
+      IS_MANAGER=$(cat "$DIRECTORY/$USER_FILE_NAME" | jq '.manager')
+      # Check if the user exists. 
+      USER_EXISTS=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/accounts?term=$USERNAME" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" | jq '.')
+      if [[ "$USER_EXISTS" != "[]" ]]; then
+        echo "User Exists. Users cannot be updated with this script."
+      else 
+        # Parse JSON for initial POST
+        INIT_USER_JSON=$(cat "$DIRECTORY/$USER_FILE_NAME" | jq '. | {usernames: .usernames, password: .password}')
+        
+        echo "CREATING NEW User: $USERNAME"
+        #Create the user.
+        USER_API=$(curl -v --insecure --request POST \
+        --url "$PROTO://$DOMAIN/identity/api/account" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$INIT_USER_JSON")
+        # | jq -r '.[0] | {id: .id, globalId: .globalId, username: .properties[0].value}')
+        echo "$USER_API\n\n"
+        USER_ID=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/accounts?term=$USERNAME" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" | jq '.[0].id')
+        
+        echo $USER_API
+      fi
+      if [[ $IS_MANAGER -eq "true" ]]; then
+        
+        USER_ID=$(curl --silent --insecure --request GET \
+        --url "$PROTO://$DOMAIN/identity/api/accounts?term=$USERNAME" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" | jq '.[0].id')
+        # Set User as Manager / Admin
+        ACCESS_TOKEN=$(curl --silent --insecure --request POST \
+          --url "$PROTO://$DOMAIN/identity/connect/token" \
+          --data grant_type=password \
+          --data scope="identity-api-privileged" \
+          --data client_id=bootstrap-client \
+          --data client_secret=foundry \
+          --data username=administrator@foundry.local \
+          --data password=foundry | jq -r '.access_token')
+
+        curl -v --insecure --request PUT \
+        --url "$PROTO://$DOMAIN/identity/api/account/$USER_ID/role/Manager" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "Content-Type: application/json" \
+        -H "Content-Length: 0"
+        fi
+    fi
+{{- end }}

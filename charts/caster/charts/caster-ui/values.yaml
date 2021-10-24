@@ -81,6 +81,50 @@ tolerations: []
 
 affinity: {}
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   {
+  #     "name": "caster-ui",
+  #     "displayName": "Caster UI",
+  #     "description": null,
+  #     "grants": "authorization_code client_credentials",
+  #     "scopes": "caster-api",
+  #     "enabled": true,
+  #     "requirePkce": true,
+  #     "allowAccessTokensViaBrowser": true,
+  #     "requireConsent": false,
+  #     "consentLifetime": "30d",
+  #     "alwaysIncludeUserClaimsInIdToken": false,
+  #     "identityTokenLifetime": "5m",
+  #     "accessTokenLifetime": "1h",
+  #     "authorizationCodeLifetime": "5m",
+  #     "allowOfflineAccess": false,
+  #     "updateAccessTokenClaimsOnRefresh": false,
+  #     "useOneTimeRefreshTokens": false,
+  #     "slidingRefreshTokenLifetime": "15d",
+  #     "absoluteRefreshTokenLifetime": "30d",
+  #     "published": false,
+  #     "url": "https://example.com/caster",
+  #     "logoUrl": null,
+  #     "frontChannelLogoutUrl": null,
+  #     "backChannelLogoutUrl": null,
+  #     "redirectUrls": [
+  #       { "value": "https://example.com/caster/auth-callback" },
+  #       { "value": "https://example.com/caster/auth-callback-silent" }
+  #     ],
+  #     "postLogoutUrls": [{ "value": "https://example.com/caster/api" }],
+  #     "corsUrls": [{ "value": "https://example.com" }],
+  #     "alwaysSendClientClaims": false,
+  #     "clientClaimsPrefix": "client_",
+  #     "claims": [],
+  #     "secrets": [],
+  #     "managers": []
+  #   }
+
 env: 
   ## basehref is path to the app
   APP_BASEHREF: ""

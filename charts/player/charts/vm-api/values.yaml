@@ -106,6 +106,67 @@ affinity: {}
 
 command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Vm.Api.dll']
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   {
+  #     "name": "vm-api",
+  #     "displayName": "VM API",
+  #     "description": null,
+  #     "grants": "authorization_code client_credentials",
+  #     "scopes": "openid profile vm-api player-api",
+  #     "enabled": true,
+  #     "requirePkce": true,
+  #     "allowAccessTokensViaBrowser": false,
+  #     "requireConsent": false,
+  #     "consentLifetime": "30d",
+  #     "alwaysIncludeUserClaimsInIdToken": false,
+  #     "identityTokenLifetime": "5m",
+  #     "accessTokenLifetime": "1h",
+  #     "authorizationCodeLifetime": "5m",
+  #     "allowOfflineAccess": false,
+  #     "updateAccessTokenClaimsOnRefresh": false,
+  #     "useOneTimeRefreshTokens": false,
+  #     "slidingRefreshTokenLifetime": "15d",
+  #     "absoluteRefreshTokenLifetime": "30d",
+  #     "published": false,
+  #     "url": "https://example.com/vm",
+  #     "logoUrl": null,
+  #     "frontChannelLogoutUrl": null,
+  #     "backChannelLogoutUrl": null,
+  #     "redirectUrls": [
+  #       { "value": "https://example.com/vm/api/outh2-redirect.html" }
+  #     ],
+  #     "postLogoutUrls": [{ "value": "https://example.com/vm/api" }],
+  #     "corsUrls": [{ "value": "https://example.com" }],
+  #     "alwaysSendClientClaims": false,
+  #     "clientClaimsPrefix": "client_",
+  #     "claims": [],
+  #     "secrets": [],
+  #     "managers": []
+  #   }
+    
+  # resource: |-
+  #   {
+  #     "type": "api",
+  #     "name": "vm-api",
+  #     "displayName": "VM Api",
+  #     "enabled": true,
+  #     "default": true,
+  #     "required": false,
+  #     "emphasize": false,
+  #     "showInDiscoveryDocument": true
+  #   }
+  # account: |-
+  #   {
+  #     "usernames": ["player-vm-admin@example.com"],
+  #     "password": "foundry",
+  #     "manager": true
+  #   }
+
 # env is pod env vars
 env:
   # http_proxy: ""

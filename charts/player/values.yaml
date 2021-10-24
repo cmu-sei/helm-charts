@@ -29,8 +29,6 @@ player-api:
   # the configMap name here
   certificateMap: ""
 
-  
-
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   # this is used to store uploaded files
   storage:
@@ -38,6 +36,102 @@ player-api:
     size: ""
     mode: ReadWriteOnce
     class: default
+
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS 
+    # client: |-
+    #   [
+    #     {
+    #       "name": "player-api",
+    #       "displayName": "Player API",
+    #       "description": null,
+    #       "grants": "authorization_code client_credentials",
+    #       "scopes": "openid profile player-api",
+    #       "enabled": true,
+    #       "requirePkce": true,
+    #       "allowAccessTokensViaBrowser": false,
+    #       "requireConsent": false,
+    #       "consentLifetime": "30d",
+    #       "alwaysIncludeUserClaimsInIdToken": false,
+    #       "identityTokenLifetime": "5m",
+    #       "accessTokenLifetime": "1h",
+    #       "authorizationCodeLifetime": "5m",
+    #       "allowOfflineAccess": false,
+    #       "updateAccessTokenClaimsOnRefresh": false,
+    #       "useOneTimeRefreshTokens": false,
+    #       "slidingRefreshTokenLifetime": "15d",
+    #       "absoluteRefreshTokenLifetime": "30d",
+    #       "published": false,
+    #       "url": "https://example.com/player",
+    #       "logoUrl": null,
+    #       "frontChannelLogoutUrl": null,
+    #       "backChannelLogoutUrl": null,
+    #       "redirectUrls": [
+    #         { "value": "https://example.com/player/api/outh2-redirect.html" }
+    #       ],
+    #       "postLogoutUrls": [{ "value": "https://example.com/player/api" }],
+    #       "corsUrls": [{ "value": "https://example.com" }],
+    #       "alwaysSendClientClaims": false,
+    #       "clientClaimsPrefix": "client_",
+    #       "claims": [],
+    #       "secrets": [],
+    #       "managers": []
+    #     },
+    #     {
+    #       "name": "player-admin",
+    #       "displayName": "Player Admin",
+    #       "description": null,
+    #       "grants": "password client_credentials",
+    #       "scopes": "player-api vm-api",
+    #       "enabled": true,
+    #       "requirePkce": true,
+    #       "allowAccessTokensViaBrowser": false,
+    #       "requireConsent": false,
+    #       "consentLifetime": "30d",
+    #       "alwaysIncludeUserClaimsInIdToken": false,
+    #       "identityTokenLifetime": "5m",
+    #       "accessTokenLifetime": "1h",
+    #       "authorizationCodeLifetime": "5m",
+    #       "allowOfflineAccess": false,
+    #       "updateAccessTokenClaimsOnRefresh": false,
+    #       "useOneTimeRefreshTokens": false,
+    #       "slidingRefreshTokenLifetime": "15d",
+    #       "absoluteRefreshTokenLifetime": "30d",
+    #       "published": true,
+    #       "url": "https://example.com/player",
+    #       "logoUrl": null,
+    #       "frontChannelLogoutUrl": null,
+    #       "backChannelLogoutUrl": null,
+    #       "corsUrls": [{ "value": "https://example.com" }],
+    #       "alwaysSendClientClaims": false,
+    #       "clientClaimsPrefix": "client_",
+    #       "claims": [],
+    #       "secrets": [],
+    #       "managers": []
+    #     }
+    #   ]
+      
+    # resource: |-
+    #   {
+    #     "type": "api",
+    #     "name": "player-api",
+    #     "displayName": "Player Api",
+    #     "enabled": true,
+    #     "default": true,
+    #     "required": false,
+    #     "emphasize": false,
+    #     "showInDiscoveryDocument": true
+    #   }
+    
+    # account: |-
+    #   {
+    #     "usernames": ["player-admin@example.com"],
+    #     "password": "foundry",
+    #     "manager": true
+    #   }
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
@@ -100,6 +194,50 @@ player-ui:
       - secretName: ""
         hosts:
          - example.com
+  
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS
+    # client: |-
+    #   {
+    #     "name": "player-ui",
+    #     "displayName": "Player UI",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "openid profile player-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": true,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": true,
+    #     "url": "https://example.com/player",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/player/auth-callback" },
+    #       { "value": "https://example.com/player/auth-callback-silent" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/player" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
 
   env: 
     ## basehref is path to the app
@@ -108,28 +246,29 @@ player-ui:
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and
   # some basic configuration
-  settings: '{
-    "ApiUrl": "https://player.example.com",
-    "OIDCSettings": {
-      "authority": "https://identity.example.com",
-      "client_id": "player-ui-dev",
-      "redirect_uri": "https://player.example.com/auth-callback/",
-      "post_logout_redirect_uri": "https://player.example.com",
-      "response_type": "code",
-      "scope": "openid profile player-api",
-      "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://player.example.com/auth-callback-silent/"
-    },
-    "NotificationsSettings": {
-      "url": "https://player.example.com/hubs",
-      "number_to_display": 4
-    },
-    "AppTitle": "Crucible",
-    "AppTopBarText": "Crucible",
-    "AppTopBarHexColor": "#b00",
-    "AppTopBarHexTextColor": "#FFFFFF",
-    "UseLocalAuthStorage": true
-  }'
+  settings: |-
+    {
+      "ApiUrl": "https://player.example.com",
+      "OIDCSettings": {
+        "authority": "https://identity.example.com",
+        "client_id": "player-ui-dev",
+        "redirect_uri": "https://player.example.com/auth-callback/",
+        "post_logout_redirect_uri": "https://player.example.com",
+        "response_type": "code",
+        "scope": "openid profile player-api",
+        "automaticSilentRenew": true,
+        "silent_redirect_uri": "https://player.example.com/auth-callback-silent/"
+      },
+      "NotificationsSettings": {
+        "url": "https://player.example.com/hubs",
+        "number_to_display": 4
+      },
+      "AppTitle": "Crucible",
+      "AppTopBarText": "Crucible",
+      "AppTopBarHexColor": "#b00",
+      "AppTopBarHexTextColor": "#FFFFFF",
+      "UseLocalAuthStorage": true
+    }
 
 vm-api:
 
@@ -194,6 +333,67 @@ vm-api:
   # create a configMap with the needed certifcates and specify
   # the configMap name here
   certificateMap: ""
+
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS
+    # client: |-
+    #   {
+    #     "name": "vm-api",
+    #     "displayName": "VM API",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "openid profile vm-api player-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": false,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": false,
+    #     "url": "https://example.com/vm",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/vm/api/outh2-redirect.html" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/vm/api" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
+      
+    # resource: |-
+    #   {
+    #     "type": "api",
+    #     "name": "vm-api",
+    #     "displayName": "VM Api",
+    #     "enabled": true,
+    #     "default": true,
+    #     "required": false,
+    #     "emphasize": false,
+    #     "showInDiscoveryDocument": true
+    #   }
+    # account: |-
+    #   {
+    #     "usernames": ["player-vm-admin@example.com"],
+    #     "password": "foundry",
+    #     "manager": true
+    #   }
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
@@ -282,13 +482,58 @@ vm-ui:
         hosts:
          - example.com
 
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIG
+    # client: |-
+    #   {
+    #     "name": "vm-ui",
+    #     "displayName": "VM UI",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "openid profile vm-api player-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": true,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": false,
+    #     "url": "https://example.com/vm",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/vm/auth-callback" },
+    #       { "value": "https://example.com/vm/auth-callback-silent" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/vm" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
+
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client
-  settings: '{
+  settings: |-
+    {
       "ApiUrl": "https://vm.example.com/api",
       "DeployApiUrl": "",
       "ApiPlayerUrl": "https://player.example.com/api",
@@ -305,7 +550,7 @@ vm-ui:
           "silent_redirect_uri": "https://vm.example.com/auth-callback-silent/"
       },
       "UseLocalAuthStorage": true
-  }'
+    }
 
 
 console-ui:
@@ -330,39 +575,82 @@ console-ui:
       - secretName: ""
         hosts:
          - example.com
-
+  identity:
+    register: false
+    identityMap: ''
+    initCommand: ''
+    # SAMPLE IDENTITY CONFIGS
+    # client: |-
+    #   {
+    #     "name": "vm-console-ui",
+    #     "displayName": "VM Console UI",
+    #     "description": null,
+    #     "grants": "authorization_code client_credentials",
+    #     "scopes": "openid profile vm-api player-api",
+    #     "enabled": true,
+    #     "requirePkce": true,
+    #     "allowAccessTokensViaBrowser": true,
+    #     "requireConsent": false,
+    #     "consentLifetime": "30d",
+    #     "alwaysIncludeUserClaimsInIdToken": false,
+    #     "identityTokenLifetime": "5m",
+    #     "accessTokenLifetime": "1h",
+    #     "authorizationCodeLifetime": "5m",
+    #     "allowOfflineAccess": false,
+    #     "updateAccessTokenClaimsOnRefresh": false,
+    #     "useOneTimeRefreshTokens": false,
+    #     "slidingRefreshTokenLifetime": "15d",
+    #     "absoluteRefreshTokenLifetime": "30d",
+    #     "published": false,
+    #     "url": "https://example.com/vm",
+    #     "logoUrl": null,
+    #     "frontChannelLogoutUrl": null,
+    #     "backChannelLogoutUrl": null,
+    #     "redirectUrls": [
+    #       { "value": "https://example.com/console/auth-callback" },
+    #       { "value": "https://example.com/console/auth-callback-silent" }
+    #     ],
+    #     "postLogoutUrls": [{ "value": "https://example.com/console" }],
+    #     "corsUrls": [{ "value": "https://example.com" }],
+    #     "alwaysSendClientClaims": false,
+    #     "clientClaimsPrefix": "client_",
+    #     "claims": [],
+    #     "secrets": [],
+    #     "managers": []
+    #   }
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""
 
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and some basic settings
-  settings: '{
-    "ConsoleApiUrl": "https://vm.example.com/api/",
-    "OIDCSettings": {
-      "authority": "https://identity.example.com",
-      "client_id": "vm-console-ui-dev",
-      "redirect_uri": "https://console.example.com/auth-callback/",
-      "post_logout_redirect_uri": "https://console.example.com",
-      "response_type": "code",
-      "scope": "openid profile player-api vm-api vm-console-api",
-      "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://console.example.com/auth-callback-silent/"
-    },
-    "UseLocalAuthStorage": true,
-    "VmResolutionOptions": [
-      { "width": 2560, "height": 1600 },
-      { "width": 1920, "height": 1440 },
-      { "width": 1920, "height": 1200 },
-      { "width": 1600, "height": 1200 },
-      { "width": 1400, "height": 1050 },
-      { "width": 1280, "height": 1024 },
-      { "width": 1440, "height": 900 },
-      { "width": 1280, "height": 960 },
-      { "width": 1366, "height": 768 },
-      { "width": 1280, "height": 800 },
-      { "width": 1280, "height": 720 },
-      { "width": 1024, "height": 768 },
-      { "width": 800, "height": 600 }
-    ]
-  }'
+  settings: |-
+    {
+      "ConsoleApiUrl": "https://vm.example.com/api/",
+      "OIDCSettings": {
+        "authority": "https://identity.example.com",
+        "client_id": "vm-console-ui-dev",
+        "redirect_uri": "https://console.example.com/auth-callback/",
+        "post_logout_redirect_uri": "https://console.example.com",
+        "response_type": "code",
+        "scope": "openid profile player-api vm-api vm-console-api",
+        "automaticSilentRenew": true,
+        "silent_redirect_uri": "https://console.example.com/auth-callback-silent/"
+      },
+      "UseLocalAuthStorage": true,
+      "VmResolutionOptions": [
+        { "width": 2560, "height": 1600 },
+        { "width": 1920, "height": 1440 },
+        { "width": 1920, "height": 1200 },
+        { "width": 1600, "height": 1200 },
+        { "width": 1400, "height": 1050 },
+        { "width": 1280, "height": 1024 },
+        { "width": 1440, "height": 900 },
+        { "width": 1280, "height": 960 },
+        { "width": 1366, "height": 768 },
+        { "width": 1280, "height": 800 },
+        { "width": 1280, "height": 720 },
+        { "width": 1024, "height": 768 },
+        { "width": 800, "height": 600 }
+      ]
+    }

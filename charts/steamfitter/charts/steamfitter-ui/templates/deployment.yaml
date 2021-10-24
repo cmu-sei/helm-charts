@@ -1,7 +1,8 @@
+{{- $fullName := include "steamfitter-ui.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "steamfitter-ui.fullname" . }}
+  name: {{ $fullName }}
   labels:
     {{- include "steamfitter-ui.labels" . | nindent 4 }}
 spec:
@@ -53,11 +54,37 @@ spec:
           volumeMounts:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
-              name: {{ include "steamfitter-ui.fullname" . }}-settings
+              name: {{ $fullName }}-settings
+      {{ if eq .Values.identity.register true }}
+      initContainers:
+        - name: identity-seed
+          image: dwdraju/alpine-curl-jq
+          {{ if .Values.identity.initCommand }}
+          command: {{- toYaml .Values.identity.initCommand | nindent 10 }}
+          {{ else }}
+          command: ['/seed/seed.sh', {{ .Chart.Name }}, "/seed"]
+          {{- end }}
+          volumeMounts:
+          - name: {{ .Chart.Name }}-identity-seed
+            mountPath: /seed
+      {{- end }}
       volumes:
-        - name: {{ include "steamfitter-ui.fullname" . }}-settings
+        - name: {{ $fullName }}-settings
           configMap:
-            name: {{ include "steamfitter-ui.fullname" . }}
+            name: {{ $fullName }}
+        {{ if eq .Values.identity.register true }}
+        - name: {{ .Chart.Name }}-identity-seed
+          projected:
+            sources:
+            - configMap:
+                name: {{ $fullName  }}-seed
+            - configMap:
+                name: {{ .Values.identity.identityMap }}
+                items:
+                  - key: seed.sh
+                    path: seed.sh
+                    mode: 0777
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

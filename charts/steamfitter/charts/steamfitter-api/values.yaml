@@ -91,6 +91,61 @@ affinity: {}
 
 command: ['bash', '-c', 'update-ca-certificates && dotnet Steamfitter.Api.dll']
 
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS
+  # client: |-
+  #   {
+  #     "name": "steamfitter-api",
+  #     "displayName": "Steamfitter API",
+  #     "description": null,
+  #     "grants": "authorization_code client_credentials",
+  #     "scopes": "steamfitter-api vm-api player-api",
+  #     "enabled": true,
+  #     "requirePkce": true,
+  #     "allowAccessTokensViaBrowser": false,
+  #     "requireConsent": false,
+  #     "consentLifetime": "30d",
+  #     "alwaysIncludeUserClaimsInIdToken": false,
+  #     "identityTokenLifetime": "5m",
+  #     "accessTokenLifetime": "1h",
+  #     "authorizationCodeLifetime": "5m",
+  #     "allowOfflineAccess": false,
+  #     "updateAccessTokenClaimsOnRefresh": false,
+  #     "useOneTimeRefreshTokens": false,
+  #     "slidingRefreshTokenLifetime": "15d",
+  #     "absoluteRefreshTokenLifetime": "30d",
+  #     "published": false,
+  #     "url": "https://example.com/steamfitter",
+  #     "logoUrl": null,
+  #     "frontChannelLogoutUrl": null,
+  #     "backChannelLogoutUrl": null,
+  #     "redirectUrls": [
+  #       { "value": "https://example.com/steamfitter/api/oauth2-redirect.html" }
+  #     ],
+  #     "postLogoutUrls": [{ "value": "https://example.com/steamfitter/api" }],
+  #     "corsUrls": [{ "value": "https://example.com" }],
+  #     "alwaysSendClientClaims": false,
+  #     "clientClaimsPrefix": "client_",
+  #     "claims": [],
+  #     "secrets": [],
+  #     "managers": []
+  #   }
+    
+  # resource: |-
+  #   {
+  #     "type": "api",
+  #     "name": "steamfitter-api",
+  #     "displayName": "Steamfitter Api",
+  #     "enabled": true,
+  #     "default": true,
+  #     "required": false,
+  #     "emphasize": false,
+  #     "showInDiscoveryDocument": true
+  #   }
+
 env:
   # http_proxy: ""
   # https_proxy: ""

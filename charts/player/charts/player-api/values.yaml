@@ -62,6 +62,7 @@ ingress:
 # create a configMap with the needed certifcates and specify
 # the configMap name here
 certificateMap: ''
+certificateSecret: ''
 
 resources:
   {}
@@ -98,6 +99,103 @@ storage:
   size: ""
   mode: ReadWriteOnce
   class: default
+
+
+identity:
+  register: false
+  identityMap: ''
+  initCommand: ''
+  # SAMPLE IDENTITY CONFIGS 
+  # client: |-
+  #   [
+  #     {
+  #       "name": "player-api",
+  #       "displayName": "Player API",
+  #       "description": null,
+  #       "grants": "authorization_code client_credentials",
+  #       "scopes": "openid profile player-api",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": false,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": false,
+  #       "url": "https://example.com/player",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "redirectUrls": [
+  #         { "value": "https://example.com/player/api/outh2-redirect.html" }
+  #       ],
+  #       "postLogoutUrls": [{ "value": "https://example.com/player/api" }],
+  #       "corsUrls": [{ "value": "https://example.com" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     },
+  #     {
+  #       "name": "player-admin",
+  #       "displayName": "Player Admin",
+  #       "description": null,
+  #       "grants": "password client_credentials",
+  #       "scopes": "player-api vm-api",
+  #       "enabled": true,
+  #       "requirePkce": true,
+  #       "allowAccessTokensViaBrowser": false,
+  #       "requireConsent": false,
+  #       "consentLifetime": "30d",
+  #       "alwaysIncludeUserClaimsInIdToken": false,
+  #       "identityTokenLifetime": "5m",
+  #       "accessTokenLifetime": "1h",
+  #       "authorizationCodeLifetime": "5m",
+  #       "allowOfflineAccess": false,
+  #       "updateAccessTokenClaimsOnRefresh": false,
+  #       "useOneTimeRefreshTokens": false,
+  #       "slidingRefreshTokenLifetime": "15d",
+  #       "absoluteRefreshTokenLifetime": "30d",
+  #       "published": true,
+  #       "url": "https://example.com/player",
+  #       "logoUrl": null,
+  #       "frontChannelLogoutUrl": null,
+  #       "backChannelLogoutUrl": null,
+  #       "corsUrls": [{ "value": "https://example.com" }],
+  #       "alwaysSendClientClaims": false,
+  #       "clientClaimsPrefix": "client_",
+  #       "claims": [],
+  #       "secrets": [],
+  #       "managers": []
+  #     }
+  #   ]
+    
+  # resource: |-
+  #   {
+  #     "type": "api",
+  #     "name": "player-api",
+  #     "displayName": "Player Api",
+  #     "enabled": true,
+  #     "default": true,
+  #     "required": false,
+  #     "emphasize": false,
+  #     "showInDiscoveryDocument": true
+  #   }
+  
+  # account: |-
+  #   {
+  #     "usernames": ["player-admin@example.com"],
+  #     "password": "foundry",
+  #     "manager": true
+  #   }
 
 # env is pod env vars
 env:
