@@ -92,7 +92,7 @@ spec:
           name: mattermost-data
           subPath: {{ include "mattermost-team-edition.fullname" . }}/config
         {{- else }}
-         - mountPath: /mattermost/config/config.json
+        - mountPath: /mattermost/config/config.json
           name: config-json
           subPath: config.json
         {{- end }}
