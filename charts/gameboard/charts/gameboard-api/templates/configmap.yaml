@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "gameboard-api.labels" . | nindent 4 }}
 data:
+{{- if .Values.cacert }}
   ca-cert.crt: |
 {{ .Values.cacert | indent 4 }}
   start.sh: |
@@ -14,7 +15,7 @@ data:
     update-ca-certificates
     cd /app
     dotnet Gameboard.Api.dll
-
+{{- end }}
   job.sh: |-
     #!/bin/sh
 
