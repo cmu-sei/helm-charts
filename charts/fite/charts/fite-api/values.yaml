@@ -78,7 +78,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Fite.Api.dll']
+command: ['bash', '-c', 'update-ca-certificates && dotnet Cite.Api.dll']
 
 nodeSelector: {}
 
