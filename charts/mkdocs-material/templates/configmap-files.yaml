@@ -1,0 +1,24 @@
+{{- if not .Values.giturl }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mkdocs-material.fullname" . }}-files
+  labels:
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
+
+{{- if .Values.files }}
+data:
+{{- range $key, $val := .Values.files }}
+  {{ $key }}: |
+{{ $val  | indent 4}}
+{{- end }}
+{{- end }}
+
+{{- if .Values.binaryFiles }}
+binaryData:
+{{- range $key, $val := .Values.binaryFiles }}
+  {{ $key }}: |
+{{ $val | indent 4}}
+{{- end }}
+{{- end }}
+{{- end }}

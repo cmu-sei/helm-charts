@@ -1,0 +1,52 @@
+{{- if .Values.giturl }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "{{ .Release.Name }}-cron"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  schedule: "*/{{ .Values.pollInterval | default 5 }} * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: "{{ .Release.Name }}"
+          labels:
+            app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+            app.kubernetes.io/instance: {{ .Release.Name | quote }}
+            helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: git-pull
+              image: "bitnami/git"
+              command: ["/entry.d/git-pull.sh"]
+              volumeMounts:
+                - mountPath: /entry.d
+                  name: {{ include "mkdocs-material.fullname" . }}-entry
+                - mountPath: /docs
+                  name: {{ include "mkdocs-material.name" . }}-vol
+                  subPath: {{ include "mkdocs-material.fullname" . }}
+          containers:
+            - name: mkdocs-build
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              args: ["build"]
+              volumeMounts:
+                - mountPath: /docs
+                  name: {{ include "mkdocs-material.name" . }}-vol
+                  subPath: {{ include "mkdocs-material.fullname" . }}
+          volumes:
+            - name: {{ include "mkdocs-material.name" . }}-entry
+              configMap:
+                name: {{ include "mkdocs-material.fullname" . }}-entry
+                defaultMode: 0775
+            - name: {{ include "mkdocs-material.name" . }}-vol
+              persistentVolumeClaim:
+                claimName: {{ include "mkdocs-material.fullname" . }}
+{{- end }}
+    
