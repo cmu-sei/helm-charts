@@ -70,6 +70,7 @@ spec:
         {{- if .Values.giturl }}
         - name: {{ .Chart.Name }}-job
           image: alpine
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [ "/entry.d/job.sh" ]
           volumeMounts:
             - mountPath: /entry.d
