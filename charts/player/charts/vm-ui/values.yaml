@@ -85,4 +85,22 @@ env:
   ## basehref is path to the app
   APP_BASEHREF: ""
 
-settings: '{}'
+# settings: |-
+#   {
+#     "ApiUrl": "https://example.com/vm/api",
+#     "DeployApiUrl": "",
+#     "ApiPlayerUrl": "https://example.com/player/api",
+#     "WelderUrl": "",
+#     "UserFollowUrl": "https://example.com/vm/console/user/{userId}/view/{viewId}/console",
+#     "OIDCSettings": {
+#       "authority": "https://example.com/identity",
+#       "client_id": "vm-ui",
+#       "redirect_uri": "https://example.com/vm/auth-callback",
+#       "post_logout_redirect_uri": "https://example.com/vm",
+#       "response_type": "code",
+#       "scope": "openid profile player-api vm-api",
+#       "automaticSilentRenew": true,
+#       "silent_redirect_uri": "https://example.com/vm/auth-callback-silent"
+#     },
+#     "UseLocalAuthStorage": true
+#   }
