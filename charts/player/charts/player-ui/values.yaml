@@ -85,25 +85,26 @@ env:
   ## basehref is path to the app
   APP_BASEHREF: ""
 
-# settings: '{
-#   "ApiUrl": "http://localhost:4300",
-#   "OIDCSettings": {
-#     "authority": "http://identity:5000",
-#     "client_id": "player-ui",
-#     "redirect_uri": "http://localhost:4301/auth-callback/",
-#     "post_logout_redirect_uri": "http://localhost:4301",
-#     "response_type": "code",
-#     "scope": "openid profile s3",
-#     "automaticSilentRenew": true,
-#     "silent_redirect_uri": "http://localhost:4301/auth-callback-silent/"
-#   },
-#   "NotificationsSettings": {
-#     "url": "http://localhost:4300/notifications",
-#     "number_to_display": 4
-#   },
-#   "AppTitle": "Crucible",
-#   "AppTopBarText": "Crucible",
-#   "AppTopBarHexColor": "#b00",
-#   "AppTopBarHexTextColor": "#FFFFFF",
-#   "UseLocalAuthStorage": true
-# }'
+# settings: |-
+#   {
+#     "ApiUrl": "https://example.com/player",
+#     "OIDCSettings": {
+#       "authority": "https://example.com/identity",
+#       "client_id": "player-ui",
+#       "redirect_uri": "https://example.com/player/auth-callback",
+#       "post_logout_redirect_uri": "https://example.com/player",
+#       "response_type": "code",
+#       "scope": "openid profile player-api",
+#       "automaticSilentRenew": true,
+#       "silent_redirect_uri": "https://example.com/player/auth-callback-silent"
+#     },
+#     "NotificationsSettings": {
+#       "url": "https://example.com/player/hubs",
+#       "number_to_display": 4
+#     },
+#     "AppTitle": "Crucible",
+#     "AppTopBarText": "Crucible",
+#     "AppTopBarHexColor": "#b00",
+#     "AppTopBarHexTextColor": "#FFFFFF",
+#     "UseLocalAuthStorage": true
+#   }
