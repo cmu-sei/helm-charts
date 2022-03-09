@@ -70,38 +70,11 @@ spec:
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
             {{- end }}
-      {{ if eq .Values.identity.register true }}
-      initContainers:
-        - name: identity-seed
-          image: dwdraju/alpine-curl-jq
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{ if .Values.identity.initCommand }}
-          command: {{- toYaml .Values.identity.initCommand | nindent 10 }}
-          {{ else }}
-          command: ['/seed/seed.sh', {{ .Chart.Name }}, "/seed"]
-          {{- end }}
-          volumeMounts:
-          - name: {{ .Chart.Name }}-identity-seed
-            mountPath: /seed
-      {{- end }}
       volumes:
         {{ if .Values.certificateMap }}
         - name: certificates
           configMap:
             name: {{ .Values.certificateMap }}
-        {{- end }}
-        {{ if eq .Values.identity.register true }}
-        - name: {{ .Chart.Name }}-identity-seed
-          projected:
-            sources:
-            - configMap:
-                name: {{ include "caster-api.fullname" . }}-seed
-            - configMap:
-                name: {{ .Values.identity.identityMap }}
-                items:
-                  - key: seed.sh
-                    path: seed.sh
-                    mode: 0777
         {{- end }}
       #   {{- if .Values.storage.existing }}
       #   - name: {{ include "caster-api.name" . }}-vol
