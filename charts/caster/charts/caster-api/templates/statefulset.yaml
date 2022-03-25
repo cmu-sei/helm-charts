@@ -53,14 +53,14 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            # - mountPath: /root/.git-credentials
-            #   subPath: .git-credentials
-            #   name: {{ include "caster-api.fullname" . }}-gitcredentials
-            # {{ if .Values.terraformrc.enabled }}
-            # - mountPath: /root/.terraformrc
-            #   subPath: .terraformrc
-            #   name: {{ include "caster-api.fullname" . }}-terraformrc
-            # {{- end }}
+            - mountPath: /root/.git-credentials
+              subPath: .git-credentials
+              name: {{ include "caster-api.fullname" . }}-gitcredentials
+            {{ if .Values.terraformrc.enabled }}
+            - mountPath: /root/.terraformrc
+              subPath: .terraformrc
+              name: {{ include "caster-api.fullname" . }}-terraformrc
+            {{- end }}
             - mountPath: /terraform
               name: terraform
             - mountPath: /install-terraform.sh
@@ -76,19 +76,7 @@ spec:
           configMap:
             name: {{ .Values.certificateMap }}
         {{- end }}
-      #   {{- if .Values.storage.existing }}
-      #   - name: {{ include "caster-api.name" . }}-vol
-      #     persistentVolumeClaim:
-      #       claimName: {{ .Values.storage.existing }}
-      #   {{- else if .Values.storage.size }}
-      #   - name: {{ include "caster-api.name" . }}-vol
-      #     persistentVolumeClaim:
-      #       claimName: {{ include "caster-api.fullname" . }}
-      #   {{- else }}
-      #   - name: {{ include "caster-api.name" . }}-vol
-      #     emptyDir: {}
-      #   {{- end }}
-
+      
         - name: {{ include "caster-api.fullname" . }}-terraform-installation
           configMap:
             name: {{ include "caster-api.fullname" . }}-terraform-installation
@@ -118,8 +106,8 @@ spec:
         name: terraform
       spec:
         accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "nfs"
+        storageClassName: {{ .Values.storage.class }}
         resources:
           requests:
-            storage: 1Gi
+            storage: {{ .Values.storage.size }}
 {{- end }}
