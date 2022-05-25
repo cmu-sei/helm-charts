@@ -86,7 +86,7 @@ affinity: {}
 # the configMap name here
 certificateMap: ''
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Api.dll']
+command: ['bash', '-c', 'update-ca-certificates && dotnet Gallery.Api.dll']
 
 # env is pod env vars
 env:
