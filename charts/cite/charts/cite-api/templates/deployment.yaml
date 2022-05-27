@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "blueprint-ui.fullname" . }}
+  name: {{ include "cite-api.fullname" . }}
   labels:
-    {{- include "blueprint-ui.labels" . | nindent 4 }}
+    {{- include "cite-api.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "blueprint-ui.selectorLabels" . | nindent 6 }}
+      {{- include "cite-api.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "blueprint-ui.selectorLabels" . | nindent 8 }}
+        {{- include "cite-api.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "blueprint-ui.serviceAccountName" . }}
+      serviceAccountName: {{ include "cite-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -32,10 +32,14 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: {{- toYaml .Values.command | nindent 10 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "cite-api.fullname" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 80
               protocol: TCP
           # livenessProbe:
           #   httpGet:
@@ -45,16 +49,15 @@ spec:
           #   httpGet:
           #     path: /
           #     port: http
+          volumeMounts:
+            - mountPath: /app/conf
+              name: {{ include "cite-api.name" . }}-conf
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
-              subPath: settings.env.json
-              name: {{ include "blueprint-ui.fullname" . }}-settings
       volumes:
-        - name: {{ include "blueprint-ui.fullname" . }}-settings
+        - name: {{ include "cite-api.name" . }}-conf
           configMap:
-            name: {{ include "blueprint-ui.fullname" . }}
+            name: {{ include "cite-api.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
