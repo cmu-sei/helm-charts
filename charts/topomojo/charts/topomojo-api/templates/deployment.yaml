@@ -46,12 +46,17 @@ spec:
           command: {{ .Values.customStart.command }}
           args: {{ .Values.customStart.args }}
           {{- end }}
+          {{- if .Values.securityContext.readOnlyRootFilesystem }}
+          env: 
+            - name: DOTNET_EnableDiagnostics
+              value: "0"
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "topomojo-api.fullname" . }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           volumeMounts:
           {{- if .Values.customStart }}
