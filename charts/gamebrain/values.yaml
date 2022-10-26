@@ -1,0 +1,111 @@
+# Default values for gamebrain.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/cmu-sei/gamebrain
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets:  []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+
+# cacert - add custom CA certificate
+# cacert: |-
+#   -----BEGIN CERTIFICATE-----
+#   MIIDGDCCAgCgAwIBAgIUa1UW5VSRxKikTMGDosCGwXw0mW4wDQYJKoZIhvcNAQEL
+#   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMjAz
+#   MTQwMzU1MDBaFw0yNzAzMTMwMzU1MDBaMCQxIjAgBgNVBAMTGUZvdW5kcnkgQXBw
+#   bGlhbmNlIFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCy
+#   a46243naeYOrqf3VXAV2v8E/WP15ROpoG832Mm14Csnd8lGwNluRjaIMQ5VSGNgQ
+#   upBTH0neDwvTfe0qbRhagbAsQ+LJKWtCQE4kBNNEefSW6xMCXkwfBVzcpmxJzBvz
+#   t1DMGBhgwNbdvLBCB6oIuRcp45dqHjGNZ8zlKfcAf7+4Hz/fzj+8fDxl0CyjZVBW
+#   WAQb1LrQU7hRHgUdu3woaRq2xcFxypl4SqfwAbhvUS/b7K6HosfWlhbu408z8cuv
+#   TkxE7CEEBdEuFFgmCDmyPoGkUSpk9UKRYhBE5Z8sAj5eha0I+yWrcr1QqBQOIpYQ
+#   d7c+xajUNlTp/TRxWPTRAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB
+#   Af8EBTADAQH/MB0GA1UdDgQWBBQQrbd2GuGdvtwjppREUZbU99lzgzANBgkqhkiG
+#   9w0BAQsFAAOCAQEAhcbfeSbjkKKaxNJO72pplhNrmiqAs4jl8a5hwauDzOpcYZxU
+#   NmWOopcZslxHrU2vzzh18Iov1m/L0g+HUE6RH0Z8XZ2s5s4TaSdZN/XkSjhluptX
+#   izYfm/QWFqVhfVozp+BgDLXYMAq6EOPyQlAK8oRyRk1lXHwe2kHda7IqFW6stkhM
+#   FREM/XdM59DkbdvkBIZA6V5FEQdHJXaV/3EyOJfpMhICulm6NSIxrj3QeG0FY2zi
+#   HDP2yyVd9HdeOLkq9SIOjiZX+TSKz1lK8JX9c2GTeAkb8w7iNorB9beMIbuwI++V
+#   y+HBmdG21SmytLBHN+G9AZ5+xsKfnFzp7AA5bA==
+#   -----END CERTIFICATE-----
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+settings: []
+
+initial_state: ""
