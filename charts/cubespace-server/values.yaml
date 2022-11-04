@@ -85,4 +85,5 @@ settings:
   identityUri: https://chart-example.local/id/
   gamebrainUri: https://chart-example.local/gamebrain/
   uriBase: https://chart-example.local/id/
-  clientSecret: ""
+  clientID: game-server
+  clientSecret: 01234567890abcdef123456789abcdef

@@ -36,14 +36,26 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "./StandaloneLinux64"
+            {{- if .Values.settings.identityUri }}
             - "-identityURI"
             - "{{ .Values.settings.identityUri }}"
+            {{- end }}
+            {{- if .Values.settings.gamebrainUri }}
             - "-gamebrainURI"
             - "{{ .Values.settings.gamebrainUri }}"
+            {{- end }}
+            {{- if .Values.settings.uriBase }}
             - "-uriBase"
             - "{{ .Values.settings.uriBase }}"
+            {{- end }}
+            {{- if .Values.settings.clientID }}
+            - "-clientID"
+            - "{{ .Values.settings.clientID }}"
+            {{- end }}
+            {{- if .Values.settings.clientSecret }}
             - "-clientSecret"
             - "{{ .Values.settings.clientSecret }}"
+            {{- end }}
           ports:
             - name: http
               containerPort: 80
