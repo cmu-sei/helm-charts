@@ -36,6 +36,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "./StandaloneLinux64"
+            {{- if .Values.settings -}}
             {{- if .Values.settings.identityUri }}
             - "-identityURI"
             - "{{ .Values.settings.identityUri }}"
@@ -55,6 +56,13 @@ spec:
             {{- if .Values.settings.clientSecret }}
             - "-clientSecret"
             - "{{ .Values.settings.clientSecret }}"
+            {{- end }}
+            {{- if .Values.settings.debug }}
+            - "-debug"
+            {{- end }}
+            {{- if .Values.settings.dev }}
+            - "-dev"
+            {{- end }}
             {{- end }}
           ports:
             - name: http

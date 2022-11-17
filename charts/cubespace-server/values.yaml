@@ -81,9 +81,11 @@ tolerations: []
 
 affinity: {}
 
-settings:
-  identityUri: https://chart-example.local/id/
-  gamebrainUri: https://chart-example.local/gamebrain/
-  uriBase: https://chart-example.local/id/
-  clientID: game-server
-  clientSecret: 01234567890abcdef123456789abcdef
+settings: {}
+  # identityUri: https://chart-example.local/id/
+  # gamebrainUri: https://chart-example.local/gamebrain/
+  # uriBase: https://chart-example.local/id/
+  # clientID: game-server
+  # clientSecret: 01234567890abcdef123456789abcdef
+  # debug: false
+  # dev: false
