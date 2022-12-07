@@ -125,25 +125,3 @@ spec:
       {{ else }}
         emptyDir: {}
       {{ end }}
-      - name: mattermost-plugins
-      {{ if .Values.persistence.plugins.enabled }}
-        persistentVolumeClaim:
-          {{ if .Values.persistence.plugins.existingClaim }}
-          claimName: {{.Values.persistence.plugins.existingClaim }}
-          {{ else }}
-          claimName: {{ default (include "mattermost-team-edition.fullname" .) }}-plugins
-          {{ end }}
-      {{ else }}
-        emptyDir: {}
-      {{ end }}
-      - name: mattermost-config
-      {{ if .Values.persistence.config.enabled }}
-        persistentVolumeClaim:
-          {{ if .Values.persistence.config.existingClaim }}
-          claimName: {{.Values.persistence.config.existingClaim }}
-          {{ else }}
-          claimName: {{ default (include "mattermost-team-edition.fullname" .) }}-config
-          {{ end }}
-      {{ else }}
-        emptyDir: {}
-      {{ end }}
