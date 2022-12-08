@@ -42,7 +42,7 @@ spec:
               name: {{ include "cubescore.name" . }}
               subPath: customize.sh
           {{- if .Values.settings }}
-            - mountPath: /var/www/assets/settings.json
+            - mountPath: /usr/share/nginx/html/assets/settings.json
               name: {{ include "cubescore.name" . }}
               subPath: settings.json
           {{- end }}
