@@ -37,8 +37,11 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          {{- if .Values.settings }}
           volumeMounts:
+            - mountPath: /docker-entrypoint.d/90-customize.sh
+              name: {{ include "cubescore.name" . }}
+              subPath: customize.sh
+          {{- if .Values.settings }}
             - mountPath: /var/www/assets/settings.json
               name: {{ include "cubescore.name" . }}
               subPath: settings.json
