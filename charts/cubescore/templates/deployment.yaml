@@ -35,10 +35,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 80
               protocol: TCP
           volumeMounts:
-            - 
+            - mountPath: /var/www/assets/settings.json
+              name: {{ include "cubescore.name" . }}
+              subPath: settings.json
           livenessProbe:
             httpGet:
               path: /
@@ -61,3 +63,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: {{ include "cubescore.name" . }}
+        configMap:
+          name: {{ include "cubescore.fullname" . }}
+          defaultMode: 0775
