@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jarchive.fullname" . }}
+  labels:
+    {{- include "jarchive.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "jarchive.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jarchive.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jarchive.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "/docker-entrypoint.d/docker-entrypoint"]
+          args: ["./Jarchive"]
+          {{- if .Values.env }}
+          env:
+          {{- range $key, $val := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+          {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /docker-entrypoint.d
+              name: {{ include "jarchive.name" . }}-conf
+            - mountPath: /app/_jarchive
+              name: {{ include "jarchive.name" . }}-vol
+              subPath: {{ include "jarchive.fullname" . }}
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ include "jarchive.name" . }}-conf
+        configMap:
+          name: {{ include "jarchive.fullname" . }}
+          defaultMode: 0775
+      {{- if .Values.storage.existing }}
+      - name: {{ include "jarchive.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "jarchive.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "jarchive.fullname" . }}
+      {{- else }}
+      - name: {{ include "jarchive.name" . }}-vol
+        emptyDir: {}
+      {{- end }}
