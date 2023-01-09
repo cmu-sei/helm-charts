@@ -1,0 +1,130 @@
+# Default values for jarchive.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: jaggedmountain/jarchive
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  ## to support large file upload through nginx-ingress, consider:
+    # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    # nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 200m
+  #   memory: 256Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
+env: {}
+  # PathBase: ""
+  # OpenId__Audience: "jarchive-api"
+  # OpenId__Authority: "https://identity_url"
+  # MaxFileSize: 128m
+
+## entry_files get added to /docker-entrypoint.d
+## any *.sh get executed at start up in sorted order
+entryFiles: {}
+  ## API settings as stringified json that mounts in /app
+  ## Use this if not defining env vars above
+  # appsettings.Production.json: "{}"
+
+  ## UI settings as stringified json that mounts as assets/settings.json
+  # settings.json: |
+    # {
+    #   "appname": "jArchive",
+    #   "oidc": {
+    #     "client_id": "client_id",
+    #     "authority": "https://identity_url",
+    #     "redirect_uri": "https://this.site/oidc",
+    #     "silent_redirect_uri": "https://this.site/assets/oidc-silent.html",
+    #     "response_type": "code",
+    #     "scope": "openid profile jarchive-api",
+    #     "automaticSilentRenew": true,
+    #     "useLocalStorage": true
+    #   }
+    # }
+
+## openGraph is string of html head metadata (single line!)
+openGraph: ""
+# openGraph: >-
+#   <!-- Open Graph info for link previews -->
+#   <meta property="og:title" content="jArchive" />
+#   <meta property="og:type" content="website" />
+#   <meta property="og:url" content="https://some.url" />
+#   <meta property="og:image" content="https://some.url/assets/apple-touch-icon.png" />
+#   <meta property="og:description" content="A simple file store." />

@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jarchive.fullname" . }}
+  labels:
+    {{- include "jarchive.labels" . | nindent 4 }}
+
+data:
+{{- range $key, $val := .Values.entryFiles }}
+  {{ $key }}: |
+{{ $val  | indent 4}}
+{{- end }}
+
+  docker-entrypoint: |
+    #!/bin/sh
+    set -e
+
+    if [ -z "${ENTRYPOINT_QUIET_LOGS:-}" ]; then
+        exec 3>&1
+    else
+        exec 3>/dev/null
+    fi
+
+    if [ "$1" = "./Jarchive" ]; then
+
+      echo >&3 "$0: Looking for shell scripts in /docker-entrypoint.d/"
+      find "/docker-entrypoint.d/" -type f -print | sort -V | while read -r f; do
+          case "$f" in
+              *.sh)
+                  if [ -x "$f" ]; then
+                      echo >&3 "$0: Launching $f";
+                      "$f"
+                  else
+                      # warn on shell scripts without exec bit
+                      echo >&3 "$0: Ignoring $f, not executable";
+                  fi
+                  ;;
+              *) echo >&3 "$0: Ignoring $f";;
+          esac
+      done
+
+      ## move settings files into place
+
+      echo >&3 "$0: Copying settings files into place"
+      cp /docker-entrypoint.d/settings.json /app/wwwroot/assets/ &2>/dev/null
+      cp /docker-entrypoint.d/appsettings*.json /app/ &2>/dev/null
+
+      echo >&3 "$0: Configuration complete; ready for start up"
+    fi
+
+    exec "$@"
+
+  90-customize-index.sh: |
+    src=/app/wwwroot
+    basehref=`echo $PathBase | sed -e s,^/,, -e s,/$,,`
+    if [ -n "$basehref" ]; then
+      find $src/* -name index.html -exec \
+        sed -i "s,base\ href=\"\(.*\)\",base\ href=\"/$basehref\1\"," {} \;
+      dst=$src/$basehref
+      mkdir -p `dirname $dst`
+      ln -s $src $dst
+    fi
+
+  {{- if .Values.openGraph }}
+    meta=$(echo -n {{ .Values.openGraph | quote }} | sed -e 's/[/\&]/\\&/g')
+    sed -i.bak -e "s/<\/head>/${meta}\n<\/head>/" $src/index.html
+  {{- end}}
