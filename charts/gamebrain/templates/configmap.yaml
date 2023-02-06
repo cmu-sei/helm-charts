@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+data:
+{{- if .Values.settings }}
+  settings.yaml: |-
+    {{ .Values.settings | indent 4 | trim }}
+{{- end }}
+{{- if .Values.initial_state }}
+  initial_state.json: |-
+    {{ .Values.initial_state | indent 4 | trim }}
+{{- end }}
+{{- if .Values.cacert }}
+  rootca.crt: |-
+    {{ .Values.cacert | indent 4 | trim }}
+{{- end }}

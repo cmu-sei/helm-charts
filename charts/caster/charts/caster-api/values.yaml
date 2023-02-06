@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-
+kind: "Deployment"
 image:
   repository: cmusei/caster-api
   pullPolicy: IfNotPresent
@@ -209,7 +209,7 @@ env:
 
   Terraform__BinaryPath: '/terraform/binaries'
   Terraform__DefaultVersion: '0.12.24'
-  Terraform__PluginDirectory: '/terraform/plugins/linux_amd64'
+  # Terraform__PluginDirectory: '/terraform/plugins'
   Terraform__RootWorkingDirectory: '/terraform/root'
   Terraform__GitlabApiUrl: 'https://gitlab.com/api/v4/'
   Terraform__GitlabToken: ''

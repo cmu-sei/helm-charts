@@ -47,7 +47,15 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: ["/api", "/hub", "/img", "/doc" ]
+      paths:
+        - path: /api
+          pathType: ImplementationSpecific
+        - path: /hub
+          pathType: ImplementationSpecific
+        - path: /img
+          pathType: ImplementationSpecific
+        - path: /docs
+          pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -135,3 +143,10 @@ env: {}
   # Headers__Security__ContentSecurity: default-src 'self' 'unsafe-inline'; img-src data: 'self'
   # Headers__Security__XContentType: nosniff
   # Headers__Security__XFrame: SAMEORIGIN
+
+## giturl is the url of the git repository of static markdown
+giturl: ""
+## gitbranch sets which repo branch to publish
+gitbranch: ""
+## pollInterval sets minutes between git pull
+pollInterval: 5

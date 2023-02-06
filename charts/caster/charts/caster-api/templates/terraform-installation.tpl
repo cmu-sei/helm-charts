@@ -13,6 +13,7 @@ if [ ! -d $Terraform__BinaryPath ]; then
     mkdir -p "$Terraform__RootWorkingDirectory"
     mkdir -p "$Terraform__PluginDirectory"
     mkdir -p "$Terraform__BinaryPath"
+    mkdir -p "$Terraform__PluginCache"
 
     # Get current Terraform version
     TERRAFORM_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .name)

@@ -48,7 +48,15 @@ gameboard-api:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: ["/api", "/hub", "/img", "/doc" ]
+        paths:
+          - path: /api
+            pathType: ImplementationSpecific
+          - path: /hub
+            pathType: ImplementationSpecific
+          - path: /img
+            pathType: ImplementationSpecific
+          - path: /docs
+            pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -137,6 +145,13 @@ gameboard-api:
     # Headers__Security__XContentType: nosniff
     # Headers__Security__XFrame: SAMEORIGIN
 
+  ## giturl is the url of the git repository of static markdown
+  giturl: ""
+  ## gitbranch sets which repo branch to publish
+  gitbranch: ""
+  ## pollInterval sets minutes between git pull
+  pollInterval: 5
+
 gameboard-ui:
   # Default values for gameboard-ui.
   # This is a YAML-formatted file.
@@ -187,7 +202,9 @@ gameboard-ui:
       # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
-        paths: ["/"]
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:

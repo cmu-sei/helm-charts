@@ -43,12 +43,17 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.securityContext.readOnlyRootFilesystem }}
+          env: 
+            - name: DOTNET_EnableDiagnostics
+              value: "0"
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "identity-api.fullname" . }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           volumeMounts:
             - mountPath: /app/conf

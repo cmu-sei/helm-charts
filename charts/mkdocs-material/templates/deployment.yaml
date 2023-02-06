@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mkdocs-material.fullname" . }}
+  labels:
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mkdocs-material.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mkdocs-material.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mkdocs-material.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- if .Values.giturl }}
+        - name: git-pull
+          image: "bitnami/git"
+          command: ["/entry.d/git-pull.sh"]
+          volumeMounts:
+            - mountPath: /entry.d
+              name: {{ include "mkdocs-material.fullname" . }}-entry
+            - mountPath: /docs
+              name: {{ include "mkdocs-material.name" . }}-vol
+              subPath: {{ include "mkdocs-material.fullname" . }}
+        {{- end }}
+        - name: mkdocs-build
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["build"]
+          volumeMounts:
+            {{- if .Values.giturl }}
+            - mountPath: /docs
+              name: {{ include "mkdocs-material.name" . }}-vol
+              subPath: {{ include "mkdocs-material.fullname" . }}
+            {{- else }}
+            - mountPath: /docs/mkdocs.yml
+              name: {{ include "mkdocs-material.name" . }}
+              subPath: mkdocs.yml
+            - mountPath: /docs/docs
+              name: {{ include "mkdocs-material.name" . }}-files
+            - mountPath: /docs/site
+              name: {{ include "mkdocs-material.name" . }}-vol
+              subPath: {{ include "mkdocs-material.fullname" . }}/site
+            {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: nginx:alpine
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/default.conf
+              name: {{ include "mkdocs-material.name" . }}
+              subPath: nginx.conf
+            - mountPath: /mkdocs
+              name: {{ include "mkdocs-material.name" . }}-vol
+              subPath: {{ include "mkdocs-material.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ include "mkdocs-material.name" . }}
+        configMap:
+          name: {{ include "mkdocs-material.fullname" . }}
+      {{- if .Values.giturl }}
+      - name: {{ include "mkdocs-material.name" . }}-entry
+        configMap:
+          name: {{ include "mkdocs-material.fullname" . }}-entry
+          defaultMode: 0775
+      {{- else }}
+      - name: {{ include "mkdocs-material.name" . }}-files
+        configMap:
+          name: {{ include "mkdocs-material.fullname" . }}-files
+      {{- end }}
+      {{- if .Values.storage.existing }}
+      - name: {{ include "mkdocs-material.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+      - name: {{ include "mkdocs-material.name" . }}-vol
+        persistentVolumeClaim:
+          claimName: {{ include "mkdocs-material.fullname" . }}
+      {{- else if .Values.giturl }}
+      {{- fail "Git deployment mode requires persistent volume" }}
+      {{- else }}
+      - name: {{ include "mkdocs-material.name" . }}-vol
+        emptyDir: {}
+      {{- end }}
