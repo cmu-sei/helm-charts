@@ -31,7 +31,7 @@ data:
       error_page 403 404 /404.html;
       error_page 500 501 502 503 504 /500.html;
       
-      add_header Content-Security-Policy "default-src 'self'; frame-ancestors: 'none'";
+      add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'none'";
 
       # hide hidden
       location ~ /\. { return 404; }
