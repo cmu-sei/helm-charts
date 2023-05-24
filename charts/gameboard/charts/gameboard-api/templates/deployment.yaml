@@ -82,6 +82,9 @@ spec:
             - mountPath: /app/wwwroot/img
               name: {{ include "gameboard-api.name" . }}-vol
               subPath: {{ include "gameboard-api.fullname" . }}/img
+            - mountPath: /app/wwwroot/supportfiles
+              name: {{ include "gameboard-api.name" . }}-vol
+              subPath: {{ include "gameboard-api.fullname" . }}/supportfiles
             - mountPath: /mnt/tm
               name: {{ include "gameboard-api.name" . }}-vol
               subPath: {{ include "gameboard-api.fullname" . }}
