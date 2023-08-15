@@ -97,7 +97,7 @@ postfix:
   replicaCount: 1
 
   image: 
-    repository: cwdoe.azurecr.us/postfix
+    repository: postfix/postfix
     pullPolicy: Always
     tag: latest
 
@@ -170,7 +170,7 @@ dovecot:
   replicaCount: 1
 
   image:
-    repository: cwdoe.azurecr.us/dovecot
+    repository: dovecot/dovecot
     pullPolicy: IfNotPresent
     tag: latest
 
