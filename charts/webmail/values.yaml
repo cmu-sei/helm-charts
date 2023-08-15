@@ -1,0 +1,245 @@
+roundcube:
+  replicaCount: 1
+
+  image:
+    repository: roundcube/roundcubemail
+    pullPolicy: Always
+    tag: 1.6.0-apache
+
+  imagePullSecrets: []
+  nameOverride: ''
+  fullnameOverride: ''
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ''
+
+  podAnnotations: {}
+
+  podSecurityContext:
+    {}
+    # fsGroup: 2000
+
+  securityContext:
+    {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 9000
+
+  ingress:
+    enabled: true
+    hosts:
+      - host: chat-example.local
+        paths:
+          - path: /
+    tls:
+    #  - hosts:
+    #    - chart-example.local
+    #    secretName: chart-example-tls
+
+  resources: 
+    {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    #requests:
+      #cpu:  200m
+      #memory: 256Mi
+
+  volumes:
+    - name: 
+      persistentVolumeClaim:
+        claimName: 
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  env:
+    ROUNDCUBEMAIL_DB_NAME: ''
+    ROUNDCUBEMAIL_DB_TYPE: pgsql
+    ROUNDCUBEMAIL_DEFAULT_HOST: dovecot
+    ROUNDCUBEMAIL_PLUGINS: ''
+    ROUNDCUBEMAIL_SKIN: ''
+    ROUNDCUBEMAIL_SMTP_PORT: "25"
+    ROUNDCUBEMAIL_SMTP_SERVER: postfix
+    ROUNDCUBEMAIL_DB_HOST: ''
+    ROUNDCUBEMAIL_DB_PASSWORD: ""
+    ROUNDCUBEMAIL_DB_USER: ""
+    ROUNDCUBEMAIL_DES_KEY: ""
+
+postfix:
+  replicaCount: 1
+
+  image: 
+    repository: cwdoe.azurecr.us/postfix
+    pullPolicy: Always
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ''
+  fullnameOverride: ''
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ''
+
+  podAnnotations: {}
+
+  podSecurityContext:
+    {}
+    # fsGroup: 2000
+
+  securityContext:
+    {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service: 
+    type: ClusterIP
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+  volumes:
+    - name: 
+      persistentVolumeClaim:
+        claimName: 
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  env:
+    DB_HOST: ""
+    DES_KEY: ""
+
+dovecot:
+  replicaCount: 1
+
+  image:
+    repository: cwdoe.azurecr.us/dovecot
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  imagePullSecrets: []
+  nameOverride: ''
+  fullnameOverride: ''
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ''
+
+  podAnnotations: {}
+
+  podSecurityContext:
+    {}
+    # fsGroup: 2000
+
+  securityContext:
+    {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 32Mi
+
+  volumes:
+    - name: 
+      persistentVolumeClaim:
+        claimName: 
+    - name: 
+      persistentVolumeClaim:
+        claimName: 
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  env:
+    DB_HOST:
+    DB_PASSWORD: ""
+    DB_USER: ""
+    DES_KEY: ""

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roundcubemail
+  labels:
+    service: roundcubemail
+spec:
+  replicas: {{ .Values.replicaCount}}
+  selector:
+    matchLabels:
+      service: roundcubemail
+  template:
+    metadata:
+      labels:
+        service: roundcubemail
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: roundcubemail
+        securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        envFrom:
+        - secretRef:
+            name: roundcubemail-shared-secret
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/src/roundcubemail
+          name: www-data
+          subPath: roundcubemail-update
+        - mountPath: /var/www/html
+          name: www-data
+          subPath: roundcubemail-installed
+        - mountPath: /var/www/html/logs
+          name: www-data
+          subPath: roundcubemaillogs
+        - mountPath: /tmp/roundcube-temp
+          name: temp-data
+      restartPolicy: Always
+      volumes:
+      {{- range .Values.volumes }}
+      - name: {{ .name }}
+        persistentVolumeClaim:
+          claimName: {{ .persistentVolumeClaim.claimName }}
+      - emptyDir: {}
+        name: temp-data
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

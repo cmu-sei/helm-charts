@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postfix
+  labels:
+    service: postfix
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    service: postfix
+  ports:
+  - port: 25
+    targetPort: 25
+    protocol: TCP
+    name: smtp
+  - port: 587
+    targetPort: 587
+    protocol: TCP
+    name: submission
