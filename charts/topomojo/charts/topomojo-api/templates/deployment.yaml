@@ -72,7 +72,7 @@ spec:
             failureThreshold: {{ .Values.livenessProbe.failureThreshold | default 2 }}
           {{- end }}
           {{- if .Values.startupProbe }}
-          livenessProbe:
+          startupProbe:
             httpGet:
               port: {{ .Values.service.port }}
               path: {{ .Values.startupProbe.httpGet.path }}
@@ -85,7 +85,7 @@ spec:
             failureThreshold: {{ .Values.startupProbe.failureThreshold | default 60 }}
           {{- end }}
           {{- if .Values.readinessProbe }}
-          livenessProbe:
+          readinessProbe:
             httpGet:
               port: {{ .Values.service.port }}
               path: {{ .Values.readinessProbe.httpGet.path }}
