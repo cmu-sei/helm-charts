@@ -22,6 +22,10 @@ fullnameOverride: ""
 #   httpGet:
 #     path: /api/healthz/<template_id>
 
+# readinessProbe:
+#   httpGet:
+#     path: /api/healthz/<template_id>
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
