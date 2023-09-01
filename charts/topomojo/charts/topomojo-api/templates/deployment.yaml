@@ -58,17 +58,31 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- if .Values.readinessProbe }}
-          readinessProbe:
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
             httpGet:
               port: {{ .Values.service.port }}
-              path: {{ .Values.readinessProbe.httpGet.path }}
+              path: {{ .Values.livenessProbe.httpGet.path }}
               httpHeaders:
                 - name: Accept
                   value: "*/*"
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 30 }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 30 }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 3 }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds | default 120 }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds | default 60 }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold | default 2 }}
+          {{- end }}
+          {{- if .Values.startupProbe }}
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.service.port }}
+              path: {{ .Values.startupProbe.httpGet.path }}
+              httpHeaders:
+                - name: Accept
+                  value: "*/*"
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold | default 60 }}
           {{- end }}
           volumeMounts:
           {{- if .Values.customStart }}

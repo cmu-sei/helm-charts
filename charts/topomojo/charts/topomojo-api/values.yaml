@@ -14,7 +14,11 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# readinessProbe:
+# livenessProbe:
+#   httpGet:
+#     path: /api/healthz/<template_id>
+
+# startupProbe:
 #   httpGet:
 #     path: /api/healthz/<template_id>
 
