@@ -137,7 +137,14 @@ vm-api:
   # Docker image release version
   image:
     tag: "2.1.3"
-  
+
+  # iso - an NFS volume mount for ISO uploads
+  iso:
+    enabled: false
+    size: ""
+    server: ""
+    path: ""
+    
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -148,6 +155,7 @@ vm-api:
       nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
       nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
       nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     hosts:
       - host: vm.example.com
         paths:

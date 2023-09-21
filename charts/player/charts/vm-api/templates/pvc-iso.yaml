@@ -1,0 +1,13 @@
+{{ if .Values.iso.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+ name: {{ include "vm-api.fullname" . }}-iso
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ default "50Gi" .Values.iso.size }}
+  storageClassName: "nfs"
+{{- end }}

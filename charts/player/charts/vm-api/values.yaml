@@ -14,6 +14,13 @@ imagePullSecrets: []
 nameOverride: ''
 fullnameOverride: ''
 
+# iso - an NFS volume mount for ISO uploads
+iso:
+  enabled: false
+  size: ""
+  server: ""
+  path: ""
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -48,6 +55,7 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
   hosts:
     - host: chart-example.local
       paths:
