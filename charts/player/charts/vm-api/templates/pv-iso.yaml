@@ -1,0 +1,17 @@
+{{ if .Values.iso.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+ name: {{ include "vm-api.fullname" . }}-iso
+spec:
+  capacity:
+    storage: {{ default "50Gi" .Values.iso.size }}
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: {{ .Values.iso.server }}
+    path: {{ .Values.iso.path }}
+    readOnly: false
+  storageClassName: "nfs"
+{{- end }}   

@@ -51,16 +51,26 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{ if .Values.certificateMap }}
           volumeMounts:
+          {{ if .Values.certificateMap }}
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
           {{- end }}
-      {{ if .Values.certificateMap }}
+          {{ if .Values.iso.enabled }}
+            - name: {{ include "vm-api.fullname" . }}-iso
+              mountPath: /app/isos/player
+          {{- end }}
+      
       volumes:
+      {{ if .Values.certificateMap }}
         - name: certificates
           configMap:
             name: {{ .Values.certificateMap }}
+      {{- end }}
+      {{ if .Values.iso.enabled }}
+        - name: {{ include "vm-api.fullname" . }}-iso
+          persistentVolumeClaim:
+            claimName: {{ include "vm-api.fullname" . }}-iso
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
