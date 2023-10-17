@@ -1,323 +1,322 @@
 topomojo-api:
   # Default values for topomojo-api.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
 
-replicaCount: 1
+  replicaCount: 1
 
-image:
-  repository: cmusei/topomojo-api
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  image:
+    repository: cmusei/topomojo-api
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-# livenessProbe:
-#   httpGet:
-#     path: /api/healthz/<template_id>
-
-# startupProbe:
-#   httpGet:
-#     path: /api/healthz/<template_id>
-
-# readinessProbe:
-#   httpGet:
-#     path: /api/healthz/<template_id>
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 80
-
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /api
-          pathType: ImplementationSpecific
-        - path: /hub
-          pathType: ImplementationSpecific
-        - path: /docs
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-health: {}
   # livenessProbe:
-  #   initialDelaySeconds: 10
   #   httpGet:
-  #     path: /api/healthz
-  #     port: http
+  #     path: /api/healthz/<template_id>
+
   # startupProbe:
-  #   initialDelaySeconds: 30
   #   httpGet:
-  #     path: /api/healthz
-  #     port: http
-  #   failureThreshold: 9
-  #   periodSeconds: 10
+  #     path: /api/healthz/<template_id>
 
-# storage - either an existing pvc, the size for a new pvc, or emptyDir
-storage:
-  existing: ""
-  size: ""
-  mode: ReadWriteOnce
-  class: default
+  # readinessProbe:
+  #   httpGet:
+  #     path: /api/healthz/<template_id>
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 200m
-  #   memory: 512Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 256Mi
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  podAnnotations: {}
 
-nodeSelector: {}
+  podSecurityContext: {}
+    # fsGroup: 2000
 
-tolerations: []
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
 
-affinity: {}
+  service:
+    type: ClusterIP
+    port: 80
 
-## migrations sets how data migrations run
-## If enabled, all replicas will wait until a single migration job runs.
-## this is important if running multiple replicas or if you use different
-## connection strings (permissions) for building the database versus using it.
-## If using a single connection string, no need to specify here. It will use values
-## from `env` below.
-## NOTE: the serviceAccount must have permission to `get batch.jobs`.
-## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
-migrations:
-  enabled: false
-  restartPolicy: Never
-  Database__Provider: ""
-  Database__ConnectionString: ""
-  env: {}
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /api
+            pathType: ImplementationSpecific
+          - path: /hub
+            pathType: ImplementationSpecific
+          - path: /docs
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-## customStart overrides the default start process.  Files are mounted in `/start`
-customStart: {}
-  # command: ['/bin/sh']
-  # args: ['/start/start.sh']
-  # binaryFiles: {}
-  # files:
-  #   start.sh: |
-  #     #!/bin/sh
-  #     cp /start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
-  #     cd /app && dotnet TopoMojo.Api.dll
-  #   cacert.crt: ""
+  health: {}
+    # livenessProbe:
+    #   initialDelaySeconds: 10
+    #   httpGet:
+    #     path: /api/healthz
+    #     port: http
+    # startupProbe:
+    #   initialDelaySeconds: 30
+    #   httpGet:
+    #     path: /api/healthz
+    #     port: http
+    #   failureThreshold: 9
+    #   periodSeconds: 10
 
-## existingSecret references a secret already in k8s. The values are saved as files in `/app/conf`.
-existingSecret: ""
+  # storage - either an existing pvc, the size for a new pvc, or emptyDir
+  storage:
+    existing: ""
+    size: ""
+    mode: ReadWriteOnce
+    class: default
 
-# Config app settings with environment vars.
-# Those most likely needing values are listed. For others,
-# see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf
-env:
-  # PathBase: ""
-  # Oidc__Audience: topomojo-api
-  # Oidc__Authority: http://localhost:5000
-  # Database__Provider: InMemory
-  # Database__ConnectionString: topomojo_db
-  # Database__SeedFile: seed-data.json
-  # Database__AdminId: ""
-  # Database__AdminName: ""
-  # Cache__RedisUrl: ""
-  # Cache__Key: ""
-  # Cache__SharedFolder: ""
-  # OpenApi__Enabled: true
-  # OpenApi__ApiName: TopoMojo
-  # OpenApi__Client__ClientId: topomojo-swagger
-  # FileUpload__TopoRoot: tm
-  # FileUpload__IsoRoot: tm/isos
-  # FileUpload__DocRoot: tm/_docs
-  # Core__DefaultGamespaceMinutes: 120
-  # Core__DefaultGamespaceLimit: 2
-  # Core__DefaultWorkspaceLimit: 0
-  # Core__DefaultTemplateLimit: 3
-  # Core__DefaultUserScope: everyone
-  # Core__ReplicaLimit: 5
-  # Core__NetworkHostTemplateId: 0
-  # Core__GameEngineIsoFolder: static
-  # Core__ConsoleHost: ""
-  # Core__LaunchUrl: /lp?
-  # Core__DocPath: wwwroot/docs
-  # Core__AllowUnprivilegedVmReconfigure: false
-  # Pod__Url: ""
-  # Pod__User: ""
-  # Pod__Password: ""
-  # Pod__PoolPath: ""
-  # Pod__Uplink: vSwitch0
-  # Pod__VmStore: ""
-  # Pod__IsoStore: ""
-  # Pod__DiskStore: ""
-  # Pod__TicketUrlHandler: querystring
-  # Pod__Vlan__Range: ""
-  # Pod__KeepAliveMinutes: 10
-  # Pod__DebugVerbose: false
-  # Pod__IsNsxNetwork: false
-  # Pod__Sddc__ApiUrl: ""
-  # Pod__Sddc__MetadataUrl: ""
-  # Pod__Sddc__SegmentApiPath = policy/api/v1/infra/tier-1s/cgw/segments
-  # Pod__Sddc__ApiKey: ""
-  # Pod__Sddc__AuthUrl: ""
-  # Pod__Sddc__CertificatePath: ""
-  # Pod__Sddc__CertificatePassword: ""
-  # Logging__Console__DisableColors: false
-  # Logging__LogLevel__Default: Information
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 200m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 256Mi
 
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  ## migrations sets how data migrations run
+  ## If enabled, all replicas will wait until a single migration job runs.
+  ## this is important if running multiple replicas or if you use different
+  ## connection strings (permissions) for building the database versus using it.
+  ## If using a single connection string, no need to specify here. It will use values
+  ## from `env` below.
+  ## NOTE: the serviceAccount must have permission to `get batch.jobs`.
+  ## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
+  migrations:
+    enabled: false
+    restartPolicy: Never
+    Database__Provider: ""
+    Database__ConnectionString: ""
+    env: {}
+
+  ## customStart overrides the default start process.  Files are mounted in `/start`
+  customStart: {}
+    # command: ['/bin/sh']
+    # args: ['/start/start.sh']
+    # binaryFiles: {}
+    # files:
+    #   start.sh: |
+    #     #!/bin/sh
+    #     cp /start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
+    #     cd /app && dotnet TopoMojo.Api.dll
+    #   cacert.crt: ""
+
+  ## existingSecret references a secret already in k8s. The values are saved as files in `/app/conf`.
+  existingSecret: ""
+
+  # Config app settings with environment vars.
+  # Those most likely needing values are listed. For others,
+  # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf
+  env:
+    # PathBase: ""
+    # Oidc__Audience: topomojo-api
+    # Oidc__Authority: http://localhost:5000
+    # Database__Provider: InMemory
+    # Database__ConnectionString: topomojo_db
+    # Database__SeedFile: seed-data.json
+    # Database__AdminId: ""
+    # Database__AdminName: ""
+    # Cache__RedisUrl: ""
+    # Cache__Key: ""
+    # Cache__SharedFolder: ""
+    # OpenApi__Enabled: true
+    # OpenApi__ApiName: TopoMojo
+    # OpenApi__Client__ClientId: topomojo-swagger
+    # FileUpload__TopoRoot: tm
+    # FileUpload__IsoRoot: tm/isos
+    # FileUpload__DocRoot: tm/_docs
+    # Core__DefaultGamespaceMinutes: 120
+    # Core__DefaultGamespaceLimit: 2
+    # Core__DefaultWorkspaceLimit: 0
+    # Core__DefaultTemplateLimit: 3
+    # Core__DefaultUserScope: everyone
+    # Core__ReplicaLimit: 5
+    # Core__NetworkHostTemplateId: 0
+    # Core__GameEngineIsoFolder: static
+    # Core__ConsoleHost: ""
+    # Core__LaunchUrl: /lp?
+    # Core__DocPath: wwwroot/docs
+    # Core__AllowUnprivilegedVmReconfigure: false
+    # Pod__Url: ""
+    # Pod__User: ""
+    # Pod__Password: ""
+    # Pod__PoolPath: ""
+    # Pod__Uplink: vSwitch0
+    # Pod__VmStore: ""
+    # Pod__IsoStore: ""
+    # Pod__DiskStore: ""
+    # Pod__TicketUrlHandler: querystring
+    # Pod__Vlan__Range: ""
+    # Pod__KeepAliveMinutes: 10
+    # Pod__DebugVerbose: false
+    # Pod__IsNsxNetwork: false
+    # Pod__Sddc__ApiUrl: ""
+    # Pod__Sddc__MetadataUrl: ""
+    # Pod__Sddc__SegmentApiPath = policy/api/v1/infra/tier-1s/cgw/segments
+    # Pod__Sddc__ApiKey: ""
+    # Pod__Sddc__AuthUrl: ""
+    # Pod__Sddc__CertificatePath: ""
+    # Pod__Sddc__CertificatePassword: ""
+    # Logging__Console__DisableColors: false
+    # Logging__LogLevel__Default: Information
 
 
 topomojo-ui:
   # Default values for topomojo-ui.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
 
-replicaCount: 1
+  replicaCount: 1
 
-image:
-  repository: cmusei/topomojo-ui
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  image:
+    repository: cmusei/topomojo-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: false
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
 
-podAnnotations: {}
+  podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+  podSecurityContext: {}
+    # fsGroup: 2000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
 
-service:
-  type: ClusterIP
-  port: 80
+  service:
+    type: ClusterIP
+    port: 80
 
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 20m
-  #   memory: 20Mi
-  # requests:
-  #   cpu: 10m
-  #   memory: 10Mi
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 20m
+    #   memory: 20Mi
+    # requests:
+    #   cpu: 10m
+    #   memory: 10Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
 
-nodeSelector: {}
+  nodeSelector: {}
 
-tolerations: []
+  tolerations: []
 
-affinity: {}
+  affinity: {}
 
-## basehref is path to the app
-basehref: ""
+  ## basehref is path to the app
+  basehref: ""
 
-## openGraph is string of html head metadata (single line!)
-# openGraph: >-
-#   <!-- Open Graph info for link previews -->
-#   <meta property="og:title" content="AppNmae" />
-#   <meta property="og:type" content="website" />
-#   <meta property="og:url" content="https://some.url" />
-#   <meta property="og:image" content="https://some.url/logo.png" />
-#   <meta property="og:description" content="description" />
+  ## openGraph is string of html head metadata (single line!)
+  # openGraph: >-
+  #   <!-- Open Graph info for link previews -->
+  #   <meta property="og:title" content="AppNmae" />
+  #   <meta property="og:type" content="website" />
+  #   <meta property="og:url" content="https://some.url" />
+  #   <meta property="og:image" content="https://some.url/logo.png" />
+  #   <meta property="og:description" content="description" />
 
-## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
-## its contents will be merged into index.html head element.
-# faviconsUrl: "https://some.url/favs.tgz"
+  ## faviconsUrl is a url to tgz of icon bundle. If bundle has favicon.html,
+  ## its contents will be merged into index.html head element.
+  # faviconsUrl: "https://some.url/favs.tgz"
 
-## settings is stringified json that gets included as assets/settings.json
-settings: |
-  {
-    appname: 'TopoMojo',
-    oidc: {
-      client_id: 'clientid',
-      authority: 'https://your.identity.authority',
-      redirect_uri: 'https://this.site/oidc',
-      silent_redirect_uri: 'https://this.site/oidc-silent.html',
-      response_type: 'code',
-      scope: 'openid profile topomojo-api',
-      monitorSession: false,
-      loadUserInfo: true,
-      automaticSilentRenew: true,
-      useLocalStorage: true
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: |
+    {
+      appname: 'TopoMojo',
+      oidc: {
+        client_id: 'clientid',
+        authority: 'https://your.identity.authority',
+        redirect_uri: 'https://this.site/oidc',
+        silent_redirect_uri: 'https://this.site/oidc-silent.html',
+        response_type: 'code',
+        scope: 'openid profile topomojo-api',
+        monitorSession: false,
+        loadUserInfo: true,
+        automaticSilentRenew: true,
+        useLocalStorage: true
+      }
     }
-  }
