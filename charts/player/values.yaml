@@ -2,7 +2,7 @@ player-api:
   kind: "Deployment"
   # Docker image release version
   image:
-    tag: "3.1.0"
+    tag: "3.2.2"
   
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -82,7 +82,7 @@ player-ui:
 
   # Docker image release version
   image:
-    tag: "2.0.4"
+    tag: "3.1.8"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -100,6 +100,11 @@ player-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  # Mount additional volumes into container
+  additionalVolumeMounts: []
+
+  additionalVolumes: []
 
   env: 
     ## basehref is path to the app
@@ -136,7 +141,7 @@ vm-api:
 
   # Docker image release version
   image:
-    tag: "2.1.3"
+    tag: "3.5.3"
 
   # iso - an NFS volume mount for ISO uploads
   iso:
@@ -272,7 +277,7 @@ vm-ui:
 
   # Docker image release version
   image:
-    tag: "2.1.2"
+    tag: "3.3.3"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -290,6 +295,10 @@ vm-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  additionalVolumeMounts: []
+  
+  additionalVolumes: []
 
   env: 
     ## basehref is path to the app
@@ -322,7 +331,7 @@ console-ui:
 
   # Docker image release version
   image:
-    tag: "2.1.1"
+    tag: "3.1.1"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -340,6 +349,10 @@ console-ui:
       - secretName: ""
         hosts:
          - example.com
+
+  additionalVolumeMounts: []
+  
+  additionalVolumes: []
 
   env: 
     ## basehref is path to the app
