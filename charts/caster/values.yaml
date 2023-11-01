@@ -3,7 +3,7 @@ caster-api:
   # Docker image release version
   image:
     # Caster API version
-    tag: "2.1.0"
+    tag: "3.3.0"
   
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -199,7 +199,7 @@ caster-ui:
 
   # Docker image release version
   image:
-    tag: "2.1.0"
+    tag: "3.3.0"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -218,6 +218,11 @@ caster-ui:
         hosts:
          - example.com
 
+  # Mount additional files in container
+  additionalVolumeMounts: []
+  
+  additionalVolumes: []
+  
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""
