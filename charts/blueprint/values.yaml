@@ -1,6 +1,6 @@
 blueprint-api:
   image:
-    tag: "1.0.0"
+    tag: "0.3.10"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -42,7 +42,7 @@ blueprint-api:
 blueprint-ui:
   # Docker image release version
   image:
-    tag: '1.0.0'
+    tag: '0.3.12'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -60,6 +60,11 @@ blueprint-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  # Mount additional volumes into container
+  additionalVolumeMounts: []
+
+  additionalVolumes: []
 
   env:
   # Config app settings with a JSON file.
