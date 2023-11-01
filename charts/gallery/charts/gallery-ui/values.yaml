@@ -81,4 +81,8 @@ tolerations: []
 
 affinity: {}
 
+additionalVolumeMounts: []
+
+additionalVolumes: []
+
 settings: '{}'

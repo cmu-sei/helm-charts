@@ -1,6 +1,6 @@
 gallery-api:
   image:
-    tag: "1.0.0"
+    tag: "1.5.1"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -42,7 +42,7 @@ gallery-api:
 gallery-ui:
   # Docker image release version
   image:
-    tag: '1.0.0'
+    tag: '1.5.2'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -60,6 +60,11 @@ gallery-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  # Mount additional volumes into container
+  additionalVolumeMounts: []
+  
+  additionalVolumes: []
 
   env: 
   # Config app settings with a JSON file.
