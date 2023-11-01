@@ -1,7 +1,7 @@
 alloy-api:
   # Docker image release version
   image:
-    tag: '2.0.2'
+    tag: '3.4.3'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -75,7 +75,7 @@ alloy-api:
 alloy-ui:
   # Docker image release version
   image:
-    tag: '2.0.1'
+    tag: '3.2.6'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -93,6 +93,11 @@ alloy-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  # Mount additional volumes in container
+  additionalVolumeMounts: []
+
+  additionalVolumes: []
 
   env: 
     ## basehref is path to the app

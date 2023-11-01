@@ -81,6 +81,10 @@ tolerations: []
 
 affinity: {}
 
+additionalVolumeMounts: []
+
+additionalVolumes: []
+
 # env is pod env vars
 env: 
   ## basehref is path to the app
