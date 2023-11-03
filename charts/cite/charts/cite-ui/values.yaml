@@ -80,10 +80,25 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+  
+## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+# Example use to overwrite the default dropdown indicator from a file in a configMap:
+#
+# extraVolumes: |
+#   - name: "replacement-icon-vol"
+#      configMap:
+#        name: "replacement-icons"
+#
+# extraVolumeMounts: |
+#   - name: "replacement-icon-vol"
+#     mountPath: /usr/share/nginx/html/assets/svg-icons/ic_expand_more.svg
+#     subPath: ic_expand_more.svg
+#
+# See kubernetes documentation for configuring your volumes:
+# https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumes: ""
 
-additionalVolumeMounts: []
-
-additionalVolumes: []
+extraVolumeMounts: ""
 
 env:
   ## basehref is path to the app
@@ -111,3 +126,4 @@ env:
 #     "DefaultEvaluationId": "",
 #     "DefaultTeamId": ""
 # }
+settings: ""

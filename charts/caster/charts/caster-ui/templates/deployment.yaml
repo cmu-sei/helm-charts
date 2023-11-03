@@ -54,16 +54,12 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "caster-ui.fullname" . }}-settings
-            {{- if .Values.additionalVolumeMounts }}
-              {{- toYaml .Values.additionalVolumeMounts | nindent 12 }}
-            {{- end }}
+            {{- include "caster-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "caster-ui.fullname" . }}-settings
           configMap:
             name: {{ include "caster-ui.fullname" . }}
-        {{- if .Values.additionalVolumes }}
-          {{- toYaml .Values.additionalVolumes | nindent 8 }}
-        {{- end }}
+        {{- include "caster-ui.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

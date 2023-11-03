@@ -116,10 +116,24 @@ steamfitter-ui:
          - example.com
 
 
-  # Mount additional volumes into container
-  additionalVolumeMounts: []
+  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  # Example use to overwrite the favicon from a file in a configMap:
+  #
+  # extraVolumes: |
+  #   - name: "replacement-icon-vol"
+  #      configMap:
+  #        name: "replacement-icons"
+  #
+  # extraVolumeMounts: |
+  #   - name: "replacement-icon-vol"
+  #     mountPath: /usr/share/nginx/html/assets/img/steamfitter.ico
+  #     subPath: steamfitter.ico
+  #
+  # See kubernetes documentation for configuring your volumes:
+  # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumes: ""
   
-  additionalVolumes: []
+  extraVolumeMounts: ""
   
   env: 
     ## basehref is path to the app

@@ -81,9 +81,25 @@ tolerations: []
 
 affinity: {}
 
-additionalVolumeMounts: []
+## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
+# Example use to overwrite the favicon from a file in a configMap:
+#
+# extraVolumes: |
+#   - name: "replacement-icon-vol"
+#      configMap:
+#        name: "replacement-icons"
+#
+# extraVolumeMounts: |
+#   - name: "replacement-icon-vol"
+#     mountPath: /usr/share/nginx/html/assets/img/alloy.ico
+#     subPath: alloy.ico
+#
+# See kubernetes documentation for configuring your volumes:
+# https://kubernetes.io/docs/concepts/storage/volumes/
 
-additionalVolumes: []
+extraVolumeMounts: ""
+
+extraVolumes: ""
 
 # env is pod env vars
 env: 

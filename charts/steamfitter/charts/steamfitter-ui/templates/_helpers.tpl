@@ -60,3 +60,18 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Resolve extraVolumeMounts value
+*/}}
+{{- define "steamfitter-ui.extraVolumeMounts" -}}
+{{ tpl (default "" .Values.extraVolumeMounts) . }}
+{{- end -}}
+
+{{/*
+Resolve extraVolumes value
+*/}}
+{{- define "steamfitter-ui.extraVolumes" -}}
+{{ tpl (default "" .Values.extraVolumes) . }}
+{{- end -}}
+

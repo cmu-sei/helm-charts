@@ -60,3 +60,18 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+```handlebars
+{{/*
+Resolve extraVolumeMounts value
+*/}}
+{{- define "console-ui.extraVolumeMounts" -}}
+{{ tpl (default "" .Values.extraVolumeMounts) . }}
+{{- end -}}
+
+{{/*
+Resolve extraVolumes value
+*/}}
+{{- define "console-ui.extraVolumes" -}}
+{{ tpl (default "" .Values.extraVolumes) . }}
+{{- end -}}
