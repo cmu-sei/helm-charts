@@ -81,6 +81,25 @@ tolerations: []
 
 affinity: {}
 
+## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+# Example use to overwrite the favicon from a file in a configMap:
+#
+# extraVolumes: |
+#   - name: "replacement-icon-vol"
+#      configMap:
+#        name: "replacement-icons"
+#
+# extraVolumeMounts: |
+#   - name: "replacement-icon-vol"
+#     mountPath: /usr/share/nginx/html/assets/img/alloy.ico
+#     subPath: alloy.ico
+#
+# See kubernetes documentation for configuring your volumes:
+# https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumes: ""
+
+extraVolumeMounts: ""
+
 env: 
   ## basehref is path to the app
   APP_BASEHREF: ""
@@ -99,3 +118,4 @@ env:
 #   },
 #   "UseLocalAuthStorage": true
 # }'
+settings: ""

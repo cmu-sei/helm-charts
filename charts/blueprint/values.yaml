@@ -1,6 +1,6 @@
 blueprint-api:
   image:
-    tag: "1.0.0"
+    tag: "0.3.10"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -42,7 +42,7 @@ blueprint-api:
 blueprint-ui:
   # Docker image release version
   image:
-    tag: '1.0.0'
+    tag: '0.3.12'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -60,6 +60,25 @@ blueprint-ui:
       - secretName: ''
         hosts:
           - example.com
+
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
+  # Example use to overwrite the white ruler icon from a file in a configMap:
+  #
+  # extraVolumes: |
+  #   - name: "replacement-icon-vol"
+  #      configMap:
+  #        name: "replacement-icons"
+  #
+  # extraVolumeMounts: |
+  #   - name: "replacement-icon-vol"
+  #     mountPath: /usr/share/nginx/html/assets/img/pencil-ruler-white.png
+  #     subPath: pencil-ruler-white.png
+  #
+  # See kubernetes documentation for configuring your volumes:
+  # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumes: ""
+
+  extraVolumeMounts: ""
 
   env:
   # Config app settings with a JSON file.

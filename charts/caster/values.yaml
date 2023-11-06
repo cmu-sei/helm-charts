@@ -3,7 +3,7 @@ caster-api:
   # Docker image release version
   image:
     # Caster API version
-    tag: "2.1.0"
+    tag: "3.3.0"
   
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -199,7 +199,7 @@ caster-ui:
 
   # Docker image release version
   image:
-    tag: "2.1.0"
+    tag: "3.3.0"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -218,6 +218,25 @@ caster-ui:
         hosts:
          - example.com
 
+  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  # Example use to overwrite the favicon from a file in a configMap:
+  #
+  # extraVolumes: |
+  #   - name: "replacement-icon-vol"
+  #      configMap:
+  #        name: "replacement-icons"
+  #
+  # extraVolumeMounts: |
+  #   - name: "replacement-icon-vol"
+  #     mountPath: /usr/share/nginx/html/assets/img/caster.ico
+  #     subPath: caster.ico
+  #
+  # See kubernetes documentation for configuring your volumes:
+  # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumes: ""
+
+  extraVolumeMounts: ""
+  
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""

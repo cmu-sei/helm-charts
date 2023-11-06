@@ -54,10 +54,12 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "alloy-ui.fullname" . }}-settings
+            {{- include "alloy-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "alloy-ui.fullname" . }}-settings
           configMap:
             name: {{ include "alloy-ui.fullname" . }}
+        {{- include "alloy-ui.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

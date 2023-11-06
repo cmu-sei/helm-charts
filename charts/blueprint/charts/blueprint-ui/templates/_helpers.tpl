@@ -60,3 +60,17 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Resolve extraVolumeMounts value
+*/}}
+{{- define "blueprint-ui.extraVolumeMounts" -}}
+{{ tpl (default "" .Values.extraVolumeMounts) . }}
+{{- end -}}
+
+{{/*
+Resolve extraVolumes value
+*/}}
+{{- define "blueprint-ui.extraVolumes" -}}
+{{ tpl (default "" .Values.extraVolumes) . }}
+{{- end -}}

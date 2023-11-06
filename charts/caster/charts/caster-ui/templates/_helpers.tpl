@@ -60,3 +60,17 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Resolve extraVolumeMounts value
+*/}}
+{{- define "caster-ui.extraVolumeMounts" -}}
+{{ tpl (default "" .Values.extraVolumeMounts) . }}
+{{- end -}}
+
+{{/*
+Resolve extraVolumes value
+*/}}
+{{- define "caster-ui.extraVolumes" -}}
+{{ tpl (default "" .Values.extraVolumes) . }}
+{{- end -}}

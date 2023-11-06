@@ -1,7 +1,7 @@
 alloy-api:
   # Docker image release version
   image:
-    tag: '2.0.2'
+    tag: '3.4.3'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -75,7 +75,7 @@ alloy-api:
 alloy-ui:
   # Docker image release version
   image:
-    tag: '2.0.1'
+    tag: '3.2.6'
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -94,6 +94,25 @@ alloy-ui:
         hosts:
           - example.com
 
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
+  # Example use to overwrite the favicon from a file in a configMap:
+  #
+  # extraVolumes: |
+  #   - name: "replacement-icon-vol"
+  #      configMap:
+  #        name: "replacement-icons"
+  #
+  # extraVolumeMounts: |
+  #   - name: "replacement-icon-vol"
+  #     mountPath: /usr/share/nginx/html/assets/img/alloy.ico
+  #     subPath: alloy.ico
+  #
+  # See kubernetes documentation for configuring your volumes:
+  # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumes: ""
+
+  extraVolumeMounts: ""
+  
   env: 
     ## basehref is path to the app
     APP_BASEHREF: ""

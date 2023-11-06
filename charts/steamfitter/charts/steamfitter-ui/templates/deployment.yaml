@@ -35,7 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: {{ include "steamfitter-api.fullname" . }}
+                name: {{ include "steamfitter-ui.fullname" . }}
           ports:
             - name: http
               containerPort: 8080
@@ -54,10 +54,12 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "steamfitter-ui.fullname" . }}-settings
+            {{- include "steamfitter-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "steamfitter-ui.fullname" . }}-settings
           configMap:
             name: {{ include "steamfitter-ui.fullname" . }}
+        {{- include "steamfitter-ui.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
