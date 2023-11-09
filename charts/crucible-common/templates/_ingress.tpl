@@ -116,25 +116,25 @@ spec:
   {{- end }}
   rules: 
     {{- range .ingress.hosts }}
-    - host: {{ .host | quote }}
-      http:
-        paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- if include "common.ingress.supportsPathType" (dict "apiVersion" $apiVersion) }}
-            pathType: {{ default "ImplementationSpecific" .pathType }}
-            {{- end }}
-            backend: {{- include "common.ingress.formatBackend"  (dict "apiVersion" $apiVersion "ingress" .ingress "svcName" $svcName "svcPort" $svcPort)  | nindent 14 -}}
-          {{- end }}
+  - host: {{ .host | quote }}
+    http:
+      paths:
+      {{- range .paths }}
+      - path: {{ .path }}
+        {{- if include "common.ingress.supportsPathType" (dict "apiVersion" $apiVersion) }}
+        pathType: {{ default "ImplementationSpecific" .pathType }}
+        {{- end }}
+        backend: {{- include "common.ingress.formatBackend"  (dict "apiVersion" $apiVersion "ingress" .ingress "svcName" $svcName "svcPort" $svcPort)  | nindent 10 -}}
+      {{- end }}
     {{- end }}
   {{- if .ingress.tls }}
   tls:
     {{- range .ingress.tls }}
-    - hosts:
-      {{-  range .hosts }}
-        - {{ . | quote }}
-      {{- end }}
-      secretName: {{ .secretName }}
+  - hosts:
+    {{-  range .hosts }}
+      - {{ . | quote }}
     {{- end }}
+    secretName: {{ .secretName }}
+  {{- end }}
   {{- end }}
 {{- end}}
