@@ -132,7 +132,7 @@ spec:
     {{- range .ingress.tls }}
   - hosts:
     {{-  range .hosts }}
-      - {{ . | quote }}
+    - {{ . | quote }}
     {{- end }}
     secretName: {{ .secretName }}
   {{- end }}
