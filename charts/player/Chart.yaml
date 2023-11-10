@@ -1,6 +1,13 @@
 apiVersion: v2
 name: player
-description: A Helm chart for Kubernetes
+description: A centralized participant interface for the Crucible cyber simulation framework
 type: application
-version: 1.4.4
+version: 1.5.0
 appVersion: 3.2.2
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/player
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts

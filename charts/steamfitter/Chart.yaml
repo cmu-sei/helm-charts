@@ -1,6 +1,13 @@
 apiVersion: v2
 name: steamfitter
-description: A Helm chart for Kubernetes
+description: Scenario creation tool for Crucible cyber simulation framework
 type: application
-version: 1.4.2
-appVersion: 3.7.2
+version: 1.5.0
+appVersion: "3.7.2"
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/steamfitter
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts
