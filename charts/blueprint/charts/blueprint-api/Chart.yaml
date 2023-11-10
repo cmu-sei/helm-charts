@@ -1,8 +1,8 @@
 apiVersion: v2
 name: blueprint-api
-description: RESTful API for Blueprints
+description: RESTful API for Blueprint
 type: application
-version: 1.4.0
+version: 1.3.0
 appVersion: "0.3.10"
 home: https://cmu-sei.github.io/crucible
 sources:
