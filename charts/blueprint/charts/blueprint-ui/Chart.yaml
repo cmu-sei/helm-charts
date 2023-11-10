@@ -1,6 +1,12 @@
 apiVersion: v2
 name: blueprint-ui
-description: A Helm chart for Kubernetes
+description: Front-end component of Blueprint
 type: application
-version: 1.2.1
-appVersion: 1.0.0
+version: 1.3.0
+appVersion: "0.3.12"
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/blueprint/charts/blueprint-ui
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts

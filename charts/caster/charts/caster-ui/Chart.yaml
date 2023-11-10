@@ -1,6 +1,13 @@
 apiVersion: v2
 name: caster-ui
-description: A Helm chart for Kubernetes
+description: UI component for Caster deployments.
 type: application
-version: 1.4.3
-appVersion: latest
+version: 1.5.0
+appVersion: "3.3.0"
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/caster/charts/caster-ui
+dependencies:
+- name: crucible-common
+  version: 1.x.x
+  repository: https://helm.cmusei.dev/charts

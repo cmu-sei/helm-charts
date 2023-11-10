@@ -1,6 +1,13 @@
 apiVersion: v2
 name: alloy-ui
-description: A Helm chart for Kubernetes
+description: Front-end for Alloy
 type: application
-version: 1.2.1
-appVersion: latest
+version: 1.3.0
+appVersion: 3.2.6
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/alloy/charts/alloy-ui
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts
