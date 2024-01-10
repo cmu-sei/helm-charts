@@ -40,6 +40,7 @@ roundcube:
 
   ingress:
     enabled: true
+    annotations: {}
     hosts:
       - host: chat-example.local
         paths:
@@ -61,6 +62,11 @@ roundcube:
     #requests:
       #cpu:  200m
       #memory: 256Mi
+  
+  volumeMounts:
+  - mountPath:
+    name:
+    subPath: 
 
   volumes:
     - name: 
@@ -143,6 +149,15 @@ postfix:
     requests:
       cpu: 10m
       memory: 32Mi
+  
+  ports:
+    - containerPort:
+      name:
+
+  volumeMounts:
+    - mountPath:
+      name:
+      subPath: 
 
   volumes:
     - name: 
@@ -217,10 +232,16 @@ dovecot:
       cpu: 50m
       memory: 32Mi
 
+  ports:
+    - containerPort:
+      name:
+
+  volumeMounts:
+    - mountPath:
+      name:
+      subPath: 
+
   volumes:
-    - name: 
-      persistentVolumeClaim:
-        claimName: 
     - name: 
       persistentVolumeClaim:
         claimName: 
