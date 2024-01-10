@@ -27,23 +27,18 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         name: dovecot
         ports:
-        - containerPort: 143
-          name: imap
-        - containerPort: 24
-          name: lmtp
-        - containerPort: 12345
-          name: auth
-        - containerPort: 22
-          name: ssh
+        {{- range .Values.ports }}
+        - containerPort: {{ .containerPort }}
+          name: {{ .name }}
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
-        - mountPath: /etc/dovecot
-          name: dovecot
-          subPath: dovecot-conf
-        - mountPath: /srv/mail
-          name: dovecot-data
-          subPath: maildir
+        {{- range .Values.volumeMounts }}
+        - mountPath: {{ .mountPath }}
+          name: {{ .name }}
+          subPath: {{ .subPath }}
+        {{- end }}
       restartPolicy: Always
       volumes:
       {{- range .Values.volumes }}
