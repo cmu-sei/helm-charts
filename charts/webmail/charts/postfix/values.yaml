@@ -48,6 +48,15 @@ resources:
     cpu: 10m
     memory: 32Mi
 
+ports:
+  - containerPort:
+    name:
+
+volumeMounts:
+  - mountPath:
+    name:
+    subPath: 
+    
 volumes:
   - name: 
     persistentVolumeClaim:
