@@ -1,14 +1,11 @@
 {{- if .Values.ingress.enabled -}}
 {{- end }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: roundcube-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_hide_header X-Frame-Options;
-    nginx.ingress.kubernetes.io/proxy-body-size: 64m
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
   {{- if .Values.ingress.tls }}
   tls:
@@ -27,8 +24,11 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
+            pathType: {{ .pathType }}
             backend:
-              serviceName: roundcubemail
-              servicePort: 9000
+              service:
+                name: roundcubemail
+                port:
+                  number: 9000
           {{- end }}
     {{- end }}
