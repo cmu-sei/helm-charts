@@ -32,22 +32,18 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: postfix
         ports:
-        - containerPort: 25
-          name: smtp
-        - containerPort: 587
-          name: submission
+        {{- range .Values.ports }}
+        - containerPort: {{ .containerPort }}
+          name: {{ .name }}
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
-        - mountPath: /etc/postfix/maps/
-          name: postfix
-          subPath: postfix-conf/maps/
-        - mountPath: /etc/postfix/main.cf
-          name: postfix
-          subPath: postfix-conf/main.cf
-        - mountPath: /etc/postfix/master.cf
-          name: postfix
-          subPath: postfix-conf/master.cf
+        {{- range .Values.volumeMounts }}
+        - mountPath: {{ .mountPath }}
+          name: {{ .name }}
+          subPath: {{ .subPath }}
+        {{- end }}
       restartPolicy: Always
       volumes:
       {{- range .Values.volumes }}

@@ -39,6 +39,7 @@ service:
 
 ingress:
   enabled: true
+  annotations: {}
   hosts:
     - host: chat-example.local
       paths:
@@ -60,6 +61,11 @@ resources:
   #requests:
     #cpu:  200m
     #memory: 256Mi
+
+volumeMounts:
+  - mountPath:
+    name:
+    subPath: 
 
 volumes:
   - name: 

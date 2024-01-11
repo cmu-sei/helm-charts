@@ -34,17 +34,11 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-        - mountPath: /usr/src/roundcubemail
-          name: www-data
-          subPath: roundcubemail-update
-        - mountPath: /var/www/html
-          name: www-data
-          subPath: roundcubemail-installed
-        - mountPath: /var/www/html/logs
-          name: www-data
-          subPath: roundcubemaillogs
-        - mountPath: /tmp/roundcube-temp
-          name: temp-data
+        {{- range .Values.volumeMounts }}
+        - mountPath: {{ .mountPath }}
+          name: {{ .name }}
+          subPath: {{ .subPath }}
+        {{- end }}
       restartPolicy: Always
       volumes:
       {{- range .Values.volumes }}
