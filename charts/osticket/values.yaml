@@ -1,0 +1,127 @@
+# Default values for osticket.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: devinsolutions/osticket
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.17.5"
+command: []
+
+env:
+  https_proxy: ""
+  http_proxy: ""
+  no_proxy: ""
+  MYSQL_HOST: osticket-mysql.default.svc.cluster.local
+  MYSQL_USER: osticket
+  MYSQL_PASSWORD: osticket
+  MYSQL_DATABASE: osticket
+  ADMIN_PASSWORD: 
+
+# NFS and StorageClass are mutually exclusive. 
+plugins:
+  enabled: false
+  nfs: {}
+    # server: ""
+    # path: ""
+  storageClass: 
+  size: "5Mi"
+  accessMode: "ReadWriteOnce"
+
+# NFS and StorageClass are mutually exclusive. 
+logs:
+  enabled: false
+  nfs:
+    server: ""
+    path: ""
+  storageClass: default
+  size: "1Gi"
+  accessMode: "ReadWriteOnce"
+
+mysql:
+  enabled: true
+  image:
+    debug: true
+  auth: 
+    createDatabase: true
+    database: osticket
+    username: osticket
+    password: osticket
+    rootPassword: osticket
+  architecture: "standalone"
+
+
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: 
+   - secretName: ""
+     hosts:
+       - ""
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

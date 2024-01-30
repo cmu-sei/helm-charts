@@ -1,0 +1,15 @@
+{{- if and (.Values.logs.enabled) (not .Values.logs.nfs) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "osticket.fullname" . }}-logs-vol
+  labels:
+    {{- include "osticket.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  - {{ .Values.logs.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.logs.size | quote }}
+  storageClassName: {{ .Values.logs.storageClass }}
+{{- end -}}
