@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osticket.name" . }}
+  labels:
+    {{- include "osticket.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "osticket.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "osticket.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "osticket.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{ if .Values.command }}
+          command: {{- toYaml .Values.command | nindent 10 }}
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "osticket.name" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{ if .Values.plugins.enabled }}
+            - mountPath: /data/upload/include/plugins
+              name: {{ include "osticket.name" . }}-plugins
+            {{- end }}
+            {{ if .Values.logs.enabled }}
+            - mountPath: /var/log/nginx
+              name: {{ include "osticket.name" . }}-logs
+            {{- end }}
+      volumes:
+        {{ if .Values.plugins.enabled }} 
+          {{ if .Values.plugins.nfs }}
+            - name: {{ include "osticket.name" . }}-plugins
+              nfs:
+                server: {{ .Values.plugins.nfs.server }}
+                path: {{ .Values.plugins.nfs.path }}
+          {{ else }}
+            - name: {{ include "osticket.name" . }}-plugins
+              persistentVolumeClaim:
+                claimName: {{ include "osticket.fullname" . }}-plugins-vol
+          {{- end }}
+        {{- end }}
+        {{ if .Values.logs.enabled }}
+          {{ if .Values.logs.nfs }}
+            - name: {{ include "osticket.name" . }}-logs
+                nfs:
+                  server: {{ .Values.logs.nfs.server }}
+                  path: {{ .Values.logs.nfs.server }}
+          {{ else }}
+            - name: {{ include "osticket.name" . }}-logs
+              persistentVolumeClaim:
+                claimName: {{ include "osticket.fullname" . }}-logs-vol
+          {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
