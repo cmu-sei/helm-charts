@@ -1,6 +1,13 @@
 apiVersion: v2
 name: cite
-description: A Helm chart for Kubernetes
+description: Application to evaluate, score, and comment on cyber incidents in Crucible cyber simulation framework
 type: application
-version: 1.4.1
-appVersion: 1.0.0
+version: 1.5.0
+appVersion: "1.0.0"
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/cite
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts

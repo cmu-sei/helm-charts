@@ -1,6 +1,13 @@
 apiVersion: v2
 name: gallery-ui
-description: A Helm chart for Kubernetes
+description: Front-end component for Gallery dashboard
 type: application
-version: 1.2.1
-appVersion: 1.0.0
+version: 1.3.0
+appVersion: 1.5.2
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/gallery/charts/gallery-ui
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts

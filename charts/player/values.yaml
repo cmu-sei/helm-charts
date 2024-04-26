@@ -194,6 +194,7 @@ vm-api:
   #   connections will go directly from the UI to the vCenter hosts themselves
   # - The host value here corresponds to RewriteHost__RewriteHostUrl below
   consoleIngress:
+    enabled: true
     deployConsoleProxy: false  
     className: ""
     name: player-connect

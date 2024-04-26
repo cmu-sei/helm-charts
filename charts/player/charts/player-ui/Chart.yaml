@@ -2,5 +2,12 @@ apiVersion: v2
 name: player-ui
 description: A Helm chart for Kubernetes
 type: application
-version: 1.4.4
-appVersion: latest
+version: 1.5.0
+appVersion: 3.1.8
+home: https://cmu-sei.github.io/crucible
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/main/charts/player/charts/player-ui
+dependencies:
+  - name: crucible-common
+    version: 1.x.x
+    repository: https://helm.cmusei.dev/charts

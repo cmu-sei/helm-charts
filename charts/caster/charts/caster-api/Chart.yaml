@@ -1,6 +1,14 @@
 apiVersion: v2
 name: caster-api
-description: A Helm chart for Kubernetes
+description: API component for Caster deployments.
 type: application
-version: 1.4.2
-appVersion: latest
+version: 1.5.0
+appVersion: 3.3.0
+home: https://cmu-sei.github.io/crucible/
+sources:
+  - https://github.com/cmu-sei/helm-charts/tree/feature/ingress-updates/charts/caster/charts/caster-api
+dependencies:
+- name: crucible-common
+  version: "0.1.0"
+  repository: "file://../crucible-common"
+
