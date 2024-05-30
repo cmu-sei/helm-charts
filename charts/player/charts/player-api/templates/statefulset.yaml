@@ -48,11 +48,11 @@ spec:
             httpGet:
               path: /api/health/live
               port: http
-            initialDelaySeconds:  {{ .Values.probes.livenessProbe.initialDelaySeconds }}
-            periodSeconds:        {{ .Values.probes.livenessProbe.periodSeconds }}
-            timeoutSeconds:       {{ .Values.probes.livenessProbe.timeoutSeconds }}
-            failureThreshold:     {{ .Values.probes.livenessProbe.failureThreshold }}
-            successThreshold:     {{ .Values.probes.livenessProbe.successThreshold }}
+            initialDelaySeconds: {{ .Values.probes.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.probes.livenessProbe.successThreshold }}
         {{- end }}
         {{- if .Values.probes.readinessProbe.enabled }}
           readinessProbe:
