@@ -2,8 +2,26 @@ player-api:
   kind: "Deployment"
   # Docker image release version
   image:
-    tag: "3.1.0"
-  
+    tag: "3.2.7"
+ 
+  # Configure default liveness and rediness probe settings 
+  probes: 
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 6
+      successThreshold: 1
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 6
+      successThreshold: 1
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
