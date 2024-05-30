@@ -43,20 +43,39 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+        {{- if .Values.probes.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
               path: /api/health/live
               port: http
+            initialDelaySeconds: {{ .Values.probes.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.probes.livenessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.probes.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
               path: /api/health/ready
               port: http
+            initialDelaySeconds: {{ .Values.probes.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.probes.readinessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.probes.startupProbe.enabled }}
           startupProbe:
             httpGet:
               path: /api/health/live
               port: http
-            failureThreshold: 30
-            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.probes.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.probes.startupProbe.successThreshold }}
+        {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
