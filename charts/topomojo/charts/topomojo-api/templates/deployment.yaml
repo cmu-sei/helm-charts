@@ -137,7 +137,7 @@ spec:
       {{- if .Values.existingSecret }}
       - name: {{ include "topomojo-api.name" . }}-extra
         secret:
-          name: {{ .Values.existingSecret }}
+          secretName: {{ .Values.existingSecret }}
       {{- end }}
       {{- if .Values.storage.existing }}
       - name: {{ include "topomojo-api.name" . }}-vol
