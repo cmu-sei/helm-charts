@@ -47,7 +47,7 @@ spec:
           args: {{ .Values.customStart.args }}
           {{- end }}
           {{- if .Values.securityContext.readOnlyRootFilesystem }}
-          env: 
+          env:
             - name: DOTNET_EnableDiagnostics
               value: "0"
           {{- end }}
@@ -56,7 +56,7 @@ spec:
                 name: {{ include "topomojo-api.fullname" . }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
           {{- if .Values.livenessProbe }}
           livenessProbe:

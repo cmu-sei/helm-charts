@@ -51,7 +51,8 @@ topomojo-api:
 
   service:
     type: ClusterIP
-    port: 80
+    # port: 80
+    # targetPort: 8080
 
   ingress:
     enabled: false
@@ -243,9 +244,9 @@ topomojo-ui:
     # runAsNonRoot: true
     # runAsUser: 1000
 
-  service:
-    type: ClusterIP
-    port: 80
+  # service:
+  #   type: ClusterIP
+  #   port: 80
 
   ingress:
     enabled: false

@@ -38,7 +38,7 @@ spec:
               value: {{ .Values.basehref | quote }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 80 .Values.service.targetPort}}
               protocol: TCP
           volumeMounts:
             - mountPath: /var/www/assets/settings.json
