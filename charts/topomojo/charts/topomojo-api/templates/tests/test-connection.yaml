@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "topomojo-api.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "topomojo-api.fullname" . }}:{{ include "service-port" . }}']
   restartPolicy: Never
