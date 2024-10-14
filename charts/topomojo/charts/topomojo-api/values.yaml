@@ -143,7 +143,7 @@ customStart: {}
   #     cd /app && dotnet TopoMojo.Api.dll
   #   cacert.crt: ""
 
-## existingSecret references a secret already in k8s. The values are saved as files in `/app/conf`.
+## existingSecret references a secret already in k8s. The values are saved as files in `/home/app/conf`.
 existingSecret: ""
 
 # Config app settings with environment vars.

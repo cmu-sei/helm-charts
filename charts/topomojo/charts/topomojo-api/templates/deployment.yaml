@@ -104,10 +104,10 @@ spec:
               name: {{ include "topomojo-api.name" . }}-conf
           {{- end }}
           {{- if .Values.existingSecret }}
-            - mountPath: /app/conf
+            - mountPath: /home/app/conf
               name: {{ include "topomojo-api.name" . }}-extra
           {{- end }}
-            - mountPath: /app/wwwroot/docs
+            - mountPath: /home/app/wwwroot/docs
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}/_docs
             - mountPath: /mnt/tm
