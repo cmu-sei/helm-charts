@@ -45,8 +45,14 @@ spec:
               configMap:
                 name: {{ include "mkdocs-material.fullname" . }}-entry
                 defaultMode: 0775
+            {{- if .Values.storage.existing }}
+            - name: {{ include "mkdocs-material.name" . }}-vol
+              persistentVolumeClaim:
+                claimName: {{ .Values.storage.existing }}
+            {{- else }}    
             - name: {{ include "mkdocs-material.name" . }}-vol
               persistentVolumeClaim:
                 claimName: {{ include "mkdocs-material.fullname" . }}
+            {{- end }}
 {{- end }}
     
