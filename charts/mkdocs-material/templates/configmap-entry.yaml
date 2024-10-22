@@ -32,4 +32,9 @@ data:
     fi
     git pull
     git reset --hard
+
+    {{- if .Values.mkdocs.site_url }}
+    sed -i -r -e 's#^(site_url: )(.*)#\1{{ .Values.mkdocs.site_url }}#' mkdocs.yml
+    if [ $(grep -c 'site_url:' mkdocs.yml) == 0 ]; then echo 'site_url: {{ .Values.mkdocs.site_url }}' | cat - mkdocs.yml > tmp.yml; mv tmp.yml mkdocs.yml; fi
+    {{- end }}
 {{- end }}
