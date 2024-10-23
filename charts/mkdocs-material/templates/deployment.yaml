@@ -38,6 +38,10 @@ spec:
             - mountPath: /docs
               name: {{ include "mkdocs-material.name" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}
+            {{- if .Values.gitCredentialsSecret }}
+            - mountPath: /git-credentials
+              name: {{ include "mkdocs-material.fullname" . }}-git-creds
+            {{- end }}
         {{- end }}
         - name: mkdocs-build
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -93,6 +97,12 @@ spec:
         configMap:
           name: {{ include "mkdocs-material.fullname" . }}-entry
           defaultMode: 0775
+      {{- if .Values.gitCredentialsSecret }}
+      - name: {{ include "mkdocs-material.name" . }}-git-creds
+        secret:
+          secretName: {{ .Values.gitCredentialsSecret }}
+          defaultMode: 0600
+      {{- end }}
       {{- else }}
       - name: {{ include "mkdocs-material.name" . }}-files
         configMap:
