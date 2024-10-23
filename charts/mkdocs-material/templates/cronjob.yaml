@@ -31,6 +31,10 @@ spec:
                 - mountPath: /docs
                   name: {{ include "mkdocs-material.name" . }}-vol
                   subPath: {{ include "mkdocs-material.fullname" . }}
+                {{- if .Values.gitCredentialsSecret }}
+                - mountPath: /git-credentials
+                  name: {{ include "mkdocs-material.fullname" . }}-git-creds
+                {{- end }}
           containers:
             - name: mkdocs-build
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -54,5 +58,12 @@ spec:
               persistentVolumeClaim:
                 claimName: {{ include "mkdocs-material.fullname" . }}
             {{- end }}
+            {{- if .Values.gitCredentialsSecret }}
+            - name: {{ include "mkdocs-material.name" . }}-git-creds
+              secret:
+                secretName: {{ .Values.gitCredentialsSecret }}
+                defaultMode: 0600
+            {{- end }}
+
 {{- end }}
     
