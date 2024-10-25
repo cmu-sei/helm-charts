@@ -98,6 +98,14 @@ giturl: ""
 ## gitbranch sets which repo branch to publish
 gitbranch: ""
 
+## Secret that stores the values of a git credential store helper file
+## See https://git-scm.com/docs/git-credential-store
+gitCredentialsSecret: ""
+
+## Key in the gitCredentialsSecret with the credentials file: 
+## The default value is ".git-credentials"
+gitCredentialsSecretKey: ""
+
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 
@@ -114,6 +122,12 @@ pollInterval: 5
 ######################
 
 ## mkdocs YAML configuration
+## This can be used to create an mkdocs.yml file if no giturl is provided
+## It can also be used to modify the effect of the following fields when a giturl
+## is provided and an mkdocs.yml file is included in the git repo
+##   site_url: The value provided here will override the value in the git repo
+##   site_dir: The value provided here will be used to set the mapping in the nginx container to this path
+##             instead of the default value of "site". You should set this to the value that is in your mkdocs.yml file
 mkdocs: {}
   # site_name: My Site
   # theme:
