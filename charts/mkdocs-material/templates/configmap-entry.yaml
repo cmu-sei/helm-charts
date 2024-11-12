@@ -34,9 +34,9 @@ data:
     if [ -n "$branch" ]; then
       git checkout $branch
     fi
-    git pull
     git reset --hard
-
+    git pull
+    
     {{- if .Values.mkdocs.site_url }}
     sed -i -r -e 's#^(site_url: )(.*)#\1{{ .Values.mkdocs.site_url }}#' mkdocs.yml
     found_url=`grep -c 'site_url:' mkdocs.yml`
