@@ -30,7 +30,10 @@ spec:
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
                   name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}
+                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                - mountPath: /git
+                  name: {{ include "mkdocs-material.name" . }}-vol
+                  subPath: {{ include "mkdocs-material.fullname" . }}/git
                 {{- if .Values.gitCredentialsSecret }}
                 - mountPath: /git-credentials
                   name: {{ include "mkdocs-material.fullname" . }}-git-creds
@@ -39,11 +42,16 @@ spec:
             - name: mkdocs-build
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
-              args: ["build"]
+              command: ["/entry.d/mkdocs-build.sh"]
               volumeMounts:
+                - mountPath: /entry.d
+                  name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
                   name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}
+                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                - mountPath: /git
+                  name: {{ include "mkdocs-material.name" . }}-vol
+                  subPath: {{ include "mkdocs-material.fullname" . }}/git
           volumes:
             - name: {{ include "mkdocs-material.name" . }}-entry
               configMap:

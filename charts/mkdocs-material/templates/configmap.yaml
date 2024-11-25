@@ -18,12 +18,7 @@ data:
         server_name  localhost;
     
         location / {
-            {{- if not .Values.giturl }}
-            root   /mkdocs/site;
-            {{- else }}
-            root   /mkdocs/
-            {{- .Values.mkdocs.site_dir | default "site" | trim }};
-            {{- end }}
+            root   /mkdocs/docs/site;
             index  index.html index.htm;
         }
     
