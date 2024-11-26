@@ -25,17 +25,41 @@ data:
     git config --global credential.helper "store --file=/git-credentials/{{ .Values.gitCredentialsSecretKey | default ".git-credentials" }}"
     {{- end }}
 
+    # Keep track of whether docs need to be built
+    dirty=0
+
     ## pull updates (and clone on first attempt)
-    cd /docs
+    cd /git
     if [ ! -d .git ]; then
-      rm -rf *
-      git clone $giturl .
+        echo "Clearing and cloning git repo..."
+        dirty=1
+        rm -rf *
+        git clone "$giturl" .
     fi
-    if [ -n "$branch" ]; then
-      git checkout $branch
-    fi
+
     git reset --hard
+    git clean -f
+    
+    if [ -n "$branch" ]; then 
+        gitcheckoutoutput=`git checkout $branch 2>&1`
+        echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
+        if [ "$?" -eq "0" ]; then
+            echo "Branch changed - docs should be updated."
+            dirty=1
+        fi
+    fi
+
+    gitfetchoutput=`git fetch --porcelain`
+    if [ -n "$gitfetchoutput" ]; then
+        echo "Changes were made on remote branch - docs should be updated."
+        dirty=1
+    fi
+
     git pull
+
+    if [ "$dirty" -eq "1" ]; then
+        touch "/docs/.dirty"
+    fi
     
     {{- if .Values.mkdocs.site_url }}
     sed -i -r -e 's#^(site_url: )(.*)#\1{{ .Values.mkdocs.site_url }}#' mkdocs.yml
@@ -46,4 +70,52 @@ data:
     fi
     {{ end }}
 
+  mkdocs-build.sh: |-
+    #!/bin/sh
+
+    if [ -f "/docs/.dirty" ]; then
+        echo "Building docs..."
+
+        old_docs=`readlink /docs/site`
+        new_docs=`mktemp -d -p /docs`
+
+        echo "Old docs: $old_docs"
+        echo "New docs: $new_docs"
+
+        cd /git
+        mkdocs build -d "$new_docs"
+        if [ "$?" -eq "0" ]; then
+            echo "Mkdocs build succeeded."
+
+            cd /docs
+            tmp_path=`basename "$new_docs"`
+            chmod 775 "$tmp_path"
+            
+            ## Delete the previous symbolic link
+            rm "site"
+
+            ## Relink or link the symbolic link
+            ln -s "$tmp_path" "site"
+
+            if [ -n "$old_docs" ]; then
+                echo "Removing old docs: $old_docs"
+                rm -Rf "$old_docs"
+            else 
+                echo "No old docs to remove"
+            fi
+
+            new_docs_link=`ls -alF /docs/site`
+            echo "$new_docs_link" | grep "$tmp_path" > /dev/null 2>&1
+            if [ "$?" -eq "0" ]; then
+                echo "New link: $new_docs_link"
+                rm "/docs/.dirty"
+            else
+                echo "Unexpected link result: $new_docs_link"
+            fi
+        else
+            echo "Mkdocs build failed."
+        fi
+    else
+        echo "Docs are up-to-date."
+    fi
 {{- end }}
