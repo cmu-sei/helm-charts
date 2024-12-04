@@ -30,6 +30,9 @@ data:
 {{- if .Values.faviconsUrl }}
     curl -o /tmp/favicons.tgz {{ .Values.faviconsUrl | quote }}
     tar xzf /tmp/favicons.tgz -C /var/www
-    meta=$(cat /var/www/favicon.html | sed -e 's/=\"\//=\"/g' | sed -e 's/[\/&]/\\&/g')
-    sed -i.bak -e "s|</head>|${meta}\n</head>|" $src/index.html
+    meta=$(cat /var/www/favicon.html | sed -e 's/=\"\//=\"/g' -e 's/[\/&]/\\&/g')
+    sed -i.bak -e "/<\/head>/ {
+        r /var/www/favicon.html
+        d
+    }" $src/index.html
 {{- end}}
