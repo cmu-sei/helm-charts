@@ -80,6 +80,10 @@ blueprint-ui:
 
   extraVolumeMounts: ""
 
+  ## existingSecret references a secret already in k8s. 
+  ## The key/value pairs in the secret are added as environment variables.
+  existingSecret: ""
+
   env:
   # Config app settings with a JSON file.
   # These values correspond to an OpenID connect client and
