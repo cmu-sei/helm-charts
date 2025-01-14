@@ -58,6 +58,10 @@ caster-api:
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
   gitcredentials: 'https://git-access-token:TOKEN@gitlab.example.com'
 
+  ## existingSecret references a secret already in k8s. 
+  ## The key/value pairs in the secret are added as environment variables.
+  existingSecret: ""
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/caster.api/src/Caster.Api/appsettings.json

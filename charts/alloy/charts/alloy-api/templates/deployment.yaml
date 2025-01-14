@@ -34,9 +34,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: {{- toYaml .Values.command | nindent 10 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.existingSecret }}
           envFrom:
             - secretRef:
                 name: {{ include "alloy-api.fullname" . }}
+            - secretRef:
+                name: {{ .Values.existingSecret }}
+          {{- else }}
+          envFrom:
+            - secretRef:
+                name: {{ include "alloy-api.fullname" . }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 80

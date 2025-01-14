@@ -22,6 +22,10 @@ gallery-api:
         hosts:
           - example.com
 
+  ## existingSecret references a secret already in k8s. 
+  ## The key/value pairs in the secret are added as environment variables.
+  existingSecret: ""
+
   env:
     # CORS policy settings.
     # The first entry should be the URL to Gallery
