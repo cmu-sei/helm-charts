@@ -32,9 +32,17 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- if .Values.existingSecret }}
           envFrom:
             - secretRef:
                 name: {{ include "vm-api.fullname" . }}
+            - secretRef:
+                name: {{ .Values.existingSecret }}
+          {{- else }}
+          envFrom:
+            - secretRef:
+                name: {{ include "vm-api.fullname" . }}
+          {{- end }}
           command: {{- toYaml .Values.command | nindent 10 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

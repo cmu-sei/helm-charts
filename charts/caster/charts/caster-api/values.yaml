@@ -120,6 +120,10 @@ terraformrc:
           }
       }
 
+## existingSecret references a secret already in k8s. 
+## The key/value pairs in the secret are added as environment variables.
+existingSecret: ""
+
 env:
   # http_proxy:
   # https_proxy:

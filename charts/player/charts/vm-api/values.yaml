@@ -114,6 +114,10 @@ affinity: {}
 
 command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Vm.Api.dll']
 
+## existingSecret references a secret already in k8s. 
+## The key/value pairs in the secret are added as environment variables.
+existingSecret: ""
+
 # env is pod env vars
 env:
   # http_proxy: ""
