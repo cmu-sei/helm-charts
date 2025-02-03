@@ -46,6 +46,17 @@ spec:
           command: ["/bin/sh"]
           args: ["/start/start.sh"]
           {{- end }}
+          {{- if .Values.existingSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ include "gameboard-api.fullname" . }}
+            - secretRef:
+                name: {{ .Values.existingSecret }}
+          {{- else }}
+          envFrom:
+            - secretRef:
+                name: {{ include "gameboard-api.fullname" . }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "gameboard-api.fullname" . }}
