@@ -57,9 +57,6 @@ spec:
             - secretRef:
                 name: {{ include "gameboard-api.fullname" . }}
           {{- end }}
-          envFrom:
-            - secretRef:
-                name: {{ include "gameboard-api.fullname" . }}
           ports:
             - name: http
               containerPort: 80
