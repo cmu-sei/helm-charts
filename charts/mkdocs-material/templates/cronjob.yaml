@@ -30,10 +30,10 @@ spec:
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
                   name: {{ include "mkdocs-material.fullname" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
                 - mountPath: /git
                   name: {{ include "mkdocs-material.fullname" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/git
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
                 {{- if .Values.gitCredentialsSecret }}
                 - mountPath: /git-credentials
                   name: {{ include "mkdocs-material.fullname" . }}-git-creds
@@ -48,10 +48,10 @@ spec:
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
                   name: {{ include "mkdocs-material.fullname" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
                 - mountPath: /git
                   name: {{ include "mkdocs-material.fullname" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/git
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
           volumes:
             - name: {{ include "mkdocs-material.fullname" . }}-entry
               configMap:

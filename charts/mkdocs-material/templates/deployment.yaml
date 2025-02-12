@@ -37,10 +37,10 @@ spec:
               name: {{ include "mkdocs-material.fullname" . }}-entry
             - mountPath: /docs
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}/docs
+              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
             - mountPath: /git
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}/git
+              subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
             {{- if .Values.gitCredentialsSecret }}
             - mountPath: /git-credentials
               name: {{ include "mkdocs-material.fullname" . }}-git-creds
@@ -56,10 +56,10 @@ spec:
               name: {{ include "mkdocs-material.fullname" . }}-entry
             - mountPath: /docs
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}/docs
+              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
             - mountPath: /git
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}/git
+              subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
             {{- else }}
           args: ["build"]
           volumeMounts:
@@ -70,7 +70,7 @@ spec:
               name: {{ include "mkdocs-material.fullname" . }}-files
             - mountPath: /docs/site
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}/docs/site
+              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs/site
             {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -85,7 +85,10 @@ spec:
               subPath: nginx.conf
             - mountPath: /mkdocs
               name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.fullname" . }}
+              {{- if include "mkdocs-material.subpathPrefix" . }}
+              subPath: {{ include "mkdocs-material.subpathPrefix" . | trimSuffix "/" }}
+              {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

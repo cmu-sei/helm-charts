@@ -71,6 +71,8 @@ resources: {}
 # storage - either an existing pvc, the size for a new pvc, or emptyDir (git requires a pvc)
 storage:
   existing: ""
+  existingSubpathPrefix: true  # If true, then volume mounts will use mkdocs-material.name as a subpath prefix.
+  overrideSubpathPrefix: # If set then this is the value used for the subpath prefix if above property is true
   size: ""
   mode: ReadWriteOnce
   class: default
