@@ -36,10 +36,10 @@ spec:
             - mountPath: /entry.d
               name: {{ include "mkdocs-material.fullname" . }}-entry
             - mountPath: /docs
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}/docs
             - mountPath: /git
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}/git
             {{- if .Values.gitCredentialsSecret }}
             - mountPath: /git-credentials
@@ -55,21 +55,21 @@ spec:
             - mountPath: /entry.d
               name: {{ include "mkdocs-material.fullname" . }}-entry
             - mountPath: /docs
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}/docs
             - mountPath: /git
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}/git
             {{- else }}
           args: ["build"]
           volumeMounts:
             - mountPath: /docs/mkdocs.yml
-              name: {{ include "mkdocs-material.name" . }}
+              name: {{ include "mkdocs-material.fullname" . }}
               subPath: mkdocs.yml
             - mountPath: /docs/docs
-              name: {{ include "mkdocs-material.name" . }}-files
+              name: {{ include "mkdocs-material.fullname" . }}-files
             - mountPath: /docs/site
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}/docs/site
             {{- end }}
       containers:
@@ -81,10 +81,10 @@ spec:
               protocol: TCP
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/default.conf
-              name: {{ include "mkdocs-material.name" . }}
+              name: {{ include "mkdocs-material.fullname" . }}
               subPath: nginx.conf
             - mountPath: /mkdocs
-              name: {{ include "mkdocs-material.name" . }}-vol
+              name: {{ include "mkdocs-material.fullname" . }}-vol
               subPath: {{ include "mkdocs-material.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -99,36 +99,36 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "mkdocs-material.name" . }}
+      - name: {{ include "mkdocs-material.fullname" . }}
         configMap:
           name: {{ include "mkdocs-material.fullname" . }}
       {{- if .Values.giturl }}
-      - name: {{ include "mkdocs-material.name" . }}-entry
+      - name: {{ include "mkdocs-material.fullname" . }}-entry
         configMap:
           name: {{ include "mkdocs-material.fullname" . }}-entry
           defaultMode: 0775
       {{- if .Values.gitCredentialsSecret }}
-      - name: {{ include "mkdocs-material.name" . }}-git-creds
+      - name: {{ include "mkdocs-material.fullname" . }}-git-creds
         secret:
           secretName: {{ .Values.gitCredentialsSecret }}
           defaultMode: 0600
       {{- end }}
       {{- else }}
-      - name: {{ include "mkdocs-material.name" . }}-files
+      - name: {{ include "mkdocs-material.fullname" . }}-files
         configMap:
           name: {{ include "mkdocs-material.fullname" . }}-files
       {{- end }}
       {{- if .Values.storage.existing }}
-      - name: {{ include "mkdocs-material.name" . }}-vol
+      - name: {{ include "mkdocs-material.fullname" . }}-vol
         persistentVolumeClaim:
           claimName: {{ .Values.storage.existing }}
       {{- else if .Values.storage.size }}
-      - name: {{ include "mkdocs-material.name" . }}-vol
+      - name: {{ include "mkdocs-material.fullname" . }}-vol
         persistentVolumeClaim:
           claimName: {{ include "mkdocs-material.fullname" . }}
       {{- else if .Values.giturl }}
       {{- fail "Git deployment mode requires persistent volume" }}
       {{- else }}
-      - name: {{ include "mkdocs-material.name" . }}-vol
+      - name: {{ include "mkdocs-material.fullname" . }}-vol
         emptyDir: {}
       {{- end }}

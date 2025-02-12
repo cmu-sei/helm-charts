@@ -29,10 +29,10 @@ spec:
                 - mountPath: /entry.d
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
-                  name: {{ include "mkdocs-material.name" . }}-vol
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
                   subPath: {{ include "mkdocs-material.fullname" . }}/docs
                 - mountPath: /git
-                  name: {{ include "mkdocs-material.name" . }}-vol
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
                   subPath: {{ include "mkdocs-material.fullname" . }}/git
                 {{- if .Values.gitCredentialsSecret }}
                 - mountPath: /git-credentials
@@ -47,27 +47,27 @@ spec:
                 - mountPath: /entry.d
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
-                  name: {{ include "mkdocs-material.name" . }}-vol
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
                   subPath: {{ include "mkdocs-material.fullname" . }}/docs
                 - mountPath: /git
-                  name: {{ include "mkdocs-material.name" . }}-vol
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
                   subPath: {{ include "mkdocs-material.fullname" . }}/git
           volumes:
-            - name: {{ include "mkdocs-material.name" . }}-entry
+            - name: {{ include "mkdocs-material.fullname" . }}-entry
               configMap:
                 name: {{ include "mkdocs-material.fullname" . }}-entry
                 defaultMode: 0775
             {{- if .Values.storage.existing }}
-            - name: {{ include "mkdocs-material.name" . }}-vol
+            - name: {{ include "mkdocs-material.fullname" . }}-vol
               persistentVolumeClaim:
                 claimName: {{ .Values.storage.existing }}
             {{- else }}    
-            - name: {{ include "mkdocs-material.name" . }}-vol
+            - name: {{ include "mkdocs-material.fullname" . }}-vol
               persistentVolumeClaim:
                 claimName: {{ include "mkdocs-material.fullname" . }}
             {{- end }}
             {{- if .Values.gitCredentialsSecret }}
-            - name: {{ include "mkdocs-material.name" . }}-git-creds
+            - name: {{ include "mkdocs-material.fullname" . }}-git-creds
               secret:
                 secretName: {{ .Values.gitCredentialsSecret }}
                 defaultMode: 0600
