@@ -1,0 +1,15 @@
+{{- if .Values.cacert }}
+  {{- if .Values.certificateMap }}
+  {{- fail "Must specify only one of certificateMap or cacert" }}
+  {{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mkdocs-material.fullname" . }}-cacerts
+  labels:
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
+
+data:
+  cacert.crt: |-
+{{ .Values.cacert | indent 4 }}
+{{- end }}

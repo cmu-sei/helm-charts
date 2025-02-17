@@ -28,6 +28,14 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
+        {{- if or .Values.certificateMap .Values.cacert }}
+        - name: ca-installer
+          image: "alpine:3.19"
+          command: ['bash', '-c', 'update-ca-certificates']
+          volumeMounts:
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
+        {{- end }}
         {{- if .Values.giturl }}
         - name: git-pull
           image: "bitnami/git"
@@ -134,4 +142,14 @@ spec:
       {{- else }}
       - name: {{ include "mkdocs-material.fullname" . }}-vol
         emptyDir: {}
+      {{- end }}
+      {{- if .Values.certificateMap }}
+      - name: certificates
+        configMap:
+          name: {{ .Values.certificateMap }}
+      {{- end }}
+      {{- if .Values.cacert }}
+      - name: certificates
+        configMap:
+          name: {{ include "mkdocs-material.fullname" . }}-cacerts
       {{- end }}

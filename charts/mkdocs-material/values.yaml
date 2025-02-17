@@ -111,13 +111,18 @@ gitCredentialsSecretKey: ""
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 
-# cacert - add custom CA certificate
+# cacert - add custom CA certificate in-line
 # cacert: |-
 #   -----BEGIN CERTIFICATE-----
 #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
 #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
 #   …
 #   -----END CERTIFICATE-----
+
+# If this deployment needs to trust non-public certificates,
+# create a configMap with the needed certifcates and specify
+# the configMap name here
+# certificateMap: "ca-map"
 
 ######################
 # Non-Git deployment #
