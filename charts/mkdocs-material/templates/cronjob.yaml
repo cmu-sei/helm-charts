@@ -24,7 +24,7 @@ spec:
           initContainers:
             {{- if or .Values.certificateMap .Values.cacert }}
             - name: ca-installer
-              image: "alpine:3.19"
+              image: "bitnami/git"
               command: ['bash', '-c', 'update-ca-certificates']
               volumeMounts:
                 - mountPath: /usr/local/share/ca-certificates
