@@ -10,6 +10,8 @@ data:
   git-pull.sh: |-
     #!/bin/sh
 
+    update-ca-certificates
+
     giturl={{ .Values.giturl }}
     branch={{ .Values.gitbranch }}
 

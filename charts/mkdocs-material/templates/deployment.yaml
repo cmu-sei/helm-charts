@@ -28,14 +28,6 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        {{- if or .Values.certificateMap .Values.cacert }}
-        - name: ca-installer
-          image: "bitnami/git"
-          command: ['bash', '-c', 'update-ca-certificates']
-          volumeMounts:
-            - mountPath: /usr/local/share/ca-certificates
-              name: certificates
-        {{- end }}
         {{- if .Values.giturl }}
         - name: git-pull
           image: "bitnami/git"
@@ -52,6 +44,10 @@ spec:
             {{- if .Values.gitCredentialsSecret }}
             - mountPath: /git-credentials
               name: {{ include "mkdocs-material.fullname" . }}-git-creds
+            {{- end }}
+            {{- if or .Values.certificateMap .Values.cacert }}
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
             {{- end }}
         {{- end }}
         - name: mkdocs-build
