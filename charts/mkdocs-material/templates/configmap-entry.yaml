@@ -12,7 +12,7 @@ data:
 
     update-ca-certificates
 
-    while openssl x509 -noout -text; do :; done < ca-certificates.crt
+    while openssl x509 -noout -text; do :; done < /etc/ssl/certs/ca-certificates.crt
 
     giturl={{ .Values.giturl }}
     branch={{ .Values.gitbranch }}
