@@ -10,14 +10,6 @@ data:
   git-pull.sh: |-
     #!/bin/sh
 
-    {{- if .Values.cacert }}
-    # update CA trust
-    cat << EOF > /usr/local/share/ca-certificates/cacert.crt
-    {{ .Values.cacert | indent 4 | trim }}
-    EOF
-    update-ca-certificates
-    {{- end }}
-
     giturl={{ .Values.giturl }}
     branch={{ .Values.gitbranch }}
 
