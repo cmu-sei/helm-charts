@@ -119,8 +119,8 @@ pollInterval: 5
 #   …
 #   -----END CERTIFICATE-----
 
-# If this deployment needs to trust non-public certificates,
-# create a configMap with the needed certifcates and specify
+# If this deployment needs to trust custom ca certificates,
+# create a configMap with the needed certificates and specify
 # the configMap name here
 # certificateMap: "ca-map"
 
