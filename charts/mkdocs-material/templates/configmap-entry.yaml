@@ -32,7 +32,7 @@ data:
     git clean -f
     
     if [ -n "$DOCS_GIT_BRANCH" ]; then 
-        gitcheckoutoutput=`git checkout $DOCS_GIT_BRANCH 2>&1`
+        gitcheckoutoutput=`git checkout "$DOCS_GIT_BRANCH" 2>&1`
         echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
             echo "Branch changed - docs should be updated."
