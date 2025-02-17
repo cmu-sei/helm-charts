@@ -12,14 +12,9 @@ data:
 
     update-ca-certificates
 
-    while openssl x509 -noout -text; do :; done < /etc/ssl/certs/ca-certificates.crt
-
-    giturl={{ .Values.giturl }}
-    branch={{ .Values.gitbranch }}
-
-    {{- if .Values.gitCredentialsSecret }}
-    git config --global credential.helper "store --file=/git-credentials/{{ .Values.gitCredentialsSecretKey | default ".git-credentials" }}"
-    {{- end }}
+    if [ -n $DOCS_GIT_CRED_FILE ]; then
+        git config --global credential.helper "store --file=/git-credentials/${DOCS_GIT_CRED_FILE}"
+    fi
 
     # Keep track of whether docs need to be built
     dirty=0
@@ -30,14 +25,14 @@ data:
         echo "Clearing and cloning git repo..."
         dirty=1
         rm -rf *
-        git clone "$giturl" .
+        git clone "$DOCS_GIT_URL" .
     fi
 
     git reset --hard
     git clean -f
     
-    if [ -n "$branch" ]; then 
-        gitcheckoutoutput=`git checkout $branch 2>&1`
+    if [ -n "$DOCS_GIT_BRANCH" ]; then 
+        gitcheckoutoutput=`git checkout $DOCS_GIT_BRANCH 2>&1`
         echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
             echo "Branch changed - docs should be updated."
@@ -56,15 +51,15 @@ data:
     if [ "$dirty" -eq "1" ]; then
         touch "/docs/.dirty"
     fi
-    
-    {{- if .Values.mkdocs.site_url }}
-    sed -i -r -e 's#^(site_url: )(.*)#\1{{ .Values.mkdocs.site_url }}#' mkdocs.yml
-    found_url=`grep -c 'site_url:' mkdocs.yml`
-    if [ $found_url = 0 ]; then 
-      echo 'site_url: {{ .Values.mkdocs.site_url }}' | cat - mkdocs.yml > tmp.yml
-      mv tmp.yml mkdocs.yml
-    fi
-    {{ end }}
+
+    if [ -n "$DOCS_SITE_URL" ]; then
+        sed -i -r -e 's#^(site_url: )(.*)#\1${DOCS_SITE_URL}#' mkdocs.yml
+        found_url=`grep -c 'site_url:' mkdocs.yml`
+        if [ $found_url = 0 ]; then 
+        echo 'site_url: ${DOCS_SITE_URL}' | cat - mkdocs.yml > tmp.yml
+        mv tmp.yml mkdocs.yml
+        fi
+    fi 
 
   mkdocs-build.sh: |-
     #!/bin/sh
