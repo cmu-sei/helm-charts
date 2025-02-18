@@ -85,7 +85,7 @@ data:
             echo "Old docs: $old_docs"
             echo "New docs: $new_docs"
 
-            echo "Docs direcrtory is: ${docs_dir}"
+            echo "Docs directory is: ${docs_dir}"
             cd "$docs_dir"
             mkdocs build -d "$new_docs"
             if [ "$?" -eq "0" ]; then
