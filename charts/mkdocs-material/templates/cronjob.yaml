@@ -25,52 +25,88 @@ spec:
             - name: git-pull
               image: "bitnami/git"
               command: ["/entry.d/git-pull.sh"]
+              env:
+                - name: DOCS_GIT_URL
+                  value: {{ .Values.giturl }}
+                - name: DOCS_GIT_BRANCH
+                  value: {{ .Values.gitbranch }}
+                {{- if .Values.gitCredentialsSecret }}
+                - name: DOCS_GIT_CRED_FILE
+                  value: {{ default ".git-credentials" .Values.gitCredentialsSecretKey }}
+                {{- end }}
+                {{- if .Values.gitPath }}
+                - name: DOCS_GIT_PATH
+                  value: {{ .Values.gitPath | trimPrefix "/" }}
+                {{- end }}
+                {{- if .Values.mkdocs.site_url }}
+                - name: DOCS_SITE_URL
+                  value: {{ .Values.mkdocs.site_url }}
+                {{- end }}
               volumeMounts:
                 - mountPath: /entry.d
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
-                  name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
                 - mountPath: /git
-                  name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/git
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
                 {{- if .Values.gitCredentialsSecret }}
                 - mountPath: /git-credentials
                   name: {{ include "mkdocs-material.fullname" . }}-git-creds
+                {{- end }}
+                {{- if or .Values.certificateMap .Values.cacert }}
+                - mountPath: /usr/local/share/ca-certificates
+                  name: certificates
                 {{- end }}
           containers:
             - name: mkdocs-build
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               command: ["/entry.d/mkdocs-build.sh"]
+              {{- if .Values.gitPath }}
+              env:
+                - name: DOCS_GIT_PATH
+                  value: {{ .Values.gitPath | trimPrefix "/" }}
+              {{- end }}
               volumeMounts:
                 - mountPath: /entry.d
                   name: {{ include "mkdocs-material.fullname" . }}-entry
                 - mountPath: /docs
-                  name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/docs
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
                 - mountPath: /git
-                  name: {{ include "mkdocs-material.name" . }}-vol
-                  subPath: {{ include "mkdocs-material.fullname" . }}/git
+                  name: {{ include "mkdocs-material.fullname" . }}-vol
+                  subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
           volumes:
-            - name: {{ include "mkdocs-material.name" . }}-entry
+            - name: {{ include "mkdocs-material.fullname" . }}-entry
               configMap:
                 name: {{ include "mkdocs-material.fullname" . }}-entry
                 defaultMode: 0775
             {{- if .Values.storage.existing }}
-            - name: {{ include "mkdocs-material.name" . }}-vol
+            - name: {{ include "mkdocs-material.fullname" . }}-vol
               persistentVolumeClaim:
                 claimName: {{ .Values.storage.existing }}
             {{- else }}    
-            - name: {{ include "mkdocs-material.name" . }}-vol
+            - name: {{ include "mkdocs-material.fullname" . }}-vol
               persistentVolumeClaim:
                 claimName: {{ include "mkdocs-material.fullname" . }}
             {{- end }}
             {{- if .Values.gitCredentialsSecret }}
-            - name: {{ include "mkdocs-material.name" . }}-git-creds
+            - name: {{ include "mkdocs-material.fullname" . }}-git-creds
               secret:
                 secretName: {{ .Values.gitCredentialsSecret }}
                 defaultMode: 0600
+            {{- end }}
+            {{- if .Values.certificateMap }}
+            - name: certificates
+              configMap:
+                name: {{ .Values.certificateMap }}
+            {{- end }}
+            {{- if .Values.cacert }}
+            - name: certificates
+              configMap:
+                name: {{ include "mkdocs-material.fullname" . }}-cacerts
             {{- end }}
 
 {{- end }}
