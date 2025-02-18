@@ -108,6 +108,9 @@ gitCredentialsSecret: ""
 ## The default value is ".git-credentials"
 gitCredentialsSecretKey: ""
 
+## The path relative to the root of the git repo where the docs are located.
+gitPath: ""
+
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 

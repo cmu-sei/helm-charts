@@ -67,44 +67,54 @@ data:
     if [ -f "/docs/.dirty" ]; then
         echo "Building docs..."
 
-        old_docs=`readlink /docs/site`
-        new_docs=`mktemp -d -p /docs`
-
-        echo "Old docs: $old_docs"
-        echo "New docs: $new_docs"
-
-        cd /git
-        mkdocs build -d "$new_docs"
-        if [ "$?" -eq "0" ]; then
-            echo "Mkdocs build succeeded."
-
-            cd /docs
-            tmp_path=`basename "$new_docs"`
-            chmod 775 "$tmp_path"
-            
-            ## Delete the previous symbolic link
-            rm "site"
-
-            ## Relink or link the symbolic link
-            ln -s "$tmp_path" "site"
-
-            if [ -n "$old_docs" ]; then
-                echo "Removing old docs: $old_docs"
-                rm -Rf "$old_docs"
-            else 
-                echo "No old docs to remove"
-            fi
-
-            new_docs_link=`ls -alF /docs/site`
-            echo "$new_docs_link" | grep "$tmp_path" > /dev/null 2>&1
-            if [ "$?" -eq "0" ]; then
-                echo "New link: $new_docs_link"
-                rm "/docs/.dirty"
-            else
-                echo "Unexpected link result: $new_docs_link"
-            fi
+        if [ -n "$DOCS_GIT_PATH" ]; then
+            docs_dir="/git/${DOCS_GIT_PATH}"
         else
-            echo "Mkdocs build failed."
+            docs_dir="/git"
+        fi
+
+        if [ -d "$docs_dir" ]; then
+            old_docs=`readlink /docs/site`
+            new_docs=`mktemp -d -p /docs`
+
+            echo "Old docs: $old_docs"
+            echo "New docs: $new_docs"
+
+            cd "$docs_dir"
+            mkdocs build -d "$new_docs"
+            if [ "$?" -eq "0" ]; then
+                echo "Mkdocs build succeeded."
+
+                cd /docs
+                tmp_path=`basename "$new_docs"`
+                chmod 775 "$tmp_path"
+                
+                ## Delete the previous symbolic link
+                rm "site"
+
+                ## Relink or link the symbolic link
+                ln -s "$tmp_path" "site"
+
+                if [ -n "$old_docs" ]; then
+                    echo "Removing old docs: $old_docs"
+                    rm -Rf "$old_docs"
+                else 
+                    echo "No old docs to remove"
+                fi
+
+                new_docs_link=`ls -alF /docs/site`
+                echo "$new_docs_link" | grep "$tmp_path" > /dev/null 2>&1
+                if [ "$?" -eq "0" ]; then
+                    echo "New link: $new_docs_link"
+                    rm "/docs/.dirty"
+                else
+                    echo "Unexpected link result: $new_docs_link"
+                fi
+            else
+                echo "Mkdocs build failed."
+            fi
+        else 
+          echo "Docs directory not found: ${docs_dir}"    
         fi
     else
         echo "Docs are up-to-date."
