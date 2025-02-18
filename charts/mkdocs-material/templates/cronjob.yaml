@@ -93,10 +93,6 @@ spec:
                 secretName: {{ .Values.gitCredentialsSecret }}
                 defaultMode: 0600
             {{- end }}
-            {{- if .Values.gitPath }}
-            - name: DOCS_GIT_PATH
-              value: {{ .Values.gitPath | trimPrefix "/" }}
-            {{- end }}
             {{- if .Values.certificateMap }}
             - name: certificates
               configMap:
