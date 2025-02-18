@@ -64,6 +64,11 @@ spec:
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               command: ["/entry.d/mkdocs-build.sh"]
+              {{- if .Values.gitPath }}
+              env:
+                - name: DOCS_GIT_PATH
+                  value: {{ .Values.gitPath | trimPrefix "/" }}
+              {{- end }}
               volumeMounts:
                 - mountPath: /entry.d
                   name: {{ include "mkdocs-material.fullname" . }}-entry

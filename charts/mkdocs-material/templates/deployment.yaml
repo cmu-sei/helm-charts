@@ -72,6 +72,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
             {{- if .Values.giturl }}
           command: ["/entry.d/mkdocs-build.sh"]
+          {{- if .Values.gitPath }}
+          env:
+            - name: DOCS_GIT_PATH
+              value: {{ .Values.gitPath | trimPrefix "/" }}
+          {{- end }}
           volumeMounts:
             - mountPath: /entry.d
               name: {{ include "mkdocs-material.fullname" . }}-entry
