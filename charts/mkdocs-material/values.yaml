@@ -71,6 +71,8 @@ resources: {}
 # storage - either an existing pvc, the size for a new pvc, or emptyDir (git requires a pvc)
 storage:
   existing: ""
+  existingSubpathPrefix: true  # If true, then volume mounts will use mkdocs-material.name as a subpath prefix.
+  overrideSubpathPrefix: # If set then this is the value used for the subpath prefix if above property is true
   size: ""
   mode: ReadWriteOnce
   class: default
@@ -106,16 +108,24 @@ gitCredentialsSecret: ""
 ## The default value is ".git-credentials"
 gitCredentialsSecretKey: ""
 
+## The path relative to the root of the git repo where the docs are located.
+gitPath: ""
+
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 
-# cacert - add custom CA certificate
+# cacert - add custom CA certificate in-line
 # cacert: |-
 #   -----BEGIN CERTIFICATE-----
 #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
 #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
 #   …
 #   -----END CERTIFICATE-----
+
+# If this deployment needs to trust custom ca certificates,
+# create a configMap with the needed certificates and specify
+# the configMap name here
+# certificateMap: "ca-map"
 
 ######################
 # Non-Git deployment #

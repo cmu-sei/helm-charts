@@ -60,3 +60,11 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Subpath prefix value to use for pvc mount points
+*/}}
+{{- define "mkdocs-material.subpathPrefix" -}}
+{{- $path := default (include "mkdocs-material.fullname" .) .Values.storage.overrideSubpathPrefix -}}
+{{- ternary ($path | printf "%s/" ) "" .Values.storage.existingSubpathPrefix -}}
+{{- end }}
