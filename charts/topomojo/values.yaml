@@ -71,6 +71,57 @@ topomojo-api:
     #    hosts:
     #      - chart-example.local
 
+  # Optional second ingress for topomojo api
+  # - This ingress is used as a proxy for getting a websocket
+  #   console connection to vCenter hosts.
+  # - TLS and Host URLs need configured, but the snippet should be left alone
+  #
+  # Topomojo is hardcoded to pass the vmware host using a query parameter named "vmhost".
+  # nginx supports a syntax to resolve variables of the form $arg_name to a query 
+  # parameter with key "name" in the request line.
+  # That parameter is "vmhost" for this case.
+  # 
+  # nginx resolves $1 to the value of the first capture group of the regex for location:
+  # /console/ticket/(.*)
+  # so this means we expect the ticket number to be whatever value is after 
+  # /console/ticket/ in the request path.
+  #
+  # An example websocket request that would match this rule is:
+  # wss://connect.example.com/console/ticket/6e71189b23e5ade2?vmhost=10.4.52.68
+  #
+  # NOTES:
+  # - This is only used if deployConsoleProxy below is true, otherwise
+  #   connections will go directly from the UI to the vCenter hosts themselves
+  # This ingress requires the following properties to be set on the nginx controller via the ConfigMap
+  #    allow-snippet-annotations: true
+  #    annotations-risk-level: critical  # Became necessary as of ingress-nginx helm chart v4.12
+  consoleIngress:
+    deployConsoleProxy: false  
+    className: ""
+    name: vm-consoles
+    namespace: 
+    annotations: 
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/server-snippet: |
+        # Adding proxy configuration for consoles
+        location ~ /console/ticket/(.*) {
+          proxy_pass https://$arg_vmhost/ticket/$1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_request_buffering off;
+          proxy_buffering off;
+          proxy_read_timeout 86400s;
+          proxy_send_timeout 86400s;
+          proxy_ssl_session_reuse on;
+        }
+    hosts:
+      - host: connect.example.com
+        paths: []
+    tls:
+      - secretName: ""
+        hosts:
+         - connect.example.com
+
   health: {}
     # livenessProbe:
     #   initialDelaySeconds: 10
