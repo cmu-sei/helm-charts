@@ -100,7 +100,7 @@ spec:
           {{- end }}
           volumeMounts:
           {{- if .Values.customStart }}
-            - mountPath: /start
+            - mountPath: /home/app/start
               name: {{ include "topomojo-api.name" . }}-conf
           {{- end }}
           {{- if .Values.existingSecret }}
