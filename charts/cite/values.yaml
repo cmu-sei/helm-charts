@@ -27,6 +27,12 @@ cite-api:
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
+  # If this deployment needs to trust non-public certificates,
+  # create a configMap with the needed certifcates and specify
+  # the configMap name here
+  certificateMap: ''
+
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/alloy.api/Alloy.Api/appsettings.json
