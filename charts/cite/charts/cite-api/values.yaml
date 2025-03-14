@@ -78,6 +78,11 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# If this deployment needs to trust non-public certificates,
+# create a configMap with the needed certifcates and specify
+# the configMap name here
+certificateMap: ''
+
 command: ['bash', '-c', 'update-ca-certificates && dotnet Cite.Api.dll']
 
 nodeSelector: {}
