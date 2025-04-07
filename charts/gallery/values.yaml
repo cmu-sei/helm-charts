@@ -103,7 +103,7 @@ gallery-ui:
     "AppTitle": "Gallery",
     "AppTopBarHexColor": "#2d69b4",
     "AppTopBarHexTextColor": "#FFFFFF",
-    "AppTopBarText": "Gallery  -  Keeping you in the know!",
+    "AppTopBarText": "Gallery  -  Exercise Information Sharing",
     "AppTopBarImage": "/assets/img/monitor-dashboard-white.png",
     "UseLocalAuthStorage": true
     }'
