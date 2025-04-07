@@ -103,7 +103,7 @@ blueprint-ui:
     "AppTitle": "Blueprint",
     "AppTopBarHexColor": "#2d69b4",
     "AppTopBarHexTextColor": "#FFFFFF",
-    "AppTopBarText": "Blueprint  -  Keeping you in the know!",
+    "AppTopBarText": "Blueprint  -  Exercise Planning",
     "AppTopBarImage": "/assets/img/monitor-dashboard-white.png",
     "UseLocalAuthStorage": true
     }'

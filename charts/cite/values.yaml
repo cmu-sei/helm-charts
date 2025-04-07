@@ -131,7 +131,7 @@ cite-ui:
     "AppTitle": "CITE",
     "AppTopBarHexColor": "#2d69b4",
     "AppTopBarHexTextColor": "#FFFFFF",
-    "AppTopBarText": "CITE  -  Financial Incident Threat Evaluator",
+    "AppTopBarText": "CITE  -  Collaborative Incident Threat Evaluator",
     "UseLocalAuthStorage": true,
     "DefaultScoringModelId": "",
     "DefaultEvaluationId": "",
