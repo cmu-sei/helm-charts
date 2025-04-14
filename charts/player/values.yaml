@@ -105,7 +105,27 @@ player-api:
 
     # Basic seed data to jumpstart deployement
     # TODO - Document Seed Data
-    SeedData__SystemAdminIds__0: 
+    # This is a placeholder and needs to be updated for a new install.
+    # Upgrades should keep administrators from the previous install.
+    
+    # SeedData__Permissions__0__Name: "Demo Permission"
+    # SeedData__Permissions__0__Description: "This is a demo permission"
+    
+    # SeedData__Roles__0__Name: "Demo Role"
+    # SeedData__Roles__0__AllPermissions: false
+    # SeedData__Roles__0__Permissions__0: "Demo Permission"
+
+    # SeedData__TeamPermissions__0__Name: "Demo Team Permission"
+    # SeedData__TeamPermissions__0__Description: "Demo Team Permission"
+
+    # SeedData__TeamRoles__0__Name: "Demo Team Role Name"
+    # SeedData__TeamRoles__0__AllPermissions: false
+    # SeedData__TeamRoles__0__Permissions__0: "Demo Team Permission"
+    # SeedData__TeamRoles__0__Permissions__1: "ManageTeam"
+
+    # SeedData__Users__0__Id: "2d977dea-678f-4e99-98ef-a8c59ec0fdc9"
+    # SeedData__Users__0__Name: "Seed User"
+    # SeedData__Users__0__Role: "Demo Role"
 
 player-ui:
 
