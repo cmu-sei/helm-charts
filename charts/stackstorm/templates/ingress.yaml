@@ -1,0 +1,63 @@
+{{- if .Values.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-st2web-ingress
+  labels: {{- include "stackstorm-ha.labels" (list $ "ingress") | nindent 4 }}
+  annotations:
+    {{- if .Values.ingress.tls }}
+    ingress.kubernetes.io/secure-backends: "true"
+    {{- end }}
+    {{- if .Values.ingress.annotations }}
+      {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- end }}
+  rules:
+  {{- range .Values.ingress.hosts }}
+  - host: {{ .host }}
+    http:
+      paths:
+      {{- range .paths }}
+        - path: {{ default "/*" .path }}
+          {{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .serviceName }}
+              port:
+                number: {{ .servicePort }}
+          {{- else }}
+          backend:
+            serviceName: {{ .serviceName }}
+            servicePort: {{ .servicePort }}
+          {{- end }}
+      {{- end }}
+  {{- else }}
+    {{- if required "Missing context '.Values.st2web.service.hostname'!" .Values.st2web.service.hostname }}
+  - host: {{ .Values.st2web.service.hostname }}
+    {{- end }}
+    http:
+      paths:
+        - path: "/"
+          {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-st2web
+              port:
+                number: 80
+          {{- else }}
+          backend:
+            serviceName: {{ .Release.Name }}-st2web
+            servicePort: 80
+          {{- end }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end -}}
+{{- end }}

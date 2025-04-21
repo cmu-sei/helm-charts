@@ -1,0 +1,391 @@
+---
+suite: Labels
+templates:
+  - deployments.yaml
+  - jobs.yaml
+  - services.yaml
+
+  - configmaps_overrides.yaml
+  - configmaps_packs.yaml
+  - configmaps_post-start-script.yaml
+  - configmaps_rbac.yaml
+  - configmaps_st2-conf.yaml
+  - configmaps_st2-urls.yaml
+  - configmaps_st2web.yaml
+
+  - secrets_datastore_crypto_key.yaml
+  - secrets_rabbitmq.yaml
+  - secrets_ssh.yaml
+  - secrets_st2apikeys.yaml
+  - secrets_st2auth.yaml
+  - secrets_st2chatops.yaml
+  - secrets_st2kv.yaml
+
+  - service-account.yaml
+
+  - ingress.yaml
+
+release:
+  name: some-release-name
+chart: &chart # workaround for bug where top-level appVersion does not take affect
+  version: 1.0.999
+  appVersion: &appVersion "3.999"
+
+tests:
+  - it: Deployments+Pods have requried labels
+    template: deployments.yaml
+    chart: *chart
+    set:
+      st2: { packs: { sensors: [] } } # ensure only 1 sensor
+      st2chatops:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 14
+          # st2auth, st2api,
+          # st2stream, st2web,
+          # st2rulesengine, st2timersengine,
+          # st2workflowengine, st2scheduler,
+          # st2notifier, (1) st2sensorcontainer,
+          # st2actionrunner, st2garbagecollector,
+          # st2client, st2chatops
+
+      # each of these should be the same, but there is no test for that:
+      #   metdata.labels.[app.kubernetes.io/name]
+      #   spec.selector.matchLabels.[app.kubernetes.io/name]
+      #   spec.template.metadata.labels.[app.kubernetes.io/name]
+      # So, we use exists instead.
+      # see: https://github.com/quintush/helm-unittest/issues/122
+      - exists:
+          path: metadata.labels["app.kubernetes.io/name"]
+      - exists:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+      - exists:
+          path: spec.template.metadata.labels["app.kubernetes.io/name"]
+
+      - equal: &metadata_labels_instance
+          path: metadata.labels["app.kubernetes.io/instance"]
+          value: some-release-name
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/instance"]
+          value: some-release-name
+      - equal: &spec_template_metadata_labels_instance
+          path: spec.template.metadata.labels["app.kubernetes.io/instance"]
+          value: some-release-name
+
+      - matchRegex: &regex_metadata_labels_component_backend_or_frontend
+          path: metadata.labels["app.kubernetes.io/component"]
+          pattern: ^(backend|frontend)$
+      - matchRegex: &regex_spec_template_metadata_labels_component_backend_or_frontend
+          path: spec.template.metadata.labels["app.kubernetes.io/component"]
+          pattern: ^(backend|frontend)$
+
+      - equal: &metadata_labels_part_of
+          path: metadata.labels["app.kubernetes.io/part-of"]
+          value: stackstorm
+      - equal: &spec_template_metadata_labels_part_of
+          path: spec.template.metadata.labels["app.kubernetes.io/part-of"]
+          value: stackstorm
+
+      - equal: &metadata_labels_app_version
+          path: metadata.labels["app.kubernetes.io/version"]
+          value: *appVersion
+      - equal: &spec_template_metadata_labels_app_version
+          path: spec.template.metadata.labels["app.kubernetes.io/version"]
+          value: *appVersion
+
+      - equal: &metadata_labels_chart
+          path: metadata.labels["helm.sh/chart"]
+          value: stackstorm-ha-1.0.999
+      - equal: &spec_template_metadata_labels_chart
+          path: spec.template.metadata.labels["helm.sh/chart"]
+          value: stackstorm-ha-1.0.999
+
+      - equal: &metadata_labels_managed_by
+          path: metadata.labels["app.kubernetes.io/managed-by"]
+          value: Helm
+      - equal: &spec_template_metadata_labels_managed_by
+          path: spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+          value: Helm
+
+  - it: Jobs+Pods have requried labels
+    template: jobs.yaml
+    chart: *chart
+    set:
+      st2:
+        rbac:
+          enabled: true # enable rbac job
+        packs:
+          sensors: [] # ensure only 1 sensor
+          images: [] # no extra packs to load
+          volumes:
+            enabled: true
+            packs:
+              nfs:
+                server: "10.12.34.56"
+                path: /var/nfsshare/packs
+            virtualenvs:
+              nfs:
+                server: "10.12.34.56"
+                path: /var/nfsshare/virtualenvs
+            configs:
+              nfs:
+                server: "10.12.34.56"
+                path: /var/nfsshare/configs
+          configs: {} # has one core.yaml config file by default (dicts get merged)
+      jobs:
+        extra_hooks:
+          - name: upgrade-warning
+            hook: pre-upgrade, pre-rollback
+            hook_weight: -5
+            command: ["st2", "run", "--tail", "custom_pack.warn_about_upgrade"]
+    asserts:
+      - hasDocuments:
+          count: 6
+          # job-st2-apply-rbac-defintions
+          # job-st2-apikey-load
+          # job-st2-key-load
+          # job-st2-register-content
+          # job-st2canary-for-writable-packs-volumes
+          # extra_hooks job
+
+      # unlike deployments, jobs should not have selector.matchLabels
+
+      # like deployments each of these should be the same:
+      #   metdata.labels.[app.kubernetes.io/name]
+      #   spec.template.metadata.labels.[app.kubernetes.io/name]
+      - exists:
+          path: metadata.labels["app.kubernetes.io/name"]
+      - exists:
+          path: spec.template.metadata.labels["app.kubernetes.io/name"]
+
+      - equal: *metadata_labels_instance
+      - equal: *spec_template_metadata_labels_instance
+
+      - matchRegex:
+          path: metadata.labels["app.kubernetes.io/component"]
+          pattern: ^(backend|tests)$
+      - matchRegex:
+          path: spec.template.metadata.labels["app.kubernetes.io/component"]
+          pattern: ^(backend|tests)$
+
+      - equal: *metadata_labels_part_of
+      - equal: *spec_template_metadata_labels_part_of
+
+      - equal: *metadata_labels_app_version
+      - equal: *spec_template_metadata_labels_app_version
+
+      - equal: *metadata_labels_chart
+      - equal: *spec_template_metadata_labels_chart
+
+      - equal: *metadata_labels_managed_by
+      - equal: *spec_template_metadata_labels_managed_by
+
+  - it: Services have required labels
+    template: services.yaml
+    chart: *chart
+    set:
+      st2chatops:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 5
+          # st2auth, st2api, st2stream, st2web, st2chatops
+
+      - exists:
+          path: metadata.labels["app.kubernetes.io/name"]
+      - equal: *metadata_labels_instance
+      - matchRegex: *regex_metadata_labels_component_backend_or_frontend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: ServiceAccount has required labels
+    template: service-account.yaml
+    chart: *chart
+    set:
+      serviceAccount:
+        create: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: stackstorm-ha
+      - equal: *metadata_labels_instance
+      - equal: &metadata_labels_component_backend
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: backend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: ServiceAccount accepts custom labels
+    template: service-account.yaml
+    set:
+      serviceAccount:
+        create: true
+        serviceAccountLabels:
+          foo: bar
+          answer: "42"
+    asserts:
+      - exists:
+          path: metadata.labels
+      - equal:
+          path: metadata.labels.foo
+          value: bar
+      - equal:
+          path: metadata.labels.answer
+          value: "42"
+
+  - it: st2web Ingress has required labels
+    template: ingress.yaml
+    chart: *chart
+    set:
+      st2web:
+        service:
+          hostname: some-host-name
+      ingress:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: ingress
+      - equal: *metadata_labels_instance
+      - equal:
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: frontend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: ConfigMaps and Secrets have required labels
+    templates:
+      - configmaps_packs.yaml
+      - configmaps_st2-conf.yaml
+      - configmaps_st2-urls.yaml
+
+      - secrets_datastore_crypto_key.yaml
+      - secrets_rabbitmq.yaml
+      - secrets_ssh.yaml
+      - secrets_st2apikeys.yaml
+      - secrets_st2auth.yaml
+      - secrets_st2kv.yaml
+    chart: *chart
+    set:
+      rabbitmq: # for secrets_rabbitmq.yaml
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal: &metadata_labels_app_eq_st2
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: st2
+      - equal: *metadata_labels_instance
+      - equal: *metadata_labels_component_backend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: RBAC ConfigMaps have required labels
+    templates:
+      - configmaps_rbac.yaml
+    chart: *chart
+    set:
+      st2:
+        rbac:
+          enabled: true # enable rbac config maps
+    asserts:
+      - hasDocuments:
+          count: 3
+      - equal: *metadata_labels_app_eq_st2
+      - equal: *metadata_labels_instance
+      - equal: *metadata_labels_component_backend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: st2chatops Secret has required labels
+    templates:
+      - secrets_st2chatops.yaml
+    chart: *chart
+    set:
+      st2chatops:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: st2chatops
+      - equal: *metadata_labels_instance
+      - equal: *metadata_labels_component_backend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: st2web ConfigMap has required labels
+    templates:
+      - configmaps_st2web.yaml
+    chart: *chart
+    set:
+      st2web:
+        config: |
+          // see https://github.com/StackStorm/st2web/blob/master/config.js
+          'use strict';
+          /* global angular */
+          angular.module('main').constant('st2Config', {});
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: st2 # should this be st2web?
+      - equal: *metadata_labels_instance
+      - equal:
+          path: metadata.labels["app.kubernetes.io/component"]
+          value: backend # should this be frontend?
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
+
+  - it: post-start-script ConfigMaps have required labels
+    templates:
+      - configmaps_post-start-script.yaml
+    chart: *chart
+    set:
+      st2auth: &postStartScript
+        postStartScript: |
+          echo hello world
+      st2api: *postStartScript
+      st2stream: *postStartScript
+      st2web: *postStartScript
+      st2rulesengine: *postStartScript
+      st2timersengine: *postStartScript
+      st2workflowengine: *postStartScript
+      st2scheduler: *postStartScript
+      st2notifier: *postStartScript
+      st2sensorcontainer: *postStartScript
+      st2actionrunner: *postStartScript
+      st2garbagecollector: *postStartScript
+      st2client: *postStartScript
+      st2chatops: *postStartScript
+    asserts:
+      - hasDocuments:
+          count: 14
+      - equal: *metadata_labels_app_eq_st2
+      - equal: *metadata_labels_instance
+      - equal: *metadata_labels_component_backend
+      - equal: *metadata_labels_part_of
+      - equal: *metadata_labels_app_version
+      - equal: *metadata_labels_chart
+      - equal: *metadata_labels_managed_by
