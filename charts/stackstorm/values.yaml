@@ -74,6 +74,10 @@ st2:
   # existingAuthSecret: ""
   # Name of existing ST2 datastore secret, disables creation of this secret
   # existingDatastoreSecret: ""
+  # Custom StackStorm packs config secret. Each key in the referenced secret will
+  # be merged with any configs in st2.packs.configs and be mounted at /opt/stackstorm/configs/.
+  # This secret must be populated outside of this chart.
+  # existingPacksConfigSecret: stackstorm-packs-config-secret
 
   # ST2 crypto key for the  K/V datastore.
   # See https://docs.stackstorm.com/datastore.html#securing-secrets-admin-only for more info.
@@ -145,11 +149,6 @@ st2:
       core.yaml: |
         ---
         # example core pack config yaml
-
-    # Custom StackStorm packs config secret. Each key in the referenced secret will create a file in 
-    # '/opt/stackstorm/configs-secret/' and will be added to whatever is in /opt/stackstorm/configs/.
-    # This secret must be populated outside of this chart.
-    # existingPacksConfigSecret: stackstorm-packs-config-secret
 
     # Custom packs images settings.
     #
@@ -840,6 +839,9 @@ st2client:
   # HTTP_PROXY: http://proxy:1234
   ## These named secrets (managed outside this chart) will be added to envFrom.
   envFromSecrets: []
+  # envFromSecrets:
+  #   - test-stackstorm-auth-secret
+
   annotations: {}
   # Override default image settings (for now, only tag can be overridden)
   image: {}
@@ -962,6 +964,10 @@ jobs:
     [credentials]
     username = ${ST2_AUTH_USERNAME}
     password = ${ST2_AUTH_PASSWORD}
+  ## These named secrets (managed outside this chart) will be added to envFrom.
+  envFromSecrets: []
+  # envFromSecrets: 
+  #   - test-stackstorm-auth-secret
   annotations: {}
   # Override default image settings (for now, only tag can be overridden)
   # The Jobs use the st2actionrunner image
@@ -985,8 +991,7 @@ jobs:
   affinity: {}
   env: {}
   # HTTP_PROXY: http://proxy:1234
-  ## These named secrets (managed outside this chart) will be added to envFrom.
-  envFromSecrets: []
+
   # mount extra volumes on the jobs pods (primarily useful for k8s-provisioned secrets)
   ## Note that Helm templating is supported in 'mount' and 'volume'
   extra_volumes: []
@@ -1038,11 +1043,22 @@ mongodb:
   # Change to `false` to disable in-cluster mongodb deployment.
   # Specify your external [database] connection parameters under st2.config
   enabled: true
-  # image:
-    # StackStorm currently supports maximum MongoDB v4.4
-    # tag: "4.4"
+
+  service:
+    type: ClusterIP
+    port: 27017
+    portName: mongodb
+
   # MongoDB architecture. Allowed values: standalone or replicaset
   architecture: standalone
+  # image:
+  #   registry: docker.io
+  #   repository: bitnami/mongodb
+  #   tag: 7.0.5-debian-11-r6
+  #   pullPolicy: IfNotPresent
+  #   pullSecrets: []
+  #   debug: false
+
   # Name of the replica set
   # Ignored when mongodb.architecture=standalone
   # replicaSetName: rs0
@@ -1051,27 +1067,64 @@ mongodb:
   # replicaCount: 1
   auth:
     enabled: true
-    # NB! It's highly recommended to change ALL insecure auth defaults!
-    #
-    # Stackstorm user that services will make connections using
-
-    # username: "st2-admin"
-    # Stackstorm user that services will make connections using
-    # password: "XeL5Rxwj7F0Wt43tFZVTN7H8Sg5XDHmK"
-    # Root password for the database
-    # rootPassword: "8fAzdnksdzPFUWm4a68EfY7nMhBPaa"
-    # Initial database for stackstorm
-    # database: "st2"
+    ## @param auth.rootUser MongoDB(&reg;) root user
+    ##
+    rootUser: root
+    ## @param auth.rootPassword MongoDB(&reg;) root password
+    ## ref: https://github.com/bitnami/containers/tree/main/bitnami/mongodb#setting-the-root-user-and-password-on-first-run
+    ##
+    rootPassword: ""
+    ## MongoDB(&reg;) custom users and databases
+    ## ref: https://github.com/bitnami/containers/tree/main/bitnami/mongodb#creating-a-user-and-database-on-first-run
+    ## @param auth.usernames List of custom users to be created during the initialization
+    ## @param auth.passwords List of passwords for the custom users set at `auth.usernames`
+    ## @param auth.databases List of custom databases to be created during the initialization
+    ##
+    usernames: []
+    passwords: []
+    databases: []
     # Minimal key length is 6 symbols and may only contain characters in the base64 set.
-    # replicaSetKey: "82PItDpqroti5RngOA7UqbHH7c6bFUwy"
-    # Whether to enable the arbiter
+    replicaSetKey: 
     ## @param auth.existingSecret Existing secret with MongoDB(&reg;) credentials (keys: `mongodb-passwords`, `mongodb-root-password`, `mongodb-metrics-password`, `mongodb-replica-set-key`)
     ## NOTE: When it's set the previous parameters are ignored.
     ##
-    # existingSecret: test-mongodb-secret
+    existingSecret: 
+  # Whether to enable the arbiter
   # arbiter:
   #   enabled: false
   resources: {}
+  persistence:
+    enabled: true
+    # existingClaim: "appdata"
+    # subPath: stackstorm/mongodb
+
+  # Note: There is a bug in the current mongodb bitnami helm chart
+  # that incorrectly sets the volumePermissions, which is why
+  # the example extra initContainer below is included as an example for 
+  # how to get this to work.
+  volumePermissions:
+    enabled: false
+
+  # initContainers:
+  #   - args:
+  #     - |
+  #       mkdir -p /bitnami/mongodb
+  #       chown -R "1001:1001" "/bitnami/mongodb"
+  #     command:
+  #     - /bin/bash
+  #     - -ec
+  #     image: docker.io/bitnami/minideb:buster
+  #     imagePullPolicy: Always
+  #     name: volume-permissions
+  #     resources: {}
+  #     securityContext:
+  #       runAsUser: 0
+  #     terminationMessagePath: /dev/termination-log
+  #     terminationMessagePolicy: File
+  #     volumeMounts:
+  #     - mountPath: /bitnami/mongodb
+  #       name: datadir
+  #       subPath: stackstorm/mongodb
 
 ##
 ## RabbitMQ configuration (3rd party chart dependency)
@@ -1095,25 +1148,35 @@ rabbitmq:
   auth:
     username: admin
     # TODO: Use default random 10 character password, but need to fetch this string for use by downstream services
-    password: 9jS+w1u07NbHtZke1m+jW4Cj
+    password: 
     # Up to 255 character string, should be fixed so that re-deploying the chart does not fail (see: https://github.com/helm/charts/issues/12371)
     # NB! It's highly recommended to change the default insecure rabbitmqErlangCookie value!
-    erlangCookie: 8MrqQdCQ6AQ8U3MacSubHE5RqkSfvNaRHzvxuFcG
+    erlangCookie: # 8MrqQdCQ6AQ8U3MacSubHE5RqkSfvNaRHzvxuFcG
+    ## @param auth.existingPasswordSecret Existing secret with RabbitMQ credentials (existing secret must contain a value for `rabbitmq-password` key or override with setting auth.existingSecretPasswordKey)
+    ## e.g:
+    ## existingPasswordSecret: name-of-existing-secret
+    ##
+    existingPasswordSecret: ""
+    ## @param auth.existingErlangSecret Existing secret with RabbitMQ Erlang cookie (must contain a value for `rabbitmq-erlang-cookie` key or override with auth.existingSecretErlangKey)
+    ## e.g:
+    ## existingErlangSecret: name-of-existing-secret
+    ##
+    existingErlangSecret: ""
+    ## @param auth.enableLoopbackUser If enabled, the user `auth.username` can only connect from localhost
+    ##
+    enableLoopbackUser: false
+
   # RabbitMQ Memory high watermark. See: http://www.rabbitmq.com/memory.html
   # Default values might not be enough for StackStorm deployment to work properly. We recommend to adjust these settings for you needs as well as enable Pod memory limits via "resources".
   #rabbitmqMemoryHighWatermark: 512MB
   #rabbitmqMemoryHighWatermarkType: absolute
   persistence:
     enabled: true
-  # Enable Queue Mirroring between nodes
-  # See https://www.rabbitmq.com/ha.html
-  # This code block is commented out waiting for
-  # https://github.com/bitnami/charts/issues/4635
-  # loadDefinition:
-  #   enabled: true
-  #   existingSecret: "{{ .Release.Name }}-rabbitmq-definitions"
-  # extraConfiguration: |
-  #   load_definitions = /app/rabbitmq-definitions.json
+    # existingClaim: appdata
+    # subPath: stackstorm/rabbitmq
+
+  volumePermissions:
+    enabled: true
   # We recommend to set the memory limit for RabbitMQ-HA Pods in production deployments.
   # Make sure to also change the rabbitmqMemoryHighWatermark following the formula:
   # rabbitmqMemoryHighWatermark = 0.4 * resources.limits.memory
