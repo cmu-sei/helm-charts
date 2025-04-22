@@ -19,11 +19,11 @@ data:
     [coordination]
     url = redis://{{ template "stackstorm-ha.redis-password" $ }}{{ template "stackstorm-ha.redis-nodes" $ }}
     {{- end }}
-    {{- if index .Values "rabbitmq" "enabled" }}
+    {{- if and (index .Values "rabbitmq" "enabled") (not (index .Values "rabbitmq" "auth" "existingPasswordSecret")) }}
     [messaging]
     url = amqp://{{ required "rabbitmq.auth.username is required!" (index .Values "rabbitmq" "auth" "username") }}:{{ required "rabbitmq.auth.password is required!" (index .Values "rabbitmq" "auth" "password") }}@{{ .Release.Name }}-rabbitmq:5672{{ required "rabbitmq.ingress.path is required!" (index .Values "rabbitmq" "ingress" "path") }}
     {{- end }}
-    {{- if index .Values "mongodb" "enabled" }}
+    {{- if and (index .Values "mongodb" "enabled") (not (index .Values "mongodb" "auth" "existingSecret")) }}
     [database]
     {{- if index .Values "mongodb" "auth" "enabled" }}
     host = mongodb://{{ template "stackstorm-ha.mongodb-nodes" $ }}/{{ required "mongodb.auth.database is required!" (index .Values "mongodb" "auth" "database") }}?authSource={{ required "mongodb.auth.database is required!" (index .Values "mongodb" "auth" "database") }}&replicaSet={{ index .Values "mongodb" "replicaSetName" }}

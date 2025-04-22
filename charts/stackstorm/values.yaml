@@ -1038,34 +1038,39 @@ mongodb:
   # Change to `false` to disable in-cluster mongodb deployment.
   # Specify your external [database] connection parameters under st2.config
   enabled: true
-  image:
+  # image:
     # StackStorm currently supports maximum MongoDB v4.4
-    tag: "4.4"
+    # tag: "4.4"
   # MongoDB architecture. Allowed values: standalone or replicaset
-  architecture: replicaset
+  architecture: standalone
   # Name of the replica set
   # Ignored when mongodb.architecture=standalone
-  replicaSetName: rs0
+  # replicaSetName: rs0
   # Number of MongoDB replicas to deploy.
   # Ignored when mongodb.architecture=standalone
-  replicaCount: 3
+  # replicaCount: 1
   auth:
     enabled: true
     # NB! It's highly recommended to change ALL insecure auth defaults!
     #
     # Stackstorm user that services will make connections using
-    username: "st2-admin"
+
+    # username: "st2-admin"
     # Stackstorm user that services will make connections using
-    password: "XeL5Rxwj7F0Wt43tFZVTN7H8Sg5XDHmK"
+    # password: "XeL5Rxwj7F0Wt43tFZVTN7H8Sg5XDHmK"
     # Root password for the database
-    rootPassword: "8fAzdnksdzPFUWm4a68EfY7nMhBPaa"
+    # rootPassword: "8fAzdnksdzPFUWm4a68EfY7nMhBPaa"
     # Initial database for stackstorm
-    database: "st2"
+    # database: "st2"
     # Minimal key length is 6 symbols and may only contain characters in the base64 set.
-    replicaSetKey: "82PItDpqroti5RngOA7UqbHH7c6bFUwy"
+    # replicaSetKey: "82PItDpqroti5RngOA7UqbHH7c6bFUwy"
     # Whether to enable the arbiter
-  arbiter:
-    enabled: false
+    ## @param auth.existingSecret Existing secret with MongoDB(&reg;) credentials (keys: `mongodb-passwords`, `mongodb-root-password`, `mongodb-metrics-password`, `mongodb-replica-set-key`)
+    ## NOTE: When it's set the previous parameters are ignored.
+    ##
+    # existingSecret: test-mongodb-secret
+  # arbiter:
+  #   enabled: false
   resources: {}
 
 ##
@@ -1078,6 +1083,10 @@ rabbitmq:
   # Change to `false` to disable in-cluster rabbitmq deployment.
   # Specify your external [messaging] connection parameters under st2.config
   enabled: true
+
+  service:
+    port: 5672
+
   clustering:
     # On unclean cluster restarts forceBoot is required to cleanup Mnesia tables (see: https://github.com/helm/charts/issues/13485)
     # Use it only if you prefer availability over integrity.
@@ -1100,11 +1109,11 @@ rabbitmq:
   # See https://www.rabbitmq.com/ha.html
   # This code block is commented out waiting for
   # https://github.com/bitnami/charts/issues/4635
-  loadDefinition:
-    enabled: true
-    existingSecret: "{{ .Release.Name }}-rabbitmq-definitions"
-  extraConfiguration: |
-    load_definitions = /app/rabbitmq-definitions.json
+  # loadDefinition:
+  #   enabled: true
+  #   existingSecret: "{{ .Release.Name }}-rabbitmq-definitions"
+  # extraConfiguration: |
+  #   load_definitions = /app/rabbitmq-definitions.json
   # We recommend to set the memory limit for RabbitMQ-HA Pods in production deployments.
   # Make sure to also change the rabbitmqMemoryHighWatermark following the formula:
   # rabbitmqMemoryHighWatermark = 0.4 * resources.limits.memory

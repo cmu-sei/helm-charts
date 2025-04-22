@@ -207,7 +207,7 @@ Reduce duplication of the st2.*.conf volume details
     - 'sh'
     - '-c'
     - >
-      until nc -z -w 2 {{ $.Release.Name }}-mongodb-headless {{ $mongodb_port }} && echo mongodb ok;
+      until nc -z -w 2 {{ $.Release.Name }}-mongodb {{ $mongodb_port }} && echo mongodb ok;
         do
           echo 'Waiting for MongoDB Connection...'
           sleep 2;
