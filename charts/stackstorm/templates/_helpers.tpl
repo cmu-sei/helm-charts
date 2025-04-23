@@ -277,6 +277,7 @@ consolidate pack-configs-volumes definitions
 {{- define "stackstorm-ha.pack-configs-volume-mount" -}}
 - name: st2-pack-configs-vol
   mountPath: /opt/stackstorm/configs/
+  subPath: {{ .Values.st2.packs.volumes.configs_subpath }}
   readOnly: false
   {{- if and .Values.st2.packs.volumes.enabled .Values.st2.packs.volumes.configs (or .Values.st2.packs.configs .Values.st2.existingPacksConfigSecret) }}
 - name: st2-pack-configs-from-helm-vol
@@ -304,9 +305,11 @@ For custom st2packs-Container reduce duplicity by defining it here once
   {{- if .Values.st2.packs.volumes.enabled }}
 - name: st2-packs-vol
   mountPath: /opt/stackstorm/packs
+  subPath: {{ .Values.st2.packs.volumes.packs_subpath }}
   readOnly: false
 - name: st2-virtualenvs-vol
   mountPath: /opt/stackstorm/virtualenvs
+  subPath: {{ .Values.st2.packs.volumes.virtualenvs_subpath }}
   readOnly: false
   {{- else if .Values.st2.packs.images }}
 - name: st2-packs-vol
@@ -324,9 +327,15 @@ define this here as well to simplify comparison with packs-volume-mounts
   {{- if or .Values.st2.packs.images .Values.st2.packs.volumes.enabled }}
 - name: st2-packs-vol
   mountPath: /opt/stackstorm/packs
+  {{- if .Values.st2.packs.volumes.enabled }}
+  subPath: {{ .Values.st2.packs.volumes.packs_subpath }}
+  {{- end }}
   readOnly: false
 - name: st2-virtualenvs-vol
   mountPath: /opt/stackstorm/virtualenvs
+  {{- if .Values.st2.packs.volumes.enabled }}
+  subPath: {{ .Values.st2.packs.volumes.virtualenvs_subpath }}
+  {{- end }}
   readOnly: false
   {{- end }}
 {{- end -}}
@@ -361,8 +370,14 @@ Merge packs and virtualenvs from st2 with those from st2packs images
   volumeMounts:
   - name: st2-packs-vol
     mountPath: /opt/stackstorm/packs-shared
+    {{- if $.Values.st2.packs.volumes.enabled }}
+    subPath: {{ $.Values.st2.packs.volumes.packs_subpath }}
+    {{- end }}
   - name: st2-virtualenvs-vol
     mountPath: /opt/stackstorm/virtualenvs-shared
+    {{- if $.Values.st2.packs.volumes.enabled }}
+    subPath: {{ $.Values.st2.packs.volumes.virtualenvs_subpath }}
+    {{- end }}
   command:
     - 'sh'
     - '-ec'
@@ -383,8 +398,14 @@ Merge packs and virtualenvs from st2 with those from st2packs images
   volumeMounts:
   - name: st2-packs-vol
     mountPath: /opt/stackstorm/packs-shared
+    {{- if $.Values.st2.packs.volumes.enabled }}
+    subPath: {{ $.Values.st2.packs.volumes.packs_subpath }}
+    {{- end }}
   - name: st2-virtualenvs-vol
     mountPath: /opt/stackstorm/virtualenvs-shared
+    {{- if $.Values.st2.packs.volumes.enabled }}
+    subPath: {{ $.Values.st2.packs.volumes.virtualenvs_subpath }}
+    {{- end }}
   command:
     - 'sh'
     - '-ec'
@@ -404,6 +425,7 @@ Merge packs and virtualenvs from st2 with those from st2packs images
   volumeMounts:
   - name: st2-pack-configs-vol
     mountPath: /opt/stackstorm/configs-shared
+    subPath: {{ $.Values.st2.packs.volumes.configs_subpath }}
   - name: st2-pack-configs-from-helm-vol
     mountPath: /opt/stackstorm/configs
   command:

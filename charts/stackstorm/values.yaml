@@ -181,6 +181,10 @@ st2:
     # Some generic examples are listed under st2.packs.volumes.packs below.
     volumes:
       enabled: false
+      ## Subpaths for volume mounts, if volumes is enabled
+      packs_subpath: ""
+      virtualenvs_subpath: ""
+      configs_subpath: ""
 
       packs: {}
         # mounted to /opt/stackstorm/packs
