@@ -171,17 +171,6 @@ env:
   Authorization__ClientSecret: ''
   Authorization__RequireHttpsMetaData: false
 
-  SeedData__Permissions__0__Key: SystemAdmin
-  SeedData__Permissions__0__Value: 'true'
-  SeedData__Permissions__0__Description: 'Can do anything'
-  SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Key: ViewAdmin
-  SeedData__Permissions__1__Value: 'true'
-  SeedData__Permissions__1__Description: 'Can edit an View, Add/Remove Teams/Members, etc'
-  SeedData__Permissions__1__ReadOnly: true
-
-  SeedData__SystemAdminIds__0: ''
-
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
