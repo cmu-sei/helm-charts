@@ -77,13 +77,13 @@ topomojo-api:
   # - TLS and Host URLs need configured, but the snippet should be left alone
   #
   # Topomojo is hardcoded to pass the vmware host using a query parameter named "vmhost".
-  # nginx supports a syntax to resolve variables of the form $arg_name to a query 
+  # nginx supports a syntax to resolve variables of the form $arg_name to a query
   # parameter with key "name" in the request line.
   # That parameter is "vmhost" for this case.
-  # 
+  #
   # nginx resolves $1 to the value of the first capture group of the regex for location:
   # /console/ticket/(.*)
-  # so this means we expect the ticket number to be whatever value is after 
+  # so this means we expect the ticket number to be whatever value is after
   # /console/ticket/ in the request path.
   #
   # An example websocket request that would match this rule is:
@@ -96,11 +96,11 @@ topomojo-api:
   #    allow-snippet-annotations: true
   #    annotations-risk-level: critical  # Became necessary as of ingress-nginx helm chart v4.12
   consoleIngress:
-    deployConsoleProxy: false  
+    deployConsoleProxy: false
     className: ""
     name: vm-consoles
-    namespace: 
-    annotations: 
+    namespace:
+    annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/server-snippet: |
         # Adding proxy configuration for consoles
@@ -355,19 +355,19 @@ topomojo-ui:
   # faviconsUrl: "https://some.url/favs.tgz"
 
   ## settings is stringified json that gets included as assets/settings.json
-  settings: |
-    {
-      appname: 'TopoMojo',
-      oidc: {
-        client_id: 'clientid',
-        authority: 'https://your.identity.authority',
-        redirect_uri: 'https://this.site/oidc',
-        silent_redirect_uri: 'https://this.site/oidc-silent.html',
-        response_type: 'code',
-        scope: 'openid profile topomojo-api',
-        monitorSession: false,
-        loadUserInfo: true,
-        automaticSilentRenew: true,
-        useLocalStorage: true
-      }
-    }
+  settings: ""
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    appname: TopoMojo
+    oidc:
+      client_id: clientid
+      authority: https://your.identity.authority
+      redirect_uri: https://this.site/oidc
+      silent_redirect_uri: https://this.site/oidc-silent.html
+      response_type: code
+      scope: openid profile topomojo-api
+      monitorSession: false
+      loadUserInfo: true
+      automaticSilentRenew: true
+      useLocalStorage: true
