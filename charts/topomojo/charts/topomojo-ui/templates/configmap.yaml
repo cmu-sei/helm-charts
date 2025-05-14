@@ -7,7 +7,11 @@ metadata:
 
 data:
   settings.json: |-
+{{- if .Values.settingsYaml }}
+{{ .Values.settingsYaml | toJson | indent 4 }}
+{{- else }}
 {{ .Values.settings | indent 4 }}
+{{- end }}
 
   customize.sh: |
     src=/var/www
