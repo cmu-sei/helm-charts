@@ -139,12 +139,12 @@ spec:
       {{- if .Values.existingSecret }}
       - name: {{ include "topomojo-api.name" . }}-extra
         secret:
-          secretName: {{ .Values.existingSecret }}
+          secretName: {{ (tpl .Values.existingSecret .) }}
       {{- end }}
       {{- if .Values.storage.existing }}
       - name: {{ include "topomojo-api.name" . }}-vol
         persistentVolumeClaim:
-          claimName: {{ .Values.storage.existing }}
+          claimName: {{ (tpl .Values.storage.existing .) }}
       {{- else if .Values.storage.size }}
       - name: {{ include "topomojo-api.name" . }}-vol
         persistentVolumeClaim:
