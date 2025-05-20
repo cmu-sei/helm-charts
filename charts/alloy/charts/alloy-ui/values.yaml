@@ -126,3 +126,6 @@ env:
 #   "PollingIntervalMS": "3500",
 #   "UseLocalAuthStorage": true
 # }'
+
+## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+settingsYaml: {}
