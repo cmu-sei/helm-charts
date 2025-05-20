@@ -8,7 +8,7 @@ metadata:
 data:
   {{- if not .Values.giturl }}
   mkdocs.yml: |-
-{{ .Values.mkdocs | toYaml | indent 4 }}
+    {{- tpl (toYaml .Values.mkdocs) . | nindent 4 }}
   {{- end }}
 
   nginx.conf: |-
@@ -16,12 +16,12 @@ data:
         listen       80;
         listen  [::]:80;
         server_name  localhost;
-    
+
         location / {
             root   /mkdocs/docs/site;
             index  index.html index.htm;
         }
-    
+
         error_page   500 502 503 504  /50x.html;
         location = /50x.html {
             root   /usr/share/nginx/html;
