@@ -34,7 +34,7 @@ spec:
           command: ["/entry.d/git-pull.sh"]
           env:
             - name: DOCS_GIT_URL
-              value: {{ .Values.giturl }}
+              value: {{ (tpl .Values.giturl .) }}
             - name: DOCS_GIT_BRANCH
               value: {{ .Values.gitbranch }}
             {{- if .Values.gitCredentialsSecret }}
