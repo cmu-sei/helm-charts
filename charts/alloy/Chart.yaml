@@ -3,4 +3,3 @@ name: alloy
 description: A Helm chart for Kubernetes
 type: application
 version: 1.6.0
-appVersion: 3.5.1
