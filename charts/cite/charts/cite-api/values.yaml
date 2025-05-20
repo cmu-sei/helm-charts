@@ -91,7 +91,7 @@ tolerations: []
 
 affinity: {}
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
