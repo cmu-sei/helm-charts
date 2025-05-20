@@ -38,7 +38,7 @@ spec:
             - secretRef:
                 name: {{ include "steamfitter-api.fullname" . }}
             - secretRef:
-                name: {{ .Values.existingSecret }}
+                name: {{ (tpl .Values.existingSecret .) }}
           {{- else }}
           envFrom:
             - secretRef:

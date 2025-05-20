@@ -5,4 +5,9 @@ metadata:
   name: {{ include "steamfitter-ui.fullname" . }}
 data:
   settings.env.json: |-
-{{ .Values.settings | nindent 4 }}
+{{ if .Values.settingsYaml }}
+{{- $settingsString := toYaml .Values.settingsYaml }}
+{{- (tpl $settingsString .) | fromYaml | toPrettyJson | indent 4 }}
+{{- else }}
+{{- .Values.settings | indent 4 }}
+{{- end }}
