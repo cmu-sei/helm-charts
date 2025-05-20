@@ -120,7 +120,7 @@ terraformrc:
           }
       }
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
@@ -190,7 +190,7 @@ env:
 
   Authorization__Authority:
   Authorization__AuthorizationUrl:
-  Authorization__TokenUrl: 
+  Authorization__TokenUrl:
   Authorization__AuthorizationScope: 'caster-api'
   Authorization__ClientId: caster-api-dev
   Authorization__ClientName: 'Caster API'
