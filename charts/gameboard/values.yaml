@@ -123,7 +123,7 @@ gameboard-api:
     Database__ConnectionString: ""
     env: {}
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -257,3 +257,6 @@ gameboard-ui:
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml: {}
