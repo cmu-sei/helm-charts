@@ -7,7 +7,12 @@ metadata:
 
 data:
   settings.json: |-
-{{ .Values.settings | indent 4 }}
+{{ if .Values.settingsYaml }}
+{{- $settingsString := toYaml .Values.settingsYaml }}
+{{- (tpl $settingsString .) | fromYaml | toPrettyJson | indent 4 }}
+{{- else }}
+{{- .Values.settings | indent 4 }}
+{{- end }}
 
   customize.sh: |
     src=/var/www

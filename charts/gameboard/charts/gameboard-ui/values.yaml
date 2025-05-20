@@ -98,3 +98,6 @@ basehref: ""
 
 ## settings is stringified json that gets included as assets/settings.json
 settings: "{}"
+
+## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+settingsYaml: {}
