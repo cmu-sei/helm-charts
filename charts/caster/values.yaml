@@ -250,15 +250,15 @@ caster-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    ApiUrl: https://caster.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: caster-ui-dev
-      redirect_uri: https://caster.example.com/auth-callback/
-      post_logout_redirect_uri: https://caster.example.com/
-      response_type: code
-      scope: openid profile email caster-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://caster.example.com/auth-callback-silent/
-    UseLocalAuthStorage: true
+    # ApiUrl: https://caster.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com/
+    #   client_id: caster-ui-dev
+    #   redirect_uri: https://caster.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://caster.example.com/
+    #   response_type: code
+    #   scope: openid profile email caster-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://caster.example.com/auth-callback-silent/
+    # UseLocalAuthStorage: true
 

@@ -91,20 +91,20 @@ gallery-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    ApiUrl: https://gallery.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: gallery-ui
-      redirect_uri: https://gallery.example.com/auth-callback
-      post_logout_redirect_uri: https://gallery.example.com
-      response_type: code
-      scope: openid profile gallery
-      automaticSilentRenew: true
-      silent_redirect_uri: https://gallery.example.com/auth-callback-silent
-    AppTitle: Gallery
-    AppTopBarHexColor: "#2d69b4"
-    AppTopBarHexTextColor: "#FFFFFF"
-    AppTopBarText: Gallery  -  Exercise Information Sharing
-    AppTopBarImage: /assets/img/monitor-dashboard-white.png
-    UseLocalAuthStorage: true
+    # ApiUrl: https://gallery.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com/
+    #   client_id: gallery-ui
+    #   redirect_uri: https://gallery.example.com/auth-callback
+    #   post_logout_redirect_uri: https://gallery.example.com
+    #   response_type: code
+    #   scope: openid profile gallery
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://gallery.example.com/auth-callback-silent
+    # AppTitle: Gallery
+    # AppTopBarHexColor: "#2d69b4"
+    # AppTopBarHexTextColor: "#FFFFFF"
+    # AppTopBarText: Gallery  -  Exercise Information Sharing
+    # AppTopBarImage: /assets/img/monitor-dashboard-white.png
+    # UseLocalAuthStorage: true
 

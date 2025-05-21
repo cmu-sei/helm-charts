@@ -359,15 +359,15 @@ topomojo-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    appname: TopoMojo
-    oidc:
-      client_id: clientid
-      authority: https://your.identity.authority
-      redirect_uri: https://this.site/oidc
-      silent_redirect_uri: https://this.site/oidc-silent.html
-      response_type: code
-      scope: openid profile topomojo-api
-      monitorSession: false
-      loadUserInfo: true
-      automaticSilentRenew: true
-      useLocalStorage: true
+    # appname: TopoMojo
+    # oidc:
+    #   client_id: clientid
+    #   authority: https://your.identity.authority
+    #   redirect_uri: https://this.site/oidc
+    #   silent_redirect_uri: https://this.site/oidc-silent.html
+    #   response_type: code
+    #   scope: openid profile topomojo-api
+    #   monitorSession: false
+    #   loadUserInfo: true
+    #   automaticSilentRenew: true
+    #   useLocalStorage: true
