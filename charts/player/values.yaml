@@ -1,8 +1,5 @@
 player-api:
   kind: "Deployment"
-  # Docker image release version
-  image:
-    tag: "3.2.3"
 
   probes:
     livenessProbe:
@@ -28,7 +25,7 @@ player-api:
       timeoutSeconds: 1
       failureThreshold: 15
       successThreshold: 1
-  
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -54,7 +51,7 @@ player-api:
   # the configMap name here
   certificateMap: ""
 
-  
+
 
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   # this is used to store uploaded files
@@ -64,7 +61,7 @@ player-api:
     mode: ReadWriteOnce
     class: default
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -107,10 +104,10 @@ player-api:
     # TODO - Document Seed Data
     # This is a placeholder and needs to be updated for a new install.
     # Upgrades should keep administrators from the previous install.
-    
+
     # SeedData__Permissions__0__Name: "Demo Permission"
     # SeedData__Permissions__0__Description: "This is a demo permission"
-    
+
     # SeedData__Roles__0__Name: "Demo Role"
     # SeedData__Roles__0__AllPermissions: false
     # SeedData__Roles__0__Permissions__0: "Demo Permission"
@@ -129,14 +126,10 @@ player-api:
 
 player-ui:
 
-  # Docker image release version
-  image:
-    tag: "3.1.8"
-
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
-    enabled: true    
+    enabled: true
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
@@ -169,42 +162,35 @@ player-ui:
 
   extraVolumeMounts: ""
 
-  env: 
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client and
-  # some basic configuration
-  settings: | 
-    '{
-      "ApiUrl": "https://player.example.com",
-      "OIDCSettings": {
-        "authority": "https://identity.example.com",
-        "client_id": "player-ui-dev",
-        "redirect_uri": "https://player.example.com/auth-callback/",
-        "post_logout_redirect_uri": "https://player.example.com",
-        "response_type": "code",
-        "scope": "openid profile player-api",
-        "automaticSilentRenew": true,
-        "silent_redirect_uri": "https://player.example.com/auth-callback-silent/"
-      },
-      "NotificationsSettings": {
-        "url": "https://player.example.com/hubs",
-        "number_to_display": 4
-      },
-      "AppTitle": "Crucible",
-      "AppTopBarText": "Crucible",
-      "AppTopBarHexColor": "#b00",
-      "AppTopBarHexTextColor": "#FFFFFF",
-      "UseLocalAuthStorage": true
-    }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ApiUrl: https://player.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com
+    #   client_id: player-ui-dev
+    #   redirect_uri: https://player.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://player.example.com
+    #   response_type: code
+    #   scope: openid profile player-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://player.example.com/auth-callback-silent/
+    # NotificationsSettings:
+    #   url: https://player.example.com/hubs
+    #   number_to_display: 4
+    # AppTitle: Crucible
+    # AppTopBarText: Crucible
+    # AppTopBarHexColor: "#b00"
+    # AppTopBarHexTextColor: "#FFFFFF"
+    # UseLocalAuthStorage: true
 
 vm-api:
-
-  # Docker image release version
-  image:
-    tag: "3.5.3"
 
   # iso - an NFS volume mount for ISO uploads
   iso:
@@ -212,11 +198,11 @@ vm-api:
     size: ""
     server: ""
     path: ""
-    
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
-    enabled: true  
+    enabled: true
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
@@ -243,10 +229,10 @@ vm-api:
   #   connections will go directly from the UI to the vCenter hosts themselves
   # - The host value here corresponds to RewriteHost__RewriteHostUrl below
   consoleIngress:
-    deployConsoleProxy: false  
+    deployConsoleProxy: false
     className: ""
     name: player-connect
-    annotations: 
+    annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
@@ -272,7 +258,7 @@ vm-api:
   # the configMap name here
   certificateMap: ""
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -313,8 +299,8 @@ vm-api:
     IdentityClient__TokenUrl: https://identity.example.com/connect/token
     IdentityClient__ClientId: "player-vm-admin"
     IdentityClient__Scope: "player-api vm-api"
-    IdentityClient__Username: 
-    IdentityClient__Password: 
+    IdentityClient__Username:
+    IdentityClient__Password:
 
     # Crucible Player URL
     ClientSettings__urls__playerApi: "https://player.example.com"
@@ -330,8 +316,8 @@ vm-api:
     # - BaseFolder is the folder inside the DataStore to use
     Vsphere__Host: "vcenter.example.com"
     Vsphere__Username: "player-account@vsphere.local"
-    Vsphere__Password: 
-    Vsphere__DsName: 
+    Vsphere__Password:
+    Vsphere__DsName:
     Vsphere__BaseFolder: "player"
 
     # Rewrite Host settings
@@ -342,14 +328,10 @@ vm-api:
 
 vm-ui:
 
-  # Docker image release version
-  image:
-    tag: "3.3.3"
-
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
-    enabled: true  
+    enabled: true
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
@@ -382,43 +364,37 @@ vm-ui:
 
   extraVolumeMounts: ""
 
-  env: 
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client
-  settings: | 
-    '{
-      "ApiUrl": "https://vm.example.com/api",
-      "DeployApiUrl": "",
-      "ApiPlayerUrl": "https://player.example.com/api",
-      "WelderUrl": "",
-      "UserFollowUrl": "https://console.example.com/user/{userId}/view/{viewId}/console",
-      "OIDCSettings": {
-          "authority": "https://identity.example.com",
-          "client_id": "vm-ui-dev",
-          "redirect_uri": "https://vm.example.com/auth-callback/",
-          "post_logout_redirect_uri": "https://vm.example.com",
-          "response_type": "code",
-          "scope": "openid profile player-api vm-api",
-          "automaticSilentRenew": true,
-          "silent_redirect_uri": "https://vm.example.com/auth-callback-silent/"
-      },
-      "UseLocalAuthStorage": true
-    }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
 
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ApiUrl: https://vm.example.com/api
+    # DeployApiUrl: ""
+    # ApiPlayerUrl: https://player.example.com/api
+    # WelderUrl: ""
+    # UserFollowUrl: https://console.example.com/user/{userId}/view/{viewId}/console
+    # OIDCSettings:
+    #   authority: https://identity.example.com
+    #   client_id: vm-ui-dev
+    #   redirect_uri: https://vm.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://vm.example.com
+    #   response_type: code
+    #   scope: openid profile player-api vm-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://vm.example.com/auth-callback-silent/
+    # UseLocalAuthStorage: true
 
 console-ui:
-
-  # Docker image release version
-  image:
-    tag: "3.1.1"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
-    enabled: true  
+    enabled: true
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
@@ -451,39 +427,51 @@ console-ui:
 
   extraVolumeMounts: ""
 
-  env: 
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client and some basic settings
-  settings: |
-    '{
-      "ConsoleApiUrl": "https://vm.example.com/api/",
-      "OIDCSettings": {
-        "authority": "https://identity.example.com",
-        "client_id": "vm-console-ui-dev",
-        "redirect_uri": "https://console.example.com/auth-callback/",
-        "post_logout_redirect_uri": "https://console.example.com",
-        "response_type": "code",
-        "scope": "openid profile player-api vm-api vm-console-api",
-        "automaticSilentRenew": true,
-        "silent_redirect_uri": "https://console.example.com/auth-callback-silent/"
-      },
-      "UseLocalAuthStorage": true,
-      "VmResolutionOptions": [
-        { "width": 2560, "height": 1600 },
-        { "width": 1920, "height": 1440 },
-        { "width": 1920, "height": 1200 },
-        { "width": 1600, "height": 1200 },
-        { "width": 1400, "height": 1050 },
-        { "width": 1280, "height": 1024 },
-        { "width": 1440, "height": 900 },
-        { "width": 1280, "height": 960 },
-        { "width": 1366, "height": 768 },
-        { "width": 1280, "height": 800 },
-        { "width": 1280, "height": 720 },
-        { "width": 1024, "height": 768 },
-        { "width": 800, "height": 600 }
-      ]
-    }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ConsoleApiUrl: https://vm.example.com/api/
+    # OIDCSettings:
+    #   authority: https://identity.example.com
+    #   client_id: vm-console-ui-dev
+    #   redirect_uri: https://console.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://console.example.com
+    #   response_type: code
+    #   scope: openid profile player-api vm-api vm-console-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://console.example.com/auth-callback-silent/
+    # UseLocalAuthStorage: true
+    # VmResolutionOptions:
+    #   - width: 2560
+    #     height: 1600
+    #   - width: 1920
+    #     height: 1440
+    #   - width: 1920
+    #     height: 1200
+    #   - width: 1600
+    #     height: 1200
+    #   - width: 1400
+    #     height: 1050
+    #   - width: 1280
+    #     height: 1024
+    #   - width: 1440
+    #     height: 900
+    #   - width: 1280
+    #     height: 960
+    #   - width: 1366
+    #     height: 768
+    #   - width: 1280
+    #     height: 800
+    #   - width: 1280
+    #     height: 720
+    #   - width: 1024
+    #     height: 768
+    #   - width: 800
+    #     height: 600
+

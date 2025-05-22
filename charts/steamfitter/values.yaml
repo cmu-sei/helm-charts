@@ -1,9 +1,5 @@
 steamfitter-api:
 
-  # Docker image release version
-  image:
-    tag: "3.7.2"
-  
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -29,7 +25,7 @@ steamfitter-api:
   # the configMap name here
   certificateMap: ""
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -67,8 +63,8 @@ steamfitter-api:
     # OAuth2 Identity Client /w Password
     ResourceOwnerAuthorization__Authority: https://identity.example.com
     ResourceOwnerAuthorization__ClientId: steamfitter-api
-    ResourceOwnerAuthorization__UserName: 
-    ResourceOwnerAuthorization__Password: 
+    ResourceOwnerAuthorization__UserName:
+    ResourceOwnerAuthorization__Password:
     ResourceOwnerAuthorization__Scope: "vm-api"
 
     # Crucible URLs
@@ -79,7 +75,7 @@ steamfitter-api:
     # TODO - Document Stackstorm dependencies
     VmTaskProcessing__ApiType: st2
     VmTaskProcessing__ApiUsername: "st2admin"
-    VmTaskProcessing__ApiPassword: 
+    VmTaskProcessing__ApiPassword:
     VmTaskProcessing__ApiBaseUrl: "https://stackstorm.example.com"
     VmTaskProcessing__ApiParameters__clusters: ""
 
@@ -97,10 +93,6 @@ steamfitter-api:
     # SeedData__UserPermissions__1__PermissionId: ""
 
 steamfitter-ui:
-
-  # Docker image release version
-  image:
-    tag: "3.7.4"
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -136,28 +128,30 @@ steamfitter-ui:
   # See kubernetes documentation for configuring your volumes:
   # https://kubernetes.io/docs/concepts/storage/volumes/
   extraVolumes: ""
-  
+
   extraVolumeMounts: ""
-  
-  env: 
+
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client
-  settings: '{
-      "ApiUrl": "https://steamfitter.example.com",
-      "VmApiUrl": "https://vm.example.com",
-      "ApiPlayerUrl": "https://player.example.com",
-      "OIDCSettings": {
-          "authority": "https://identity.example.com",
-          "client_id": "steamfitter-ui-dev",
-          "redirect_uri": "https://steamfitter.example.com/auth-callback/",
-          "post_logout_redirect_uri": "https://steamfitter.example.com",
-          "response_type": "code",
-          "scope": "openid profile player-api vm-api steamfitter-api",
-          "automaticSilentRenew": true,
-          "silent_redirect_uri": "https://steamfitter.example.com/auth-callback-silent/"
-      },
-      "UseLocalAuthStorage": true
-  }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ApiUrl: https://steamfitter.example.com
+    # VmApiUrl: https://vm.example.com
+    # ApiPlayerUrl: https://player.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com
+    #   client_id: steamfitter-ui-dev
+    #   redirect_uri: https://steamfitter.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://steamfitter.example.com
+    #   response_type: code
+    #   scope: openid profile player-api vm-api steamfitter-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://steamfitter.example.com/auth-callback-silent/
+    # UseLocalAuthStorage: true
+
+

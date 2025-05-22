@@ -100,44 +100,62 @@ extraVolumes: ""
 
 extraVolumeMounts: ""
 
-env: 
+env:
   ## basehref is path to the app
   APP_BASEHREF: ""
 
-settings: |-
-  {
-    "ConsoleApiUrl": "https://example.com/vm/api",
-    "OIDCSettings": {
-      "authority": "https://example.com/identity",
-      "client_id": "vm-console-ui",
-      "redirect_uri": "https://example.com/console/auth-callback",
-      "post_logout_redirect_uri": "https://example.com/console",
-      "response_type": "code",
-      "scope": "openid profile player-api vm-api",
-      "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://example.com/console/auth-callback-silent"
-    },
-    "UseLocalAuthStorage": true,
-    "VmResolutionOptions": [
-      { "width": 2560, "height": 1600 },
-      { "width": 1920, "height": 1440 },
-      { "width": 1920, "height": 1200 },
-      { "width": 1600, "height": 1200 },
-      { "width": 1400, "height": 1050 },
-      { "width": 1280, "height": 1024 },
-      { "width": 1440, "height": 900 },
-      { "width": 1280, "height": 960 },
-      { "width": 1366, "height": 768 },
-      { "width": 1280, "height": 800 },
-      { "width": 1280, "height": 720 },
-      { "width": 1024, "height": 768 },
-      { "width": 800, "height": 600 }
-    ],
-    "PasteSpeeds": [
-      { "name": "Fastest", "value": 10 },
-      { "name": "Fast", "value": 30 },
-      { "name": "Normal", "value": 60 },
-      { "name": "Slow", "value": 100 },
-      { "name": "Slowest", "value": 500 }
-    ]
-  }
+## settings is stringified json that gets included as assets/settings.json
+settings: "{}"
+
+## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+settingsYaml:
+  # ConsoleApiUrl: https://example.com/vm/api
+  # OIDCSettings:
+  #   authority: https://example.com/identity
+  #   client_id: vm-console-ui
+  #   redirect_uri: https://example.com/console/auth-callback
+  #   post_logout_redirect_uri: https://example.com/console
+  #   response_type: code
+  #   scope: openid profile player-api vm-api
+  #   automaticSilentRenew: true
+  #   silent_redirect_uri: https://example.com/console/auth-callback-silent
+  # UseLocalAuthStorage: true
+  # VmResolutionOptions:
+  #   - width: 2560
+  #     height: 1600
+  #   - width: 1920
+  #     height: 1440
+  #   - width: 1920
+  #     height: 1200
+  #   - width: 1600
+  #     height: 1200
+  #   - width: 1400
+  #     height: 1050
+  #   - width: 1280
+  #     height: 1024
+  #   - width: 1440
+  #     height: 900
+  #   - width: 1280
+  #     height: 960
+  #   - width: 1366
+  #     height: 768
+  #   - width: 1280
+  #     height: 800
+  #   - width: 1280
+  #     height: 720
+  #   - width: 1024
+  #     height: 768
+  #   - width: 800
+  #     height: 600
+  # PasteSpeeds:
+  #   - name: Fastest
+  #     value: 10
+  #   - name: Fast
+  #     value: 30
+  #   - name: Normal
+  #     value: 60
+  #   - name: Slow
+  #     value: 100
+  #   - name: Slowest
+  #     value: 500
+

@@ -240,25 +240,25 @@ caster-ui:
   extraVolumes: ""
 
   extraVolumeMounts: ""
-  
-  env: 
+
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client
-  settings: |-
-    '{
-      "ApiUrl": "https://caster.example.com",
-      "OIDCSettings": {
-        "authority": "https://identity.example.com/",
-        "client_id": "caster-ui-dev",
-        "redirect_uri": "https://caster.example.com/auth-callback/",
-        "post_logout_redirect_uri": "https://caster.example.com/",
-        "response_type": "code",
-        "scope": "openid profile email caster-api",
-        "automaticSilentRenew": true,
-        "silent_redirect_uri": "https://caster.example.com/auth-callback-silent/"
-      },
-      "UseLocalAuthStorage": true
-    }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ApiUrl: https://caster.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com/
+    #   client_id: caster-ui-dev
+    #   redirect_uri: https://caster.example.com/auth-callback/
+    #   post_logout_redirect_uri: https://caster.example.com/
+    #   response_type: code
+    #   scope: openid profile email caster-api
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://caster.example.com/auth-callback-silent/
+    # UseLocalAuthStorage: true
+

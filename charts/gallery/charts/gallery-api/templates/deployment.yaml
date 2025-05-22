@@ -37,7 +37,7 @@ spec:
             - secretRef:
                 name: {{ include "gallery-api.fullname" . }}
             - secretRef:
-                name: {{ .Values.existingSecret }}
+                name: {{ (tpl .Values.existingSecret .) }}
           {{- else }}
           envFrom:
             - secretRef:

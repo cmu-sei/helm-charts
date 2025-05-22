@@ -39,7 +39,7 @@ spec:
             - secretRef:
                 name: {{ include "alloy-api.fullname" . }}
             - secretRef:
-                name: {{ .Values.existingSecret }}
+                name: {{ (tpl .Values.existingSecret .) }}
           {{- else }}
           envFrom:
             - secretRef:

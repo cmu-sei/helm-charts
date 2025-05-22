@@ -14,4 +14,4 @@ spec:
     path: {{ .Values.iso.path }}
     readOnly: false
   storageClassName: "nfs"
-{{- end }}   
+{{- end }}

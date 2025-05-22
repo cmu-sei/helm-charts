@@ -85,25 +85,24 @@ blueprint-ui:
   extraVolumeMounts: ""
 
   env:
-  # Config app settings with a JSON file.
-  # These values correspond to an OpenID connect client and
-  # some basic configuration
-  settings: '{
-    "ApiUrl": "https://blueprint.example.com",
-    "OIDCSettings": {
-      "authority": "https://identity.example.com/",
-      "client_id": "blueprint-ui",
-      "redirect_uri": "https://blueprint.example.com/auth-callback",
-      "post_logout_redirect_uri": "https://blueprint.example.com",
-      "response_type": "code",
-      "scope": "openid profile blueprint",
-      "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://blueprint.example.com/auth-callback-silent"
-    },
-    "AppTitle": "Blueprint",
-    "AppTopBarHexColor": "#2d69b4",
-    "AppTopBarHexTextColor": "#FFFFFF",
-    "AppTopBarText": "Blueprint  -  Exercise Planning",
-    "AppTopBarImage": "/assets/img/monitor-dashboard-white.png",
-    "UseLocalAuthStorage": true
-    }'
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
+
+  ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  settingsYaml:
+    # ApiUrl: https://blueprint.example.com
+    # OIDCSettings:
+    #   authority: https://identity.example.com/
+    #   client_id: blueprint-ui
+    #   redirect_uri: https://blueprint.example.com/auth-callback
+    #   post_logout_redirect_uri: https://blueprint.example.com
+    #   response_type: code
+    #   scope: openid profile blueprint
+    #   automaticSilentRenew: true
+    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent
+    # AppTitle: Blueprint
+    # AppTopBarHexColor: "#2d69b4"
+    # AppTopBarHexTextColor: "#FFFFFF"
+    # AppTopBarText: Blueprint  -  Exercise Planning
+    # AppTopBarImage: /assets/img/monitor-dashboard-white.png
+    # UseLocalAuthStorage: true

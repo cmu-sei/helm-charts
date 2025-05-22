@@ -104,26 +104,28 @@ env:
   ## basehref is path to the app
   APP_BASEHREF: ""
 
-## settings is stringified json that gets included as appsettings.Production.json
-# {
-#     "ApiUrl": "http://localhost:4720",
-#     "OIDCSettings": {
-#         "authority": "http://localhost:5000/",
-#         "client_id": "cite.ui",
-#         "redirect_uri": "http://localhost:4721/auth-callback",
-#         "post_logout_redirect_uri": "http://localhost:4721",
-#         "response_type": "code",
-#         "scope": "openid profile player player-vm cite",
-#         "automaticSilentRenew": true,
-#         "silent_redirect_uri": "http://localhost:4721/auth-callback-silent"
-#     },
-#     "AppTitle": "CITE",
-#     "AppTopBarHexColor": "#2d69b4",
-#     "AppTopBarHexTextColor": "#FFFFFF",
-#     "AppTopBarText": "CITE  -  Financial Incident Threat Evaluator",
-#     "UseLocalAuthStorage": true,
-#     "DefaultScoringModelId": "",
-#     "DefaultEvaluationId": "",
-#     "DefaultTeamId": ""
-# }
-settings: ""
+## settings is stringified json that gets included as assets/settings.json
+settings: "{}"
+
+## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+settingsYaml:
+  # ApiUrl: http://localhost:4720
+  # OIDCSettings:
+  #   authority: http://localhost:5000/
+  #   client_id: cite.ui
+  #   redirect_uri: http://localhost:4721/auth-callback
+  #   post_logout_redirect_uri: http://localhost:4721
+  #   response_type: code
+  #   scope: openid profile player player-vm cite
+  #   automaticSilentRenew: true
+  #   silent_redirect_uri: http://localhost:4721/auth-callback-silent
+  # AppTitle: CITE
+  # AppTopBarHexColor: "#2d69b4"
+  # AppTopBarHexTextColor: "#FFFFFF"
+  # AppTopBarText: CITE  -  Financial Incident Threat Evaluator
+  # UseLocalAuthStorage: true
+  # DefaultScoringModelId: ""
+  # DefaultEvaluationId: ""
+  # DefaultTeamId: ""
+
+
