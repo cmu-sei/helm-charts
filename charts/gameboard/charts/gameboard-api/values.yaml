@@ -126,6 +126,18 @@ migrations:
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
+# cacert - add custom CA certificate in-line
+# cacert: |-
+#   -----BEGIN CERTIFICATE-----
+#   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
+#   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
+#   …
+#   -----END CERTIFICATE-----
+
+# cacertSecret - Trust a custom CA certificate in an existing Secret
+cacertSecret: ""
+cacertSecretKey: ca.crt
+
 # Config app settings with environment vars.
 # Those most likely needing values are listed. For others,
 # see https://github.com/cmu-sei/gameboard/blob/master/src/Gameboard.Api/appsettings.conf
