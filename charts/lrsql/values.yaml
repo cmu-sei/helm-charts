@@ -1,0 +1,195 @@
+# Default values for lrsql.
+# This is a YAML-formatted file.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: yetanalytics/lrsql
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 80
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+## SQL LRS Can use one of three database configurations specified by the dbMode property. The allowable values are:
+# Postgres - connect to and use an external postgres DB
+# SQLite - Run with a SQLite database on the filesystem
+# SQLite-In-Memory - In-memory SQLite db mostly used for development. This will not save your data after a restart.
+dbMode: Postgres
+
+# storage - either an existing pvc or the size for a new pvc
+# This is only used if the dbMode is set to SQLite
+storage:
+  existing: ""
+  existingSubpathPrefix: true  # If true, then volume mounts will use lrsql.fullname as a subpath prefix.
+  overrideSubpathPrefix: # If set then this is the value used for the subpath prefix if above property is true
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
+## existingSecret references a secret already in k8s.
+## The key/value pairs in the secret are added as environment variables.
+existingSecret: ""
+
+# These are the environment variables that will be passed to lrsql
+env:
+  LRSQL_DB_HOST: # Hostname of postgres DB when using Postgres Mode
+  LRSQL_DB_PORT: 5432 # The port that the database will run on. Not supported by SQLite.
+  LRSQL_DB_NAME: # Database name of postgres DB when using Postgres Mode
+  LRSQL_DB_USER: # Database user of postgres DB when using Postgres Mode
+  LRSQL_DB_PASSWORD: # Database user of postgres DB when using Postgres Mode
+  ## The ADMIN USER is only needed if you do not want to use oidc auth or if you want both local and oidc-based accounts
+  LRSQL_ADMIN_USER_DEFAULT: # The username of the account that seeds the account table, ie. added to the table upon initialization.
+  LRSQL_ADMIN_PASS_DEFAULT: # The password of the account that seeds the account table
+
+  LRSQL_HTTP_PORT: "80" # The HTTP port that the container webserver will be open on.
+  LRSQL_SSL_PORT: "443" # The HTTPS port that the container webserver will be open on.
+
+  LRSQL_AUTHORITY_URL: "http://example.org" # Custom domain in order to uniquely identify Statements inserted into your LRS.
+
+  LRSQL_ALLOW_ALL_ORIGINS: # "true" # Determines whether to enable CORS. When false, it will not allow all origins, it will only allow either LRSQL_HTTP_HOST (for both HTTPS and HTTP ports) or if LRSQL_ALLOWED_ORIGINS is set that will override.
+  LRSQL_ALLOWED_ORIGINS: # This is a list of allowed origins which overrides the defaults. This should include your oidc provider when using oidc. As an ENV it should be written as a comma separated list with no spaces.
+  LRSQL_LOG_LEVEL: INFO # The logging level to use. Can be ALL, TRACE, DEBUG, INFO, WARN, ERROR or OFF
+
+  LRSQL_OIDC_ISSUER: # OIDC Issuer address used for discovery. Will enable OIDC if present. This MUST be the URL from which the path "/.well-known/openid-configuration" path resolves.
+  # LRSQL_OIDC_AUDIENCE MUST equal the base URL of the SQL LRS app for admin UI acccess to work
+  # For keycloak, it is also necessary to setup a custom Audience mapper in the dedicated scope for the admin client
+  # and the value for this must match the value for LRSQL_OIDC_AUDIENCE. This means you must LEAVE the Included Client Audience
+  # field blank rather than set the value to the name of the client. You must ONLY use the Included Custom Audience field
+  LRSQL_OIDC_AUDIENCE: "http://example.org" # This audience MUST equal the base URL of the SQL LRS app for admin UI acccess to work
+  LRSQL_OIDC_CLIENT_ID: # An optional OIDC client ID for the SQL LRS Admin SPA. If provided, along with the LRSQL_OIDC_ISSUER and LRSQL_OIDC_AUDIENCE variables, will enable OIDC access to the Admin UI.
+  # SQL LRS Defines the following scopes, the names of which will be prefixed by the value of LRSQL_OIDC_SCOPE_PREFIX below.
+  # Scope	               Capability
+
+  # all    	             Full read/write access to all xAPI resources.
+  # all/read	           Read-only access to all xAPI resources.
+  # state	               Read/write access to xAPI State Documents.
+  # activities_profile	 Read/write access to xAPI Activity Profile Documents.
+  # agents_profile	     Read/write access to xAPI Agent Profile Documents.
+  # statements/read	     Read-only access to all xAPI Statements (but not non-Statement resources).
+  # statements/read/mine Read-only access to xAPI Statements whose authority value matches the authority of the current user.
+  # statements/write	   Write-only access to xAPI Statements.
+  # admin                Admin API resources share a single scope admin that represents full administrative control over SQL LRS.
+
+  LRSQL_OIDC_SCOPE_PREFIX: "lrs:" # Used as a prefix for all lrsql scopes
+
+# SQL LRS uses Selmer templates for configuring the following optional properties. Examples can be found here:
+# https://github.com/yetanalytics/lrsql/tree/7129a40edb87ef459704964a75bcd2985b628138/resources/lrsql/config
+#
+# See https://github.com/yogthos/Selmer#templates for syntax.
+selmerTemplates:
+  # # Statement authority template, which describes how authorities are constructed during statement insertion.
+  # authorityTemplate:
+  #   account:
+  #     homePage: "{{authority-url}}"
+  #     name: "{{cred-id}}"
+  #   objectType: Agent
+  # # Like authorityTemplate, but only used when forming an authority from an OIDC access token
+  # oidcAuthorityTemplate:
+  #   objectType: Group
+  #   member:
+  #     - account:
+  #         homePage: "{{iss}}"
+  #         name: "{{lrsql/resolved-client-id}}"
+  #     - account:
+  #         homePage: "{{iss}}"
+  #         name: "{{sub}}"
+  # # An optional template to modify LRS Admin UI client OIDC configuration.
+  # oidcClientTemplate:
+  #   authority: "{{oidc-issuer}}"
+  #   client_id: "{{oidc-client-id}}"
+  #   response_type: code
+  #   scope: openid profile {{oidc-scope-prefix}}admin
+  #   automaticSilentRenew: true
+  #   monitorSession: false
+  #   filterProtocolClaims: false
+  #   extraQueryParams:
+  #     audience: "{{oidc-audience}}"
+
+

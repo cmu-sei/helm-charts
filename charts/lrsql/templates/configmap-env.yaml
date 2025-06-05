@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lrsql.fullname" . }}-env
+  labels:
+    {{- include "lrsql.labels" . | nindent 4 }}
+data:
+{{- range $key, $val := .Values.env }}
+{{- if $val }}
+  {{ $key }}: {{ (tpl ($val | toString) $) | quote }}
+{{- end }}
+{{- end }}
+{{- if .Values.selmerTemplates }}
+{{- if .Values.selmerTemplates.authorityTemplate }}
+  LRSQL_AUTHORITY_TEMPLATE: /lrsql/config/authorityTemplate.json
+{{- end }}
+{{- if .Values.selmerTemplates.oidcAuthorityTemplate }}
+  LRSQL_OIDC_AUTHORITY_TEMPLATE: /lrsql/config/oidcAuthorityTemplate.json
+{{- end }}
+{{- if .Values.selmerTemplates.oidcClientTemplate }}
+{{- $oidClientTemplate := toYaml .Values.selmerTemplates.oidcClientTemplate }}
+  LRSQL_OIDC_CLIENT_TEMPLATE: {{ $oidClientTemplate | fromYaml | toJson | quote }}
+{{- end }}
+{{- end }}
