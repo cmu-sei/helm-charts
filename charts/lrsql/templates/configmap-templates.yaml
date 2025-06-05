@@ -1,0 +1,24 @@
+{{ if .Values.selmerTemplates }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lrsql.fullname" . }}-templates
+  labels:
+    {{- include "lrsql.labels" . | nindent 4 }}
+data:
+{{- if .Values.selmerTemplates.authorityTemplate }}
+  authorityTemplate.json: |-
+
+{{- $authTemplate := toYaml .Values.selmerTemplates.authorityTemplate }}
+{{ $authTemplate | fromYaml | toPrettyJson | indent 4 }}
+{{- end }}
+
+{{- if .Values.selmerTemplates.oidcAuthorityTemplate }}
+  oidcAuthorityTemplate.json: |-
+
+{{- $oidAuthTemplate := toYaml .Values.selmerTemplates.oidcAuthorityTemplate }}
+{{ $oidAuthTemplate | fromYaml | toPrettyJson | indent 4 }}
+{{- end }}
+
+{{- end }}
+
