@@ -5,9 +5,14 @@ metadata:
   labels:
     {{- include "gameboard-api.labels" . | nindent 4 }}
 data:
-{{- if .Values.cacert }}
+{{- if or .Values.cacert .Values.cacertSecret }}
   ca-cert.crt: |
+{{- if .Values.cacert }}
 {{ .Values.cacert | indent 4 }}
+{{- else }}
+{{- $cacertSecret := lookup "v1" "Secret" .Release.Namespace (tpl .Values.cacertSecret .) }}
+{{ index $cacertSecret.data .Values.cacertSecretKey | b64dec | indent 4 }}
+{{- end }}
   start.sh: |
     #!/bin/sh
 
