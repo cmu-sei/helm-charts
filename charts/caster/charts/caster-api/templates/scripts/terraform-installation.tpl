@@ -1,13 +1,15 @@
 {{- define "terraform-installation" }}
-# Skip installation
+#!/bin/bash
+
 if [ "${SKIP_TERRAFORM_INSTALLATION,,}" == "true" ]; then
     exit 0
 fi
 
 if [ ! -d $Terraform__BinaryPath ]; then
+    echo "Installing Terraform."
 
     # Install Unzip
-    apt-get update && apt-get install -y unzip wget
+    apt-get update && apt-get install -y unzip curl jq
 
     # Create Terraform directories
     mkdir -p "$Terraform__RootWorkingDirectory"

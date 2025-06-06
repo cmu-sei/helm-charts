@@ -28,26 +28,48 @@ spec:
       serviceAccountName: {{ include "caster-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Chart.Name}}-install-terraform
+          image: debian:bookworm-slim
+          command: ["bash", "-c", "/mnt/scripts/install-terraform.sh"]
+          volumeMounts:
+            - mountPath: /terraform
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
+            - mountPath: /mnt/scripts/install-terraform.sh
+              name: {{ include "caster-api.fullname" . }}-scripts
+              subPath: install-terraform.sh
+          securityContext:
+            runAsUser: 0
+          {{- include "caster-api.env" . | nindent 10 }}
+        - name: {{ .Chart.Name}}-vol-permissions
+          image: bash
+          command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh /terraform"]
+          volumeMounts:
+            - mountPath: /terraform
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
+            - mountPath: /mnt/scripts/vol-permissions.sh
+              name: {{ include "caster-api.fullname" . }}-scripts
+              subPath: vol-permissions.sh
+          securityContext:
+            runAsUser: 0
+          {{- include "caster-api.env" . | nindent 10 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: {{- toYaml .Values.command | nindent 10 }}
-          {{- if .Values.existingSecret }}
-          envFrom:
-            - secretRef:
-                name: {{ include "caster-api.fullname" . }}
-            - secretRef:
-                name: {{ (tpl .Values.existingSecret .) }}
-          {{- else }}
-          envFrom:
-            - secretRef:
-                name: {{ include "caster-api.fullname" . }}
+          {{- include "caster-api.env" . | nindent 10 }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
           {{- end }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -79,7 +101,7 @@ spec:
               subPath: {{ include "caster-api.fullname" . }}/terraform
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
-              name: {{ include "caster-api.fullname" . }}-terraform-installation
+              name: {{ include "caster-api.fullname" . }}-scripts
             {{ if .Values.certificateMap }}
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
@@ -102,9 +124,9 @@ spec:
         - name: {{ include "caster-api.name" . }}-vol
           emptyDir: {}
         {{- end }}
-        - name: {{ include "caster-api.fullname" . }}-terraform-installation
+        - name: {{ include "caster-api.fullname" . }}-scripts
           configMap:
-            name: {{ include "caster-api.fullname" . }}-terraform-installation
+            name: {{ include "caster-api.fullname" . }}-scripts
             defaultMode: 0755
         - name: {{ include "caster-api.fullname" . }}-gitcredentials
           configMap:

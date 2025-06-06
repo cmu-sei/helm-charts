@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "player-api.fullname" . }}-scripts
+data:
+  vol-permissions.sh: |-
+{{- include "vol-permissions" . | nindent 4 }}

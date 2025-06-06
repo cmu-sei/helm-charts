@@ -60,3 +60,16 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Shared environment configuration for containers
+*/}}
+{{- define "caster-api.env" }}
+envFrom:
+  - secretRef:
+      name: {{ include "caster-api.fullname" . }}
+{{- if .Values.existingSecret }}
+  - secretRef:
+      name: {{ (tpl .Values.existingSecret .) }}
+{{- end }}
+{{- end }}
