@@ -40,7 +40,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   enabled: false
@@ -87,7 +87,7 @@ command:
   [
     'bash',
     '-c',
-    'update-ca-certificates && /install-terraform.sh && dotnet Caster.Api.dll',
+    '/install-terraform.sh && dotnet Caster.Api.dll',
   ]
 
 nodeSelector: {}

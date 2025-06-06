@@ -45,9 +45,14 @@ spec:
             - secretRef:
                 name: {{ include "caster-api.fullname" . }}
           {{- end }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
+          {{- end }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
