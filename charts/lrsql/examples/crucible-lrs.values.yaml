@@ -28,7 +28,6 @@ resources:
 existingSecret: "lrsql-secret"
 
 env:
-  LRSQL_DB_HOST: postgres
   LRSQL_HTTP_PORT: "80"
   LRSQL_SSL_PORT: "443"
   LRSQL_LOG_LEVEL: INFO
@@ -38,3 +37,8 @@ env:
   LRSQL_OIDC_CLIENT_ID: lrsql-admin
   LRSQL_OIDC_AUDIENCE: https://lrsql.crucible-site.org
   LRSQL_OIDC_SCOPE_PREFIX: "lrs:"
+  LRSQL_DB_HOST: postgres
+  ## Consider using secrets to populate the following values via .Values.existingSecret
+  LRSQL_DB_NAME: lrsql_db
+  LRSQL_DB_USER: lrsql_dbo
+  LRSQL_DB_PASSWORD: "secret-password"
