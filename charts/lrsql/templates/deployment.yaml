@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lrsql.fullname" . }}
+  labels:
+    {{- include "lrsql.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "lrsql.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "lrsql.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "lrsql.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - {{ include "lrsql.containerCommand" . }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /lrsql/config
+              name: {{ include "lrsql.fullname" . }}-config
+            {{- if eq "SQLite" .Values.dbMode }}
+            - mountPath: /lrsql/db
+              name: {{ include "lrsql.fullname" . }}-db
+              {{- if include "lrsql.subpathPrefix" . }}
+              subPath: {{ include "lrsql.subpathPrefix" . | trimSuffix "/" }}
+              {{- end }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "lrsql.fullname" . }}-env
+            {{- if .Values.existingSecret }}
+            - secretRef:
+                name: {{ (tpl .Values.existingSecret .) }}
+            {{- end }}
+      volumes:
+      - name: {{ include "lrsql.fullname" . }}-config
+      {{- if .Values.selmerTemplates }}
+        configMap:
+          name: {{ include "lrsql.fullname" . }}-templates
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      {{- if eq "SQLite" .Values.dbMode }}
+      - name: {{ include "lrsql.fullname" . }}-db
+      {{- if .Values.storage.existing }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.existing }}
+      {{- else if .Values.storage.size }}
+        persistentVolumeClaim:
+          claimName: {{ include "lrsql.fullname" . }}
+      {{- else }}
+      {{- fail "SQLite mode requires a pvc" }}
+      {{- end }}
+      {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

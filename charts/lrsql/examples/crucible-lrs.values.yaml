@@ -1,0 +1,44 @@
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/alias: "true"
+  hosts:
+    - host: lrsql.crucible-site.org
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: lrsql-tls
+      hosts:
+        - lrsql.crucible-site.org
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    cpu: 50m
+    memory: 2Gi
+
+existingSecret: "lrsql-secret"
+
+env:
+  LRSQL_HTTP_PORT: "80"
+  LRSQL_SSL_PORT: "443"
+  LRSQL_LOG_LEVEL: INFO
+  LRSQL_AUTHORITY_URL: https://lrsql.crucible-site.org
+  LRSQL_ALLOWED_ORIGINS: "https://lrsql.crucible-site.org,https://keycloak.crucible-site.org"
+  LRSQL_OIDC_ISSUER: "https://keycloak.crucible-site.org/realms/master"
+  LRSQL_OIDC_CLIENT_ID: lrsql-admin
+  LRSQL_OIDC_AUDIENCE: https://lrsql.crucible-site.org
+  LRSQL_OIDC_SCOPE_PREFIX: "lrs:"
+  LRSQL_DB_HOST: postgres
+  ## Consider using secrets to populate the following values via .Values.existingSecret
+  LRSQL_DB_NAME: lrsql_db
+  LRSQL_DB_USER: lrsql_dbo
+  LRSQL_DB_PASSWORD: "secret-password"
