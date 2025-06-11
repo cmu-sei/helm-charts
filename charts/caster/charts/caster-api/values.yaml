@@ -83,12 +83,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command:
-  [
-    'bash',
-    '-c',
-    '/install-terraform.sh && dotnet Caster.Api.dll',
-  ]
+command: ["bash", "-c", "dotnet Caster.Api.dll"]
 
 nodeSelector: {}
 
@@ -136,6 +131,7 @@ env:
   PathBase: ""
 
   SKIP_TERRAFORM_INSTALLATION: false
+  SKIP_VOL_PERMISSIONS: false
 
   VSPHERE_SERVER:
   VSPHERE_USER:

@@ -28,6 +28,33 @@ spec:
       serviceAccountName: {{ include "caster-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Chart.Name}}-install-terraform
+          image: debian:bookworm-slim
+          command: ["bash", "-c", "/mnt/scripts/install-terraform.sh"]
+          volumeMounts:
+            - mountPath: /terraform
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
+            - mountPath: /mnt/scripts/install-terraform.sh
+              name: {{ include "caster-api.fullname" . }}-scripts
+              subPath: install-terraform.sh
+          securityContext:
+            runAsUser: 0
+          {{- include "caster-api.env" . | nindent 10 }}
+        - name: {{ .Chart.Name}}-vol-permissions
+          image: bash
+          command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh"]
+          volumeMounts:
+            - mountPath: /terraform
+              name: {{ include "caster-api.name" . }}-vol
+              subPath: {{ include "caster-api.fullname" . }}/terraform
+            - mountPath: /mnt/scripts/vol-permissions.sh
+              name: {{ include "caster-api.fullname" . }}-scripts
+              subPath: vol-permissions.sh
+          securityContext:
+            runAsUser: 0
+          {{- include "caster-api.env" . | nindent 10 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -84,7 +111,7 @@ spec:
               subPath: {{ include "caster-api.fullname" . }}/terraform
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
-              name: {{ include "caster-api.fullname" . }}-terraform-installation
+              name: {{ include "caster-api.fullname" . }}-scripts
             {{ if .Values.certificateMap }}
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
@@ -107,9 +134,9 @@ spec:
         - name: {{ include "caster-api.name" . }}-vol
           emptyDir: {}
         {{- end }}
-        - name: {{ include "caster-api.fullname" . }}-terraform-installation
+        - name: {{ include "caster-api.fullname" . }}-scripts
           configMap:
-            name: {{ include "caster-api.fullname" . }}-terraform-installation
+            name: {{ include "caster-api.fullname" . }}-scripts
             defaultMode: 0755
         - name: {{ include "caster-api.fullname" . }}-gitcredentials
           configMap:
