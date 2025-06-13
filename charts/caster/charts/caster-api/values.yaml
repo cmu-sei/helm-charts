@@ -83,7 +83,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command: ["./Caster.Api.dll"]
+command: ["./Caster.Api"]
 
 nodeSelector: {}
 
