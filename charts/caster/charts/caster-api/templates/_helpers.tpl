@@ -65,15 +65,11 @@ Create the name of the service account to use
   Shared environment configuration for containers
 */}}
 {{- define "caster-api.env" }}
-{{- if .Values.existingSecret }}
 envFrom:
   - secretRef:
       name: {{ include "caster-api.fullname" . }}
+{{- if .Values.existingSecret }}
   - secretRef:
       name: {{ .Values.existingSecret }}
-{{- else }}
-envFrom:
-  - secretRef:
-      name: {{ include "caster-api.fullname" . }}
 {{- end }}
 {{- end }}
