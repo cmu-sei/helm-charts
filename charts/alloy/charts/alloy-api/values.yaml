@@ -36,7 +36,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   enabled: false
@@ -85,9 +85,9 @@ tolerations: []
 
 affinity: {}
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Alloy.Api.dll']
+command: ["./Alloy.Api"]
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 

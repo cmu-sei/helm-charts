@@ -33,21 +33,22 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: {{- toYaml .Values.command | nindent 10 }}
-          {{- if .Values.existingSecret }}
           envFrom:
             - secretRef:
                 name: {{ include "steamfitter-api.fullname" . }}
+          {{- if .Values.existingSecret }}
             - secretRef:
                 name: {{ (tpl .Values.existingSecret .) }}
-          {{- else }}
-          envFrom:
-            - secretRef:
-                name: {{ include "steamfitter-api.fullname" . }}
+          {{- end }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
           livenessProbe:
             httpGet:

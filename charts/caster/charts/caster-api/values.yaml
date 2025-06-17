@@ -40,7 +40,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   enabled: false
@@ -83,12 +83,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-command:
-  [
-    'bash',
-    '-c',
-    'update-ca-certificates && /install-terraform.sh && dotnet Caster.Api.dll',
-  ]
+command: ["./Caster.Api"]
 
 nodeSelector: {}
 
@@ -136,6 +131,7 @@ env:
   PathBase: ""
 
   SKIP_TERRAFORM_INSTALLATION: false
+  SKIP_VOL_PERMISSIONS: false
 
   VSPHERE_SERVER:
   VSPHERE_USER:
@@ -224,14 +220,3 @@ env:
 
   FileVersions__DaysToSaveAllUntaggedVersions: 7
   FileVersions__DaysToSaveDailyUntaggedVersions: 31
-
-  SeedData__Permissions__0__Id: '00000000-0000-0000-0000-000000000001'
-  SeedData__Permissions__0__Key: 'SystemAdmin'
-  SeedData__Permissions__0__Value: 'true'
-  SeedData__Permissions__0__Description: 'Has Full Rights.  Can do everything.'
-  SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Id: '00000000-0000-0000-0000-000000000002'
-  SeedData__Permissions__1__Key: 'ContentDeveloper'
-  SeedData__Permissions__1__Value: 'true'
-  SeedData__Permissions__1__Description: 'Can create/edit/delete an Exercise/Directory/Workspace/File/Module'
-  SeedData__Permissions__1__ReadOnly: true

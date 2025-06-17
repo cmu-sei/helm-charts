@@ -40,7 +40,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 probes:
   livenessProbe:
@@ -114,8 +114,7 @@ tolerations: []
 
 affinity: {}
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Player.Api.dll']
-
+command: ["./Player.Api"]
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
 storage:
@@ -139,6 +138,8 @@ env:
 
   ## If hosting in virtual directory, specify path base
   PathBase: ""
+
+  SKIP_VOL_PERMISSIONS: false
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information
