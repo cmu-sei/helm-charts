@@ -60,3 +60,16 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Shared environment configuration for containers
+*/}}
+{{- define "player-api.env" }}
+envFrom:
+  - secretRef:
+      name: {{ include "player-api.fullname" . }}
+{{- if .Values.existingSecret }}
+  - secretRef:
+      name: {{ (tpl .Values.existingSecret .) }}
+{{- end }}
+{{- end }}

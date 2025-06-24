@@ -32,22 +32,23 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          {{- if .Values.existingSecret }}
           envFrom:
             - secretRef:
                 name: {{ include "vm-api.fullname" . }}
+          {{- if .Values.existingSecret }}
             - secretRef:
                 name: {{ (tpl .Values.existingSecret .) }}
-          {{- else }}
-          envFrom:
-            - secretRef:
-                name: {{ include "vm-api.fullname" . }}
+          {{- end }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
           {{- end }}
           command: {{- toYaml .Values.command | nindent 10 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -74,7 +75,7 @@ spec:
             - name: {{ include "vm-api.fullname" . }}-iso
               mountPath: /app/isos/player
           {{- end }}
-      
+
       volumes:
       {{ if .Values.certificateMap }}
         - name: certificates
