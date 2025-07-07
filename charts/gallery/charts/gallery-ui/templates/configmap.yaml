@@ -9,5 +9,5 @@ data:
 {{- $settingsString := toYaml .Values.settingsYaml }}
 {{- (tpl $settingsString .) | fromYaml | toPrettyJson | indent 4 }}
 {{- else }}
-{{- tpl .Values.settings . | indent 4 }}
+{{- (tpl .Values.settings .) | indent 4 }}
 {{- end }}
