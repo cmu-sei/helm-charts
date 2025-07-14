@@ -1,7 +1,7 @@
 cite-api:
   # Docker image release version. Defaults to appVersion of cite-api child chart
   image:
-    tag: '1.3.1'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -71,7 +71,7 @@ cite-api:
 cite-ui:
   # Docker image release version. Defaults to appVersion of cite-ui child chart
   image:
-    tag: '1.3.5'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
