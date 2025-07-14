@@ -1,9 +1,8 @@
 caster-api:
 
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of caster-api child chart
   image:
-    # Caster API version
-    tag: "3.3.0"
+    tag: ""
   
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -201,9 +200,9 @@ caster-api:
 
 caster-ui:
 
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of caster-ui child chart
   image:
-    tag: "3.3.0"
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured

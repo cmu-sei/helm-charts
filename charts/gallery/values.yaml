@@ -1,6 +1,7 @@
 gallery-api:
+  # Docker image release version. Defaults to appVersion of gallery-api child chart
   image:
-    tag: "1.5.1"
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -44,9 +45,9 @@ gallery-api:
     Authorization__ClientName: Gallery API Swagger
 
 gallery-ui:
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of gallery-ui child chart
   image:
-    tag: '1.5.2'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
