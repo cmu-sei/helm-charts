@@ -1,6 +1,7 @@
 blueprint-api:
+  # Docker image release version. Defaults to appVersion of blueprint-api child chart
   image:
-    tag: "0.3.10"
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -44,9 +45,9 @@ blueprint-api:
     Authorization__ClientName: Blueprint API Swagger
 
 blueprint-ui:
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of blueprint-ui child chart
   image:
-    tag: '0.3.12'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured

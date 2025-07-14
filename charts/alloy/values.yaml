@@ -1,7 +1,7 @@
 alloy-api:
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of alloy-api child chart
   image:
-    tag: '3.4.3'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -77,9 +77,9 @@ alloy-api:
     ClientSettings__urls__steamfitterApi: https://steamfitter.example.com/
 
 alloy-ui:
-  # Docker image release version
+  # Docker image release version. Defaults to appVersion of alloy-ui child chart
   image:
-    tag: '3.2.6'
+    tag: ""
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
