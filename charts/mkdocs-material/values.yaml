@@ -117,7 +117,7 @@ pollInterval: 5
 ##################
 # Go Templating #
 ##################
-# The following section isued to configure optional support for the
+# The following section is used to configure optional support for the
 # gomplate Go templating tool (https://github.com/hairyhenderson/gomplate)
 # that can be used to pre-process doc content before it is processed by mkdocs.
 gomplate:
