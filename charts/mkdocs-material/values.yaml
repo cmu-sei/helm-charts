@@ -114,6 +114,38 @@ gitPath: ""
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 
+##################
+# Go Templating #
+##################
+# The following section isued to configure optional support for the
+# gomplate Go templating tool (https://github.com/hairyhenderson/gomplate)
+# that can be used to pre-process doc content before it is processed by mkdocs.
+gomplate:
+  enabled: false
+  config:
+    includes:
+      - "*.md"
+    excludes: []
+    # These are the default delimiters for Go templates and for gomplate. They are included here
+    # to highlight that these values can be changed if the doc content would require extensive escaping
+    # with them in place and simply changing to a less-common set of delimiters would be helpful.
+    # e.g. "$$(" and ")$$"
+    leftDelim: "{{"
+    rightDelim: "}}"
+    # context is a yaml structure where each top-level "key" is the name of a gomplate file datasource added to the default
+    # current context under the name of the key and the contents under the key are values within that object.
+    # For example, the following structure mimics the Helm Values built-in object and another context named "ctx"
+    # The values could then be referenced in a template as, for example, {{ .Values.global.domain }} and {{ .ctx.foo }}
+    # context:
+    #   Values:
+    #     global:
+    #       domain: mtp.dev-imcite.net
+    #       shortName: phl
+    #       longName: Philippines
+    #   ctx:
+    #     foo: bar
+    context: {}
+
 # cacert - add custom CA certificate in-line
 # cacert: |-
 #   -----BEGIN CERTIFICATE-----
