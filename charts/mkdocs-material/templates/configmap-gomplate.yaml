@@ -1,0 +1,16 @@
+{{- if .Values.gomplate.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mkdocs-material.fullname" . }}-gomplate
+  labels:
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
+
+data:
+  {{- if .Values.gomplate.config.leftDelim }}
+  leftDelim: {{ .Values.gomplate.config.leftDelim }}
+  {{- end }}
+  {{- if .Values.gomplate.config.rightDelim }}
+  rightDelim: {{ .Values.gomplate.config.rightDelim }}
+  {{- end }}
+{{- end }}

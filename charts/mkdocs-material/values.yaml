@@ -126,12 +126,12 @@ gomplate:
     includes:
       - "*.md"
     excludes: []
-    # These are the default delimiters for Go templates and for gomplate. They are included here
+    # The default delimiters for Go templates and for gomplate are commented out below. They are included here
     # to highlight that these values can be changed if the doc content would require extensive escaping
     # with them in place and simply changing to a less-common set of delimiters would be helpful.
     # e.g. "$$(" and ")$$"
-    leftDelim: "{{"
-    rightDelim: "}}"
+    leftDelim: # "{{"
+    rightDelim: # "}}"
     # context is a yaml structure where each top-level "key" is the name of a gomplate file datasource added to the default
     # current context under the name of the key and the contents under the key are values within that object.
     # For example, the following structure mimics the Helm Values built-in object and another context named "ctx"

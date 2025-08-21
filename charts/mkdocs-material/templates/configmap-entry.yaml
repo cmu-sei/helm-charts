@@ -10,6 +10,16 @@ data:
   git-pull.sh: |-
     #!/bin/sh
 
+    def clone_repo()
+    {
+      cd /git
+      echo "Clearing and cloning git repo..."
+      dirty=1
+      rm -rf repo
+      git clone "$DOCS_GIT_URL" repo
+      git_cloned=1
+    }
+
     update-ca-certificates
 
     if [ -n $DOCS_GIT_CRED_FILE ]; then
@@ -18,27 +28,39 @@ data:
 
     # Keep track of whether docs need to be built
     dirty=0
+    git_cloned=0
 
     ## pull updates (and clone on first attempt)
     cd /git
+
+    ## Remove the contents if this is a git repo since it is using
+    ## an older version of the chart.
     if [ ! -d .git ]; then
-        echo "Clearing and cloning git repo..."
-        dirty=1
+        echo "Removing deprecated git repo..."
         rm -rf *
-        git clone "$DOCS_GIT_URL" .
     fi
+
+    if [ ! -d repo/.git ]; then
+        clone_repo
+    fi
+
+    cd /git/repo
 
     git reset --hard
     git clean -f
-    
-    if [ -n "$DOCS_GIT_BRANCH" ]; then 
+
+    if [ -n "$DOCS_GIT_BRANCH" ]; then
         gitcheckoutoutput=`git checkout "$DOCS_GIT_BRANCH" 2>&1`
         echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
             echo "Branch changed - docs should be updated."
-            dirty=1
+            if [ "$git_cloned" -eq "0" ]; then
+              clone_repo
+            fi
         fi
     fi
+
+    cd /git/repo
 
     gitfetchoutput=`git fetch --porcelain`
     if [ -n "$gitfetchoutput" ]; then
@@ -60,11 +82,11 @@ data:
 
         sed -i -r -e "s#^(site_url: )(.*)#\1${DOCS_SITE_URL}#" mkdocs.yml
         found_url=`grep -c 'site_url:' mkdocs.yml`
-        if [ $found_url = 0 ]; then 
+        if [ $found_url = 0 ]; then
         echo "site_url: ${DOCS_SITE_URL}" | cat - mkdocs.yml > tmp.yml
         mv tmp.yml mkdocs.yml
         fi
-    fi 
+    fi
 
   mkdocs-build.sh: |-
     #!/bin/sh
