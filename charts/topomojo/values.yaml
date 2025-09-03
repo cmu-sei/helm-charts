@@ -98,7 +98,6 @@ topomojo-api:
   consoleIngress:
     deployConsoleProxy: false
     className: ""
-    name: vm-consoles
     namespace:
     annotations:
       kubernetes.io/ingress.class: nginx
