@@ -65,3 +65,12 @@ Create the name of the service account to use
 {{- define "service-port" -}}
 {{- default 80 .Values.service.port }}
 {{- end }}
+
+{{/*
+  Shared environment configuration for containers
+*/}}
+{{- define "topomojo-api.env" }}
+envFrom:
+  - secretRef:
+      name: {{ include "topomojo-api.fullname" . }}
+{{- end }}

@@ -201,6 +201,9 @@ existingSecret: ""
 # Those most likely needing values are listed. For others,
 # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf
 env:
+  ## By default we change ownership of the paths at and recursively below the root of the topomojo docs directory
+  ## to that of the running user and group, which are both 1654 per .NET conventions.
+  SKIP_VOL_PERMISSIONS: "false"
   # PathBase: ""
   # Oidc__Audience: topomojo-api
   # Oidc__Authority: http://localhost:5000
@@ -252,3 +255,4 @@ env:
   # Pod__Sddc__CertificatePassword: ""
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information
+
