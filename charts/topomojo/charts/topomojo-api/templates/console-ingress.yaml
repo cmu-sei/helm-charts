@@ -1,5 +1,5 @@
 {{- if .Values.consoleIngress.deployConsoleProxy -}}
-{{- $fullName := printf "%s-consoles" (include "topomojo-api.fullname" .) -}}
+{{- $fullName := printf "%s-console" (include "topomojo-api.fullname" .) -}}
 {{- $svcPort := include "service-port" . -}}
 {{- if and .Values.consoleIngress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.consoleIngress.annotations "kubernetes.io/ingress.class") }}
