@@ -29,26 +29,26 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
       {{- if .Values.migrations.enabled }}
-      - name: "{{ .Chart.Name }}-init"
-        image: "groundnuty/k8s-wait-for:v1.4"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        args:
-        - "job"
-        - "{{ include "topomojo-api.fullname" . }}-{{ .Release.Revision}}"
+        - name: "{{ .Chart.Name }}-init"
+          image: "groundnuty/k8s-wait-for:v1.4"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+          - "job"
+          - "{{ include "topomojo-api.fullname" . }}-{{ .Release.Revision}}"
       {{- end }}
-      - name: {{ .Chart.Name}}-vol-permissions
-        image: bash
-        command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh /docs"]
-        volumeMounts:
-          - mountPath: /docs
-            name: {{ include "topomojo-api.name" . }}-vol
-            subPath: {{ include "topomojo-api.fullname" . }}/_docs
-          - mountPath: /mnt/scripts/vol-permissions.sh
-            name: {{ include "topomojo-api.name" . }}-scripts
-            subPath: vol-permissions.sh
-        securityContext:
-          runAsUser: 0
-        {{- include "topomojo-api.env" . | nindent 10 }}
+        - name: {{ .Chart.Name}}-vol-permissions
+          image: bash
+          command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh /docs"]
+          volumeMounts:
+            - mountPath: /docs
+              name: {{ include "topomojo-api.name" . }}-vol
+              subPath: {{ include "topomojo-api.fullname" . }}/_docs
+            - mountPath: /mnt/scripts/vol-permissions.sh
+              name: {{ include "topomojo-api.name" . }}-scripts
+              subPath: vol-permissions.sh
+          securityContext:
+            runAsUser: 0
+          {{- include "topomojo-api.env" . | nindent 10 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
