@@ -13,4 +13,6 @@ data:
   {{- if .Values.gomplate.config.rightDelim }}
   rightDelim: {{ .Values.gomplate.config.rightDelim }}
   {{- end }}
+  inputDir: {{ .Values.gitPath | ternary (printf "/git/repo/%s" (.Values.gitPath | trimPrefix "/")) "/git/repo" }}
+  outputDir: 
 {{- end }}

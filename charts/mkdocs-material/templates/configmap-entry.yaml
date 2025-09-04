@@ -95,9 +95,9 @@ data:
         echo "Building docs..."
 
         if [ -n "$DOCS_GIT_PATH" ]; then
-            docs_dir="/git/${DOCS_GIT_PATH}"
+            docs_dir="/git/repo/${DOCS_GIT_PATH}"
         else
-            docs_dir="/git"
+            docs_dir="/git/repo"
         fi
 
         if [ -d "$docs_dir" ]; then
@@ -116,7 +116,7 @@ data:
                 cd /docs
                 tmp_path=`basename "$new_docs"`
                 chmod 775 "$tmp_path"
-                
+
                 ## Delete the previous symbolic link
                 rm "site"
 
@@ -126,7 +126,7 @@ data:
                 if [ -n "$old_docs" ]; then
                     echo "Removing old docs: $old_docs"
                     rm -Rf "$old_docs"
-                else 
+                else
                     echo "No old docs to remove"
                 fi
 
@@ -141,8 +141,8 @@ data:
             else
                 echo "Mkdocs build failed."
             fi
-        else 
-          echo "Docs directory not found: ${docs_dir}"    
+        else
+          echo "Docs directory not found: ${docs_dir}"
         fi
     else
         echo "Docs are up-to-date."
