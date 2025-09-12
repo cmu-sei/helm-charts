@@ -3,8 +3,6 @@ topomojo-api:
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
 
-  replicaCount: 1
-
   image:
     repository: cmusei/topomojo-api
     pullPolicy: IfNotPresent
@@ -154,13 +152,6 @@ topomojo-api:
     #   cpu: 100m
     #   memory: 256Mi
 
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
-
   nodeSelector: {}
 
   tolerations: []
@@ -204,6 +195,8 @@ topomojo-api:
     # PathBase: ""
     # Oidc__Audience: topomojo-api
     # Oidc__Authority: http://localhost:5000
+    ## Set this to the string "null" to disable client credentials authentication (enabled by default)
+    # Oidc__ServiceAccountClientIdClaimType: client_id
     # Database__Provider: InMemory
     # Database__ConnectionString: topomojo_db
     # Database__SeedFile: seed-data.json
@@ -258,8 +251,6 @@ topomojo-ui:
   # Default values for topomojo-ui.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-
-  replicaCount: 1
 
   image:
     repository: cmusei/topomojo-ui
@@ -323,13 +314,6 @@ topomojo-ui:
     # requests:
     #   cpu: 10m
     #   memory: 10Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
 
   nodeSelector: {}
 

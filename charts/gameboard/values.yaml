@@ -1,9 +1,6 @@
 gameboard-api:
   # Default values for gameboard-api.
-  # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-
-  replicaCount: 1
 
   image:
     repository: cmusei/gameboard-api
@@ -43,9 +40,8 @@ gameboard-api:
 
   ingress:
     enabled: false
+    className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
         paths:
@@ -66,12 +62,12 @@ gameboard-api:
     # livenessProbe:
     #   initialDelaySeconds: 10
     #   httpGet:
-    #     path: /api/version
+    #     path: /api/status
     #     port: http
     # startupProbe:
     #   initialDelaySeconds: 30
     #   httpGet:
-    #     path: /api/version
+    #     path: /api/status
     #     port: http
     #   failureThreshold: 9
     #   periodSeconds: 10
@@ -95,33 +91,11 @@ gameboard-api:
     #   cpu: 100m
     #   memory: 256Mi
 
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
-
   nodeSelector: {}
 
   tolerations: []
 
   affinity: {}
-
-  ## migrations sets how data migrations run
-  ## If enabled, all replicas will wait until a single migration job runs.
-  ## this is important if running multiple replicas or if you use different
-  ## connection strings (permissions) for building the database versus using it.
-  ## If using a single connection string, no need to specify here. It will use values
-  ## from `env` below.
-  ## NOTE: the serviceAccount must have permission to `get batch.jobs`.
-  ## If you create the serviceAccount above, it will get a RoleBinding to a Role with that allowed.
-  migrations:
-    enabled: false
-    restartPolicy: Never
-    Database__Provider: ""
-    Database__ConnectionString: ""
-    env: {}
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -143,8 +117,49 @@ gameboard-api:
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/gameboard/blob/master/src/Gameboard.Api/appsettings.conf
   env: {}
-    # Logging__Console__DisableColors: false
-    # Logging__LogLevel__Default: Information
+    ####################################################
+    ## CORE (behavior)
+    ####################################################
+    ## (required) Use these to tell GB where the Game Engine and its docs/images are
+    # Core__ChallengeDocUrl: http://localhost:5000/api
+    # Core__GameEngineUrl: http://localhost:5000/api
+
+    ## (optional) Configure various behaviors of Gameboard
+    # Core__GameEngineDeployBatchSize: 6
+    # Core__NameChangeIsEnabled: true
+    # Core__NameChangeRequiresApproval: true
+    # Core__PracticeDefaultSessionLength: 45
+    # Core__PracticeMaxSessionLength: 480
+
+    ## WARNING: these are legacy values that should not be set if you're using client credentials auth.
+    ## These will be removed in a later release. If you're using API key based access to Topo or another
+    ## game engine, you should instead create an OAuth client on your IdP and set the GameEngine__ClientId
+    ## and GameEngine__ClientSecret settings below.
+    # Core__GameEngineClientId: my-topo-user-for-gameboard
+    # Core__GameEngineClientSecret: my-topo-user-for-gameboard-api-key
+
+    #########################################
+    ### DB
+    #########################################
+    ## (required)
+    # Database__ConnectionString: Server=localhost;Port=5432;Database=gb_dev;User ID=youruser;Password=yourpw;
+    #
+    ## (optional): Seed a default user into the DB with Admin role
+    # Database__AdminId: f56c167f-d3f4-484a-8ee9-d230ceb5f734
+    # Database__AdminName: Admin
+
+    ####################################################
+    ## GAME ENGINE (typically TopoMojo)
+    ####################################################
+    ## (required): Use these settings to configure OAuth client credentials access to TopoMojo/compatible game engine.
+    ## NOTE: This client must have an OAuth audience matching TopoMojo's Oidc_Audience setting, and if you're using
+    ## this auth method, you SHOULD NOT SET Core__GameEngineClientId and Core__GameEngineClientSecret above.
+    # GameEngine__ClientId: my-topo-client
+    # GameEngine__ClientSecret: my-topo-client-secret
+
+    ####################################################
+    ## HTTP HEADERS
+    ####################################################
     # Headers__LogHeaders: false
     # Headers__Cors__Origins__[0]: ""
     # Headers__Cors__Methods__[0]: ""
@@ -161,6 +176,19 @@ gameboard-api:
     # Headers__Security__XContentType: nosniff
     # Headers__Security__XFrame: SAMEORIGIN
 
+    ####################################################
+    ## LOGGING
+    ####################################################
+    # Logging__MinimumLogLevel: Information
+
+    #########################################
+    ### OAUTH
+    #########################################
+    # Oidc__Audience: gameboard-api
+    # Oidc__Authority: http://localhost:8080/realms/foundry
+    # Oidc__DefaultUserNameInferFromEmail: false
+    # Oidc__StoreUserEmails: false
+
   ## giturl is the url of the git repository of static markdown
   giturl: ""
   ## gitbranch sets which repo branch to publish
@@ -172,8 +200,6 @@ gameboard-ui:
   # Default values for gameboard-ui.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-
-  replicaCount: 1
 
   image:
     repository: cmusei/gameboard-ui
@@ -213,9 +239,8 @@ gameboard-ui:
 
   ingress:
     enabled: false
+    className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
     hosts:
       - host: chart-example.local
         paths:
@@ -237,13 +262,6 @@ gameboard-ui:
     # requests:
     #   cpu: 10m
     #   memory: 10Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
 
   nodeSelector: {}
 
@@ -271,4 +289,41 @@ gameboard-ui:
   settings: "{}"
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-  settingsYaml: {}
+  settingsYaml:
+    appname: Gameboard
+    # apphost: http://localhost:5002
+    # basehref: "gb"
+    # imghost: 'http://localhost:5002/img'
+    # tochost: 'http://localhost:5002/doc'
+    # supporthost: 'http://localhost:5002/supportfiles'
+    # tocfile: ''
+    # countdownStartSecondsAtMinute: 5
+    # custom_background: 'custom-bg-dark-gray'
+    consoleForgeConfig:
+    #   canvasRecording:
+    #     autoDownloadCompletedRecordings: true
+    #     chunkLength: 1000
+    #     frameRate: 25
+    #     maxDuration: 10000
+    #     mimeType: 'video/webm'
+    #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
+      defaultConsoleType: vmware # or "proxmox"
+    #   disabledFeatures:
+    #     clipboard: false
+    #     consoleScreenRecord: false
+    #     manualConsoleReconnect: false
+    #     networkDisconnection: false
+    #   logThreshold: 2 # warning
+    #   showBrowserNotificationsOnConsoleEvents: true
+    #   toolbar:
+    #     component: ConsoleToolbarDefaultComponent
+    #     disabled: false
+    # oidc:
+    #   client_id: clientid
+    #   authority: https://your.identity.authority
+    #   redirect_uri: https://this.site/oidc
+    #   silent_redirect_uri: https://this.site/oidc-silent.html
+    #   response_type: code
+    #   scope: openid profile gameboard-api
+    #   loadUserInfo: true
+    #   useLocalStorage: true

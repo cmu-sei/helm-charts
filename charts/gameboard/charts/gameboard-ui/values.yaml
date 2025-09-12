@@ -1,8 +1,5 @@
 # Default values for gameboard-ui.
-# This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
-replicaCount: 1
 
 image:
   repository: cmusei/gameboard-ui
@@ -42,9 +39,8 @@ service:
 
 ingress:
   enabled: false
+  className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
@@ -66,13 +62,6 @@ resources: {}
   # requests:
   #   cpu: 10m
   #   memory: 10Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -100,4 +89,41 @@ basehref: ""
 settings: "{}"
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-settingsYaml: {}
+settingsYaml:
+  appname: Gameboard
+  # apphost: http://localhost:5002
+  # basehref: "gb"
+  # imghost: 'http://localhost:5002/img'
+  # tochost: 'http://localhost:5002/doc'
+  # supporthost: 'http://localhost:5002/supportfiles'
+  # tocfile: ''
+  # countdownStartSecondsAtMinute: 5
+  # custom_background: 'custom-bg-dark-gray'
+  consoleForgeConfig:
+  #   canvasRecording:
+  #     autoDownloadCompletedRecordings: true
+  #     chunkLength: 1000
+  #     frameRate: 25
+  #     maxDuration: 10000
+  #     mimeType: 'video/webm'
+  #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
+    defaultConsoleType: vmware # or "proxmox"
+  #   disabledFeatures:
+  #     clipboard: false
+  #     consoleScreenRecord: false
+  #     manualConsoleReconnect: false
+  #     networkDisconnection: false
+  #   logThreshold: 2 # warning
+  #   showBrowserNotificationsOnConsoleEvents: true
+  #   toolbar:
+  #     component: ConsoleToolbarDefaultComponent
+  #     disabled: false
+  # oidc:
+  #   client_id: clientid
+  #   authority: https://your.identity.authority
+  #   redirect_uri: https://this.site/oidc
+  #   silent_redirect_uri: https://this.site/oidc-silent.html
+  #   response_type: code
+  #   scope: openid profile gameboard-api
+  #   loadUserInfo: true
+  #   useLocalStorage: true
