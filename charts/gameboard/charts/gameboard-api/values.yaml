@@ -65,12 +65,12 @@ health: {}
   # livenessProbe:
   #   initialDelaySeconds: 10
   #   httpGet:
-  #     path: /api/version
+  #     path: /api/status
   #     port: http
   # startupProbe:
   #   initialDelaySeconds: 30
   #   httpGet:
-  #     path: /api/version
+  #     path: /api/status
   #     port: http
   #   failureThreshold: 9
   #   periodSeconds: 10
