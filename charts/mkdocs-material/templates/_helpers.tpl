@@ -160,3 +160,57 @@ Subpath prefix value to use for pvc mount points
       subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs/site
     {{- end }}
 {{- end }}
+
+{{/*
+  Shared yaml for the volumes
+*/}}
+{{- define "mkdocs-material.container-volumes" }}
+- name: {{ include "mkdocs-material.fullname" . }}
+  configMap:
+    name: {{ include "mkdocs-material.fullname" . }}
+{{- if .Values.giturl }}
+- name: {{ include "mkdocs-material.fullname" . }}-entry
+  configMap:
+    name: {{ include "mkdocs-material.fullname" . }}-entry
+    defaultMode: 0775
+{{- if .Values.gitCredentialsSecret }}
+- name: {{ include "mkdocs-material.fullname" . }}-git-creds
+  secret:
+    secretName: {{ .Values.gitCredentialsSecret }}
+    defaultMode: 0600
+{{- end }}
+{{- else }}
+- name: {{ include "mkdocs-material.fullname" . }}-files
+  configMap:
+    name: {{ include "mkdocs-material.fullname" . }}-files
+{{- end }}
+{{- if .Values.storage.existing }}
+- name: {{ include "mkdocs-material.fullname" . }}-vol
+  persistentVolumeClaim:
+    claimName: {{ .Values.storage.existing }}
+{{- else if .Values.storage.size }}
+- name: {{ include "mkdocs-material.fullname" . }}-vol
+  persistentVolumeClaim:
+    claimName: {{ include "mkdocs-material.fullname" . }}
+{{- else if .Values.giturl }}
+{{- fail "Git deployment mode requires persistent volume" }}
+{{- else }}
+- name: {{ include "mkdocs-material.fullname" . }}-vol
+  emptyDir: {}
+{{- end }}
+{{- if .Values.certificateMap }}
+- name: certificates
+  configMap:
+    name: {{ .Values.certificateMap }}
+{{- end }}
+{{- if .Values.cacert }}
+- name: certificates
+  configMap:
+    name: {{ include "mkdocs-material.fullname" . }}-cacerts
+{{- end }}
+{{- if and .Values.macroPlugin.enabled .Values.macroPlugin.extraYamlConfig }}
+- name: {{ include "mkdocs-material.fullname" . }}-macro-vars
+  configMap:
+    name: {{ include "mkdocs-material.fullname" . }}-macro-vars
+{{- end }}
+{{- end }}
