@@ -30,8 +30,8 @@ data:
 
     git reset --hard
     git clean -f
-    
-    if [ -n "$DOCS_GIT_BRANCH" ]; then 
+
+    if [ -n "$DOCS_GIT_BRANCH" ]; then
         gitcheckoutoutput=`git checkout "$DOCS_GIT_BRANCH" 2>&1`
         echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
@@ -60,16 +60,22 @@ data:
 
         sed -i -r -e "s#^(site_url: )(.*)#\1${DOCS_SITE_URL}#" mkdocs.yml
         found_url=`grep -c 'site_url:' mkdocs.yml`
-        if [ $found_url = 0 ]; then 
+        if [ $found_url = 0 ]; then
         echo "site_url: ${DOCS_SITE_URL}" | cat - mkdocs.yml > tmp.yml
         mv tmp.yml mkdocs.yml
         fi
-    fi 
+    fi
 
   mkdocs-build.sh: |-
     #!/bin/sh
 
     if [ -f "/docs/.dirty" ]; then
+
+        if [ "$MKDOCS_ADD_MACROS" = "true" ]; then
+            echo "Installing mkdocs-macros-plugin version ${MKDOCS_MACROS_VERSION}..."
+            pip install --no-cache-dir mkdocs-macros-plugin=="$MKDOCS_MACROS_VERSION"
+        fi
+
         echo "Building docs..."
 
         if [ -n "$DOCS_GIT_PATH" ]; then
@@ -94,7 +100,7 @@ data:
                 cd /docs
                 tmp_path=`basename "$new_docs"`
                 chmod 775 "$tmp_path"
-                
+
                 ## Delete the previous symbolic link
                 rm "site"
 
@@ -104,7 +110,7 @@ data:
                 if [ -n "$old_docs" ]; then
                     echo "Removing old docs: $old_docs"
                     rm -Rf "$old_docs"
-                else 
+                else
                     echo "No old docs to remove"
                 fi
 
@@ -119,8 +125,8 @@ data:
             else
                 echo "Mkdocs build failed."
             fi
-        else 
-          echo "Docs directory not found: ${docs_dir}"    
+        else
+          echo "Docs directory not found: ${docs_dir}"
         fi
     else
         echo "Docs are up-to-date."
