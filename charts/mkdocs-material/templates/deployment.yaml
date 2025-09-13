@@ -28,76 +28,8 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        {{- if .Values.giturl }}
-        - name: git-pull
-          image: "bitnami/git"
-          command: ["/entry.d/git-pull.sh"]
-          env:
-            - name: DOCS_GIT_URL
-              value: {{ (tpl .Values.giturl .) }}
-            - name: DOCS_GIT_BRANCH
-              value: {{ .Values.gitbranch }}
-            {{- if .Values.gitCredentialsSecret }}
-            - name: DOCS_GIT_CRED_FILE
-              value: {{ default ".git-credentials" .Values.gitCredentialsSecretKey }}
-            {{- end }}
-            {{- if .Values.gitPath }}
-            - name: DOCS_GIT_PATH
-              value: {{ .Values.gitPath | trimPrefix "/" }}
-            {{- end }}
-            {{- if .Values.mkdocs.site_url }}
-            - name: DOCS_SITE_URL
-              value: {{ .Values.mkdocs.site_url }}
-            {{- end }}
-          volumeMounts:
-            - mountPath: /entry.d
-              name: {{ include "mkdocs-material.fullname" . }}-entry
-            - mountPath: /docs
-              name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
-            - mountPath: /git
-              name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
-            {{- if .Values.gitCredentialsSecret }}
-            - mountPath: /git-credentials
-              name: {{ include "mkdocs-material.fullname" . }}-git-creds
-            {{- end }}
-            {{- if or .Values.certificateMap .Values.cacert }}
-            - mountPath: /usr/local/share/ca-certificates
-              name: certificates
-            {{- end }}
-        {{- end }}
-        - name: mkdocs-build
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-            {{- if .Values.giturl }}
-          command: ["/entry.d/mkdocs-build.sh"]
-          {{- if .Values.gitPath }}
-          env:
-            - name: DOCS_GIT_PATH
-              value: {{ .Values.gitPath | trimPrefix "/" }}
-          {{- end }}
-          volumeMounts:
-            - mountPath: /entry.d
-              name: {{ include "mkdocs-material.fullname" . }}-entry
-            - mountPath: /docs
-              name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs
-            - mountPath: /git
-              name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
-            {{- else }}
-          args: ["build"]
-          volumeMounts:
-            - mountPath: /docs/mkdocs.yml
-              name: {{ include "mkdocs-material.fullname" . }}
-              subPath: mkdocs.yml
-            - mountPath: /docs/docs
-              name: {{ include "mkdocs-material.fullname" . }}-files
-            - mountPath: /docs/site
-              name: {{ include "mkdocs-material.fullname" . }}-vol
-              subPath: {{ include "mkdocs-material.subpathPrefix" . }}docs/site
-            {{- end }}
+        {{- include "mkdocs-material.git-container" . | nindent 8 }}
+        {{- include "mkdocs-material.mkdocs-container" . | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           image: nginx:alpine
@@ -171,3 +103,10 @@ spec:
         configMap:
           name: {{ include "mkdocs-material.fullname" . }}-cacerts
       {{- end }}
+      {{- if and .Values.macroPlugin.enabled .Values.macroPlugin.extraYamlConfig }}
+      - name: {{ include "mkdocs-material.fullname" . }}-macro-vars
+        configMap:
+          name: {{ include "mkdocs-material.fullname" . }}-macro-vars
+      {{- end }}
+
+
