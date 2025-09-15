@@ -94,7 +94,7 @@ affinity: {}
 # Option to add the mkdocs-macros-plugin                     #
 # See https://mkdocs-macros-plugin.readthedocs.io/en/latest/ #
 ##############################################################
-macroPlugin:
+macrosPlugin:
   enabled: false
   version: 1.3.9       # pip version of mkdocs-macros-plugin
   extraYamlConfigMount: /mkdocs-vars # The name of the volume mount path for extra yaml config files

@@ -128,16 +128,16 @@ Subpath prefix value to use for pvc mount points
   {{- end }}
   env:
     - name: MKDOCS_ADD_MACROS
-      value: {{ default "false" .Values.macroPlugin.enabled | toString | quote }}
+      value: {{ default "false" .Values.macrosPlugin.enabled | toString | quote }}
     - name: MKDOCS_MACROS_VERSION
-      value: {{ default "1.3.9" .Values.macroPlugin.version | toString | quote }}
+      value: {{ default "1.3.9" .Values.macrosPlugin.version | toString | quote }}
   {{- if .Values.gitPath }}
     - name: DOCS_GIT_PATH
       value: {{ .Values.gitPath | trimPrefix "/" }}
   {{- end }}
   volumeMounts:
-  {{- if and .Values.macroPlugin.enabled .Values.macroPlugin.extraYamlConfig }}
-    - mountPath: {{ default "/mkdocs-vars" .Values.macroPlugin.extraYamlConfigMount }}
+  {{- if and .Values.macrosPlugin.enabled .Values.macrosPlugin.extraYamlConfig }}
+    - mountPath: {{ default "/mkdocs-vars" .Values.macrosPlugin.extraYamlConfigMount }}
       name: {{ include "mkdocs-material.fullname" . }}-macro-vars
   {{- end }}
   {{- if .Values.giturl }}
@@ -208,7 +208,7 @@ Subpath prefix value to use for pvc mount points
   configMap:
     name: {{ include "mkdocs-material.fullname" . }}-cacerts
 {{- end }}
-{{- if and .Values.macroPlugin.enabled .Values.macroPlugin.extraYamlConfig }}
+{{- if and .Values.macrosPlugin.enabled .Values.macrosPlugin.extraYamlConfig }}
 - name: {{ include "mkdocs-material.fullname" . }}-macro-vars
   configMap:
     name: {{ include "mkdocs-material.fullname" . }}-macro-vars
