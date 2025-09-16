@@ -79,9 +79,9 @@ Subpath prefix value to use for pvc mount points
   command: ["/entry.d/git-pull.sh"]
   env:
     - name: DOCS_GIT_URL
-      value: {{ (tpl .Values.giturl .) }}
+      value: {{ tpl .Values.giturl . }}
     - name: DOCS_GIT_BRANCH
-      value: {{ .Values.gitbranch }}
+      value: {{ tpl .Values.gitbranch . }}
   {{- if .Values.gitCredentialsSecret }}
     - name: DOCS_GIT_CRED_FILE
       value: {{ default ".git-credentials" .Values.gitCredentialsSecretKey }}
@@ -151,8 +151,8 @@ Subpath prefix value to use for pvc mount points
       subPath: {{ include "mkdocs-material.subpathPrefix" . }}git
     {{- else }}
     - mountPath: /docs/mkdocs.yml
-     name: {{ include "mkdocs-material.fullname" . }}
-     subPath: mkdocs.yml
+      name: {{ include "mkdocs-material.fullname" . }}
+      subPath: mkdocs.yml
     - mountPath: /docs/docs
       name: {{ include "mkdocs-material.fullname" . }}-files
     - mountPath: /docs/site
@@ -176,7 +176,7 @@ Subpath prefix value to use for pvc mount points
 {{- if .Values.gitCredentialsSecret }}
 - name: {{ include "mkdocs-material.fullname" . }}-git-creds
   secret:
-    secretName: {{ .Values.gitCredentialsSecret }}
+    secretName: {{ tpl .Values.gitCredentialsSecret . }}
     defaultMode: 0600
 {{- end }}
 {{- else }}
