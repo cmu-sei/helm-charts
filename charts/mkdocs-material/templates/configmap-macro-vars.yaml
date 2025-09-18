@@ -1,0 +1,15 @@
+{{- if and .Values.macrosPlugin.enabled .Values.macrosPlugin.extraYamlConfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mkdocs-material.fullname" . }}-macro-vars
+  labels:
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
+
+data:
+{{- range .Values.macrosPlugin.extraYamlConfig }}
+{{- $configContent := toYaml .values }}
+  {{ .path }}: |-
+    {{- (tpl $configContent $) | nindent 4}}
+{{- end }}
+{{- end }}

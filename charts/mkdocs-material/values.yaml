@@ -90,6 +90,43 @@ tolerations: []
 
 affinity: {}
 
+##############################################################
+# Option to add the mkdocs-macros-plugin                     #
+# See https://mkdocs-macros-plugin.readthedocs.io/en/latest/ #
+##############################################################
+macrosPlugin:
+  enabled: false
+  version: 1.3.9       # pip version of mkdocs-macros-plugin
+  extraYamlConfigMount: /mkdocs-vars # The name of the volume mount path for extra yaml config files
+  # This section is used to pass values that are expected to appear as include_yaml entries
+  # in the mkdocs.yaml plugin section configuring the mkdocs-macros-plugin plugin.
+  extraYamlConfig: []
+  # extraYamlConfig:
+  #   - path: vars1.yaml  # paths are relative to the extraYamlConfigMount
+  #     values:           # values are copied into the defined structure in the target file
+  #       domain: example.net
+  #       shortName: myproject
+  #       longName: Sample Project
+  #   - path: vars2.yaml
+  #     values:
+  #       color: blue
+  #       fruit: banana
+
+  # Sample plugin config snippet from mkdocs.yaml using the files above.
+  # Note that you can have a local defaults file in your docs that can be optionally
+  # overridden by the files added via this chart. Mkdocs will give a warning if they
+  # don't exist locally, but will still build successfully, for example:
+  # INFO    -  [macros] - WARNING: YAML configuration file was not found! /mkdocs-vars/vars1.yaml
+  # The entries that appear later in the list have precedence of earlier values files.
+  # plugins:
+  #   - search
+  #   - macros:
+  #       on_undefined: strict
+  #       include_yaml:
+  #         - global: local-defaults.yaml
+  #         - global: /mkdocs-vars/vars1.yaml
+  #         - global: /mkdocs-vars/vars2.yaml
+
 ##################
 # Git deployment #
 ##################
