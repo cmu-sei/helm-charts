@@ -47,7 +47,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 80
 
 ingress:
   enabled: false
@@ -67,7 +67,7 @@ ingress:
   #      - chart-example.local
 
   consoleIngress:
-    deployConsoleProxy: false   
+    deployConsoleProxy: false
     name: ''
     annotations:
       {}
@@ -114,7 +114,7 @@ affinity: {}
 
 command: ['dotnet', 'Player.Vm.Api.dll']
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
