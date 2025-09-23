@@ -30,10 +30,9 @@ blueprint-api:
   env:
     # CORS policy settings.
     # The first entry should be the URL to Blueprint
-    CorsPolicy__Origins__0:
-      https://blueprint.example.com
+    CorsPolicy__Origins__0: https://blueprint.example.com
 
-      # Connection String to database
+    # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=blueprint_api;Username=blueprint_dbu;Password=;"
 
