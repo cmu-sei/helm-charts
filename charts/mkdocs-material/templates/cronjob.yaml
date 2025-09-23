@@ -2,12 +2,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: "{{ .Release.Name }}-cron"
+  name: {{ include "mkdocs-material.fullname" . }}-cron
   labels:
-    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    {{- include "mkdocs-material.labels" . | nindent 4 }}
 spec:
   schedule: "*/{{ .Values.pollInterval | default 5 }} * * * *"
   concurrencyPolicy: Forbid
@@ -15,11 +12,9 @@ spec:
     spec:
       template:
         metadata:
-          name: "{{ .Release.Name }}"
+          name: {{ include "mkdocs-material.fullname" . }}-cron
           labels:
-            app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-            app.kubernetes.io/instance: {{ .Release.Name | quote }}
-            helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+            {{- include "mkdocs-material.labels" . | nindent 12 }}
         spec:
           restartPolicy: Never
           initContainers:
