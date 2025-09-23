@@ -88,11 +88,11 @@ Subpath prefix value to use for pvc mount points
   {{- end }}
   {{- if .Values.gitPath }}
     - name: DOCS_GIT_PATH
-      value: {{ .Values.gitPath | trimPrefix "/" }}
+      value: {{ tpl .Values.gitPath . | trimPrefix "/" }}
   {{- end }}
   {{- if .Values.mkdocs.site_url }}
     - name: DOCS_SITE_URL
-      value: {{ .Values.mkdocs.site_url }}
+      value: {{ tpl .Values.mkdocs.site_url . }}
   {{- end }}
   volumeMounts:
     - mountPath: /entry.d
@@ -133,7 +133,7 @@ Subpath prefix value to use for pvc mount points
       value: {{ default "1.3.9" .Values.macrosPlugin.version | toString | quote }}
   {{- if .Values.gitPath }}
     - name: DOCS_GIT_PATH
-      value: {{ .Values.gitPath | trimPrefix "/" }}
+      value: {{ tpl .Values.gitPath . | trimPrefix "/" }}
   {{- end }}
   volumeMounts:
   {{- if and .Values.macrosPlugin.enabled .Values.macrosPlugin.extraYamlConfig }}
