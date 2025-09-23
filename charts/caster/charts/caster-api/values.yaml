@@ -2,17 +2,16 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
 kind: "Deployment"
 image:
   repository: cmusei/caster-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ''
+  tag: ""
 
 imagePullSecrets: []
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,7 +20,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
 podAnnotations: {}
 
@@ -45,7 +44,8 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -61,7 +61,7 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ''
+certificateMap: ""
 
 resources:
   {}
@@ -76,13 +76,6 @@ resources:
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 command: ["./Caster.Api"]
 
 nodeSelector: {}
@@ -93,27 +86,27 @@ affinity: {}
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
 storage:
-  existing: ''
-  size: ''
+  existing: ""
+  size: ""
   mode: ReadWriteOnce
   class: default
 
-gitcredentials: ''
+gitcredentials: ""
 
 # Use a .terraformrc file to overwrite standard Terraform configuration
 terraformrc:
-    enabled: false
-    value: |
-      plugin_cache_dir = "/terraform/plugin-cache"
-      provider_installation {
-          filesystem_mirror {
-              path = "/terraform/plugins/linux_amd64"
-              include = []
-          }
-          direct {
-              include = []
-          }
-      }
+  enabled: false
+  value: |
+    plugin_cache_dir = "/terraform/plugin-cache"
+    provider_installation {
+        filesystem_mirror {
+            path = "/terraform/plugins/linux_amd64"
+            include = []
+        }
+        direct {
+            include = []
+        }
+    }
 
 ## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
@@ -138,26 +131,26 @@ env:
   VSPHERE_PASSWORD:
   VSPHERE_ALLOW_UNVERIFIED_SSL: true
 
-  SEI_CRUCIBLE_USERNAME: ''
-  SEI_CRUCIBLE_PASSWORD: ''
-  SEI_CRUCIBLE_AUTH_URL: ''
-  SEI_CRUCIBLE_TOK_URL: ''
-  SEI_CRUCIBLE_CLIENT_ID: ''
-  SEI_CRUCIBLE_CLIENT_SECRET: ''
-  SEI_CRUCIBLE_VM_API_URL: ''
-  SEI_CRUCIBLE_PLAYER_API_URL: ''
-  SEI_IDENTITY_TOK_URL: ''
-  SEI_IDENTITY_CLIENT_ID: ''
-  SEI_IDENTITY_CLIENT_SECRET: ''
-  SEI_IDENTITY_API_URL: ''
-  ARM_CLIENT_CERTIFICATE_PATH: ''
-  ARM_CLIENT_ID: ''
-  ARM_ENVIRONMENT: ''
-  ARM_SKIP_PROVIDER_REGISTRATION: ''
-  ARM_SUBSCRIPTION_ID: ''
-  ARM_TENANT_ID: ''
+  SEI_CRUCIBLE_USERNAME: ""
+  SEI_CRUCIBLE_PASSWORD: ""
+  SEI_CRUCIBLE_AUTH_URL: ""
+  SEI_CRUCIBLE_TOK_URL: ""
+  SEI_CRUCIBLE_CLIENT_ID: ""
+  SEI_CRUCIBLE_CLIENT_SECRET: ""
+  SEI_CRUCIBLE_VM_API_URL: ""
+  SEI_CRUCIBLE_PLAYER_API_URL: ""
+  SEI_IDENTITY_TOK_URL: ""
+  SEI_IDENTITY_CLIENT_ID: ""
+  SEI_IDENTITY_CLIENT_SECRET: ""
+  SEI_IDENTITY_API_URL: ""
+  ARM_CLIENT_CERTIFICATE_PATH: ""
+  ARM_CLIENT_ID: ""
+  ARM_ENVIRONMENT: ""
+  ARM_SKIP_PROVIDER_REGISTRATION: ""
+  ARM_SUBSCRIPTION_ID: ""
+  ARM_TENANT_ID: ""
 
-  AllowedHosts: '*'
+  AllowedHosts: "*"
 
   Logging__IncludeScopes: false
   Logging__Debug__LogLevel__Default: Information
@@ -168,8 +161,8 @@ env:
   Logging__Console__LogLevel__System: Error
 
   CorsPolicy__Origins__0: http://localhost:4310
-  CorsPolicy__Methods__0: ''
-  CorsPolicy__Headers__0: ''
+  CorsPolicy__Methods__0: ""
+  CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
@@ -179,7 +172,7 @@ env:
   ClaimsTransformation__CacheExpirationSeconds: 60
 
   # database requires the 'uuid-ossp' extension installed
-  ConnectionStrings__PostgreSQL: ''
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
@@ -187,32 +180,32 @@ env:
   Authorization__Authority:
   Authorization__AuthorizationUrl:
   Authorization__TokenUrl:
-  Authorization__AuthorizationScope: 'caster-api'
+  Authorization__AuthorizationScope: "caster-api"
   Authorization__ClientId: caster-api-dev
-  Authorization__ClientName: 'Caster API'
-  Authorization__ClientSecret: ''
+  Authorization__ClientName: "Caster API"
+  Authorization__ClientSecret: ""
   Authorization__RequireHttpsMetaData: false
 
-  Client__TokenUrl: ''
+  Client__TokenUrl: ""
   Client__ClientId: caster-admin
-  Client__ClientSecret: ''
-  Client__UserName: ''
-  Client__Password: ''
-  Client__Scope: 'player-api vm-api'
+  Client__ClientSecret: ""
+  Client__UserName: ""
+  Client__Password: ""
+  Client__Scope: "player-api vm-api"
   Client__MaxRetryDelaySeconds: 120
   Client__TokenRefreshSeconds: 600
 
-  Player__VmApiUrl: ''
-  Player__VmConsoleUrl: ''
+  Player__VmApiUrl: ""
+  Player__VmConsoleUrl: ""
   Player__MaxParallelism: 8
   Player__RemoveLoopSeconds: 300
 
-  Terraform__BinaryPath: '/terraform/binaries'
-  Terraform__DefaultVersion: '0.12.24'
+  Terraform__BinaryPath: "/terraform/binaries"
+  Terraform__DefaultVersion: "0.12.24"
   # Terraform__PluginDirectory: '/terraform/plugins'
-  Terraform__RootWorkingDirectory: '/terraform/root'
-  Terraform__GitlabApiUrl: 'https://gitlab.com/api/v4/'
-  Terraform__GitlabToken: ''
+  Terraform__RootWorkingDirectory: "/terraform/root"
+  Terraform__GitlabApiUrl: "https://gitlab.com/api/v4/"
+  Terraform__GitlabToken: ""
   Terraform__GitlabGroupId: 6
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
