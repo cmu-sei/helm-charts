@@ -11,24 +11,38 @@ data:
     #!/bin/sh
 
     ######################################################
-    # Exit and print error and command for git operations.
-    # Also cleans out all git state for next call.
+    # Execute git command and return outoput in GIT_OUTPUT.
+    # stderr is captured in GIT_OUTPUT_ERR.
+    # Exit with git return code on failure and clean out
+    # all git state for next call to this script.
     # Arguments:
-    #   git command
-    #   captured output
-    #   exit code
+    #   git command string
     # Returns:
-    #   1
+    #   git output. Exits script on error
     ######################################################
-    print_git_error_exit() {
-      echo "Git command failed: {$1}"
-      echo "Output was: {$2}"
-      echo "Exit code was: {$3}"
-      echo "Deleting all git state..."
-      rm -f "/docs/.dirty"
-      cd /git
-      rm -rf *
-      exit 1
+    execute_git_command() {
+        STD_ERR_FILENAME=`mktemp`
+        touch "$STD_ERR_FILENAME"
+        GIT_OUTPUT=`eval "$@" 2>"$STD_ERR_FILENAME"`
+        GIT_EXIT_CODE="$?"
+        GIT_OUTPUT_ERR=`cat "$STD_ERR_FILENAME"`
+        rm "$STD_ERR_FILENAME"
+        if [ "$GIT_EXIT_CODE" -ne "0" ]; then
+          echo "Git command failed: $@"
+          echo "Output was: ${GIT_OUTPUT}"
+          echo "StdErr Output was: ${GIT_OUTPUT_ERR}"
+          echo "Exit code was: $GIT_EXIT_CODE"
+          echo "Deleting all git state..."
+          rm -f "/docs/.dirty"
+          cd /git
+          rm -rf *
+          exit "$?"
+        fi
+        if [ -n "$GIT_OUTPUT" ]; then
+            echo "$GIT_OUTPUT"
+        else
+            echo "$GIT_OUTPUT_ERR"
+        fi
     }
 
     update-ca-certificates
@@ -45,52 +59,46 @@ data:
     if [ ! -d .git ]; then
         echo "Clearing and cloning git repo..."
         dirty=1
-        rm -rf *
-        gitcloneoutput=`git clone "$DOCS_GIT_URL" .`
-        if [ "$?" -ne "0" ]; then
-          print_git_error_exit "git clone ${DOCS_GIT_URL}" "$gitcloneoutput" "$?"
-        fi
+        find . -mindepth 1 -delete
+        execute_git_command "git clone ${DOCS_GIT_URL} ."
     else
         ## Verify that the repository reference has not changed.
-        ## TODO: parse the out of git remote get-url origin
-        ## ensure that it is conststent with DOCS_GIT_URL
-        # git url passed as: https://gitlab.imcite.net/imcite/imcite.git
-        # git remote get-url origin
-        # git@gitlab.imcite.net:imcite/imcite.git
-        # git@gitlab.imcite.net:docs/docs.pages.imcite.net.git
+        URL_HOST_AND_PATH_REGEX="^([A-Za-z0-9-]+://)?([A-Za-z0-9-]*.*@)?([\\.A-Za-z0-9-]{1,63})(.*)"
+        GIT_REPO_URL=`git remote get-url origin`
+        GIT_REPO_HOST_AND_PATH=`echo "$GIT_REPO_URL" | sed -r -e "s#${URL_HOST_AND_PATH_REGEX}#\3\4#"`
+        CONFIGURED_HOST_AND_PATH=`echo "$DOCS_GIT_URL" | sed -r -e "s#${URL_HOST_AND_PATH_REGEX}#\3\4#"`
+        echo "Git repo host and path: $GIT_REPO_HOST_AND_PATH"
+        echo "Configured host and path: $CONFIGURED_HOST_AND_PATH"
+        if [ "$GIT_REPO_HOST_AND_PATH" != "$CONFIGURED_HOST_AND_PATH" ]; then
+            echo "Configured git repo host and/or path changed."
+            echo "Clearing and cloning git repo..."
+            dirty=1
+            find . -mindepth 1 -delete
+            execute_git_command "git clone ${DOCS_GIT_URL} ."
+        fi
     fi
 
-    ## Remove all local changes and any untracked and ignored files
+    ## Remove all local changes and any untracked files
     git reset --hard
-    git clean -f -d -x
+    git clean -f -d
 
     if [ -n "$DOCS_GIT_BRANCH" ]; then
-        gitcheckoutoutput=`git checkout "$DOCS_GIT_BRANCH" 2>&1`
-        if [ "$?" -ne "0" ]; then
-          print_git_error_exit "git checkout ${DOCS_GIT_BRANCH}" "$gitcheckoutoutput" "$?"
-        fi
-
-        echo "$gitcheckoutoutput" | grep "Switch*" > /dev/null 2>&1
+        execute_git_command "git checkout ${DOCS_GIT_BRANCH}"
+        echo "${GIT_OUTPUT} ${GIT_OUTPUT_ERR}" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
             echo "Branch changed - docs should be updated."
             dirty=1
         fi
     fi
 
-    gitfetchoutput=`git fetch --porcelain`
-    if [ "$?" -ne "0" ]; then
-        print_git_error_exit "git fetch --porcelain" "$gitfetchoutput" "$?"
-    fi
+    execute_git_command "git fetch --porcelain"
 
-    if [ -n "$gitfetchoutput" ]; then
+    if [ -n "$GIT_OUTPUT" ]; then
         echo "Changes were made on remote branch - docs should be updated."
         dirty=1
     fi
 
-    gitpulloutput=`git pull`
-    if [ "$?" -ne "0" ]; then
-        print_git_error_exit "git pull" "$gitpulloutput" "$?"
-    fi
+    execute_git_command "git pull"
 
     if [ "$dirty" -eq "1" ]; then
         touch "/docs/.dirty"
@@ -108,9 +116,10 @@ data:
         if [ -f mkdocs.yml ]; then
             sed -i -r -e "s#^(site_url: )(.*)#\1${DOCS_SITE_URL}#" mkdocs.yml
             found_url=`grep -c 'site_url:' mkdocs.yml`
-            if [ $found_url = 0 ]; then
-            echo "site_url: ${DOCS_SITE_URL}" | cat - mkdocs.yml > tmp.yml
-            mv tmp.yml mkdocs.yml
+            if [ -z $found_url ]; then
+                echo "site_url: ${DOCS_SITE_URL}" | cat - mkdocs.yml > tmp.yml
+                mv tmp.yml mkdocs.yml
+            fi
         else
             echo "Failed to find the mkdocs.yml file."
         fi
