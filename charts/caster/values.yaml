@@ -1,9 +1,8 @@
 caster-api:
-
   # Docker image release version. Defaults to appVersion of caster-api child chart
   image:
     tag: ""
-  
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -11,8 +10,8 @@ caster-api:
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
-      nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: caster.example.com
@@ -22,24 +21,24 @@ caster-api:
     tls:
       - secretName: ""
         hosts:
-         - example.com
+          - example.com
 
   # Use a .terraformrc file to overwrite standard Terraform configuration
   # https://www.terraform.io/docs/cli/config/config-file.html
   # NOTE:  If enabled,  Terraform__PluginDirectory environment variable must be set to empty explicitly
   terraformrc:
-      enabled: false
-      value: |
-        plugin_cache_dir = "/terraform/plugin-cache"
-        provider_installation {
-            filesystem_mirror {
-                path = "/terraform/plugins/linux_amd64"
-                include = []
-            }
-            direct {
-                include = []
-            }
-        }
+    enabled: false
+    value: |
+      plugin_cache_dir = "/terraform/plugin-cache"
+      provider_installation {
+          filesystem_mirror {
+              path = "/terraform/plugins/linux_amd64"
+              include = []
+          }
+          direct {
+              include = []
+          }
+      }
 
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
@@ -55,9 +54,9 @@ caster-api:
 
   # Gets placed in /root/.git-credentials to allow immediate Gitlab access via access token
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
-  gitcredentials: 'https://git-access-token:TOKEN@gitlab.example.com'
+  gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -86,7 +85,7 @@ caster-api:
     # TODO - Document VSphere user role requirements
     VSPHERE_SERVER: vcenter.example.com
     VSPHERE_USER: caster-account@vsphere.local
-    VSPHERE_PASSWORD: 
+    VSPHERE_PASSWORD:
     VSPHERE_ALLOW_UNVERIFIED_SSL: true
 
     # === Terraform Crucible Provider Section ===
@@ -94,8 +93,8 @@ caster-api:
     # https://registry.terraform.io/providers/cmu-sei/crucible/latest
 
     # An Identity Service account with Caster Admin privileges
-    SEI_CRUCIBLE_USERNAME: ''
-    SEI_CRUCIBLE_PASSWORD: ''
+    SEI_CRUCIBLE_USERNAME: ""
+    SEI_CRUCIBLE_PASSWORD: ""
 
     # URL to the Identity Server Auth endpoint
     SEI_CRUCIBLE_AUTH_URL: https://identity.example.com/connect/authorize
@@ -104,7 +103,7 @@ caster-api:
 
     # Identity Client information
     SEI_CRUCIBLE_CLIENT_ID: player.provider
-    SEI_CRUCIBLE_CLIENT_SECRET: ''
+    SEI_CRUCIBLE_CLIENT_SECRET: ""
 
     # URLs to Player API and VM API
     SEI_CRUCIBLE_VM_API_URL: https://vm.example.com/api/
@@ -120,10 +119,10 @@ caster-api:
     SEI_IDENTITY_TOK_URL: https://identity.example.com/connect/token
     # URL to the Identity Server API endpoint
     SEI_IDENTITY_API_URL: https://id.example.com/api/
-    
+
     # Identity Client information
-    SEI_IDENTITY_CLIENT_ID: terraform-identity-provider    
-    SEI_IDENTITY_CLIENT_SECRET: ''
+    SEI_IDENTITY_CLIENT_ID: terraform-identity-provider
+    SEI_IDENTITY_CLIENT_SECRET: ""
 
     # === End Terraform Identity Provider Section ===
 
@@ -134,12 +133,12 @@ caster-api:
     # Remaining documentation provided by the plugin
     # NOTE:  Use the certificateMap key in this chart to add certificates, which will be placed in:
     #        /usr/local/share/ca-certificates
-    ARM_CLIENT_CERTIFICATE_PATH: ''
-    ARM_CLIENT_ID: ''
-    ARM_ENVIRONMENT: ''
-    ARM_SKIP_PROVIDER_REGISTRATION: ''
-    ARM_SUBSCRIPTION_ID: ''
-    ARM_TENANT_ID: ''
+    ARM_CLIENT_CERTIFICATE_PATH: ""
+    ARM_CLIENT_ID: ""
+    ARM_ENVIRONMENT: ""
+    ARM_SKIP_PROVIDER_REGISTRATION: ""
+    ARM_SUBSCRIPTION_ID: ""
+    ARM_TENANT_ID: ""
 
     # See here for more information regarding AllowedHosts
     # https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.hostfiltering.hostfilteringoptions.allowedhosts?view=aspnetcore-3.1
@@ -163,8 +162,8 @@ caster-api:
     # OAuth2 Identity Client /w Password
     Client__TokenUrl: https://identity.example.com/connect/token
     Client__ClientId: caster-admin
-    Client__UserName: 
-    Client__Password: 
+    Client__UserName:
+    Client__Password:
     Client__Scope: "player-api vm-api"
 
     # Crucible Player URLs
@@ -186,20 +185,18 @@ caster-api:
 
     # Basic seed data to jumpstart deployement
     # TODO - Document seed data
-    SeedData__Users__0__id: 
-    SeedData__Users__0__name: 
+    SeedData__Users__0__id:
+    SeedData__Users__0__name:
 
-    SeedData__Users__1__id: 
-    SeedData__Users__1__name: 
+    SeedData__Users__1__id:
+    SeedData__Users__1__name:
 
-    SeedData__UserPermissions__0__UserId: 
-    SeedData__UserPermissions__0__PermissionId: 
-    SeedData__UserPermissions__1__UserId: 
-    SeedData__UserPermissions__1__PermissionId: 
-
+    SeedData__UserPermissions__0__UserId:
+    SeedData__UserPermissions__0__PermissionId:
+    SeedData__UserPermissions__1__UserId:
+    SeedData__UserPermissions__1__PermissionId:
 
 caster-ui:
-
   # Docker image release version. Defaults to appVersion of caster-ui child chart
   image:
     tag: ""
@@ -219,7 +216,7 @@ caster-ui:
     tls:
       - secretName: ""
         hosts:
-         - example.com
+          - example.com
 
   ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
@@ -260,4 +257,3 @@ caster-ui:
     #   automaticSilentRenew: true
     #   silent_redirect_uri: https://caster.example.com/auth-callback-silent/
     # UseLocalAuthStorage: true
-

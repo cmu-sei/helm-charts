@@ -2,17 +2,16 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
 kind: "Deployment"
 image:
   repository: cmusei/player-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ''
+  tag: ""
 
 imagePullSecrets: []
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,7 +20,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
 podAnnotations: {}
 
@@ -70,7 +69,8 @@ probes:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -86,7 +86,7 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ''
+certificateMap: ""
 
 resources:
   {}
@@ -100,13 +100,6 @@ resources:
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -150,42 +143,42 @@ env:
   Logging__Console__LogLevel__System: Error
 
   # database requires the 'uuid-ossp' extension installed
-  ConnectionStrings__PostgreSQL: ''
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  CorsPolicy__Origins__0: ''
-  CorsPolicy__Methods__0: ''
-  CorsPolicy__Headers__0: ''
+  CorsPolicy__Origins__0: ""
+  CorsPolicy__Methods__0: ""
+  CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ''
-  Authorization__AuthorizationUrl: ''
-  Authorization__TokenUrl: ''
-  Authorization__AuthorizationScope: 'player-api'
+  Authorization__Authority: ""
+  Authorization__AuthorizationUrl: ""
+  Authorization__TokenUrl: ""
+  Authorization__AuthorizationScope: "player-api"
   Authorization__ClientId: player-api-dev
-  Authorization__ClientName: 'Player API'
-  Authorization__ClientSecret: ''
+  Authorization__ClientName: "Player API"
+  Authorization__ClientSecret: ""
   Authorization__RequireHttpsMetaData: false
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  Notifications__UserIconUrl: '/assets/img/SP_Icon_User.png'
-  Notifications__SystemIconUrl: '/assets/img/SP_Icon_Alert.png'
-  Notifications__HelpDeskApplicationName: 'Help Desk'
+  Notifications__UserIconUrl: "/assets/img/SP_Icon_User.png"
+  Notifications__SystemIconUrl: "/assets/img/SP_Icon_Alert.png"
+  Notifications__HelpDeskApplicationName: "Help Desk"
 
-  FileUpload__basePath: '/fileupload'
-  FileUpload__maxSize: '64000000'
-  FileUpload__allowedExtensions__0: '.pdf'
-  FileUpload__allowedExtensions__1: '.png'
-  FileUpload__allowedExtensions__2: '.jpg'
-  FileUpload__allowedExtensions__3: '.jpeg'
-  FileUpload__allowedExtensions__4: '.doc'
-  FileUpload__allowedExtensions__5: '.docx'
-  FileUpload__allowedExtensions__6: '.gif'
-  FileUpload__allowedExtensions__7: '.txt'
+  FileUpload__basePath: "/fileupload"
+  FileUpload__maxSize: "64000000"
+  FileUpload__allowedExtensions__0: ".pdf"
+  FileUpload__allowedExtensions__1: ".png"
+  FileUpload__allowedExtensions__2: ".jpg"
+  FileUpload__allowedExtensions__3: ".jpeg"
+  FileUpload__allowedExtensions__4: ".doc"
+  FileUpload__allowedExtensions__5: ".docx"
+  FileUpload__allowedExtensions__6: ".gif"
+  FileUpload__allowedExtensions__7: ".txt"

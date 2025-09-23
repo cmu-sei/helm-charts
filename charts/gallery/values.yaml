@@ -10,31 +10,32 @@ gallery-api:
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
-      nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
-      nginx.ingress.kubernetes.io/use-regex: 'true'
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: gallery.example.com
         paths:
           - path: /(api|swagger/hubs)
             pathType: ImplementationSpecific
     tls:
-      - secretName: ''
+      - secretName: ""
         hosts:
           - example.com
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
   env:
     # CORS policy settings.
     # The first entry should be the URL to Gallery
-    CorsPolicy__Origins__0: https://gallery.example.com
+    CorsPolicy__Origins__0:
+      https://gallery.example.com
 
-        # Connection String to database
+      # Connection String to database
     # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: 'Server=postgres;Port=5432;Database=gallery_api;Username=gallery_dbu;Password=;'
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=gallery_api;Username=gallery_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -62,7 +63,7 @@ gallery-ui:
           - path: /
             pathType: ImplementationSpecific
     tls:
-      - secretName: ''
+      - secretName: ""
         hosts:
           - example.com
 
@@ -108,4 +109,3 @@ gallery-ui:
     # AppTopBarText: Gallery  -  Exercise Information Sharing
     # AppTopBarImage: /assets/img/monitor-dashboard-white.png
     # UseLocalAuthStorage: true
-

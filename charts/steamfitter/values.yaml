@@ -1,5 +1,4 @@
 steamfitter-api:
-
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -7,8 +6,8 @@ steamfitter-api:
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
-      nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: steamfitter.example.com
@@ -18,7 +17,7 @@ steamfitter-api:
     tls:
       - secretName: ""
         hosts:
-         - example.com
+          - example.com
 
   # If this deployment needs to trust non-public certificates,
   # create a configMap with the needed certifcates and specify
@@ -93,7 +92,6 @@ steamfitter-api:
     # SeedData__UserPermissions__1__PermissionId: ""
 
 steamfitter-ui:
-
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -109,8 +107,7 @@ steamfitter-ui:
     tls:
       - secretName: ""
         hosts:
-         - example.com
-
+          - example.com
 
   ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
@@ -153,5 +150,3 @@ steamfitter-ui:
     #   automaticSilentRenew: true
     #   silent_redirect_uri: https://steamfitter.example.com/auth-callback-silent/
     # UseLocalAuthStorage: true
-
-

@@ -25,10 +25,12 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -43,7 +45,8 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -56,7 +59,8 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -68,13 +72,6 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 nodeSelector: {}
 
 tolerations: []
@@ -84,11 +81,11 @@ affinity: {}
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ''
+certificateMap: ""
 
-command: ['bash', '-c', 'update-ca-certificates && dotnet Blueprint.Api.dll']
+command: ["bash", "-c", "update-ca-certificates && dotnet Blueprint.Api.dll"]
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
@@ -110,27 +107,27 @@ env:
   Logging__Console__LogLevel__System: Warning
 
   # database requires the 'uuid-ossp' extension installed
-  ConnectionStrings__PostgreSQL: ''
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
   Database__SeedFile: seed-data.json
 
-  CorsPolicy__Origins__0: ''
-  CorsPolicy__Methods__0: ''
-  CorsPolicy__Headers__0: ''
+  CorsPolicy__Origins__0: ""
+  CorsPolicy__Methods__0: ""
+  CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ''
-  Authorization__AuthorizationUrl: ''
-  Authorization__TokenUrl: ''
-  Authorization__AuthorizationScope: 'blueprint'
+  Authorization__Authority: ""
+  Authorization__AuthorizationUrl: ""
+  Authorization__TokenUrl: ""
+  Authorization__AuthorizationScope: "blueprint"
   Authorization__ClientId: blueprint.swagger
-  Authorization__ClientName: 'Blueprint API Swagger'
-  Authorization__ClientSecret: ''
+  Authorization__ClientName: "Blueprint API Swagger"
+  Authorization__ClientSecret: ""
   Authorization__RequireHttpsMetaData: false
 
   ClaimsTransformation__EnableCaching: true

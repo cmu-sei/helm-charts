@@ -10,25 +10,25 @@ alloy-api:
     className: ""
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: '86400'
-      nginx.ingress.kubernetes.io/proxy-send-timeout: '86400'
-      nginx.ingress.kubernetes.io/use-regex: 'true'
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: alloy.example.com
         paths:
           - path: /(api|swagger/hubs)
             pathType: ImplementationSpecific
     tls:
-      - secretName: ''
+      - secretName: ""
         hosts:
           - example.com
 
   # If this deployment needs to trust non-public certificates,
-  # create a configMap with the needed certifcates and specify
+  # create a configMap with the needed certificates and specify
   # the configMap name here
-  certificateMap: ''
+  certificateMap: ""
 
-  ## existingSecret references a secret already in k8s. 
+  ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
@@ -43,7 +43,7 @@ alloy-api:
     # HTTPS_PROXY: proxy.example.com:9000
     # NO_PROXY: .local
     # no_proxy: .local
-    
+
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
@@ -54,22 +54,22 @@ alloy-api:
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: 'Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;'
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;"
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
     Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
     Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: 'alloy-api player-api caster-api steamfitter-api vm-api'
+    Authorization__AuthorizationScope: "alloy-api player-api caster-api steamfitter-api vm-api"
     Authorization__ClientId: alloy-api-dev
-    Authorization__ClientName: 'Alloy API'
+    Authorization__ClientName: "Alloy API"
 
     # OAuth2 Identity Client /w Password
     ResourceOwnerAuthorization__Authority: https://identity.example.com
     ResourceOwnerAuthorization__ClientId: alloy-api
     ResourceOwnerAuthorization__UserName:
     ResourceOwnerAuthorization__Password:
-    ResourceOwnerAuthorization__Scope: 'alloy-api player-api caster-api steamfitter-api vm-api'
+    ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api vm-api"
 
     # Crucible Application URLs
     ClientSettings__urls__playerApi: https://player.example.com/
@@ -94,7 +94,7 @@ alloy-ui:
           - path: /
             pathType: ImplementationSpecific
     tls:
-      - secretName: ''
+      - secretName: ""
         hosts:
           - example.com
 
@@ -116,8 +116,8 @@ alloy-ui:
   extraVolumes: ""
 
   extraVolumeMounts: ""
-  
-  env: 
+
+  env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 

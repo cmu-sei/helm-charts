@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "gamebrain.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "gamebrain.selectorLabels" . | nindent 6 }}
@@ -49,7 +47,7 @@ spec:
             periodSeconds: 30
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:                       
+          volumeMounts:
             - mountPath: /app/settings.yaml
               name: {{ .Release.Name }}-configmap
               subPath: settings.yaml
@@ -59,7 +57,7 @@ spec:
             {{- if .Values.cacert }}
             - mountPath: /app/rootca.crt
               name: {{ .Release.Name }}-configmap
-              subPath: rootca.crt 
+              subPath: rootca.crt
             {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
