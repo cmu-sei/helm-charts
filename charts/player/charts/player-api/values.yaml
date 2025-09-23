@@ -40,7 +40,7 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 80
 
 probes:
   livenessProbe:
@@ -50,7 +50,7 @@ probes:
     timeoutSeconds: 5
     failureThreshold: 6
     successThreshold: 1
-  
+
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
@@ -66,7 +66,7 @@ probes:
     timeoutSeconds: 1
     failureThreshold: 15
     successThreshold: 1
-      
+
 ingress:
   enabled: false
   className: ""
@@ -123,7 +123,7 @@ storage:
   mode: ReadWriteOnce
   class: default
 
-## existingSecret references a secret already in k8s. 
+## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
 
