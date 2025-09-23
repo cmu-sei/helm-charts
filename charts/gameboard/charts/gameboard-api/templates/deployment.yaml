@@ -49,18 +49,6 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          # livenessProbe:
-          #   initialDelaySeconds: 120
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
-          # readinessProbe:
-          #   initialDelaySeconds: 120
-          #   periodSeconds: 10
-          #   failureThreshold: 10
-          #   httpGet:
-          #     path: /api/version
-          #     port: http
           volumeMounts:
           {{- if or .Values.cacert .Values.cacertSecret }}
             - mountPath: /start
