@@ -1,14 +1,14 @@
-replicaCount: 1
+# Default values for alloy-api.
 
 image:
   repository: cmusei/alloy-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ''
+  tag: ""
 
 imagePullSecrets: []
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -17,7 +17,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
 podAnnotations: {}
 
@@ -41,7 +41,8 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -57,7 +58,7 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ''
+certificateMap: ""
 
 resources:
   {}
@@ -71,13 +72,6 @@ resources:
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -112,34 +106,34 @@ env:
   Logging__Console__LogLevel__System: Error
 
   # database needs the 'uuid-ossp' extension installed
-  ConnectionStrings__PostgreSQL: ''
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
   CorsPolicy__Origins__0: http://localhost:4403
-  CorsPolicy__Methods__0: ''
-  CorsPolicy__Headers__0: ''
+  CorsPolicy__Methods__0: ""
+  CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ''
-  Authorization__AuthorizationUrl: ''
-  Authorization__TokenUrl: ''
-  Authorization__AuthorizationScope: 'alloy-api player-api caster-api steamfitter-api vm-api'
+  Authorization__Authority: ""
+  Authorization__AuthorizationUrl: ""
+  Authorization__TokenUrl: ""
+  Authorization__AuthorizationScope: "alloy-api player-api caster-api steamfitter-api vm-api"
   Authorization__ClientId: alloy-api-dev
-  Authorization__ClientName: 'Alloy API'
-  Authorization__ClientSecret: ''
+  Authorization__ClientName: "Alloy API"
+  Authorization__ClientSecret: ""
   Authorization__RequireHttpsMetaData: false
 
-  ResourceOwnerAuthorization__Authority: ''
+  ResourceOwnerAuthorization__Authority: ""
   ResourceOwnerAuthorization__ClientId: alloy-api
-  ResourceOwnerAuthorization__ClientSecret: ''
-  ResourceOwnerAuthorization__UserName: ''
-  ResourceOwnerAuthorization__Password: ''
-  ResourceOwnerAuthorization__Scope: 'alloy-api player-api caster-api steamfitter-api vm-api'
+  ResourceOwnerAuthorization__ClientSecret: ""
+  ResourceOwnerAuthorization__UserName: ""
+  ResourceOwnerAuthorization__Password: ""
+  ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api vm-api"
   ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
   ClientSettings__BackgroundTimerIntervalSeconds: 60
@@ -152,15 +146,15 @@ env:
   ClientSettings__ApiClientRetryIntervalSeconds: 10
   ClientSettings__ApiClientLaunchFailureMaxRetries: 10
   ClientSettings__ApiClientEndFailureMaxRetries: 10
-  ClientSettings__urls__playerApi: ''
-  ClientSettings__urls__casterApi: ''
-  ClientSettings__urls__steamfitterApi: ''
+  ClientSettings__urls__playerApi: ""
+  ClientSettings__urls__casterApi: ""
+  ClientSettings__urls__steamfitterApi: ""
 
-  SeedData: ''
+  SeedData: ""
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  Files__LocalDirectory: '/tmp/'
+  Files__LocalDirectory: "/tmp/"
 
   Resource__MaxEventsForBasicUser: 2
