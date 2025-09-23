@@ -1,9 +1,7 @@
 buckets-api:
-  # Default values for foundry-buckets-api.
+  # Default values for buckets-api.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-
-  replicaCount: 1
 
   image:
     repository: cmusei/buckets-api
@@ -26,10 +24,12 @@ buckets-api:
 
   podAnnotations: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    {}
     # fsGroup: 2000
 
-  securityContext: {}
+  securityContext:
+    {}
     # capabilities:
     #   drop:
     #   - ALL
@@ -43,7 +43,8 @@ buckets-api:
 
   ingress:
     enabled: false
-    annotations: {}
+    annotations:
+      {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
@@ -54,7 +55,8 @@ buckets-api:
     #    hosts:
     #      - chart-example.local
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -65,13 +67,6 @@ buckets-api:
     # requests:
     #   cpu: 100m
     #   memory: 256Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
 
   nodeSelector: {}
 
@@ -96,13 +91,10 @@ buckets-api:
   # (these should be in base64 here)
   binaryFiles: {}
 
-
 buckets-ui:
-  # Default values for foundry-buckets-ui.
+  # Default values for buckets-ui.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
-
-  replicaCount: 1
 
   image:
     repository: cmusei/buckets-ui
@@ -125,10 +117,12 @@ buckets-ui:
 
   podAnnotations: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    {}
     # fsGroup: 2000
 
-  securityContext: {}
+  securityContext:
+    {}
     # capabilities:
     #   drop:
     #   - ALL
@@ -142,7 +136,8 @@ buckets-ui:
 
   ingress:
     enabled: false
-    annotations: {}
+    annotations:
+      {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
@@ -153,7 +148,8 @@ buckets-ui:
     #    hosts:
     #      - chart-example.local
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -164,13 +160,6 @@ buckets-ui:
     # requests:
     #   cpu: 10m
     #   memory: 10Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
 
   nodeSelector: {}
 
