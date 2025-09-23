@@ -36,7 +36,7 @@ data:
           rm -f "/docs/.dirty"
           cd /git
           find . -mindepth 1 -delete
-          exit "$?"
+          exit "$GIT_EXIT_CODE"
         fi
         if [ -n "$GIT_OUTPUT" ]; then
             echo "$GIT_OUTPUT"
