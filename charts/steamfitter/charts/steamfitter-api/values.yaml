@@ -2,17 +2,15 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: cmusei/steamfitter-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ''
+  tag: ""
 
 imagePullSecrets: []
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -21,7 +19,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ''
+  name: ""
 
 podAnnotations: {}
 
@@ -45,7 +43,8 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -61,7 +60,7 @@ ingress:
 # If this deployment needs to trust non-public certificates,
 # create a configMap with the needed certifcates and specify
 # the configMap name here
-certificateMap: ''
+certificateMap: ""
 
 resources:
   {}
@@ -76,20 +75,13 @@ resources:
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
 
-command: ['./Steamfitter.Api']
+command: ["./Steamfitter.Api"]
 
 ## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
@@ -115,41 +107,41 @@ env:
   Logging__Console__LogLevel__System: Error
 
   # database requires the 'uuid-ossp' extension installed
-  ConnectionStrings__PostgreSQL: ''
+  ConnectionStrings__PostgreSQL: ""
   Database__AutoMigrate: true
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  CorsPolicy__Origins__0: ''
-  CorsPolicy__Methods__0: ''
-  CorsPolicy__Headers__0: ''
+  CorsPolicy__Origins__0: ""
+  CorsPolicy__Methods__0: ""
+  CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
   CorsPolicy__SupportsCredentials: true
 
-  Authorization__Authority: ''
-  Authorization__AuthorizationUrl: ''
-  Authorization__TokenUrl: ''
-  Authorization__AuthorizationScope: 'player-api steamfitter-api vm-api'
+  Authorization__Authority: ""
+  Authorization__AuthorizationUrl: ""
+  Authorization__TokenUrl: ""
+  Authorization__AuthorizationScope: "player-api steamfitter-api vm-api"
   Authorization__ClientId: steamfitter-api-dev
-  Authorization__ClientName: 'Steamfitter API'
-  Authorization__ClientSecret: ''
+  Authorization__ClientName: "Steamfitter API"
+  Authorization__ClientSecret: ""
   Authorization__RequireHttpsMetaData: false
 
-  ResourceOwnerAuthorization__Authority: ''
+  ResourceOwnerAuthorization__Authority: ""
   ResourceOwnerAuthorization__ClientId: steamfitter-api
-  ResourceOwnerAuthorization__ClientSecret: ''
-  ResourceOwnerAuthorization__UserName: ''
-  ResourceOwnerAuthorization__Password: ''
-  ResourceOwnerAuthorization__Scope: 'vm-api'
+  ResourceOwnerAuthorization__ClientSecret: ""
+  ResourceOwnerAuthorization__UserName: ""
+  ResourceOwnerAuthorization__Password: ""
+  ResourceOwnerAuthorization__Scope: "vm-api"
   ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  ClientSettings__urls__playerApi: ''
-  ClientSettings__urls__vmApi: ''
+  ClientSettings__urls__playerApi: ""
+  ClientSettings__urls__vmApi: ""
 
   VmTaskProcessing__ApiType: st2
   VmTaskProcessing__ApiUsername:
@@ -161,19 +153,19 @@ env:
   VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
   VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
   VmTaskProcessing__ExpirationCheckSeconds: 30
-  VmTaskProcessing__ApiParameters__clusters: ''
+  VmTaskProcessing__ApiParameters__clusters: ""
 
-  Files__LocalDirectory: '/tmp/'
+  Files__LocalDirectory: "/tmp/"
 
-  SeedData__Permissions__0__Id: '00000000-0000-0000-0000-000000000001'
-  SeedData__Permissions__0__Key: 'SystemAdmin'
-  SeedData__Permissions__0__Value: 'true'
-  SeedData__Permissions__0__Description: 'Has Full Rights.  Can do everything.'
+  SeedData__Permissions__0__Id: "00000000-0000-0000-0000-000000000001"
+  SeedData__Permissions__0__Key: "SystemAdmin"
+  SeedData__Permissions__0__Value: "true"
+  SeedData__Permissions__0__Description: "Has Full Rights.  Can do everything."
   SeedData__Permissions__0__ReadOnly: true
-  SeedData__Permissions__1__Id: '00000000-0000-0000-0000-000000000002'
-  SeedData__Permissions__1__Key: 'ContentDeveloper'
-  SeedData__Permissions__1__Value: 'true'
-  SeedData__Permissions__1__Description: 'Can create/edit/delete an ScenarioTemplates/Scenarios/Tasks'
+  SeedData__Permissions__1__Id: "00000000-0000-0000-0000-000000000002"
+  SeedData__Permissions__1__Key: "ContentDeveloper"
+  SeedData__Permissions__1__Value: "true"
+  SeedData__Permissions__1__Description: "Can create/edit/delete an ScenarioTemplates/Scenarios/Tasks"
   SeedData__Permissions__1__ReadOnly: true
 
   # SeedData__Users__0__id: ""
