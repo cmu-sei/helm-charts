@@ -11,7 +11,7 @@ data:
     #!/bin/sh
 
     ######################################################
-    # Execute git command and return outoput in GIT_OUTPUT.
+    # Execute git command and return output in GIT_OUTPUT.
     # stderr is captured in GIT_OUTPUT_ERR.
     # Exit with git return code on failure and clean out
     # all git state for next call to this script.
@@ -35,7 +35,7 @@ data:
           echo "Deleting all git state..."
           rm -f "/docs/.dirty"
           cd /git
-          rm -rf *
+          find . -mindepth 1 -delete
           exit "$?"
         fi
         if [ -n "$GIT_OUTPUT" ]; then
@@ -109,7 +109,7 @@ data:
             echo "Docs path is: ${DOCS_GIT_PATH}"
             cd "${DOCS_GIT_PATH}"
             if [ "$?" -ne "0" ]; then
-                echo "Failed to find the specified diredtory: ${DOCS_GIT_PATH}"
+                echo "Failed to find the specified directory: ${DOCS_GIT_PATH}"
             fi
         fi
 
