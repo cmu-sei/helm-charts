@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "vm-api.labels" . | nindent 4 }}
 spec:
-{{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-{{- end }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "vm-api.selectorLabels" . | nindent 6 }}

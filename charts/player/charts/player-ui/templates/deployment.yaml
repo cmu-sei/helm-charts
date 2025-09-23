@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "player-ui.labels" . | nindent 4 }}
 spec:
-{{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-{{- end }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "player-ui.selectorLabels" . | nindent 6 }}
