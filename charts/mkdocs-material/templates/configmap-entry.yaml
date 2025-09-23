@@ -10,16 +10,19 @@ data:
   git-pull.sh: |-
     #!/bin/sh
 
-    ######################################################
-    # Execute git command and return output in GIT_OUTPUT.
-    # stderr is captured in GIT_OUTPUT_ERR.
-    # Exit with git return code on failure and clean out
-    # all git state for next call to this script.
+    #######################################################
+    # Execute git command exactly as passed and return
+    # stdout in GIT_OUTPUT and stderr in GIT_OUTPUT_ERR.
+    # You should enclose the passed command in quotes to
+    # avoid shell expansion issues.
+    #
+    # On failure, cleans out all git state for the next
+    # call to this script and exits with the git exit code.
     # Arguments:
     #   git command string
     # Returns:
-    #   git output. Exits script on error
-    ######################################################
+    #   git output. Exits script on error.
+    #######################################################
     execute_git_command() {
         STD_ERR_FILENAME=`mktemp`
         touch "$STD_ERR_FILENAME"
@@ -38,17 +41,14 @@ data:
           find . -mindepth 1 -delete
           exit "$GIT_EXIT_CODE"
         fi
-        if [ -n "$GIT_OUTPUT" ]; then
-            echo "$GIT_OUTPUT"
-        else
-            echo "$GIT_OUTPUT_ERR"
-        fi
+        echo "$GIT_OUTPUT"
+        echo "$GIT_OUTPUT_ERR"
     }
 
     update-ca-certificates
 
     if [ -n $DOCS_GIT_CRED_FILE ]; then
-        git config --global credential.helper "store --file=/git-credentials/${DOCS_GIT_CRED_FILE}"
+        execute_git_command "git config --global credential.helper \"store --file=/git-credentials/${DOCS_GIT_CRED_FILE}\""
     fi
 
     # Keep track of whether docs need to be built
@@ -79,8 +79,8 @@ data:
     fi
 
     ## Remove all local changes and any untracked files
-    git reset --hard
-    git clean -f -d
+    execute_git_command "git reset --hard"
+    execute_git_command "git clean -f -d"
 
     if [ -n "$DOCS_GIT_BRANCH" ]; then
         execute_git_command "git checkout ${DOCS_GIT_BRANCH}"
