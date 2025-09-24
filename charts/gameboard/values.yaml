@@ -291,7 +291,7 @@ gameboard-ui:
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   ## NOTE: If specified here, will override the generated settings.json for installations that are using
   ## the `settings` key. Change with caution.
-  settingsYaml: null
+  settingsYaml: {}
     # appname: Gameboard
     # apphost: http://localhost:5002
     # basehref: "gb"
