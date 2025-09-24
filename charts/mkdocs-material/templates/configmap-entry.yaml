@@ -17,7 +17,8 @@ data:
     # avoid shell expansion issues.
     #
     # On failure, cleans out all git state for the next
-    # call to this script and exits with the git exit code.
+    # call to this script and exits with zero to allow
+    # later retries.
     # Arguments:
     #   git command string
     # Returns:
@@ -39,7 +40,7 @@ data:
           rm -f "/docs/.dirty"
           cd /git
           find . -mindepth 1 -delete
-          exit "$GIT_EXIT_CODE"
+          exit 0
         fi
         echo "$GIT_OUTPUT"
         echo "$GIT_OUTPUT_ERR"
