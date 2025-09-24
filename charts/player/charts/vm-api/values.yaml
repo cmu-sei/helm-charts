@@ -167,7 +167,8 @@ env:
   Vsphere__Timeout: 30
   Vsphere__ConnectionRetryIntervalSeconds: 60
   Vsphere__ConnectionRefreshIntervalMinutes: 20
-  Vsphere__LoadCacheAfterIterations: 5
+  Vsphere__LoadCacheAfterMinutes: 5
+  Vsphere__ConnectionTimeoutSeconds: 90
   Vsphere__LogConsoleAccess: false
   Vsphere__CheckTaskProgressIntervalMilliseconds: 5000
   Vsphere__ReCheckTaskProgressIntervalMilliseconds: 1000
