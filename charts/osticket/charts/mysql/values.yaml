@@ -73,7 +73,8 @@ diagnosticMode:
 image:
   registry: docker.io
   repository: bitnamilegacy/mysql
-  tag: "5.7.43" # 8.0.30-debian-11-r15
+  # tag: "5.7.43" # 8.0.30-debian-11-r15
+  tag: "8.0.30-debian-11-r15" #  "5.7.43" is the latest tag for mysql v5
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
