@@ -72,8 +72,8 @@ diagnosticMode:
 ##
 image:
   registry: docker.io
-  repository: bitnami/mysql
-  tag: 8.0.30-debian-11-r15
+  repository: bitnamilegacy/mysql
+  tag: "5.7.43" # 8.0.30-debian-11-r15
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
@@ -180,12 +180,12 @@ primary:
     explicit_defaults_for_timestamp
     basedir=/opt/bitnami/mysql
     plugin_dir=/opt/bitnami/mysql/lib/plugin
+    bind_address=0.0.0.0
     port=3306
     socket=/opt/bitnami/mysql/tmp/mysql.sock
     datadir=/bitnami/mysql/data
     tmpdir=/opt/bitnami/mysql/tmp
     max_allowed_packet=16M
-    bind-address=*
     pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
     log-error=/opt/bitnami/mysql/logs/mysqld.log
     character-set-server=UTF8
@@ -358,10 +358,10 @@ primary:
   ##
   startupProbe:
     enabled: true
-    initialDelaySeconds: 15
+    initialDelaySeconds: 45
     periodSeconds: 10
     timeoutSeconds: 1
-    failureThreshold: 10
+    failureThreshold: 20
     successThreshold: 1
   ## @param primary.customLivenessProbe Override default liveness probe for MySQL primary containers
   ##
@@ -402,6 +402,9 @@ primary:
     ## NOTE: When it's set the rest of persistence parameters are ignored
     ##
     existingClaim: ""
+
+    overrideSubpathPrefix: ""
+    existingSubpathPrefix: false  # If true, then volume mounts will use mysql.primary.fullname as a subpath prefix.
     ## @param primary.persistence.storageClass MySQL primary persistent volume storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
@@ -944,27 +947,7 @@ volumePermissions:
   ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`
   ##
   enabled: false
-  ## @param volumePermissions.image.registry Init container volume-permissions image registry
-  ## @param volumePermissions.image.repository Init container volume-permissions image repository
-  ## @param volumePermissions.image.tag Init container volume-permissions image tag (immutable tags are recommended)
-  ## @param volumePermissions.image.digest Init container volume-permissions image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
-  ## @param volumePermissions.image.pullPolicy Init container volume-permissions image pull policy
-  ## @param volumePermissions.image.pullSecrets Specify docker-registry secret names as an array
   ##
-  image:
-    registry: docker.io
-    repository: bitnami/bitnami-shell
-    tag: 11-debian-11-r32
-    digest: ""
-    pullPolicy: IfNotPresent
-    ## Optionally specify an array of imagePullSecrets.
-    ## Secrets must be manually created in the namespace.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-    ## e.g:
-    ## pullSecrets:
-    ##   - myRegistryKeySecretName
-    ##
-    pullSecrets: []
   ## @param volumePermissions.resources Init container volume-permissions resources
   ##
   resources: {}
@@ -986,7 +969,7 @@ metrics:
   ##
   image:
     registry: docker.io
-    repository: bitnami/mysqld-exporter
+    repository: bitnamilegacy/mysqld-exporter
     tag: 0.14.0-debian-11-r33
     digest: ""
     pullPolicy: IfNotPresent

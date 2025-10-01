@@ -8,18 +8,20 @@ image:
   repository: devinsolutions/osticket
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.17.5"
+  tag: ""
 command: []
 
 env:
   https_proxy: ""
   http_proxy: ""
   no_proxy: ""
-  MYSQL_HOST: osticket-mysql.default.svc.cluster.local
+  MYSQL_HOST: "{{ include \"osticket.fullname\" . }}-mysql"
   MYSQL_USER: osticket
   MYSQL_PASSWORD: osticket
+  MYSQL_ROOT_PASSWORD: osticket
   MYSQL_DATABASE: osticket
-  ADMIN_PASSWORD: 
+  MYSQL_ENV_MYSQL_PASSWORD: true
+
 
 # NFS and StorageClass are mutually exclusive. 
 plugins:
