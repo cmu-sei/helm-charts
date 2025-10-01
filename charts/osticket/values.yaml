@@ -15,25 +15,23 @@ env:
   https_proxy: ""
   http_proxy: ""
   no_proxy: ""
-  MYSQL_HOST: "{{ include \"osticket.fullname\" . }}-mysql"
-  MYSQL_USER: osticket
-  MYSQL_PASSWORD: osticket
-  MYSQL_ROOT_PASSWORD: osticket
-  MYSQL_DATABASE: osticket
-  MYSQL_ENV_MYSQL_PASSWORD: true
+  MYSQL_HOST: ""
+  MYSQL_USER: ""
+  MYSQL_PASSWORD: ""
+  MYSQL_ROOT_PASSWORD: ""
+  MYSQL_DATABASE: ""
 
-
-# NFS and StorageClass are mutually exclusive. 
+# NFS and StorageClass are mutually exclusive.
 plugins:
   enabled: false
   nfs: {}
     # server: ""
     # path: ""
-  storageClass: 
+  storageClass:
   size: "5Mi"
   accessMode: "ReadWriteOnce"
 
-# NFS and StorageClass are mutually exclusive. 
+# NFS and StorageClass are mutually exclusive.
 logs:
   enabled: false
   nfs:
@@ -47,15 +45,13 @@ mysql:
   enabled: true
   image:
     debug: true
-  auth: 
+  auth:
     createDatabase: true
     database: osticket
     username: osticket
-    password: osticket
-    rootPassword: osticket
+    password: ""
+    rootPassword: ""
   architecture: "standalone"
-
-
 
 imagePullSecrets: []
 nameOverride: ""
