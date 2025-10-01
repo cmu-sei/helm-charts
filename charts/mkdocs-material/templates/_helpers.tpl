@@ -75,7 +75,7 @@ Subpath prefix value to use for pvc mount points
 {{- define "mkdocs-material.git-container" }}
 {{- if .Values.giturl }}
 - name: git-pull
-  image: "bitnami/git"
+  image: "bitnamilegacy/git"
   command: ["/entry.d/git-pull.sh"]
   env:
     - name: DOCS_GIT_URL
