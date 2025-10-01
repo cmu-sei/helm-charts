@@ -21,6 +21,9 @@ env:
   MYSQL_ROOT_PASSWORD: ""
   MYSQL_DATABASE: ""
 
+# templatable name for a secret with values added to the pod environment
+existingSecret: ""
+
 # NFS and StorageClass are mutually exclusive.
 plugins:
   enabled: false
@@ -42,7 +45,7 @@ logs:
   accessMode: "ReadWriteOnce"
 
 mysql:
-  enabled: true
+  enabled: false
   image:
     debug: true
   auth:
@@ -52,6 +55,10 @@ mysql:
     password: ""
     rootPassword: ""
   architecture: "standalone"
+  ## @param auth.existingSecret Use existing secret for password details. The secret has to contain the keys `mysql-root-password`, `mysql-replication-password` and `mysql-password`
+  ## NOTE: When it's set the auth.rootPassword, auth.password, auth.replicationPassword are ignored.
+  ##
+  existingSecret: ""
 
 imagePullSecrets: []
 nameOverride: ""

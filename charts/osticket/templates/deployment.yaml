@@ -39,6 +39,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "osticket.fullname" . }}
+          {{- if .Values.existingSecret }}
+            - secretRef:
+                name: {{ (tpl .Values.existingSecret .) }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 80
