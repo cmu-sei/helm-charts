@@ -45,7 +45,7 @@ logs:
   accessMode: "ReadWriteOnce"
 
 mysql:
-  enabled: false
+  enabled: true
   image:
     debug: true
   auth:

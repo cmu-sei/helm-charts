@@ -16,6 +16,9 @@ global:
   imagePullSecrets: []
   storageClass: ""
 
+## Flag indicating whether this subchart should be included or not
+enabled: true
+
 ## @section Common parameters
 
 ## @param kubeVersion Force target Kubernetes version (using Helm capabilities if not set)

@@ -23,3 +23,8 @@ version: 1.17.6
 # It is recommended to use it with quotes.
 appVersion: "1.17.5"
 
+dependencies:
+  - name: mysql
+    version: 0.0.0
+    condition: mysql.enabled
+
