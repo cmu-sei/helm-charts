@@ -15,7 +15,7 @@ env:
   https_proxy: ""
   http_proxy: ""
   no_proxy: ""
-  MYSQL_HOST: ""
+  MYSQL_HOST: "{{ include \"osticket.mysqlHostDefault\" . }}"
   MYSQL_USER: ""
   MYSQL_PASSWORD: ""
   MYSQL_ROOT_PASSWORD: ""

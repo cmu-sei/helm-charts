@@ -60,3 +60,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Default mysql host value
+*/}}
+{{- define "osticket.mysqlHostDefault" -}}
+{{- if .Values.mysql.enabled }}
+{{- include "osticket.fullname" . }}-mysql
+{{- else }}
+{{- printf "%s" "" }}
+{{- end }}
+{{- end }}
