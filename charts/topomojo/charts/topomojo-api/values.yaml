@@ -208,6 +208,12 @@ env:
   # Oidc__Authority: http://localhost:5000
   ## Set this to the string "null" to disable client credentials authentication (enabled by default)
   # Oidc__ServiceAccountClientIdClaimType: client_id
+  # Oidc__UserRolesClaimMap__administrator = Admin
+  # Oidc__UserRolesClaimMap__director = Director
+  # Oidc__UserRolesClaimMap__member = Member
+  # Oidc__UserRolesClaimMap__support = Support
+  # Oidc__UserRolesClaimMap__tester = Tester
+  # Oidc__UserRolesClaimPath = realm_access.roles
   # Database__Provider: InMemory
   # Database__ConnectionString: topomojo_db
   # Database__SeedFile: seed-data.json
