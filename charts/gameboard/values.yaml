@@ -295,6 +295,8 @@ gameboard-ui:
   settings: "{}"
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
+  ## NOTE: If specified here, will override the generated settings.json for installations that are using
+  ## the `settings` key. Change with caution.
   settingsYaml: {}
     # appname: Gameboard
     # apphost: http://localhost:5002
@@ -313,7 +315,7 @@ gameboard-ui:
     #     maxDuration: 10000
     #     mimeType: 'video/webm'
     #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
-      # defaultConsoleType: vmware # or "proxmox"
+    #   defaultConsoleType: vmware # or "proxmox"
     #   disabledFeatures:
     #     clipboard: false
     #     consoleScreenRecord: false
