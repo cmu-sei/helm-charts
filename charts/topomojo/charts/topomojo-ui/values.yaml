@@ -89,7 +89,7 @@ basehref: ""
 settings: ""
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-settingsYaml:
+settingsYaml: {}
   # appname: TopoMojo
   # oidc:
   #   client_id: clientid

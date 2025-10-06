@@ -89,8 +89,8 @@ basehref: ""
 settings: "{}"
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-settingsYaml:
-  appname: Gameboard
+settingsYaml: {}
+  # appname: Gameboard
   # apphost: http://localhost:5002
   # basehref: "gb"
   # imghost: 'http://localhost:5002/img'
@@ -99,7 +99,7 @@ settingsYaml:
   # tocfile: ''
   # countdownStartSecondsAtMinute: 5
   # custom_background: 'custom-bg-dark-gray'
-  consoleForgeConfig:
+  # consoleForgeConfig:
   #   canvasRecording:
   #     autoDownloadCompletedRecordings: true
   #     chunkLength: 1000
@@ -107,7 +107,7 @@ settingsYaml:
   #     maxDuration: 10000
   #     mimeType: 'video/webm'
   #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
-    defaultConsoleType: vmware # or "proxmox"
+  #   defaultConsoleType: vmware # or "proxmox"
   #   disabledFeatures:
   #     clipboard: false
   #     consoleScreenRecord: false
