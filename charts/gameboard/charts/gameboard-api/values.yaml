@@ -188,6 +188,13 @@ env: {}
   # Oidc__DefaultUserNameInferFromEmail: false
   # Oidc__StoreUserEmails: false
 
+  # Oidc__UserRolesClaimMap__administrator: Admin
+  # Oidc__UserRolesClaimMap__director: Director
+  # Oidc__UserRolesClaimMap__member: Member
+  # Oidc__UserRolesClaimMap__support: Support
+  # Oidc__UserRolesClaimMap__tester: Tester
+  # Oidc__UserRolesClaimPath: realm_access.roles
+
 ## giturl is the url of the git repository of static markdown
 giturl: ""
 ## gitbranch sets which repo branch to publish

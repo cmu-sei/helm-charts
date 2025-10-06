@@ -109,7 +109,7 @@ settingsYaml: {}
   #     maxDuration: 10000
   #     mimeType: 'video/webm'
   #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
-  # defaultConsoleType: vmware # or "proxmox"
+  #   defaultConsoleType: vmware # or "proxmox"
   #   disabledFeatures:
   #     clipboard: false
   #     consoleScreenRecord: false
