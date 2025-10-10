@@ -74,3 +74,21 @@ envFrom:
   - secretRef:
       name: {{ include "topomojo-api.fullname" . }}
 {{- end }}
+
+{{/*
+  Seed data secret name.
+*/}}
+{{- define "topomojo-api.seedSecret" }}
+{{- if .Values.seedData.existingSeedDataSecretName }}
+{{ .Values.seedData.existingSeedDataSecretName }}
+{{- else }}
+{{ include "topomojo-api.fullname" . }}-seed-secret
+{{- end }}
+{{- end }}
+
+{{/*
+  Flag indictaing whether seed data waas supplied or not.
+*/}}
+{{- define "topomojo-api.seedDataSupplied" }}
+{{  }}
+{{- end }}
