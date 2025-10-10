@@ -92,14 +92,20 @@ data:
         fi
     fi
 
-    execute_git_command "git fetch --porcelain"
+    ## If we are in a detached HEAD state then we do not need to do anything else.
+    ## For example, the DOCS_GIT_BRANCH variable might refer to a tag or commit hash and not a branch.
+    git symbolic-ref -q HEAD
+    if [ "$?" -eq "0" ]; then
+        execute_git_command "git fetch --porcelain"
+        if [ -n "$GIT_OUTPUT" ]; then
+            echo "Changes were made on remote branch - docs should be updated."
+            dirty=1
+        fi
 
-    if [ -n "$GIT_OUTPUT" ]; then
-        echo "Changes were made on remote branch - docs should be updated."
-        dirty=1
-    fi
-
-    execute_git_command "git pull"
+        execute_git_command "git pull"
+    else
+        echo "${DOCS_GIT_BRANCH} resulted in a detached state."
+    fi;
 
     if [ "$dirty" -eq "1" ]; then
         touch "/docs/.dirty"
