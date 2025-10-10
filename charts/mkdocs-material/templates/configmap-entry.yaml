@@ -99,7 +99,7 @@ data:
         fi
     fi
 
-    ## If we are in a detached HEAD state then we do not need to do anything else.
+    ## If we are in a detached HEAD state then we do not need to fetch or pull changes.
     ## For example, the DOCS_GIT_BRANCH variable might refer to a tag or commit hash and not a branch.
     git symbolic-ref -q HEAD > /dev/null 2>&1
     if [ "$?" -eq "0" ]; then
