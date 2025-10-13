@@ -235,16 +235,18 @@ alloy-ui:
 
 ### Background Service Settings
 
-The Alloy API includes a background service that manages event lifecycles and Caster operations. While not directly configurable via Helm, the following settings exist in `appsettings.json`:
+The Alloy API includes a background service that manages event lifecycles and Caster operations. While not directly configurable via Helm, the child chart sets the following defaults (override them via `alloy-api.env` if needed):
 
-- `ClientSettings__BackgroundTimerIntervalSeconds` (default: 30) - Bootstrap retry interval
-- `ClientSettings__CasterCheckIntervalSeconds` (default: 5) - Caster polling interval
-- `ClientSettings__CasterPlanningMaxWaitMinutes` (default: 10) - Max wait for Caster plan
-- `ClientSettings__CasterDeployMaxWaitMinutes` (default: 20) - Max wait for Caster deploy
-- `ClientSettings__CasterDestroyMaxWaitMinutes` (default: 10) - Max wait for Caster destroy
-- `ClientSettings__ApiClientRetryIntervalSeconds` (default: 30) - API retry interval
-- `ClientSettings__ApiClientLaunchFailureMaxRetries` (default: 5) - Event launch retries
-- `ClientSettings__ApiClientEndFailureMaxRetries` (default: 5) - Event end retries
+- `ClientSettings__BackgroundTimerIntervalSeconds` (default: 60) - Bootstrap retry interval
+- `ClientSettings__BackgroundTimerHealthSeconds` (default: 180) - Health check interval
+- `ClientSettings__CasterCheckIntervalSeconds` (default: 30) - Caster polling interval
+- `ClientSettings__CasterPlanningMaxWaitMinutes` (default: 15) - Max wait for Caster plan
+- `ClientSettings__CasterDeployMaxWaitMinutes` (default: 120) - Max wait for Caster deploy
+- `ClientSettings__CasterDestroyMaxWaitMinutes` (default: 60) - Max wait for Caster destroy
+- `ClientSettings__CasterDestroyRetryDelayMinutes` (default: 1) - Delay between destroy retries
+- `ClientSettings__ApiClientRetryIntervalSeconds` (default: 10) - API retry interval
+- `ClientSettings__ApiClientLaunchFailureMaxRetries` (default: 10) - Event launch retries
+- `ClientSettings__ApiClientEndFailureMaxRetries` (default: 10) - Event end retries
 
 ### SignalR Configuration
 
@@ -282,7 +284,7 @@ For real-time updates via WebSocket connections:
 ### SignalR Connection Problems
 
 - Check ingress timeout settings (must be very long for WebSocket)
-- Verify ingress path pattern includes `/(api|swagger|hubs)`
+- Verify ingress path pattern includes `/(api|swagger/hubs)`
 - Ensure CORS `AllowCredentials` is enabled
 - Confirm WebSocket connections aren't blocked by firewalls
 

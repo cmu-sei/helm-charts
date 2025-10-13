@@ -27,8 +27,8 @@ helm install gameboard sei/gameboard -f values.yaml
 
 | Parameter | Description | Required | Default |
 |-----------|-------------|----------|---------|
-| `gameboard-api.env.Core__GameEngineUrl` | Base URL to the game engine API (typically TopoMojo) | **Yes** | `http://localhost:5000/api` |
-| `gameboard-api.env.Core__ChallengeDocUrl` | Base URL for challenge documentation and images | **Yes** | `http://localhost:5000/api` |
+| `gameboard-api.env.Core__GameEngineUrl` | Base URL to the game engine API (typically TopoMojo) | **Yes** | *(not set – supply your game engine URL)* |
+| `gameboard-api.env.Core__ChallengeDocUrl` | Base URL for challenge documentation and images | **Yes** | *(not set – supply your challenge doc URL)* |
 
 **Example:**
 ```yaml
@@ -40,13 +40,15 @@ gameboard-api:
 
 #### Core Settings (Optional Behavior)
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.env.Core__GameEngineDeployBatchSize` | Number of challenge deployments to process concurrently | `6` |
-| `gameboard-api.env.Core__NameChangeIsEnabled` | Allow users to change their display names | `true` |
-| `gameboard-api.env.Core__NameChangeRequiresApproval` | Require admin approval for name changes | `true` |
-| `gameboard-api.env.Core__PracticeDefaultSessionLength` | Default practice session length in minutes | `45` |
-| `gameboard-api.env.Core__PracticeMaxSessionLength` | Maximum practice session length in minutes | `480` |
+The chart does not override these options; refer to the Gameboard.Api configuration for the latest defaults. Common knobs include:
+
+| Parameter | Description |
+|-----------|-------------|
+| `gameboard-api.env.Core__GameEngineDeployBatchSize` | Number of challenge deployments to process concurrently |
+| `gameboard-api.env.Core__NameChangeIsEnabled` | Allow users to change their display names |
+| `gameboard-api.env.Core__NameChangeRequiresApproval` | Require admin approval for name changes |
+| `gameboard-api.env.Core__PracticeDefaultSessionLength` | Default practice session length in minutes |
+| `gameboard-api.env.Core__PracticeMaxSessionLength` | Maximum practice session length in minutes |
 
 **Important Notes:**
 - `GameEngineDeployBatchSize` controls how many VM environments are deployed simultaneously. Lower values reduce infrastructure load.
@@ -110,11 +112,11 @@ gameboard-api:
 
 | Parameter | Description | Required | Default |
 |-----------|-------------|----------|---------|
-| `gameboard-api.env.Oidc__Authority` | Identity provider base URL | **Yes** | `http://localhost:8080/realms/foundry` |
-| `gameboard-api.env.Oidc__Audience` | Expected audience claim in tokens | **Yes** | `gameboard-api` |
-| `gameboard-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT token | No | `realm_access.roles` |
-| `gameboard-api.env.Oidc__DefaultUserNameInferFromEmail` | Generate usernames from email | No | `false` |
-| `gameboard-api.env.Oidc__StoreUserEmails` | Store user emails in database | No | `false` |
+| `gameboard-api.env.Oidc__Authority` | Identity provider base URL | **Yes** | *(not set – supply your IdP authority)* |
+| `gameboard-api.env.Oidc__Audience` | Expected audience claim in tokens | **Yes** | *(not set – supply your audience)* |
+| `gameboard-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT token | No | *(not set in chart; application default applies)* |
+| `gameboard-api.env.Oidc__DefaultUserNameInferFromEmail` | Generate usernames from email | No | *(not set in chart; application default applies)* |
+| `gameboard-api.env.Oidc__StoreUserEmails` | Store user emails in database | No | *(not set in chart; application default applies)* |
 
 **Role Mapping:**
 
