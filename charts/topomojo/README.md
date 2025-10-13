@@ -75,8 +75,8 @@ topomojo-api:
 
 | Parameter | Description | Values | Default |
 |-----------|-------------|--------|---------|
-| `topomojo-api.env.Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` | `InMemory` |
-| `topomojo-api.env.Database__ConnectionString` | Database connection string | Connection string | `topomojo_db` |
+| `topomojo-api.env.Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` | *(not set – uses application default)* |
+| `topomojo-api.env.Database__ConnectionString` | Database connection string | Connection string | *(not set – supply your database connection string)* |
 | `topomojo-api.env.Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `""` |
 | `topomojo-api.env.Database__AdminName` | Initial admin display name | String | `""` |
 
@@ -89,9 +89,9 @@ topomojo-api:
 
 | Parameter | Description | Required | Default |
 |-----------|-------------|----------|---------|
-| `topomojo-api.env.Oidc__Authority` | Identity provider URL | **Yes** | `http://localhost:5000` |
-| `topomojo-api.env.Oidc__Audience` | Expected audience in tokens | **Yes** | `topomojo-api` |
-| `topomojo-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT | No | `realm_access.roles` |
+| `topomojo-api.env.Oidc__Authority` | Identity provider URL | **Yes** | *(not set – supply your IdP authority)* |
+| `topomojo-api.env.Oidc__Audience` | Expected audience in tokens | **Yes** | *(not set – supply your audience)* |
+| `topomojo-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT | No | *(not set in chart; application default applies)* |
 
 **Role Mapping** - Map IdP roles to TopoMojo roles:
 
@@ -109,9 +109,9 @@ topomojo-api:
 
 | Parameter | Description | Required | Default |
 |-----------|-------------|----------|---------|
-| `topomojo-api.env.FileUpload__TopoRoot` | Root directory for topology files | **Yes** | `tm` |
-| `topomojo-api.env.FileUpload__IsoRoot` | Directory for ISO files | **Yes** | `tm/isos` |
-| `topomojo-api.env.FileUpload__DocRoot` | Directory for documentation | **Yes** | `tm/_docs` |
+| `topomojo-api.env.FileUpload__TopoRoot` | Root directory for topology files | **Yes** | *(not set – provide persistent path)* |
+| `topomojo-api.env.FileUpload__IsoRoot` | Directory for ISO files | **Yes** | *(not set – provide persistent path)* |
+| `topomojo-api.env.FileUpload__DocRoot` | Directory for documentation | **Yes** | *(not set – provide persistent path)* |
 
 **Important:**
 - These paths must be on persistent storage
@@ -122,11 +122,11 @@ topomojo-api:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `topomojo-api.env.Core__DefaultGamespaceMinutes` | Default gamespace (lab session) duration | `120` (2 hours) |
-| `topomojo-api.env.Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `2` |
-| `topomojo-api.env.Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `0` |
-| `topomojo-api.env.Core__DefaultTemplateLimit` | Max VMs per workspace | `3` |
-| `topomojo-api.env.Core__AllowUnprivilegedVmReconfigure` | Allow users to change VM resources | `false` |
+| `topomojo-api.env.Core__DefaultGamespaceMinutes` | Default gamespace (lab session) duration | *(not set in chart; application default applies)* |
+| `topomojo-api.env.Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | *(not set in chart; application default applies)* |
+| `topomojo-api.env.Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | *(not set in chart; application default applies)* |
+| `topomojo-api.env.Core__DefaultTemplateLimit` | Max VMs per workspace | *(not set in chart; application default applies)* |
+| `topomojo-api.env.Core__AllowUnprivilegedVmReconfigure` | Allow users to change VM resources | *(not set in chart; application default applies)* |
 
 ### Hypervisor Configuration
 
