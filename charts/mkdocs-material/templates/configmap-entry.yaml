@@ -83,6 +83,13 @@ data:
     execute_git_command "git reset --hard"
     execute_git_command "git clean -f -d"
 
+    ## See if we are currently in a detached HEAD state
+    DETACHED_HEAD_HASH=""
+    git symbolic-ref -q HEAD > /dev/null 2>&1
+    if [ "$?" -ne "0" ]; then
+        DETACHED_HEAD_HASH=`git rev-parse HEAD`
+    fi
+
     if [ -n "$DOCS_GIT_BRANCH" ]; then
         execute_git_command "git checkout ${DOCS_GIT_BRANCH}"
         echo "${GIT_OUTPUT} ${GIT_OUTPUT_ERR}" | grep "Switch*" > /dev/null 2>&1
@@ -92,14 +99,25 @@ data:
         fi
     fi
 
-    execute_git_command "git fetch --porcelain"
+    ## If we are in a detached HEAD state then we do not need to fetch or pull changes.
+    ## For example, the DOCS_GIT_BRANCH variable might refer to a tag or commit hash and not a branch.
+    git symbolic-ref -q HEAD > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+        execute_git_command "git fetch --porcelain"
+        if [ -n "$GIT_OUTPUT" ]; then
+            echo "Changes were made on remote branch - docs should be updated."
+            dirty=1
+        fi
 
-    if [ -n "$GIT_OUTPUT" ]; then
-        echo "Changes were made on remote branch - docs should be updated."
-        dirty=1
-    fi
-
-    execute_git_command "git pull"
+        execute_git_command "git pull"
+    else
+        echo "The specified git ref:${DOCS_GIT_BRANCH} resulted in a detached state."
+        CURRENT_DETACHED_HEAD_HASH=`git rev-parse HEAD`
+        if [ "$DETACHED_HEAD_HASH" != "$CURRENT_DETACHED_HEAD_HASH" ]; then
+            echo "The detached head commit hash changed from ${DETACHED_HEAD_HASH} to ${CURRENT_DETACHED_HEAD_HASH} - docs should be updated."
+            dirty=1
+        fi
+    fi;
 
     if [ "$dirty" -eq "1" ]; then
         touch "/docs/.dirty"
