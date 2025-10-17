@@ -1,16 +1,16 @@
 # TopoMojo Helm Chart
 
-[TopoMojo](https://cmu-sei.github.io/crucible/topomojo/about/) is Crucible's application for designing simple labs and challenges using form-based configurations. Select and configure virtual machines, define networks, and write a guide.
+[TopoMojo](https://cmu-sei.github.io/crucible/topomojo/about/) is the [Crucible](https://cmu-sei.github.io/crucible/) application for designing labs and challenges using a simple user interface. Deploy and configure virtual machines, define networks, and write a guide.
 
-This Helm chart deploys TopoMojo with both API and UI components.
+This Helm chart deploys TopoMojo with both [API](https://github.com/cmu-sei/TopoMojo) and [UI](https://github.com/cmu-sei/TopoMojo-ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL or SQL Server database
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
-- VMware vSphere/vCenter, Proxmox, or compatible hypervisor
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Supported Hypervisor (VMware vSphere/vCenter or Proxmox). Note that each TopoMojo instance supports either vSphere or Proxmox, not both simultaneously.
 - Persistent storage for VM files and ISOs
 
 ## Installation
@@ -20,65 +20,18 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install topomojo sei/topomojo -f values.yaml
 ```
 
-## Quick Start Configurations
+## TopoMojo API Configuration
 
-### Development (Mock Hypervisor)
-
-```yaml
-topomojo-api:
-  env:
-    Database__Provider: InMemory
-    Oidc__Authority: https://identity.example.com
-    Oidc__Audience: topomojo-api
-    # Pod__Url left empty = mock hypervisor
-```
-
-### Production (vSphere)
-
-```yaml
-topomojo-api:
-  env:
-    # Database
-    Database__Provider: PostgreSQL
-    Database__ConnectionString: "Host=postgres;Database=topomojo;Username=tm_user;Password=PASSWORD;"
-
-    # Authentication
-    Oidc__Authority: https://identity.example.com
-    Oidc__Audience: topomojo-api
-    Oidc__UserRolesClaimPath: realm_access.roles
-    Oidc__UserRolesClaimMap__administrator: Administrator
-    Oidc__UserRolesClaimMap__builder: Builder
-
-    # File Storage
-    FileUpload__TopoRoot: /mnt/tm
-    FileUpload__IsoRoot: /mnt/tm/isos
-    FileUpload__DocRoot: /mnt/tm/_docs
-
-    # vSphere Connection
-    Pod__Url: https://vcenter.example.com/sdk
-    Pod__User: topomojo@vsphere.local
-    Pod__Password: "PASSWORD"
-    Pod__VmStore: "[datastore1] _run/"
-    Pod__IsoStore: "[nfs-isos] iso/"
-    Pod__DiskStore: "[datastore1]"
-    Pod__Uplink: dvs-topomojo
-    Pod__Vlan__Range: "100-200"
-
-  storage:
-    size: 100Gi
-    class: nfs-client
-```
-
-## Configuration Reference
+The following are configured via the `topomojo-api.env` settings. These TopoMojo API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf) which may contain more settings than are described here.
 
 ### Database Settings
 
 | Parameter | Description | Values | Default |
 |-----------|-------------|--------|---------|
-| `topomojo-api.env.Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` | *(not set – uses application default)* |
-| `topomojo-api.env.Database__ConnectionString` | Database connection string | Connection string | *(not set – supply your database connection string)* |
-| `topomojo-api.env.Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `""` |
-| `topomojo-api.env.Database__AdminName` | Initial admin display name | String | `""` |
+| `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` |InMemory |
+| `Database__ConnectionString` | Database connection string | Connection string | None |
+| `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `""` |
+| `Database__AdminName` | Initial admin display name | String | `""` |
 
 **Important:**
 - `InMemory` is for development only - data is lost on restart
@@ -87,17 +40,31 @@ topomojo-api:
 
 ### Authentication (OIDC)
 
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `Oidc__Authority` | Identity provider URL | None |
+| `Oidc__Audience` | Expected audience in tokens | None |
+
+#### Identity Provider Role Mapping
+
+TopoMojo can ingest roles from the identity provider (e.g. Keycloak). For example, an identity administrator can add roles like administrator, builder, or any custom role of their choosing and configure TopoMojo's API to map those IDP roles to TopoMojo roles.
+
+Use the `Oidc__UserRolesClaimPath` setting to provide the JWT path to identity role assignments.
+
+You can add any number of unique entries in this format to TopoMojo API's configuration to map an identity role to a TopoMojo role. For example, if you want to map users with the identity role "powerUser" to the TopoMojo role "Builder", you'd add an entry that looks like this: `Oidc__UserRolesClaimMap__powerUser = Builder`.
+
+**If you specify any Oidc__UserRolesClaimMap__\* values in your application configuration, no default mappings will be applied.** If you don't specify any claim mappings, you'll automatically receive the default mappings.
+
 | Parameter | Description | Required | Default |
 |-----------|-------------|----------|---------|
-| `topomojo-api.env.Oidc__Authority` | Identity provider URL | **Yes** | *(not set – supply your IdP authority)* |
-| `topomojo-api.env.Oidc__Audience` | Expected audience in tokens | **Yes** | *(not set – supply your audience)* |
-| `topomojo-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT | No | *(not set in chart; application default applies)* |
+| `Oidc__UserRolesClaimPath` | Path to roles in JWT | No | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
+| `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | No | Default mapping below. |
 
-**Role Mapping** - Map IdP roles to TopoMojo roles:
-
+##### Default Mapping
 ```yaml
 topomojo-api:
   env:
+    Oidc__UserRolesClaimPath: "realm_access.roles"         # Keycloak default roles path
     Oidc__UserRolesClaimMap__administrator: Administrator  # Full access
     Oidc__UserRolesClaimMap__builder: Builder              # Create/manage workspaces
     Oidc__UserRolesClaimMap__creator: Creator              # Create gamespaces
@@ -107,86 +74,81 @@ topomojo-api:
 
 ### File Storage
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `topomojo-api.env.FileUpload__TopoRoot` | Root directory for topology files | **Yes** | *(not set – provide persistent path)* |
-| `topomojo-api.env.FileUpload__IsoRoot` | Directory for ISO files | **Yes** | *(not set – provide persistent path)* |
-| `topomojo-api.env.FileUpload__DocRoot` | Directory for documentation | **Yes** | *(not set – provide persistent path)* |
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` |
+| `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` |
+| `FileUpload__DocRoot` | Directory for documentation | `/opt/topomojo/docs` |
 
-**Important:**
-- These paths must be on persistent storage
-- ISO directory must be accessible to both TopoMojo and hypervisors (typically NFS)
-- For multi-replica deployments, use `ReadWriteMany` storage
+**Important**
+- These paths must be on persistent storage for data to remain after a pod restart.
+- ISO directory must be accessible to both TopoMojo and hypervisors (typically NFS).
+- See the [Storage Section](#storage) for more information on storage.
 
 ### Core Application Settings
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `topomojo-api.env.Core__DefaultGamespaceMinutes` | Default gamespace (lab session) duration | *(not set in chart; application default applies)* |
-| `topomojo-api.env.Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | *(not set in chart; application default applies)* |
-| `topomojo-api.env.Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | *(not set in chart; application default applies)* |
-| `topomojo-api.env.Core__DefaultTemplateLimit` | Max VMs per workspace | *(not set in chart; application default applies)* |
-| `topomojo-api.env.Core__AllowUnprivilegedVmReconfigure` | Allow users to change VM resources | *(not set in chart; application default applies)* |
+| `Core__DefaultGamespaceMinutes` | Default gamespace duration | 60 |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | 1 |
+| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | 10 |
+| `Core__DefaultTemplateLimit` | Max VMs per workspace | 10 |
+| `Core__AllowUnprivilegedVmReconfigure` | Allow users set VM networks to reserved network segments  | false |
 
-### Hypervisor Configuration
-
-**Without a hypervisor** (`Pod__Url` empty), TopoMojo runs in mock mode for testing.
-
-#### vSphere Connection
-
-| Parameter | Description | Required | Example |
-|-----------|-------------|----------|---------|
-| `topomojo-api.env.Pod__Url` | vCenter SDK URL | **Yes** | `https://vcenter.example.com/sdk` |
-| `topomojo-api.env.Pod__User` | vCenter username | **Yes** | `topomojo@vsphere.local` |
-| `topomojo-api.env.Pod__Password` | vCenter password | **Yes** | Store in secret |
-
-#### Resource Pools and Storage
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `topomojo-api.env.Pod__PoolPath` | vSphere resource pool path | `/Datacenter/host/Cluster/Resources/TopoMojo` |
-| `topomojo-api.env.Pod__VmStore` | Datastore for VM files | `[datastore1] _run/` |
-| `topomojo-api.env.Pod__IsoStore` | Datastore for ISO files | `[nfs-isos] iso/` |
-| `topomojo-api.env.Pod__DiskStore` | Datastore for virtual disks | `[datastore1]` |
-
-**Format:** `[datastore-name] path/`
-
-**Storage Architecture:**
-- **Block Storage (VMFS/VSAN):** Use for `VmStore` and `DiskStore`
-- **NFS Storage:** Required for `IsoStore` (must be accessible to both TopoMojo and ESXi hosts)
-
-**Example Configuration:**
-```yaml
-topomojo-api:
-  env:
-    Pod__VmStore: "[fast-ssd] vms/topomojo/"
-    Pod__IsoStore: "[nfs-shared] isos/"
-    Pod__DiskStore: "[fast-ssd]"
-```
-
-#### Network Configuration
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `topomojo-api.env.Pod__Uplink` | Virtual switch for VM networking | `dvs-topomojo` or `vSwitch0` |
-| `topomojo-api.env.Pod__Vlan__Range` | Available VLANs for isolation | `100-200` or `10,20,30-40` |
-
-**VLAN Configuration:**
-- Format: Comma-separated ranges or individual VLANs
-- VLANs must be trunked on physical network
-- Required for network isolation between labs
-
-#### Advanced Hypervisor Settings
+### OpenAPI/Swagger
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `topomojo-api.env.Pod__KeepAliveMinutes` | Connection keepalive interval | `10` |
-| `topomojo-api.env.Pod__DebugVerbose` | Enable verbose hypervisor logging | `false` |
-| `topomojo-api.env.Pod__TicketUrlHandler` | Console ticket URL format | `querystring` |
+| `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` |
+| `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` |
+| `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `""`
 
-### Console Proxy (Optional)
+### Mock Hypervisor Configuration
 
-TopoMojo can proxy VM console connections through nginx ingress:
+**Without a hypervisor** (`Pod__Url` empty), TopoMojo runs in "mock hypervisor" mode for testing.
+
+### vSphere Configuration
+
+See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/vSphere.md) for more details and an example vSphere configuration.
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `Pod__HypervisorType` | Set to `vsphere` for vSphere mode | `vsphere` |
+| `Pod__Url` | vCenter SDK URL | `https://vcenter.example.com/sdk` |
+| `Pod__User` | vCenter username | `topomojo@vsphere.local` |
+| `Pod__Password` | vCenter password | `abcd1234` |
+| `Pod__PoolPath` | vSphere resource pool path | `/Datacenter/host/Cluster/Resources/TopoMojo` |
+| `Pod__VmStore` | Datastore for running VM files | `[datastore1] _run/` |
+| `Pod__DiskStore` | Datastore for virtual disks | `[datastore1] topomojo/` |
+| `Pod__IsoStore` | Datastore for ISO files | `[nfs-isos] iso/` |
+| `Pod__Uplink` | Virtual switch for VM networking | `dvs-topomojo` or `vSwitch0` or `vmc-hostswitch` |
+| `Pod__Vlan__Range` | Available VLAN IDs for isolation | `100-200` or `10,20,30-40` |
+| `Pod__IsNsxNetwork` | Set to `true` when using NSX Networking. | `false` (default) |
+| `Pod__Sddc__AuthUrl` | When using a VMware Cloud SDDC, set the URL for SDDC authentication. | `https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize` |
+| `Pod__Sddc__MetadataUrl` | When using a VMware Cloud SDDC, set the URL used to read SDDC Metadata such as the NSX endpoint URLs | `https://vmc.vmware.com/vmc/api/orgs/<org_id>/sddcs/<sddc_id>`
+| Pod__Sddc__ApiKey` | When using a VMware Cloud SDDC, set the value of an API key for authentication | `api_key`
+| `Pod__ExcludeNetworkMask` | Exclude network segments from TopoMojo | `vmcloud` |
+| `Pod__KeepAliveMinutes` | Connection keepalive interval | `10` |
+| `Pod__DebugVerbose` | Enable verbose hypervisor logging | `false` |
+| `Pod__Vlan__Reservations__*__Id` | VLAN ID for a reserved VLAN segment made available to elevated users. This is useful for providing a shared/persistent VLAN segment for accessing the internet (commonly called `bridge-net`). <br> Replace the `*` with an index (e.g., `0`, `1`, etc.) Reserve multiple segments by defining this key multiple times with a different index.  | `200` |
+| `Pod__Vlan__Reservations__*__Name` | VLAN name for a reserved VLAN segment made available to elevated users. This is useful for providing a shared/persistent VLAN segment for accessing the internet (commonly called `bridge-net`). <br> Replace the `*` with an index (e.g., `0`, `1`, etc.) Reserve multiple segments by defining this key multiple times with a different index.  | `bridge-net` |
+
+#### vSphere Storage Notes
+- Storage Path Format: `[datastore-name] path/`
+- Use Block Storage (VMFS/VSAN) for `VmStore` and `DiskStore`
+- NFS Storage: Required for `IsoStore` (must be accessible to both TopoMojo and ESXi hosts)
+
+#### vSphere Networking Notes
+- Format: Comma-separated ranges or individual VLANs
+- VLANs must be trunked on physical network
+- Required for network isolation between labs
+- Only users with elevated permissions can use reserved VLANs unless `Core__AllowUnprivilegedVmReconfigure` is set to `true`.
+
+#### Console Proxy
+
+TopoMojo can proxy VM console connections through an nginx ingress.
+
+Example:
 
 ```yaml
 topomojo-api:
@@ -204,75 +166,84 @@ topomojo-api:
           - connect.example.com
 ```
 
-**Requirements:**
+##### Requirements
 - Nginx ingress controller must allow snippet annotations:
   - `allow-snippet-annotations: true`
   - `annotations-risk-level: critical`
 
-**How it works:**
+##### How it works
 - UI connects to: `wss://connect.example.com/console/ticket/TICKET?vmhost=10.4.52.68`
 - Nginx proxies to: `https://10.4.52.68/ticket/TICKET`
 
-**When to use:**
+##### When to use
 - vCenter hosts are on private network unreachable from browsers
 - Additional security layer for console connections
 - Centralized TLS termination
 
-### Caching (Multi-Replica)
 
-For high availability with multiple API replicas:
+### Proxmox Configuration
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `topomojo-api.env.Cache__RedisUrl` | Redis connection string | **Yes** (multi-replica) |
-| `topomojo-api.env.Cache__Key` | Redis key prefix | No |
+See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/Proxmox.md) for more details and an example Proxmox configuration. **There are several prerequisite configurations outlined in that documentation.**
 
-**Example:**
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `Pod__HypervisorType` | Set to `Proxmox` for Proxmox mode | `Proxmox` |
+| `Pod__Url` | Set to the URL of your primary Proxmox node | `https://proxmox.local` |
+| `Pod__AccessToken` | Proxmox authentication access token | `root@pam!TopoMojo=4c4fbe1e-b31e-55a9-9fg0-2de4a411cd23` |
+| `Pod__SDNZone` | Name of the Proxmox SDN Zone to use for VM networking (VXLAN is the only supported type) | `topomojo` |
+| `Pod__Password` | (Optional) Set this to the password of the **root** user account to enable Guest Settings support. <br>If no password or an invalid root password is provided, Guest Settings will be disabled. | `<root-password>` |
+| `Pod__Vlan__ResetDebounceDuration` | (Optional) Number of milliseconds to wait after a virtual network operation is initiated before reloading Proxmox's SDN. | `2000` |
+| `Pod__Vlan__ResetDebounceMaxDuration` | (Optional) Maximum number of milliseconds TopoMojo will debounce before it reloads Proxmox's SDN following a network operation. | `5000` |
+| `Pod__IsoStore` | Datastore for ISO files | `iso` |
+| `FileUpload_IsoRoot` | Path mounted to the container that ISOs uploaded through TopoMojo will be saved to - should map to the same storage as `Pod__IsoStore`. **For Proxmox deployments, this path must end with `/template/iso`.** | `/mnt/isos/template/iso` |
+| `FileUpload_SupportsSubFolders` | Set to `false` for Proxmox deployments because Proxmox does not allow sub folders in ISO stores | `false` |
+
+
+### Helm Deployment Configuration
+
+The following are configurations for the TopoMojo API Helm Chart rather than application configurations.
+
+#### Image Override
+It is recommended to use the helm chart's default image configuration, however, you can override the container image that is used to deploy the application:
+
 ```yaml
 topomojo-api:
-  env:
-    Cache__RedisUrl: "redis:6379"
-    Cache__Key: "tm:"
-
-  replicaCount: 3
-  storage:
-    mode: ReadWriteMany  # Required for multi-replica
+  image:
+    repository: cmusei/topomojo-api
+    pullPolicy: Always
+    tag: "1.2.3"
 ```
 
-### Database Migrations
-
-Run migrations as a separate job (recommended for multi-replica):
+#### Ingress
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
 ```yaml
-topomojo-api:
-  migrations:
+  ingress:
     enabled: true
-    Database__Provider: PostgreSQL
-    Database__ConnectionString: "Host=postgres;Database=topomojo;Username=admin;Password=PASSWORD;"
+    className: nginx
+    # optional ingress annotations to adjust ingress behavior
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-body-size: 30m
+
+    hosts:
+      - host: topomojo.example.com
+        paths:
+          - path: /tm/api
+            pathType: ImplementationSpecific
+          - path: /tm/hub
+            pathType: ImplementationSpecific
+          - path: /tm/docs
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: tls-secret-name # this tls secret should already exist
+        hosts:
+         - topomojo.example.com
 ```
 
-## TopoMojo UI Configuration
-
-```yaml
-topomojo-ui:
-  basehref: ""  # Set to /topomojo if hosting at subpath
-
-  settingsYaml:
-    appname: TopoMojo
-    oidc:
-      client_id: topomojo-ui
-      authority: https://identity.example.com
-      redirect_uri: https://topomojo.example.com/oidc
-      silent_redirect_uri: https://topomojo.example.com/oidc-silent.html
-      response_type: code
-      scope: openid profile topomojo-api
-      automaticSilentRenew: true
-      useLocalStorage: true
-```
-
-## Storage Configuration
-
-TopoMojo requires persistent storage for VM files and ISOs:
+#### Storage
+Configure TopoMojo to use a new/existing Kubernetes Persistent Volume Claim (see the Kubernetes documentation for creating [Persistent Volumes and Persistent Volume Claims](https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/)).
 
 ```yaml
 topomojo-api:
@@ -286,40 +257,21 @@ topomojo-api:
     class: "nfs-client"
 ```
 
-**Important:**
-- Without storage configuration, `emptyDir` is used (data lost on restart)
-- ISO files must be on storage accessible to hypervisors (NFS recommended)
-
-## VMware NSX-T / SDDC Configuration
-
-For software-defined networking with NSX-T:
+#### Resources
+While it is not required to specify resource requests/limits, you can choose to specify these in the chart. The requests/limits you define should reflect your deployment's needs. See the [Kubernetes documentation for resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits).
 
 ```yaml
 topomojo-api:
-  env:
-    Pod__IsNsxNetwork: true
-    Pod__Sddc__ApiUrl: https://nsx-manager.example.com/api/v1
-    Pod__Sddc__ApiKey: "API_KEY"
-    Pod__Sddc__SegmentApiPath: policy/api/v1/infra/tier-1s/cgw/segments
+  resources:
+    limits:
+      cpu: 200m
+      memory: 2000Mi
+    requests:
+      cpu: 100m
+      memory: 1000Mi
 ```
 
-## Advanced Configuration
-
-### Workspace/Gamespace Expiration
-
-Configure automatic cleanup:
-
-```yaml
-topomojo-api:
-  env:
-    Core__Expirations__IdleWorkspaceVmExpiration: "7.00:00:00"      # 7 days
-    Core__Expirations__WorkspaceExpiration: "365.00:00:00"          # 1 year
-    Core__Expirations__UnpublishedWorkspaceExpiration: "14.00:00:00" # 14 days
-```
-
-Format: `days.hours:minutes:seconds`
-
-### Custom Start Script
+#### Custom Start Script
 
 For custom initialization (e.g., trusting CA certificates):
 
@@ -340,14 +292,92 @@ topomojo-api:
         -----END CERTIFICATE-----
 ```
 
-### OpenAPI/Swagger
+## TopoMojo UI Configuration
+
+Use `settingsYaml` to configure settings for the Angular UI application. Example settings are provided in the [application repository](https://github.com/cmu-sei/topomojo-ui/blob/main/projects/topomojo-work/src/assets/example-settings.json).
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `appname` | The display name of the application shown in the UI and browser title. | `TopoMojo` |
+| `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `topomojo-ui` |
+| `oidc.authority` | The base URL of the identity provider (OIDC authority) that issues tokens. | `https://identity.example.com` |
+| `oidc.redirect_uri` | The URL where users are redirected after a successful login via OIDC. | `https://topomojo.example.com/oidc` |
+| `oidc.silent_redirect_uri` | The hidden iframe endpoint used for silently renewing tokens without user interaction. | `https://topomojo.example.com/oidc-silent.html` |
+| `oidc.response_type` | The OAuth2 flow response type to request during login, typically `code` for PKCE authorization code flow. | `code` |
+| `oidc.scope` | The list of identity and API scopes requested during authentication. | `openid profile topomojo-api` |
+| `oidc.automaticSilentRenew` | Enables automatic background token refresh before expiration to maintain user sessions. | `true` |
+| `oidc.useLocalStorage` | Stores authentication tokens in localStorage instead of sessionStorage to persist login across browser sessions. | `true` |
+
+### Helm Deployment Configuration
+
+#### Image Override
+It is recommended to use the helm chart's default image configuration, however, you can override the container image that is used to deploy the application:
 
 ```yaml
 topomojo-api:
-  env:
-    OpenApi__Enabled: true  # Set false in production
-    OpenApi__ApiName: TopoMojo
-    OpenApi__Client__ClientId: topomojo-swagger
+  image:
+    repository: cmusei/topomojo-api
+    pullPolicy: Always
+    tag: "1.2.3"
+```
+
+#### Ingress / Hosting
+
+To host TopoMojo from a subpath, set `basehref` and configure the ingress accordingly
+
+```yaml
+topomojo-ui:
+  basehref: "/topomojo"
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: topomojo.example.com
+        paths:
+          - path: /topomojo
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: tls-secret-name # this tls secret should already exist
+      hosts:
+         - topomojo.example.com
+```
+
+#### Resources
+While it is not required to specify resource requests/limits, you can choose to specify these in the chart. The requests/limits you define should reflect your deployment's needs. See the [Kubernetes documentation for resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits).
+
+```yaml
+topomojo-ui:
+  resources:
+    limits:
+      cpu: 20m
+      memory: 40Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+```
+
+#### OpenGraph
+
+You can configure OpenGraph for enhanced link preview support.
+
+```yaml
+topomojo-ui:
+  openGraph: >
+    <!-- Open Graph info for link previews -->
+    <meta property="og:title" content="TopoMojo" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://topomojo.example.com/topomojo/favicon.ico" />
+    <meta property="og:url" content="https://topomojo.example.com/topomojo" />
+    <meta property="og:description" content="TopoMojo is a lab building environment" />
+```
+
+#### Favicons
+
+You can customize favicons using a URL to a tgz favicon bundle. The bundle's `favicon.html` will be merged into `index.html`.
+
+```yaml
+topomojo-ui:
+  faviconsUrl: https://example.com/files/topomojo-favicons.tgz
 ```
 
 ## Troubleshooting
@@ -364,22 +394,15 @@ topomojo-api:
 - Enable `Pod__DebugVerbose: true` for detailed logs
 
 ### ISO Mounting Problems
-- Verify `Pod__IsoStore` datastore exists in vCenter
-- Ensure ESXi hosts can access the ISO datastore
+- Verify `Pod__IsoStore` datastore exists on the Hypervisor
+- Ensure hypervisor hosts can access the ISO datastore
 - Check that TopoMojo can write to `FileUpload__IsoRoot`
 - For block storage, use separate NFS datastore for ISOs
 
 ### Storage/File Issues
 - Ensure storage is persistent (not `emptyDir`)
 - Check that `FileUpload__TopoRoot` is writable
-- For multi-replica, verify `ReadWriteMany` access mode
-- Check volume permissions (owner should be UID 1654)
-
-### Network Isolation Not Working
-- Verify `Pod__Vlan__Range` is configured
-- Check VLANs are trunked on physical switches
-- Ensure `Pod__Uplink` is a distributed virtual switch
-- Verify VLANs aren't in use by other systems
+- Check volume permissions (owner should be `UID 1654`)
 
 ### Console Connection Issues
 - If using proxy: verify `Core__ConsoleHost` matches ingress host
@@ -387,35 +410,9 @@ topomojo-api:
 - Verify WebSocket connections aren't blocked
 - Try direct connection first (without proxy) to isolate issue
 
-## Security Best Practices
-
-1. **Secrets Management**: Use Kubernetes secrets for sensitive values:
-   ```yaml
-   topomojo-api:
-     existingSecret: "topomojo-secrets"
-   ```
-
-2. **Hypervisor Isolation**: Use dedicated vSphere resource pool and VLAN range
-
-3. **Network Segmentation**: Configure `Pod__Vlan__Range` on isolated network
-
-4. **TLS Everywhere**: Use HTTPS for all endpoints in production
-
-5. **Disable Swagger**: Set `OpenApi__Enabled: false` in production
-
-## Migration from Older Versions
-
-### Volume Permissions
-If upgrading and experiencing permission issues:
-```yaml
-topomojo-api:
-  env:
-    SKIP_VOL_PERMISSIONS: "true"  # Skip automatic permission changes
-```
-
 ## References
 
 - [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo/about/)
 - [TopoMojo API Repository](https://github.com/cmu-sei/TopoMojo)
 - [TopoMojo UI Repository](https://github.com/cmu-sei/topomojo-ui)
-- [Configuration Reference](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf)
+- [Additional API Settings](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf)
