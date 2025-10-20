@@ -26,7 +26,7 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 
 ### Database Settings
 
-| Parameter | Description | Values | Default |
+| Setting | Description | Values | Default |
 |-----------|-------------|--------|---------|
 | `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` |InMemory |
 | `Database__ConnectionString` | Database connection string | Connection string | None |
@@ -47,7 +47,7 @@ topomojo-api:
 
 ### Authentication (OIDC)
 
-| Parameter | Description | Default |
+| Setting | Description | Default |
 |-----------|-------------|---------|
 | `Oidc__Authority` | Identity provider URL | None |
 | `Oidc__Audience` | Expected audience in tokens | None |
@@ -62,7 +62,7 @@ You can add any number of unique entries in this format to TopoMojo API's config
 
 **If you specify any Oidc__UserRolesClaimMap__\* values in your application configuration, no default mappings will be applied.** If you don't specify any claim mappings, you'll automatically receive the default mappings.
 
-| Parameter | Description | Required | Default |
+| Setting | Description | Required | Default |
 |-----------|-------------|----------|---------|
 | `Oidc__UserRolesClaimPath` | Path to roles in JWT | No | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
 | `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | No | Default mapping below. |
@@ -81,7 +81,7 @@ topomojo-api:
 
 ### File Storage
 
-| Parameter | Description | Default |
+| Setting | Description | Default |
 |-----------|-------------|---------|
 | `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` |
 | `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` |
@@ -94,7 +94,7 @@ topomojo-api:
 
 ### Core Application Settings
 
-| Parameter | Description | Default |
+| Setting | Description | Default |
 |-----------|-------------|---------|
 | `Core__DefaultGamespaceMinutes` | Default gamespace duration | 60 |
 | `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | 1 |
@@ -104,7 +104,7 @@ topomojo-api:
 
 ### OpenAPI/Swagger
 
-| Parameter | Description | Default |
+| Setting | Description | Default |
 |-----------|-------------|---------|
 | `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` |
 | `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` |
@@ -118,7 +118,7 @@ topomojo-api:
 
 See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/vSphere.md) for more details and an example vSphere configuration.
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `Pod__HypervisorType` | Set to `vsphere` for vSphere mode | `vsphere` |
 | `Pod__Url` | vCenter SDK URL | `https://vcenter.example.com/sdk` |
@@ -192,7 +192,7 @@ topomojo-api:
 
 See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/Proxmox.md) for more details and an example Proxmox configuration. **There are several prerequisite configurations outlined in that documentation.**
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `Pod__HypervisorType` | Set to `Proxmox` for Proxmox mode | `Proxmox` |
 | `Pod__Url` | Set to the URL of your primary Proxmox node | `https://proxmox.local` |
@@ -303,7 +303,7 @@ topomojo-api:
 
 Use `settingsYaml` to configure settings for the Angular UI application. Example settings are provided in the [application repository](https://github.com/cmu-sei/topomojo-ui/blob/main/projects/topomojo-work/src/assets/example-settings.json).
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `appname` | The display name of the application shown in the UI and browser title. | `TopoMojo` |
 | `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `topomojo-ui` |
