@@ -32,9 +32,9 @@ The following are configured via the `steamfitter-api.env` settings. These Steam
 
 ### Database Settings
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | Example shown |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;"` |
 
 **Important:**
 Database requires the `uuid-ossp` extension:
@@ -47,50 +47,50 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```yaml
 steamfitter-api:
   env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;"
+    ConnectionStrings__PostgreSQL:
 ```
 
 ### Authentication (OIDC)
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `Authorization__Authority` | Identity provider URL for the user authentication flow | None |
-| `Authorization__AuthorizationUrl` | Identity provider authorization endpoint for the user authentication flow | None |
-| `Authorization__TokenUrl` | Identity provider token endpoint for the user authentication flow | None |
+| `Authorization__Authority` | Identity provider URL for the user authentication flow | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Identity provider authorization endpoint for the user authentication flow | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Identity provider token endpoint for the user authentication flow | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes for the Steamfitter to request for the user authentication flow | `player-api steamfitter-api vm-api` |
-| `Authorization__ClientId` | OAuth client ID | `steamfitter-api-dev` |
+| `Authorization__ClientId` | OAuth client ID | `steamfitter-api` |
 | `Authorization__ClientName` | OAuth client display name | `"Steamfitter API"` |
 
 ### Crucible Integration (Player and VM API)
 
 Steamfitter needs to integrate with Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api)
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `ClientSettings__urls__playerApi` | Player API URL | `""` |
-| `ClientSettings__urls__vmApi` | VM API URL | `""` |
+| `ClientSettings__urls__playerApi` | Player API URL | `"https://player.example.com/"` |
+| `ClientSettings__urls__vmApi` | VM API URL | `"https://vm.example.com/"` |
 
 **URLs must include trailing slash.**
 
 Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/vm.Api) application via a Resource Owner OAuth Flow for API-to-API communication using a service account. Use the following settings to configure the Resource Owner flow.
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `ResourceOwnerAuthorization__Authority` | Identity provider URL | `""` |
-| `ResourceOwnerAuthorization__ClientId` | Service account client ID | `""` |
-| `ResourceOwnerAuthorization__UserName` | Service account username | `""` |
-| `ResourceOwnerAuthorization__Password` | Service account password | `""` |
-| `ResourceOwnerAuthorization__Scope` | Service account scopes | `""` |
+| `ResourceOwnerAuthorization__Authority` | Identity provider URL | `"https://identity.example.com"` |
+| `ResourceOwnerAuthorization__ClientId` | Service account client ID | `"steamfitter-api"` |
+| `ResourceOwnerAuthorization__UserName` | Service account username | `"steamfitter-service"` |
+| `ResourceOwnerAuthorization__Password` | Service account password | `"password"` |
+| `ResourceOwnerAuthorization__Scope` | Service account scopes | `"vm-api"` |
 
 ### StackStorm Integration
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `VmTaskProcessing__ApiType` | Task processing API type | `st2` |
 | `VmTaskProcessing__ApiUsername` | StackStorm username | `st2admin` |
-| `VmTaskProcessing__ApiPassword` | StackStorm password | `""` |
+| `VmTaskProcessing__ApiPassword` | StackStorm password | `"password"` |
 | `VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | `https://stackstorm.example.com` |
-| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `""` |
+| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `"cluster1,cluster2"` |
 
 **StackStorm Setup**
 1. Deploy StackStorm instance
@@ -130,43 +130,21 @@ Configure the ingress to allow connections to the application (typically uses an
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 
-| Setting                         | Description                                       | Example Value                         |
-|---------------------------------|---------------------------------------------------|---------------------------------------|
-| `ApiUrl`           | Base URL for the Steamfitter API                               | `https://steamfitter.example.com`                 |
-| `VmApiUrl`         | Base URL for the VM API used by Steamfitter                    | `https://vm.example.com`                          |
-| `ApiPlayerUrl`     | Base URL for the Player API interface                          | `https://player.example.com`                      |
-| `OIDCSettings.authority` | URL of the identity provider (OIDC authority)            | `https://identity.example.com`                    |
-| `OIDCSettings.client_id` | OAuth client ID used by the Steamfitter UI               | `steamfitter-ui-dev`                              |
-| `OIDCSettings.redirect_uri` | URI where the identity provider redirects after login | `https://steamfitter.example.com/auth-callback/`  |
-| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout  | `https://steamfitter.example.com`                 |
-| `OIDCSettings.response_type` | OAuth response type defining the authentication flow | `code`                                            |
-| `OIDCSettings.scope`        | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api steamfitter-api`|
-| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal               | `true`                                            |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent/` |
-| `UseLocalAuthStorage` | Whether authentication state is stored locally in browser   | `true`                                            |
+| Setting                         | Description                                        | Example Value                                     |
+|---------------------------------|----------------------------------------------------|---------------------------------------------------|
+| `ApiUrl`           | Base URL for the Steamfitter API                                | `https://steamfitter.example.com/api`             |
+| `VmApiUrl`         | Base URL for the VM API used by Steamfitter                     | `https://vm.example.com/api`                      |
+| `ApiPlayerUrl`     | Base URL for the Player API interface                           | `https://player.example.com/api`                  |
+| `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                    |
+| `OIDCSettings.client_id` | OAuth client ID used by the Steamfitter UI                | `steamfitter-ui-dev`                              |
+| `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://steamfitter.example.com/auth-callback/`  |
+| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://steamfitter.example.com`                 |
+| `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
+| `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api steamfitter-api`|
+| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent/` |
+| `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
 
-
-**Example:**
-```yaml
-steamfitter-ui:
-  env:
-    APP_BASEHREF: ""  # Set to /steamfitter if hosting at subpath
-
-  settingsYaml:
-    ApiUrl: https://steamfitter.example.com
-    VmApiUrl: https://vm.example.com
-    ApiPlayerUrl: https://player.example.com
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: steamfitter-ui-dev
-      redirect_uri: https://steamfitter.example.com/auth-callback/
-      post_logout_redirect_uri: https://steamfitter.example.com
-      response_type: code
-      scope: openid profile player-api vm-api steamfitter-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://steamfitter.example.com/auth-callback-silent/
-    UseLocalAuthStorage: true
-```
 
 ## Troubleshooting
 

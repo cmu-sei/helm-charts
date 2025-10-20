@@ -26,31 +26,24 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 
 ### Database Settings
 
-| Setting | Description | Values | Default |
+| Setting | Description | Values | Example |
 |---------|-------------|--------|---------|
-| `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` |InMemory |
-| `Database__ConnectionString` | Database connection string | Connection string | None |
-| `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `""` |
-| `Database__AdminName` | Initial admin display name | String | `""` |
+| `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` | `InMemory` |
+| `Database__ConnectionString` | Database connection string | Connection string | `"Server=postgres;Port=5432;Database=topomojo;Username=topomojo;Password=PASSWORD;"` |
+| `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `"<GUID>"` |
+| `Database__AdminName` | Initial admin display name | String | `"Admin"` |
 
 **Important:**
 - `InMemory` is for development only - data is lost on restart
 - For production, use `PostgreSQL` or `SqlServer`
 - `AdminId` should match the user's subject claim from your identity provider
 
-**Example:**
-```yaml
-topomojo-api:
-  env:
-    Database__ConnectionString: "Server=postgres;Port=5432;Database=topomojo;Username=topomojo;Password=PASSWORD;"
-```
-
 ### Authentication (OIDC)
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `Oidc__Authority` | Identity provider URL | None |
-| `Oidc__Audience` | Expected audience in tokens | None |
+| `Oidc__Authority` | Identity provider URL | `https://identity.example.com` |
+| `Oidc__Audience` | Expected audience in tokens | `topomojo-api` |
 
 #### Identity Provider Role Mapping
 
@@ -62,10 +55,10 @@ You can add any number of unique entries in this format to TopoMojo API's config
 
 **If you specify any Oidc__UserRolesClaimMap__\* values in your application configuration, no default mappings will be applied.** If you don't specify any claim mappings, you'll automatically receive the default mappings.
 
-| Setting | Description | Required | Default |
-|---------|-------------|----------|---------|
-| `Oidc__UserRolesClaimPath` | Path to roles in JWT | No | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
-| `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | No | Default mapping below. |
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
+| `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | Default mapping below. |
 
 ##### Default Mapping
 ```yaml
@@ -81,11 +74,11 @@ topomojo-api:
 
 ### File Storage
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` |
-| `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` |
-| `FileUpload__DocRoot` | Directory for documentation | `/opt/topomojo/docs` |
+| `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` (Default) |
+| `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` (Default) |
+| `FileUpload__DocRoot` | Directory for documentation | `/opt/topomojo/docs` (Default) |
 
 **Important**
 - These paths must be on persistent storage for data to remain after a pod restart.
@@ -94,21 +87,21 @@ topomojo-api:
 
 ### Core Application Settings
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `Core__DefaultGamespaceMinutes` | Default gamespace duration | 60 |
-| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | 1 |
-| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | 10 |
-| `Core__DefaultTemplateLimit` | Max VMs per workspace | 10 |
-| `Core__AllowUnprivilegedVmReconfigure` | Allow users set VM networks to reserved network segments  | false |
+| `Core__DefaultGamespaceMinutes` | Default gamespace duration | `60` (Default) |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `1` (Default) |
+| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `10` (Default) |
+| `Core__DefaultTemplateLimit` | Max VMs per workspace | `10` (Default) |
+| `Core__AllowUnprivilegedVmReconfigure` | Allow users set VM networks to reserved network segments  | `false` (Default) |
 
 ### OpenAPI/Swagger
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` |
-| `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` |
-| `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `""`
+| `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` (Default) |
+| `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` (Default) |
+| `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `"topomojo-swagger"` |
 
 ### Mock Hypervisor Configuration
 
