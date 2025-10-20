@@ -27,7 +27,7 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 ### Database Settings
 
 | Setting | Description | Values | Default |
-|-----------|-------------|--------|---------|
+|---------|-------------|--------|---------|
 | `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` |InMemory |
 | `Database__ConnectionString` | Database connection string | Connection string | None |
 | `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `""` |
@@ -48,7 +48,7 @@ topomojo-api:
 ### Authentication (OIDC)
 
 | Setting | Description | Default |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `Oidc__Authority` | Identity provider URL | None |
 | `Oidc__Audience` | Expected audience in tokens | None |
 
@@ -63,7 +63,7 @@ You can add any number of unique entries in this format to TopoMojo API's config
 **If you specify any Oidc__UserRolesClaimMap__\* values in your application configuration, no default mappings will be applied.** If you don't specify any claim mappings, you'll automatically receive the default mappings.
 
 | Setting | Description | Required | Default |
-|-----------|-------------|----------|---------|
+|---------|-------------|----------|---------|
 | `Oidc__UserRolesClaimPath` | Path to roles in JWT | No | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
 | `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | No | Default mapping below. |
 
@@ -82,7 +82,7 @@ topomojo-api:
 ### File Storage
 
 | Setting | Description | Default |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` |
 | `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` |
 | `FileUpload__DocRoot` | Directory for documentation | `/opt/topomojo/docs` |
@@ -95,7 +95,7 @@ topomojo-api:
 ### Core Application Settings
 
 | Setting | Description | Default |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `Core__DefaultGamespaceMinutes` | Default gamespace duration | 60 |
 | `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | 1 |
 | `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | 10 |
@@ -105,7 +105,7 @@ topomojo-api:
 ### OpenAPI/Swagger
 
 | Setting | Description | Default |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` |
 | `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` |
 | `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `""`
@@ -119,7 +119,7 @@ topomojo-api:
 See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/vSphere.md) for more details and an example vSphere configuration.
 
 | Setting | Description | Example |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `Pod__HypervisorType` | Set to `vsphere` for vSphere mode | `vsphere` |
 | `Pod__Url` | vCenter SDK URL | `https://vcenter.example.com/sdk` |
 | `Pod__User` | vCenter username | `topomojo@vsphere.local` |
@@ -193,7 +193,7 @@ topomojo-api:
 See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/Proxmox.md) for more details and an example Proxmox configuration. **There are several prerequisite configurations outlined in that documentation.**
 
 | Setting | Description | Example |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `Pod__HypervisorType` | Set to `Proxmox` for Proxmox mode | `Proxmox` |
 | `Pod__Url` | Set to the URL of your primary Proxmox node | `https://proxmox.local` |
 | `Pod__AccessToken` | Proxmox authentication access token | `root@pam!TopoMojo=4c4fbe1e-b31e-55a9-9fg0-2de4a411cd23` |
@@ -260,7 +260,7 @@ topomojo-api:
 
     # Option 2: Create new PVC
     size: "100Gi"
-    mode: ReadWriteOnce  # Use ReadWriteMany for multi-replica
+    mode: ReadWriteOnce
     class: "nfs-client"
 ```
 
@@ -304,7 +304,7 @@ topomojo-api:
 Use `settingsYaml` to configure settings for the Angular UI application. Example settings are provided in the [application repository](https://github.com/cmu-sei/topomojo-ui/blob/main/projects/topomojo-work/src/assets/example-settings.json).
 
 | Setting | Description | Example |
-|-----------|-------------|---------|
+|---------|-------------|---------|
 | `appname` | The display name of the application shown in the UI and browser title. | `TopoMojo` |
 | `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `topomojo-ui` |
 | `oidc.authority` | The base URL of the identity provider (OIDC authority) that issues tokens. | `https://identity.example.com` |
@@ -315,20 +315,8 @@ Use `settingsYaml` to configure settings for the Angular UI application. Example
 | `oidc.automaticSilentRenew` | Enables automatic background token refresh before expiration to maintain user sessions. | `true` |
 | `oidc.useLocalStorage` | Stores authentication tokens in localStorage instead of sessionStorage to persist login across browser sessions. | `true` |
 
-### Helm Deployment Configuration
 
-#### Image Override
-It is recommended to use the helm chart's default image configuration, however, you can override the container image that is used to deploy the application:
-
-```yaml
-topomojo-api:
-  image:
-    repository: cmusei/topomojo-api
-    pullPolicy: Always
-    tag: "1.2.3"
-```
-
-#### Ingress / Hosting
+### Ingress
 
 To host TopoMojo from a subpath, set `basehref` and configure the ingress accordingly
 
@@ -349,21 +337,7 @@ topomojo-ui:
          - topomojo.example.com
 ```
 
-#### Resources
-While it is not required to specify resource requests/limits, you can choose to specify these in the chart. The requests/limits you define should reflect your deployment's needs. See the [Kubernetes documentation for resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits).
-
-```yaml
-topomojo-ui:
-  resources:
-    limits:
-      cpu: 20m
-      memory: 40Mi
-    requests:
-      cpu: 10m
-      memory: 20Mi
-```
-
-#### OpenGraph
+### OpenGraph
 
 You can configure OpenGraph for enhanced link preview support.
 
@@ -378,7 +352,7 @@ topomojo-ui:
     <meta property="og:description" content="TopoMojo is a lab building environment" />
 ```
 
-#### Favicons
+### Favicons
 
 You can customize favicons using a URL to a tgz favicon bundle. The bundle's `favicon.html` will be merged into `index.html`.
 
