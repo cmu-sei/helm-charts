@@ -1,17 +1,23 @@
 # Steamfitter Helm Chart
 
-[Steamfitter](https://cmu-sei.github.io/crucible/steamfitter/) is Crucible's application that enables the organization and execution of scenario tasks on virtual machines. It automates workflows and executes commands using StackStorm as its automation engine.
+[Steamfitter](https://cmu-sei.github.io/crucible/steamfitter/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables the organization and execution of scenario tasks on virtual machines. It automates workflows and executes commands using [StackStorm](https://stackstorm.com/) as its automation engine.
 
-This Helm chart deploys Steamfitter with both API and UI components.
+Steamfitter manages scenario-based automation by:
+- Organizing tasks into scenarios and sessions
+- Scheduling task execution on VMs
+- Integrating with [StackStorm](https://stackstorm.com/) for workflow automation
+- Coordinating with [Player](https://github.com/cmu-sei/Player.Api) for VM and team information
+
+This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/steamfitter.api) and [UI](https://github.com/cmu-sei/steamfitter.ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
-- StackStorm instance for task execution
-- Player and VM API instances
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- [StackStorm](https://stackstorm.com/) instance for task execution
+- Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api) instances
 
 ## Installation
 
@@ -20,25 +26,19 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install steamfitter sei/steamfitter -f values.yaml
 ```
 
-## Overview
+## Steamfitter API Configuration
 
-Steamfitter manages scenario-based automation by:
-- Organizing tasks into scenarios and sessions
-- Scheduling task execution on VMs
-- Integrating with StackStorm for workflow automation
-- Coordinating with Player for VM and team information
+The following are configured via the `steamfitter-api.env` settings. These Steamfitter API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Steamfitter.Api/blob/development/Steamfitter.Api/appsettings.json) which may contain more settings than are described here.
 
-## Configuration
+### Database Settings
 
-### Steamfitter API
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | Example shown |
 
-#### Database
+**Important:**
+Database requires the `uuid-ossp` extension:
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `steamfitter-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | **Yes** | Example shown |
-
-**Important:** Database requires the `uuid-ossp` extension:
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
@@ -50,103 +50,103 @@ steamfitter-api:
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;"
 ```
 
-#### OAuth2/OIDC
+### Authentication (OIDC)
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `steamfitter-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `steamfitter-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `steamfitter-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `steamfitter-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `player-api steamfitter-api vm-api` |
-| `steamfitter-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `steamfitter-api-dev` |
-| `steamfitter-api.env.Authorization__ClientName` | Client display name | No | `"Steamfitter API"` |
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider URL for the user authentication flow | None |
+| `Authorization__AuthorizationUrl` | Identity provider authorization endpoint for the user authentication flow | None |
+| `Authorization__TokenUrl` | Identity provider token endpoint for the user authentication flow | None |
+| `Authorization__AuthorizationScope` | OAuth scopes for the Steamfitter to request for the user authentication flow | `player-api steamfitter-api vm-api` |
+| `Authorization__ClientId` | OAuth client ID | `steamfitter-api-dev` |
+| `Authorization__ClientName` | OAuth client display name | `"Steamfitter API"` |
 
-#### Service Account (for VM API integration)
+### Crucible Integration (Player and VM API)
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `steamfitter-api.env.ResourceOwnerAuthorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `steamfitter-api.env.ResourceOwnerAuthorization__ClientId` | Service account client ID | **Yes** | `steamfitter-api` |
-| `steamfitter-api.env.ResourceOwnerAuthorization__UserName` | Service account username | **Yes** | `""` |
-| `steamfitter-api.env.ResourceOwnerAuthorization__Password` | Service account password | **Yes** | `""` |
-| `steamfitter-api.env.ResourceOwnerAuthorization__Scope` | Service account scopes | **Yes** | `vm-api` |
+Steamfitter needs to integrate with Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api)
 
-**Example:**
-```yaml
-steamfitter-api:
-  env:
-    ResourceOwnerAuthorization__Authority: https://identity.example.com
-    ResourceOwnerAuthorization__ClientId: steamfitter-service
-    ResourceOwnerAuthorization__UserName: steamfitter-sa
-    ResourceOwnerAuthorization__Password: "PASSWORD"
-    ResourceOwnerAuthorization__Scope: "vm-api"
-```
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ClientSettings__urls__playerApi` | Player API URL | `""` |
+| `ClientSettings__urls__vmApi` | VM API URL | `""` |
 
-#### Crucible Integration
+**URLs must include trailing slash.**
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `steamfitter-api.env.ClientSettings__urls__playerApi` | Player API URL | **Yes** | `https://player.example.com/` |
-| `steamfitter-api.env.ClientSettings__urls__vmApi` | VM API URL | **Yes** | `https://vm.example.com/` |
+Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/vm.Api) application via a Resource Owner OAuth Flow for API-to-API communication using a service account. Use the following settings to configure the Resource Owner flow.
 
-**Important:** URLs must include trailing slash.
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ResourceOwnerAuthorization__Authority` | Identity provider URL | `""` |
+| `ResourceOwnerAuthorization__ClientId` | Service account client ID | `""` |
+| `ResourceOwnerAuthorization__UserName` | Service account username | `""` |
+| `ResourceOwnerAuthorization__Password` | Service account password | `""` |
+| `ResourceOwnerAuthorization__Scope` | Service account scopes | `""` |
 
-**Example:**
-```yaml
-steamfitter-api:
-  env:
-    ClientSettings__urls__playerApi: "https://player.example.com/"
-    ClientSettings__urls__vmApi: "https://vm.example.com/"
-```
+### StackStorm Integration
 
-#### StackStorm Configuration
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `VmTaskProcessing__ApiType` | Task processing API type | `st2` |
+| `VmTaskProcessing__ApiUsername` | StackStorm username | `st2admin` |
+| `VmTaskProcessing__ApiPassword` | StackStorm password | `""` |
+| `VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | `https://stackstorm.example.com` |
+| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `""` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `steamfitter-api.env.VmTaskProcessing__ApiType` | Task processing API type | **Yes** | `st2` |
-| `steamfitter-api.env.VmTaskProcessing__ApiUsername` | StackStorm username | **Yes** | `st2admin` |
-| `steamfitter-api.env.VmTaskProcessing__ApiPassword` | StackStorm password | **Yes** | `""` |
-| `steamfitter-api.env.VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | **Yes** | `https://stackstorm.example.com` |
-| `steamfitter-api.env.VmTaskProcessing__ApiParameters__clusters` | vSphere cluster names (comma-separated) | No | `""` |
-
-**StackStorm Setup:**
+**StackStorm Setup**
 1. Deploy StackStorm instance
 2. Create service account with API access
 3. Configure workflows for task execution
 
+See the [StackStorm](https://docs.stackstorm.com/) documentation for more information.
+
+### Ingress
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
+
+```yaml
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+    hosts:
+      - host: steamfitter.example.com
+        paths:
+          - path: /(api|swagger|hubs)
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: ""
+        hosts:
+          - example.com
+```
+
+## Steamfitter UI Configuration
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `APP_BASEHREF` | To host Steamfitter from a subpath | `"/steamfitter"` |
+
+Use `settingsYaml` to configure settings for the Angular UI application.
+
+| Setting                         | Description                                       | Example Value                         |
+|---------------------------------|---------------------------------------------------|---------------------------------------|
+| `ApiUrl`           | Base URL for the Steamfitter API                               | `https://steamfitter.example.com`                 |
+| `VmApiUrl`         | Base URL for the VM API used by Steamfitter                    | `https://vm.example.com`                          |
+| `ApiPlayerUrl`     | Base URL for the Player API interface                          | `https://player.example.com`                      |
+| `OIDCSettings.authority` | URL of the identity provider (OIDC authority)            | `https://identity.example.com`                    |
+| `OIDCSettings.client_id` | OAuth client ID used by the Steamfitter UI               | `steamfitter-ui-dev`                              |
+| `OIDCSettings.redirect_uri` | URI where the identity provider redirects after login | `https://steamfitter.example.com/auth-callback/`  |
+| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout  | `https://steamfitter.example.com`                 |
+| `OIDCSettings.response_type` | OAuth response type defining the authentication flow | `code`                                            |
+| `OIDCSettings.scope`        | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api steamfitter-api`|
+| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal               | `true`                                            |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent/` |
+| `UseLocalAuthStorage` | Whether authentication state is stored locally in browser   | `true`                                            |
+
+
 **Example:**
-```yaml
-steamfitter-api:
-  env:
-    VmTaskProcessing__ApiType: st2
-    VmTaskProcessing__ApiUsername: "st2admin"
-    VmTaskProcessing__ApiPassword: "ST2_PASSWORD"
-    VmTaskProcessing__ApiBaseUrl: "https://stackstorm.example.com"
-    VmTaskProcessing__ApiParameters__clusters: "cluster1,cluster2"
-```
-
-#### CORS
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `steamfitter-api.env.CorsPolicy__Origins__0` | Allowed CORS origin (typically Steamfitter UI) | `https://steamfitter.example.com` |
-
-#### Seed Data
-
-Bootstrap users and permissions:
-
-```yaml
-steamfitter-api:
-  env:
-    SeedData__Users__0__id: "user-guid-from-identity"
-    SeedData__Users__0__name: "Admin User"
-
-    SeedData__UserPermissions__0__UserId: "user-guid"
-    SeedData__UserPermissions__0__PermissionId: "permission-guid"
-```
-
-### Steamfitter UI
-
 ```yaml
 steamfitter-ui:
   env:
@@ -168,78 +168,11 @@ steamfitter-ui:
     UseLocalAuthStorage: true
 ```
 
-## Minimal Production Configuration
-
-```yaml
-steamfitter-api:
-  env:
-    # Database
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=steamfitter;Username=steamfitter;Password=PASSWORD;"
-
-    # OAuth
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "player-api steamfitter-api vm-api"
-    Authorization__ClientId: steamfitter-api
-
-    # Service Account
-    ResourceOwnerAuthorization__Authority: https://identity.example.com
-    ResourceOwnerAuthorization__ClientId: steamfitter-service
-    ResourceOwnerAuthorization__UserName: steamfitter-sa
-    ResourceOwnerAuthorization__Password: "PASSWORD"
-    ResourceOwnerAuthorization__Scope: "vm-api"
-
-    # Crucible URLs
-    ClientSettings__urls__playerApi: "https://player.example.com/"
-    ClientSettings__urls__vmApi: "https://vm.example.com/"
-
-    # StackStorm
-    VmTaskProcessing__ApiType: st2
-    VmTaskProcessing__ApiUsername: "st2admin"
-    VmTaskProcessing__ApiPassword: "ST2_PASSWORD"
-    VmTaskProcessing__ApiBaseUrl: "https://stackstorm.example.com"
-
-    # CORS
-    CorsPolicy__Origins__0: "https://steamfitter.example.com"
-
-steamfitter-ui:
-  settingsYaml:
-    ApiUrl: https://steamfitter.example.com
-    VmApiUrl: https://vm.example.com
-    ApiPlayerUrl: https://player.example.com
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: steamfitter-ui
-      redirect_uri: https://steamfitter.example.com/auth-callback/
-      response_type: code
-      scope: openid profile player-api vm-api steamfitter-api
-```
-
-## Ingress Configuration
-
-Requires long timeouts for SignalR:
-
-```yaml
-steamfitter-api:
-  ingress:
-    annotations:
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-      nginx.ingress.kubernetes.io/use-regex: "true"
-    hosts:
-      - host: steamfitter.example.com
-        paths:
-          - path: /(api|swagger|hubs)
-            pathType: ImplementationSpecific
-```
-
 ## Troubleshooting
 
 ### StackStorm Connection Issues
 - Verify StackStorm URL is accessible from Steamfitter pod
 - Check StackStorm credentials
-- Ensure StackStorm API is properly configured
 - Test connection: `curl -u st2admin:password https://stackstorm.example.com/api`
 
 ### Task Execution Failures
@@ -247,32 +180,17 @@ steamfitter-api:
 - Check VM API integration is working
 - Ensure service account has VM API permissions
 - Review StackStorm execution logs
-- Verify cluster names are correct if specified
+- Verify StackStorm cluster names are correct (if specified)
 
 ### Integration Issues
 - Verify Player and VM API URLs are accessible
 - Check service account credentials
 - Ensure scopes include necessary APIs
-- Review SignalR hub connections
 
 ### Database Connection Issues
 - Verify database exists and is accessible
 - Ensure `uuid-ossp` extension is installed
 - Check connection string credentials
-
-## Security Best Practices
-
-1. **Secrets Management**: Use Kubernetes secrets:
-   ```yaml
-   steamfitter-api:
-     existingSecret: "steamfitter-secrets"
-   ```
-
-2. **StackStorm Security**: Use dedicated StackStorm user with minimal permissions
-
-3. **Service Account**: Use dedicated identity for VM operations
-
-4. **TLS Everywhere**: Always use HTTPS in production
 
 ## StackStorm Integration
 
@@ -282,11 +200,6 @@ Steamfitter relies on StackStorm for executing commands on VMs. Typical workflow
 2. At execution time, tasks are submitted to StackStorm
 3. StackStorm workflows execute commands on target VMs
 4. Results are returned to Steamfitter for tracking
-
-**Required StackStorm Workflows:**
-- VM command execution
-- File operations
-- Credential management
 
 ## References
 
