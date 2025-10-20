@@ -1,20 +1,20 @@
 # Player Helm Chart
 
-[Player](https://cmu-sei.github.io/crucible/player/) is Crucible's window into virtual environments. Player enables assignment of team membership and customization of responsive, browser-based user interfaces using various integrated applications. Administrators can shape how scenario information, assessments, and virtual environments are presented.
+[Player](https://cmu-sei.github.io/crucible/player/) is the [Crucible](https://cmu-sei.github.io/crucible/) window into virtual environments. Player enables assignment of team membership and customization of responsive, browser-based user interfaces using various integrated applications. Administrators can shape how scenario information, assessments, and virtual environments are presented.
 
-This Helm chart deploys the full Player stack including:
-- **Player API** - Core view and team management
-- **Player UI** - Main user interface
-- **VM API** - Virtual machine management
-- **VM UI** - VM administration interface
-- **Console UI** - VM console viewer
+This Helm chart deploys the full Player stack of integrated components:
+- [Player API](https://github.com/cmu-sei/Player.Api) - Backend API for the main Player application
+- [Player UI](https://github.com/cmu-sei/Player.Ui) - Frontend web interface for the main Player application
+- [VM API](https://github.com/cmu-sei/VM.Api) - Backend API for the VM application that integrates with Player to display and manage virtual machines
+- [VM UI](https://github.com/cmu-sei/VM.Ui) - Frontend web interface for the VM application that integrates with Player to display and manage virtual machines
+- [Console UI](https://github.com/cmu-sei/console.Ui) - VMware Virtual Machine console viewer used by the VM application (above)
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
-- PostgreSQL databases (player_api and vm_api)
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
+- PostgreSQL
+- Identity provider (Keycloak) for OAuth2/OIDC authentication
 - VMware vSphere/vCenter for VM management
 - NFS storage for ISO files (optional)
 
@@ -25,74 +25,47 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install player sei/player -f values.yaml
 ```
 
-## Architecture
+## Player API Configuration
 
-Player consists of multiple integrated components:
+The following are configured via the `player-api.env` settings. These Player API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Player.Api/blob/main/Player.Api/appsettings.json) which may contain more settings than are described here.
 
-1. **Player API**: Manages views, teams, applications, and roles
-2. **Player UI**: Primary user interface for viewing and team collaboration
-3. **VM API**: Interfaces with vSphere for VM operations and console access
-4. **VM UI**: Administrative interface for VM management
-5. **Console UI**: Full-screen VM console viewer
+### Database
 
-## Configuration
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;"` |
 
-### Player API
+**Important:**
+Database requires the `uuid-ossp` extension:
 
-#### Database
-
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `player-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | **Yes** | Example shown |
-
-**Important:** Database requires the `uuid-ossp` extension:
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
-**Example:**
-```yaml
-player-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;"
-```
+### Authentication (OIDC)
 
-#### OAuth2/OIDC
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `Authorization__AuthorizationScope` | OAuth scopes | `player-api` |
+| `Authorization__ClientId` | OAuth client ID | `vm-api-dev` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `player-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `player-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `player-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `player-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `player-api` |
-| `player-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `player-api-dev` |
-| `player-api.env.Authorization__ClientName` | Client display name | No | `"Player API"` |
+### CORS
 
-#### CORS
+Add CORS origins to allow bidirectional communication between Player and the integrated apps.
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `player-api.env.CorsPolicy__Origins__0` | Player UI URL | `https://player.example.com` |
-| `player-api.env.CorsPolicy__Origins__1` | VM UI URL | `https://vm.example.com` |
-| `player-api.env.CorsPolicy__Origins__2` | Other integrated apps (e.g., OSTicket) | `https://osticket.example.com` |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `CorsPolicy__Origins__0` | Player UI URL | `https://player.example.com` |
+| `CorsPolicy__Origins__1` | VM UI URL | `https://vm.example.com` |
+| `CorsPolicy__Origins__2` | Other integrated apps (e.g., OSTicket) | `https://osticket.example.com` |
 
 Add more origins with `__3`, `__4`, etc.
 
-#### Storage
-
-Persistent storage for uploaded files:
-
-```yaml
-player-api:
-  storage:
-    size: "10Gi"
-    mode: ReadWriteOnce
-    class: default
-```
-
-#### Seed Data
-
-Bootstrap roles, permissions, and users:
+### Seed Data
+Optionally bootstrap roles, permissions, and users:
 
 ```yaml
 player-api:
@@ -114,118 +87,112 @@ player-api:
     SeedData__Users__0__Role: "Administrator"
 ```
 
-### Player UI
+### Storage
+Configure Player to use a new Kubernetes Persistent Volume Claim to store uploaded files (see the Kubernetes documentation for creating [Persistent Volumes and Persistent Volume Claims](https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/)).
 
 ```yaml
-player-ui:
-  env:
-    APP_BASEHREF: ""  # Set to /player if hosting at subpath
+player-api:
+  storage:
+    # Option 1: Use existing PVC
+    existing: "player-storage"
 
-  settingsYaml:
-    ApiUrl: https://player.example.com
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: player-ui-dev
-      redirect_uri: https://player.example.com/auth-callback/
-      post_logout_redirect_uri: https://player.example.com
-      response_type: code
-      scope: openid profile player-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://player.example.com/auth-callback-silent/
-    NotificationsSettings:
-      url: https://player.example.com/hubs
-      number_to_display: 4
-    AppTitle: Crucible
-    AppTopBarText: Crucible
-    AppTopBarHexColor: "#b00"
-    AppTopBarHexTextColor: "#FFFFFF"
-    UseLocalAuthStorage: true
+    # Option 2: Create new PVC
+    size: "10Gi"
+    mode: ReadWriteOnce
+    class: "default"
 ```
 
-### VM API
+### Ingress
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
-#### Database
-
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `vm-api.env.ConnectionStrings__PostgreSQL` | Separate PostgreSQL connection for VM API | **Yes** |
-
-**Example:**
 ```yaml
-vm-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;"
+player-api:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+    hosts:
+      - host: player.example.com
+        paths:
+          - path: /(hubs|swagger|api)
+            pathType: ImplementationSpecific
 ```
 
-#### OAuth2/OIDC
+## Player UI
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `vm-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `vm-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `vm-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `vm-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `vm-api player-api` |
-| `vm-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `vm-api-dev` |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `APP_BASEHREF` | To host Player from a subpath | `"/player"` |
 
-#### Service Account (for Player API integration)
+Use `settingsYaml` to configure settings for the Angular UI application.
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `vm-api.env.IdentityClient__TokenUrl` | Token endpoint | **Yes** |
-| `vm-api.env.IdentityClient__ClientId` | Service account client ID | **Yes** |
-| `vm-api.env.IdentityClient__Username` | Service account username | **Yes** |
-| `vm-api.env.IdentityClient__Password` | Service account password | **Yes** |
-| `vm-api.env.IdentityClient__Scope` | Service account scopes | **Yes** |
+| Setting                      | Description                                                 | Example Value                                      |
+|------------------------------|-------------------------------------------------------------|----------------------------------------------------|
+| `ApiUrl`                     | Base URL for the Player API                                 | `https://player.example.com`                       |
+| `OIDCSettings.authority`     | URL of the identity provider (OIDC authority)               | `https://identity.example.com`                     |
+| `OIDCSettings.client_id`     | OAuth client ID used by the Player UI                       | `player-ui-dev`                                    |
+| `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login       | `https://player.example.com/auth-callback/`        |
+| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout         | `https://player.example.com`                       |
+| `OIDCSettings.response_type` | OAuth response type defining the authentication flow        | `code`                                             |
+| `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested              | `openid profile player-api`                        |
+| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                      | `true`                                             |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks               | `https://player.example.com/auth-callback-silent/` |
+| `UseLocalAuthStorage`        | Whether authentication state is stored locally in browser   | `true`                                             |
+| `NotificationsSettings.url`  | URL for receiving notifications                             | `https://player.example.com/hubs`                  |
+| `NotificationsSettings.number_to_display` | Number of items in the notification area       | `4`                                                |
 
-**Example:**
-```yaml
-vm-api:
-  env:
-    IdentityClient__TokenUrl: https://identity.example.com/connect/token
-    IdentityClient__ClientId: "player-vm-admin"
-    IdentityClient__Username: "vm-service"
-    IdentityClient__Password: "PASSWORD"
-    IdentityClient__Scope: "player-api vm-api"
-```
+## VM API Configuration
 
-#### Player Integration
+The following are configured via the `vm-api.env` settings. These VM API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Vm.Api/blob/main/src/Player.Vm.Api/appsettings.json) which may contain more settings than are described here.
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `vm-api.env.ClientSettings__urls__playerApi` | Player API URL | **Yes** |
 
-**Example:**
-```yaml
-vm-api:
-  env:
-    ClientSettings__urls__playerApi: "https://player.example.com"
-```
+### Database
 
-#### vSphere Configuration
+| Setting | Description | Example |
+|---------|-------------|----------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for VM API | `"Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;"` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `vm-api.env.Vsphere__Host` | vCenter hostname | **Yes** | `vcenter.example.com` |
-| `vm-api.env.Vsphere__Username` | vCenter username | **Yes** | `player-account@vsphere.local` |
-| `vm-api.env.Vsphere__Password` | vCenter password | **Yes** | `""` |
-| `vm-api.env.Vsphere__DsName` | Datastore name for file storage | **Yes** | `""` |
-| `vm-api.env.Vsphere__BaseFolder` | Folder within datastore | No | `player` |
+### Authentication (OIDC)
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `Authorization__AuthorizationScope` | OAuth scopes | `vm-api player-api` |
+| `Authorization__ClientId` | OAuth client ID | `vm-api-dev` |
+
+### Player API Integration
+
+VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/vm.Api) application via a Resource Owner OAuth Flow for API-to-API communication using a service account. Use the following settings to configure the Resource Owner flow.
+
+| Setting | Description | Example |
+|---------|-------------|----------|
+| `ClientSettings__urls__playerApi` | Player API URL | `https://player.example.com/` |
+| `IdentityClient__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `IdentityClient__ClientId` | Service account client ID | `"vm-api"` |
+| `IdentityClient__Username` | Service account username | `"vm-service"` |
+| `IdentityClient__Password` | Service account password | `"password"` |
+| `IdentityClient__Scope` | Service account scopes | `"player-api"` |
+
+
+### vSphere Configuration
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Vsphere__Host` | vCenter hostname | `vcenter.example.com` |
+| `Vsphere__Username` | vCenter username | `player-account@vsphere.local` |
+| `Vsphere__Password` | vCenter password | `"password"` |
+| `Vsphere__DsName` | Datastore name for file storage | `"nfs-player"` |
+| `Vsphere__BaseFolder` | Folder within datastore | `player` |
 
 **Important:**
 - Requires a privileged vCenter user for file operations
 - Datastore should be NFS for ease of access
-- Format: `<DATASTORE>/player/`
-
-**Example:**
-```yaml
-vm-api:
-  env:
-    Vsphere__Host: "vcenter.example.com"
-    Vsphere__Username: "player@vsphere.local"
-    Vsphere__Password: "PASSWORD"
-    Vsphere__DsName: "nfs-player"
-    Vsphere__BaseFolder: "player"
-```
+- Format: `<DATASTORE>/player/` (if BaseFolder is provided)
 
 #### Console Proxy (Optional)
 
@@ -273,162 +240,20 @@ vm-api:
 
 #### CORS
 
-| Parameter | Description | Default |
+| Setting | Description | Default |
 |-----------|-------------|---------|
-| `vm-api.env.CorsPolicy__Origins__0` | VM UI URL | `https://vm.example.com` |
-| `vm-api.env.CorsPolicy__Origins__1` | Console UI URL | `https://console.example.com` |
+| `CorsPolicy__Origins__0` | VM UI URL | `https://vm.example.com` |
+| `CorsPolicy__Origins__1` | Console UI URL | `https://console.example.com` |
 
-### VM UI
+### Ingress
 
-```yaml
-vm-ui:
-  env:
-    APP_BASEHREF: ""
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
-  settingsYaml:
-    ApiUrl: https://vm.example.com/api
-    ApiPlayerUrl: https://player.example.com/api
-    UserFollowUrl: https://console.example.com/user/{userId}/view/{viewId}/console
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: vm-ui-dev
-      redirect_uri: https://vm.example.com/auth-callback/
-      post_logout_redirect_uri: https://vm.example.com
-      response_type: code
-      scope: openid profile player-api vm-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://vm.example.com/auth-callback-silent/
-    UseLocalAuthStorage: true
-```
-
-### Console UI
-
-```yaml
-console-ui:
-  env:
-    APP_BASEHREF: ""
-
-  settingsYaml:
-    ConsoleApiUrl: https://vm.example.com/api/
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: vm-console-ui-dev
-      redirect_uri: https://console.example.com/auth-callback/
-      post_logout_redirect_uri: https://console.example.com
-      response_type: code
-      scope: openid profile player-api vm-api vm-console-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://console.example.com/auth-callback-silent/
-    UseLocalAuthStorage: true
-    VmResolutionOptions:
-      - width: 1920
-        height: 1200
-      - width: 1600
-        height: 1200
-      - width: 1280
-        height: 1024
-      - width: 1024
-        height: 768
-```
-
-## Minimal Production Configuration
-
-```yaml
-player-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;"
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "player-api"
-    Authorization__ClientId: player-api
-    CorsPolicy__Origins__0: "https://player.example.com"
-    CorsPolicy__Origins__1: "https://vm.example.com"
-
-  storage:
-    size: "10Gi"
-
-player-ui:
-  settingsYaml:
-    ApiUrl: https://player.example.com
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: player-ui
-      redirect_uri: https://player.example.com/auth-callback/
-      response_type: code
-      scope: openid profile player-api
-
-vm-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm;Password=PASSWORD;"
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "vm-api player-api"
-    Authorization__ClientId: vm-api
-
-    IdentityClient__TokenUrl: https://identity.example.com/connect/token
-    IdentityClient__ClientId: "player-vm-admin"
-    IdentityClient__Username: "vm-service"
-    IdentityClient__Password: "PASSWORD"
-    IdentityClient__Scope: "player-api vm-api"
-
-    ClientSettings__urls__playerApi: "https://player.example.com"
-
-    Vsphere__Host: "vcenter.example.com"
-    Vsphere__Username: "player@vsphere.local"
-    Vsphere__Password: "PASSWORD"
-    Vsphere__DsName: "nfs-player"
-    Vsphere__BaseFolder: "player"
-
-    CorsPolicy__Origins__0: "https://vm.example.com"
-    CorsPolicy__Origins__1: "https://console.example.com"
-
-vm-ui:
-  settingsYaml:
-    ApiUrl: https://vm.example.com/api
-    ApiPlayerUrl: https://player.example.com/api
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: vm-ui
-      redirect_uri: https://vm.example.com/auth-callback/
-      response_type: code
-      scope: openid profile player-api vm-api
-
-console-ui:
-  settingsYaml:
-    ConsoleApiUrl: https://vm.example.com/api/
-    OIDCSettings:
-      authority: https://identity.example.com
-      client_id: vm-console-ui
-      redirect_uri: https://console.example.com/auth-callback/
-      response_type: code
-      scope: openid profile player-api vm-api
-```
-
-## Ingress Configuration
-
-### Player API
-Requires long timeouts for SignalR:
-```yaml
-player-api:
-  ingress:
-    annotations:
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-      nginx.ingress.kubernetes.io/use-regex: "true"
-    hosts:
-      - host: player.example.com
-        paths:
-          - path: /(hubs|swagger|api)
-            pathType: ImplementationSpecific
-```
-
-### VM API
-Requires long timeouts and large body size for ISO uploads:
 ```yaml
 vm-api:
   ingress:
+    enabled: true
+    className: "nginx"
     annotations:
       nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
@@ -440,6 +265,53 @@ vm-api:
           - path: /(notifications|hubs|api|swagger)
             pathType: ImplementationSpecific
 ```
+
+## VM UI Configuration
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `APP_BASEHREF` | To host VM UI from a subpath | `"/vm-ui"` |
+
+Use `settingsYaml` to configure settings for the Angular UI application.
+
+| Setting                         | Description                                        | Example Value                                     |
+|---------------------------------|----------------------------------------------------|---------------------------------------------------|
+| `ApiUrl`           | Base URL for the VM API                                         | `https://vm.example.com/api`                      |
+| `ApiPlayerUrl`     | Base URL for the Player API interface                           | `https://player.example.com/api`                  |
+| `UserFollowUrl`    | URL scheme for the User Follow feature of Console UI            | `https://console.example.com/user/{userId}/view/{viewId}/console` |
+| `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                    |
+| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-ui-dev`                                       |
+| `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://vm.example.com/auth-callback/`           |
+| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://vm.example.com`                          |
+| `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
+| `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api`                |
+| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://vm.example.com/auth-callback-silent/`    |
+| `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
+
+
+### Console UI Configuration
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `APP_BASEHREF` | To host Console UI from a subpath | `"/console-ui"` |
+
+Use `settingsYaml` to configure settings for the Angular UI application.
+
+| Setting                         | Description                                        | Example Value                                       |
+|---------------------------------|----------------------------------------------------|-----------------------------------------------------|
+| `ConsoleApiUrl`    | Base URL for the VM API                                         | `https://vm.example.com/api/`                       |
+| `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                      |
+| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-console-ui-dev`                                 |
+| `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://console.example.com/auth-callback/`        |
+| `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://console.example.com`                       |
+| `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                              |
+| `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api vm-console-api`   |
+| `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                              |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://console.example.com/auth-callback-silent/` |
+| `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
+| `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
+
 
 ## Troubleshooting
 
@@ -473,30 +345,10 @@ vm-api:
 - Verify `NotificationsSettings.url` in Player UI matches Player API URL
 
 ### ISO Upload Failures
-- Check `proxy-body-size` annotation is set (100m or higher)
+- Check `proxy-body-size` annotation is set depending on your ISO size needs
 - Verify NFS mount is accessible if using `iso.enabled`
 - Ensure vCenter datastore has sufficient space
 - Check file permissions on datastore
-
-## Security Best Practices
-
-1. **Separate Databases**: Use separate PostgreSQL databases for Player and VM APIs
-
-2. **Service Account Isolation**: Use dedicated service accounts with minimal scopes
-
-3. **TLS Everywhere**: Always use HTTPS in production
-
-4. **vCenter Permissions**: Grant only necessary permissions to Player service account
-
-5. **Secrets Management**: Use Kubernetes secrets:
-   ```yaml
-   player-api:
-     existingSecret: "player-secrets"
-   vm-api:
-     existingSecret: "vm-secrets"
-   ```
-
-6. **Console Security**: Use console proxy to avoid exposing vCenter hosts directly
 
 ## References
 
