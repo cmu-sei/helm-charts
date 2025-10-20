@@ -262,3 +262,21 @@ env:
   # Pod__Sddc__CertificatePassword: ""
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information
+
+## Create a seed data file based on the contents of an existing secret
+## or by values that support templating via the tpl function.
+seedData:
+  # If specified, the secret at the specified key is used as the contents of the file.
+  # Note that this data must be in JSON format for an existing secret.
+  existingSeedDataSecretName: ""
+  existingSeedDataSecretKey: "seedData"
+  # Yaml structure that will be converted to JSON and used as the file contents if
+  # existingSeedDataSecretName is not specified.
+  values: {}
+  # Example values for setting an admin user
+  # values:
+  #   Users:
+  #     - GlobalId: "9fd3c38e-58b0-4af1-80d1-1895af91f1f9"
+  #       Name: "Administrator"
+  #       ServiceAccountClientId: "123yourId"
+  #       IsAdmin: true

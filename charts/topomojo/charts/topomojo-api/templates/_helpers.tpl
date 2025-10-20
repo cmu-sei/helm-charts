@@ -69,8 +69,21 @@ Create the name of the service account to use
 {{/*
   Shared environment configuration for containers
 */}}
-{{- define "topomojo-api.env" }}
+{{- define "topomojo-api.env" -}}
 envFrom:
   - secretRef:
       name: {{ include "topomojo-api.fullname" . }}
+{{- end }}
+
+{{/*
+  Seed data secret name.
+*/}}
+{{- define "topomojo-api.seedSecret" -}}
+{{- if and .Values.seedData .Values.seedData.existingSeedDataSecretName -}}
+{{ .Values.seedData.existingSeedDataSecretName }}
+{{- else if and .Values.seedData .Values.seedData.values -}}
+{{ include "topomojo-api.fullname" . }}-seed-secret
+{{- else }}
+{{- printf "" -}}
+{{- end }}
 {{- end }}

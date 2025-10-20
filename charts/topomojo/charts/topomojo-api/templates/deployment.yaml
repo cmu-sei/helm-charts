@@ -56,14 +56,20 @@ spec:
           command: {{ .Values.customStart.command }}
           args: {{ .Values.customStart.args }}
           {{- end }}
-          {{- if .Values.securityContext.readOnlyRootFilesystem }}
+          {{- include "topomojo-api.env" . | nindent 10 }}
+          {{- if or .Values.securityContext.readOnlyRootFilesystem (include "topomojo-api.seedSecret" .) }}
           env:
+          {{- if .Values.securityContext.readOnlyRootFilesystem }}
             - name: DOTNET_EnableDiagnostics
               value: "0"
             - name: DOTNET_URLS
               value: "http://*:8080"
           {{- end }}
-          {{- include "topomojo-api.env" . | nindent 10 }}
+          {{- if (include "topomojo-api.seedSecret" .) }}
+            - name: Database__SeedFile
+              value: "/seed/seed-data.json"
+          {{- end }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080
@@ -85,6 +91,11 @@ spec:
               subPath: {{ include "topomojo-api.fullname" . }}
           {{- if .Values.health }}
           {{- toYaml .Values.health | nindent 10 }}
+          {{- end }}
+          {{- if (include "topomojo-api.seedSecret" .) }}
+            - mountPath: /seed/seed-data.json
+              name: {{ include "topomojo-api.name" . }}-seed
+              subPath: {{ default "seedData" .Values.seedData.existingSeedDataSecretKey }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -127,3 +138,8 @@ spec:
         configMap:
           name: {{ include "topomojo-api.fullname" . }}-scripts
           defaultMode: 0755
+      {{- if (include "topomojo-api.seedSecret" .) }}
+      - name: {{ include "topomojo-api.name" . }}-seed
+        secret:
+          secretName: {{ include "topomojo-api.seedSecret" . }}
+      {{- end }}
