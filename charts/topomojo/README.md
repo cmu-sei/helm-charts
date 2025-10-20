@@ -38,6 +38,13 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 - For production, use `PostgreSQL` or `SqlServer`
 - `AdminId` should match the user's subject claim from your identity provider
 
+**Example:**
+```yaml
+topomojo-api:
+  env:
+    Database__ConnectionString: "Server=postgres;Port=5432;Database=topomojo;Username=topomojo;Password=PASSWORD;"
+```
+
 ### Authentication (OIDC)
 
 | Parameter | Description | Default |
