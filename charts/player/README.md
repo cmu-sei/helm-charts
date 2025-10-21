@@ -15,7 +15,7 @@ This Helm chart deploys the full Player stack of integrated components:
 - Helm 3.0+
 - PostgreSQL
 - Identity provider (Keycloak) for OAuth2/OIDC authentication
-- VMware vSphere/vCenter for VM management
+- VMware vSphere/vCenter or Proxmox for VM management
 - NFS storage for ISO files (optional)
 
 ## Installation
@@ -50,7 +50,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes | `player-api` |
-| `Authorization__ClientId` | OAuth client ID | `vm-api-dev` |
+| `Authorization__ClientId` | OAuth client ID | `vm-api` |
 
 ### CORS
 
@@ -70,18 +70,23 @@ Optionally bootstrap roles, permissions, and users:
 ```yaml
 player-api:
   env:
-    SeedData__Permissions__0__Name: "ViewAdmin"
-    SeedData__Permissions__0__Description: "Administer views"
+    # Custom Permission for your application
+    SeedData__Permissions__0__Name: "MyPermission"
+    SeedData__Permissions__0__Description: "Does something in my app"
 
-    SeedData__Roles__0__Name: "Administrator"
+    # Custom TeamPermission for your application
+    SeedData__TeamPermissions__0__Name: "MyTeamPermission"
+    SeedData__TeamPermissions__0__Description: "Does something for a team in my app"
+
+    # Custom Role
+    SeedData__Roles__0__Name: "My Environment Administrator"
     SeedData__Roles__0__AllPermissions: true
 
-    SeedData__TeamPermissions__0__Name: "ManageTeam"
-    SeedData__TeamPermissions__0__Description: "Manage team membership"
-
-    SeedData__TeamRoles__0__Name: "TeamLead"
+    # Custom Team Role
+    SeedData__TeamRoles__0__Name: "Team Lead"
     SeedData__TeamRoles__0__Permissions__0: "ManageTeam"
 
+    # Explicitly give a User a Role before they log in.
     SeedData__Users__0__Id: "user-guid-from-identity"
     SeedData__Users__0__Name: "Admin User"
     SeedData__Users__0__Role: "Administrator"
@@ -133,7 +138,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 |------------------------------|-------------------------------------------------------------|----------------------------------------------------|
 | `ApiUrl`                     | Base URL for the Player API                                 | `https://player.example.com`                       |
 | `OIDCSettings.authority`     | URL of the identity provider (OIDC authority)               | `https://identity.example.com`                     |
-| `OIDCSettings.client_id`     | OAuth client ID used by the Player UI                       | `player-ui-dev`                                    |
+| `OIDCSettings.client_id`     | OAuth client ID used by the Player UI                       | `player-ui`                                    |
 | `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login       | `https://player.example.com/auth-callback/`        |
 | `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout         | `https://player.example.com`                       |
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow        | `code`                                             |
@@ -163,7 +168,7 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes | `vm-api player-api` |
-| `Authorization__ClientId` | OAuth client ID | `vm-api-dev` |
+| `Authorization__ClientId` | OAuth client ID | `vm-api` |
 
 ### Player API Integration
 
@@ -181,13 +186,16 @@ VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/
 
 ### vSphere Configuration
 
+VM API supports connection to multiple vSphere instances. Use the following settings to configure each vSphere host. Replace the `*` with the host index (starting at 0).
+
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `Vsphere__Host` | vCenter hostname | `vcenter.example.com` |
-| `Vsphere__Username` | vCenter username | `player-account@vsphere.local` |
-| `Vsphere__Password` | vCenter password | `"password"` |
-| `Vsphere__DsName` | Datastore name for file storage | `"nfs-player"` |
-| `Vsphere__BaseFolder` | Folder within datastore | `player` |
+| `Vsphere__Hosts__*__Enabled` | Boolean that enables this vSphere host | `true` |
+| `Vsphere__Hosts__*__Address` | vCenter hostname or IP address | `vcenter.example.com` |
+| `Vsphere__Hosts__*__Username` | vCenter username | `player-account@vsphere.local` |
+| `Vsphere__Hosts__*__Password` | vCenter password | `"password"` |
+| `Vsphere__Hosts__*__DsName` | Datastore name for file storage | `"nfs-player"` |
+| `Vsphere__Hosts__*__BaseFolder` | Folder within datastore | `player` |
 
 **Important:**
 - Requires a privileged vCenter user for file operations
@@ -280,7 +288,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `ApiPlayerUrl`     | Base URL for the Player API interface                           | `https://player.example.com/api`                  |
 | `UserFollowUrl`    | URL scheme for the User Follow feature of Console UI            | `https://console.example.com/user/{userId}/view/{viewId}/console` |
 | `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                    |
-| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-ui-dev`                                       |
+| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-ui`                                       |
 | `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://vm.example.com/auth-callback/`           |
 | `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://vm.example.com`                          |
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
@@ -302,7 +310,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 |---------------------------------|----------------------------------------------------|-----------------------------------------------------|
 | `ConsoleApiUrl`    | Base URL for the VM API                                         | `https://vm.example.com/api/`                       |
 | `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                      |
-| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-console-ui-dev`                                 |
+| `OIDCSettings.client_id` | OAuth client ID used by the VM UI                         | `vm-console-ui`                                 |
 | `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://console.example.com/auth-callback/`        |
 | `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://console.example.com`                       |
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                              |
