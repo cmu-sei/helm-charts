@@ -1,15 +1,15 @@
 # CITE Helm Chart
 
-[CITE (Collaborative Incident Threat Evaluator)](https://cmu-sei.github.io/crucible/cite/) is Crucible's application that enables participants from different organizations to evaluate, score, and comment on cyber incidents. CITE provides a situational awareness dashboard that allows teams to track their internal actions and roles.
+[CITE (Collaborative Incident Threat Evaluator)](https://cmu-sei.github.io/crucible/cite/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables participants from different organizations to evaluate, score, and comment on cyber incidents. CITE provides a situational awareness dashboard that allows teams to track their internal actions and roles.
 
-This Helm chart deploys CITE with both API and UI components.
+This Helm chart deploys CITE with both [API](https://github.com/cmu-sei/CITE.Api) and [UI](https://github.com/cmu-sei/CITE.Ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
 
 ## Installation
 
@@ -18,129 +18,49 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install cite sei/cite -f values.yaml
 ```
 
-## Configuration
+## CITE API Configuration
 
-### CITE API
+The following are configured via the `cite-api.env` settings. These CITE API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/CITE.Api/blob/development/Cite.Api/appsettings.json) which may contain more options than are described here.
 
-#### Database
+### Database Settings
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `cite-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | **Yes** |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;"` |
 
-**Important:** Database requires the `uuid-ossp` extension:
+**Important:** The PostgreSQL database must include the `uuid-ossp` extension:
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
-**Example:**
-```yaml
-cite-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=cite_api;Username=cite;Password=PASSWORD;"
-```
+### Authentication (OIDC)
 
-#### OAuth2/OIDC
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider base URL | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `Authorization__AuthorizationScope` | OAuth scope requested by the API | `cite-api` |
+| `Authorization__ClientId` | OAuth client ID used by the API and interactive clients | `cite-api` |
+| `Authorization__ClientName` | Display name for the client (optional) | `CITE` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `cite-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `cite-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `cite-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `cite-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `cite-api` |
-| `cite-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `cite-api` |
-| `cite-api.env.Authorization__ClientName` | Client display name | No | `CITE API` |
+### Certificate Trust
 
-#### CORS
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `cite-api.env.CorsPolicy__Origins__0` | Allowed CORS origin (typically CITE UI) | `https://cite.example.com` |
-
-#### Seed Data
-
-Bootstrap initial data via ConfigMap:
-
-```yaml
-cite-api:
-  conf:
-    seed: |
-      {
-        "evaluations": [],
-        "scoringModels": [],
-        "teams": []
-      }
-```
-
-#### Certificate Trust
-
-Trust custom CA certificates:
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
 
 ```yaml
 cite-api:
   certificateMap: "custom-ca-certs"
 ```
 
-### CITE UI
+### Helm Deployment Configuration
 
-```yaml
-cite-ui:
-  env:
-    APP_BASEHREF: ""  # Set to /cite if hosting at subpath
+The following are configurations for the Gallery API Helm Chart and application configurations that are configured outside of the `cite-api.env` section.
 
-  settingsYaml:
-    ApiUrl: https://cite.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: cite-ui
-      redirect_uri: https://cite.example.com/auth-callback
-      post_logout_redirect_uri: https://cite.example.com
-      response_type: code
-      scope: openid profile alloy-api player-api vm-api cite-api
-      automaticSilentRenew: true
-      silent_redirect_uri: https://cite.example.com/auth-callback-silent
-    AppTitle: CITE
-    AppTopBarHexColor: "#2d69b4"
-    AppTopBarHexTextColor: "#FFFFFF"
-    AppTopBarText: "CITE - Collaborative Incident Threat Evaluator"
-    UseLocalAuthStorage: true
-    DefaultScoringModelId: ""
-    DefaultEvaluationId: ""
-    DefaultTeamId: ""
-```
+### Ingress
 
-**UI Configuration Notes:**
-- `DefaultScoringModelId`: Pre-select a scoring model on load
-- `DefaultEvaluationId`: Pre-select an evaluation on load
-- `DefaultTeamId`: Pre-select a team on load
-
-## Minimal Production Configuration
-
-```yaml
-cite-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;"
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "cite-api"
-    Authorization__ClientId: cite-api
-    CorsPolicy__Origins__0: "https://cite.example.com"
-
-cite-ui:
-  settingsYaml:
-    ApiUrl: https://cite.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: cite-ui
-      redirect_uri: https://cite.example.com/auth-callback
-      response_type: code
-      scope: openid profile cite-api
-```
-
-## Ingress Configuration
-
-Requires long timeouts for SignalR:
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
 ```yaml
 cite-api:
@@ -156,30 +76,50 @@ cite-api:
             pathType: ImplementationSpecific
 ```
 
-## Security Best Practices
+## CITE UI Configuration
 
-1. **Secrets Management**: Use Kubernetes secrets:
-   ```yaml
-   cite-api:
-     existingSecret: "cite-secrets"
-   ```
+Use ``settingsYaml` to configure the Angular UI application.
 
-2. **TLS Everywhere**: Always use HTTPS in production
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ApiUrl` | Base URL for the CITE API | `https://cite.example.com` |
+| `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |
+| `OIDCSettings.client_id` | OAuth client ID for the CITE UI | `cite-ui` |
+| `OIDCSettings.redirect_uri` | Callback URL after login | `https://cite.example.com/auth-callback` |
+| `OIDCSettings.post_logout_redirect_uri` | URL users return to after logout | `https://cite.example.com` |
+| `OIDCSettings.response_type` | OAuth response type | `code` |
+| `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile alloy-api player-api vm-api cite-api` |
+| `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent` |
+| `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+| `AppTitle` | Browser/application title | `CITE` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
+| `AppTopBarText` | Banner text displayed in the top bar | `"CITE - Collaborative Incident Threat Evaluator"` |
+| `DefaultScoringModelId` | Optional ID to pre-select a scoring model | `""` |
+| `DefaultEvaluationId` | Optional ID to pre-select an evaluation | `""` |
+| `DefaultTeamId` | Optional ID to pre-select a team | `""` |
 
-3. **CORS Configuration**: Only allow necessary origins
+### Ingress
 
-4. **Proxy Settings**: Configure if behind corporate proxy
+To host CITE from a subpath, set `env.APP_BASEHREF` and configure the ingress accordingly
 
-## Integration with Crucible
-
-CITE can integrate with other Crucible applications:
-- **Alloy**: For event coordination
-- **Player**: For view and team information
-- **VM API**: For VM status
-
-Include necessary scopes in OIDC configuration:
 ```yaml
-scope: openid profile alloy-api player-api vm-api cite-api
+cite-ui:
+  env:
+    APP_BASEHREF: "/cite"
+  ingress:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: cite.example.com
+        paths:
+          - path: /cite
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: tls-secret-name # this tls secret should already exist
+      hosts:
+         - cite.example.com
 ```
 
 ## References
