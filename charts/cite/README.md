@@ -56,7 +56,7 @@ cite-api:
 
 ### Helm Deployment Configuration
 
-The following are configurations for the Gallery API Helm Chart and application configurations that are configured outside of the `cite-api.env` section.
+The following are configurations for the CITE API Helm Chart and application configurations that are configured outside of the `cite-api.env` section.
 
 ### Ingress
 
