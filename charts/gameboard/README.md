@@ -1,16 +1,16 @@
 # Gameboard Helm Chart
 
-[Gameboard](https://cmu-sei.github.io/crucible/Gameboard/) is Crucible's application that provides game design capabilities and a competition-ready user interface for running cybersecurity games and challenges.
+[Gameboard](https://cmu-sei.github.io/crucible/Gameboard/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that provides a competition-ready user interface for running cybersecurity games and challenges.
 
-This Helm chart deploys Gameboard with both API and UI components.
+This Helm chart deploys Gameboard with both [API](https://github.com/cmu-sei/gameboard) and [UI](https://github.com/cmu-sei/gameboard-ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
-- Game Engine (typically TopoMojo) for challenge deployment
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Game Engine (typically [TopoMojo](https://cmu-sei.github.io/crucible/topomojo/)) for challenge deployment
 
 ## Installation
 
@@ -19,78 +19,77 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install gameboard sei/gameboard -f values.yaml
 ```
 
-## Configuration
+## Gameboard API Configuration
 
-### Gameboard API Configuration
+The following are configured via the `gameboard-api.env` settings. These Gameboard API settings reflect the application's [appsettings.conf](https://github.com/cmu-sei/Gameboard/blob/main/src/Gameboard.Api/appsettings.conf) which may contain more settings than are described here.
 
-#### Core Settings (Required)
+### Database Settings
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `gameboard-api.env.Core__GameEngineUrl` | Base URL to the game engine API (typically TopoMojo) | **Yes** | *(not set – supply your game engine URL)* |
-| `gameboard-api.env.Core__ChallengeDocUrl` | Base URL for challenge documentation and images | **Yes** | *(not set – supply your challenge doc URL)* |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Database__ConnectionString` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=gameboard;Username=gameboard;Password=PASSWORD;"` |
+| `Database__AdminId` | (Optional) Subject claim (GUID) of initial admin user (seeded on first deployment) | `"<GUID>"` |
+| `Database__AdminName` | (Optional) Display name for initial admin user | `"Administrator"` |
 
-**Example:**
+### Core Settings
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Core__GameEngineUrl` | Base URL to the game engine (typically TopoMojo) |  `https://topomojo.example.com` |
+| `Core__ChallengeDocUrl` | Base URL for challenge documentation and images (typically TopoMojo) | `https://topomojo.example.com` |
+| `Core__GameEngineDeployBatchSize` | Number of challenge deployments to process concurrently.<br>Lower values can reduce infrastructure load when deploying many challenges concurrently, but may increase deploy times as challenges are queued in the next batch.<br>Default is no batching. | `6` |
+| `Core__NameChangeIsEnabled` | Allow users to change their display names | `true` (Default) |
+| `Core__NameChangeRequiresApproval` | Require admin approval for name changes | `true` (Default) |
+| `Core__PracticeDefaultSessionLength` | Default practice session length in minutes | `60` (Default) |
+| `Core__PracticeMaxSessionLength` | Maximum practice session length in minutes | `240` (Default) |
+
+### Authentication (OIDC)
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Oidc__Authority` | Identity provider base URL | `https://identity.example.com` |
+| `Oidc__Audience` | Expected audience claim in tokens | `gameboard-api` |
+| `Oidc__StoreUserEmails` | Store user emails in database | `false` (Default) |
+| `Oidc__DefaultUserNameInferFromEmail` | Generate usernames from email | `false` (Default) |
+
+#### Identity Provider Role Mapping
+
+Gameboard can ingest roles from the identity provider (e.g. Keycloak). For example, an identity administrator can add roles like administrator, builder, or any custom role of their choosing and configure Gameboard's API to map those IDP roles to Gameboard roles.
+
+Use the `Oidc__UserRolesClaimPath` setting to provide the JWT path to identity role assignments.
+
+You can add any number of unique entries in this format to Gameboard API's configuration to map an identity role to a Gameboard role. For example, if you want to map users with the identity role "developer" to the Gameboard role "tester", you'd add an entry that looks like this: `Oidc__UserRolesClaimMap__developer = Tester`.
+
+**If you specify any Oidc__UserRolesClaimMap__\* values in your application configuration, no default mappings will be applied.** If you don't specify any claim mappings, you'll automatically receive the default mappings.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
+| `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to Gameboard role | Default mapping below. |
+
+##### Default Mapping
+
 ```yaml
 gameboard-api:
   env:
-    Core__GameEngineUrl: https://topomojo.example.com/api
-    Core__ChallengeDocUrl: https://topomojo.example.com/api
-```
+    Oidc__UserRolesClaimPath: "realm_access.roles"         # Keycloak default roles path
+    Oidc__UserRolesClaimMap__administrator: Administrator
+    Oidc__UserRolesClaimMap__director: Director
+    Oidc__UserRolesClaimMap__member: Member
+    Oidc__UserRolesClaimMap__support: Support
+    Oidc__UserRolesClaimMap__tester: Tester
+  ```
 
-#### Core Settings (Optional Behavior)
+### Game Engine (TopoMojo) Integration
 
-The chart does not override these options; refer to the Gameboard.Api configuration for the latest defaults. Common knobs include:
+Gameboard requires integration with a Game Engine (typically [TopoMojo](https://cmu-sei.github.io/crucible/topomojo)) for ingesting "challenges" and managing virtual machine deployment.
 
-| Parameter | Description |
-|-----------|-------------|
-| `gameboard-api.env.Core__GameEngineDeployBatchSize` | Number of challenge deployments to process concurrently |
-| `gameboard-api.env.Core__NameChangeIsEnabled` | Allow users to change their display names |
-| `gameboard-api.env.Core__NameChangeRequiresApproval` | Require admin approval for name changes |
-| `gameboard-api.env.Core__PracticeDefaultSessionLength` | Default practice session length in minutes |
-| `gameboard-api.env.Core__PracticeMaxSessionLength` | Maximum practice session length in minutes |
+#### Using OAuth2 Client Credentials (Recommended)
 
-**Important Notes:**
-- `GameEngineDeployBatchSize` controls how many VM environments are deployed simultaneously. Lower values reduce infrastructure load.
-- Practice session settings control individual practice mode sessions, not competitive game sessions.
-
-#### Database Configuration
-
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `gameboard-api.env.Database__ConnectionString` | PostgreSQL connection string | **Yes** | None |
-| `gameboard-api.env.Database__AdminId` | Subject claim (GUID) of initial admin user | No | `""` |
-| `gameboard-api.env.Database__AdminName` | Display name for initial admin user | No | `""` |
-
-**Example:**
-```yaml
-gameboard-api:
-  env:
-    Database__ConnectionString: "Server=postgres;Port=5432;Database=gameboard;User ID=gb_user;Password=PASSWORD;"
-    Database__AdminId: "f56c167f-d3f4-484a-8ee9-d230ceb5f734"
-    Database__AdminName: "Admin"
-```
-
-**Notes:**
-- The `AdminId` should match the subject claim from your identity provider
-- Used to seed the first administrator account on initial deployment
-
-#### Game Engine Authentication (OAuth Client Credentials)
-
-**Modern approach using OAuth2 client credentials (recommended):**
-
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `gameboard-api.env.GameEngine__ClientId` | OAuth2 client ID for game engine access | **Yes** | None |
-| `gameboard-api.env.GameEngine__ClientSecret` | OAuth2 client secret | **Yes** | None |
-
-**Example:**
-```yaml
-gameboard-api:
-  env:
-    GameEngine__ClientId: gameboard-to-topomojo
-    GameEngine__ClientSecret: "SECRET"
-```
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `GameEngine__ClientId` | OAuth2 client ID for game engine access | `gameboard-client` |
+| `GameEngine__ClientSecret` | OAuth2 client secret | `<secret>` |
 
 **Important:**
 - This client must be registered in your identity provider
@@ -99,300 +98,182 @@ gameboard-api:
 
 #### Legacy Game Engine Authentication (Deprecated)
 
-**⚠️ Deprecated - use OAuth client credentials instead:**
+**⚠️ Deprecated - use OAuth client credentials instead**
 
-| Parameter | Description | Status |
-|-----------|-------------|--------|
-| `gameboard-api.env.Core__GameEngineClientId` | Legacy API key username | **Deprecated** |
-| `gameboard-api.env.Core__GameEngineClientSecret` | Legacy API key | **Deprecated** |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Core__GameEngineClientId` | Legacy Game Engine API key username | **Deprecated** |
+| `Core__GameEngineClientSecret` | Legacy Game Engine API key | **Deprecated** |
 
-**Migration Note:** If currently using API keys, create an OAuth client in your identity provider and switch to `GameEngine__ClientId/ClientSecret`.
+##### Migration Note
+If currently using API keys, create an OAuth client in your identity provider and switch to `GameEngine__ClientId/ClientSecret`.
 
-#### OAuth/OIDC Configuration
+### Helm Deployment Configuration
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `gameboard-api.env.Oidc__Authority` | Identity provider base URL | **Yes** | *(not set – supply your IdP authority)* |
-| `gameboard-api.env.Oidc__Audience` | Expected audience claim in tokens | **Yes** | *(not set – supply your audience)* |
-| `gameboard-api.env.Oidc__UserRolesClaimPath` | Path to roles in JWT token | No | *(not set in chart; application default applies)* |
-| `gameboard-api.env.Oidc__DefaultUserNameInferFromEmail` | Generate usernames from email | No | *(not set in chart; application default applies)* |
-| `gameboard-api.env.Oidc__StoreUserEmails` | Store user emails in database | No | *(not set in chart; application default applies)* |
+The following are configurations for the Gameboard API Helm Chart and application configurations that are configured outside of the `gameboard-api.env` section.
 
-**Role Mapping:**
-
-Map identity provider roles to Gameboard roles:
-
-| Parameter | Gameboard Role | Description |
-|-----------|----------------|-------------|
-| `Oidc__UserRolesClaimMap__administrator` | Admin | Full system access |
-| `Oidc__UserRolesClaimMap__director` | Director | Game/event management |
-| `Oidc__UserRolesClaimMap__member` | Member | Standard participant |
-| `Oidc__UserRolesClaimMap__support` | Support | Support staff access |
-| `Oidc__UserRolesClaimMap__tester` | Tester | Testing/preview access |
-
-**Example:**
-```yaml
-gameboard-api:
-  env:
-    Oidc__Authority: https://identity.example.com
-    Oidc__Audience: gameboard-api
-    Oidc__UserRolesClaimPath: realm_access.roles
-    Oidc__UserRolesClaimMap__administrator: Admin
-    Oidc__UserRolesClaimMap__director: Director
-    Oidc__UserRolesClaimMap__member: Member
-```
-
-#### HTTP Headers & CORS
-
-**CORS Configuration:**
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.env.Headers__Cors__Origins__[0]` | Allowed CORS origins (array) | `""` |
-| `gameboard-api.env.Headers__Cors__Methods__[0]` | Allowed HTTP methods (array) | `""` |
-| `gameboard-api.env.Headers__Cors__Headers__[0]` | Allowed headers (array) | `""` |
-| `gameboard-api.env.Headers__Cors__AllowAnyOrigin` | Allow any origin (`*`) | `false` |
-| `gameboard-api.env.Headers__Cors__AllowAnyMethod` | Allow any HTTP method | `false` |
-| `gameboard-api.env.Headers__Cors__AllowAnyHeader` | Allow any header | `false` |
-| `gameboard-api.env.Headers__Cors__AllowCredentials` | Allow cookies and credentials | `false` |
-
-**Example:**
-```yaml
-gameboard-api:
-  env:
-    Headers__Cors__Origins__0: https://gameboard.example.com
-    Headers__Cors__AllowCredentials: true
-```
-
-**Forwarded Headers (for reverse proxy):**
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.env.Headers__Forwarding__ForwardLimit` | Max proxies in chain | `1` |
-| `gameboard-api.env.Headers__Forwarding__TargetHeaders` | Which headers to process | `None` |
-| `gameboard-api.env.Headers__Forwarding__KnownNetworks` | Trusted proxy networks (CIDR) | See example |
-| `gameboard-api.env.Headers__Forwarding__KnownProxies` | Trusted proxy IPs | `::1` |
-
-**Example:**
-```yaml
-gameboard-api:
-  env:
-    Headers__Forwarding__TargetHeaders: All
-    Headers__Forwarding__KnownNetworks: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/24"
-```
-
-**Security Headers:**
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.env.Headers__Security__ContentSecurity` | Content-Security-Policy header | `default-src 'self' 'unsafe-inline'; img-src data: 'self'` |
-| `gameboard-api.env.Headers__Security__XContentType` | X-Content-Type-Options header | `nosniff` |
-| `gameboard-api.env.Headers__Security__XFrame` | X-Frame-Options header | `SAMEORIGIN` |
-| `gameboard-api.env.Headers__LogHeaders` | Log all headers (debugging) | `false` |
-
-#### Logging
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.env.Logging__MinimumLogLevel` | Minimum log level (Trace, Debug, Information, Warning, Error, Critical) | `Information` |
-
-For namespace-specific logging:
-```yaml
-gameboard-api:
-  env:
-    Logging__LogLevel__Default: Information
-    Logging__LogLevel__Microsoft: Warning
-    Logging__LogLevel__Gameboard: Debug
-```
-
-#### Storage Configuration
+#### Static Content Settings
 
 Static markdown documentation can be synchronized from a git repository:
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.giturl` | Git repository URL for markdown docs | `""` |
-| `gameboard-api.gitbranch` | Branch to pull from | `""` |
-| `gameboard-api.pollInterval` | Minutes between git pulls | `5` |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `giturl` | Git repository URL for markdown docs | `"https://github.com/cmu-sei/helm-charts.git"` |
+| `gitbranch` | Branch to pull from | `"main"` |
+| `pollInterval` | Minutes between git pulls | `5` |
 
-**Example:**
-```yaml
-gameboard-api:
-  giturl: "https://github.com/org/gameboard-docs.git"
-  gitbranch: "main"
-  pollInterval: 10
-```
-
-Persistent storage for challenge docs and images:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.storage.existing` | Use existing PVC | `""` |
-| `gameboard-api.storage.size` | Size for new PVC (e.g., `10Gi`) | `""` |
-| `gameboard-api.storage.mode` | Access mode | `ReadWriteOnce` |
-| `gameboard-api.storage.class` | Storage class | `default` |
-
-#### Certificate Trust
-
-Trust custom CA certificates:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-api.cacert` | Inline CA certificate content | `""` |
-| `gameboard-api.cacertSecret` | Existing secret with CA cert | `""` |
-| `gameboard-api.cacertSecretKey` | Key in secret containing cert | `ca.crt` |
-
-### Gameboard UI Configuration
-
-#### Basic Settings
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gameboard-ui.basehref` | Base path for UI routing | `""` |
-| `gameboard-ui.openGraph` | HTML meta tags for social media previews | `""` |
-| `gameboard-ui.faviconsUrl` | URL to .tgz bundle of favicons | `""` |
-
-#### Application Settings
-
-Configure via `settingsYaml` (recommended) or `settings` (legacy JSON string):
-
-```yaml
-gameboard-ui:
-  settingsYaml:
-    appname: Gameboard
-    apphost: https://gameboard.example.com
-    basehref: ""
-    imghost: https://gameboard.example.com/img
-    tochost: https://gameboard.example.com/doc
-    supporthost: https://gameboard.example.com/supportfiles
-    countdownStartSecondsAtMinute: 5
-    custom_background: custom-bg-dark-gray
-
-    oidc:
-      client_id: gameboard-ui
-      authority: https://identity.example.com
-      redirect_uri: https://gameboard.example.com/oidc
-      silent_redirect_uri: https://gameboard.example.com/oidc-silent.html
-      response_type: code
-      scope: openid profile gameboard-api
-      loadUserInfo: true
-      useLocalStorage: true
-
-    consoleForgeConfig:
-      defaultConsoleType: vmware  # or "proxmox"
-      consoleBackgroundStyle: 'rgb(40, 40, 40)'
-      showBrowserNotificationsOnConsoleEvents: true
-      logThreshold: 2  # 0=trace, 1=debug, 2=warning, 3=error
-      disabledFeatures:
-        clipboard: false
-        consoleScreenRecord: false
-        manualConsoleReconnect: false
-        networkDisconnection: false
-      canvasRecording:
-        autoDownloadCompletedRecordings: true
-        frameRate: 25
-        chunkLength: 1000
-        maxDuration: 10000
-        mimeType: 'video/webm'
-      toolbar:
-        component: ConsoleToolbarDefaultComponent
-        disabled: false
-```
-
-**Key UI Settings:**
-
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `settingsYaml.appname` | Application display name | No |
-| `settingsYaml.apphost` | Base URL for the Gameboard application | **Yes** |
-| `settingsYaml.imghost` | URL for challenge images | **Yes** |
-| `settingsYaml.tochost` | URL for table of contents/docs | No |
-| `settingsYaml.oidc.client_id` | OAuth client ID for UI | **Yes** |
-| `settingsYaml.oidc.authority` | Identity provider URL | **Yes** |
-| `settingsYaml.oidc.scope` | OAuth scopes | **Yes** |
-| `settingsYaml.consoleForgeConfig.defaultConsoleType` | VM console type (`vmware` or `proxmox`) | No |
-
-## Minimal Production Configuration
+#### Image Override
+It is recommended to use the helm chart's default image configuration, however, you can override the container image that is used to deploy the application:
 
 ```yaml
 gameboard-api:
-  env:
-    # Core - Required
-    Core__GameEngineUrl: https://topomojo.example.com/api
-    Core__ChallengeDocUrl: https://topomojo.example.com/api
-
-    # Database - Required
-    Database__ConnectionString: "Server=postgres;Port=5432;Database=gameboard;User ID=gb_user;Password=PASSWORD;"
-    Database__AdminId: "subject-claim-from-idp"
-    Database__AdminName: "Administrator"
-
-    # Game Engine OAuth - Required
-    GameEngine__ClientId: gameboard-to-topomojo
-    GameEngine__ClientSecret: "SECRET"
-
-    # OIDC - Required
-    Oidc__Authority: https://identity.example.com
-    Oidc__Audience: gameboard-api
-    Oidc__UserRolesClaimPath: realm_access.roles
-    Oidc__UserRolesClaimMap__administrator: Admin
-    Oidc__UserRolesClaimMap__member: Member
-
-    # CORS - Required
-    Headers__Cors__Origins__0: https://gameboard.example.com
-    Headers__Cors__AllowCredentials: true
-
-    # Forwarding - Required for reverse proxy
-    Headers__Forwarding__TargetHeaders: All
-
-  # Optional: Sync docs from git
-  giturl: "https://github.com/org/gameboard-docs.git"
-  gitbranch: "main"
-
-gameboard-ui:
-  settingsYaml:
-    apphost: https://gameboard.example.com
-    imghost: https://gameboard.example.com/img
-    oidc:
-      client_id: gameboard-ui
-      authority: https://identity.example.com
-      redirect_uri: https://gameboard.example.com/oidc
-      silent_redirect_uri: https://gameboard.example.com/oidc-silent.html
-      response_type: code
-      scope: openid profile gameboard-api
+  image:
+    repository: cmusei/gameboard-api
+    pullPolicy: Always
+    tag: "1.2.3"
 ```
 
-## Ingress Configuration
-
-The Gameboard API ingress should include paths for:
-- `/api` - REST API endpoints
-- `/hub` - SignalR real-time hubs
-- `/img` - Challenge images
-- `/docs` - Documentation files
+#### Ingress
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
 ```yaml
 gameboard-api:
   ingress:
     enabled: true
+    className: nginx
+    # optional ingress annotations to adjust ingress behavior
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-body-size: 30m
+
     hosts:
       - host: gameboard.example.com
         paths:
-          - path: /api
+          - path: /gb/api
             pathType: ImplementationSpecific
-          - path: /hub
+          - path: /gb/hub
             pathType: ImplementationSpecific
-          - path: /img
+          - path: /gb/img
             pathType: ImplementationSpecific
-          - path: /docs
+          - path: /gb/docs
             pathType: ImplementationSpecific
+          - path: /gb/supportfiles
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: tls-secret-name # this tls secret should already exist
+        hosts:
+         - gameboard.example.com
 ```
 
-For SignalR WebSocket support, ensure long timeouts:
+#### Storage
+Configure Gameboard to use a new/existing Kubernetes Persistent Volume Claim (see the Kubernetes documentation for creating [Persistent Volumes and Persistent Volume Claims](https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/)). The volume is used to store uploaded files and images from game configurations and support tickets.
+
 ```yaml
 gameboard-api:
+  storage:
+    # Option 1: Use existing PVC
+    existing: "gameboard-storage"
+
+    # Option 2: Create new PVC
+    size: "100Gi"
+    mode: ReadWriteOnce
+    class: "nfs-client"
+```
+
+#### Resources
+While it is not required to specify resource requests/limits, you can choose to specify these in the chart. The requests/limits you define should reflect your deployment's needs. See the [Kubernetes documentation for resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits).
+
+```yaml
+gameboard-api:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 2000Mi
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+```
+
+#### Certificate Trust
+
+Trust custom CA certificates.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `cacert` | Inline CA certificate content | `"<Certificate Content>"` |
+| `cacertSecret` | Existing secret with CA cert | `"cert-secret"` |
+| `cacertSecretKey` | Key in secret containing cert | `"ca.crt"` |
+
+## Gameboard UI Configuration
+
+Use `settingsYaml` to configure settings for the Angular UI application.
+
+| Setting | Description | Example |
+|---------|-------------|----------|
+| `appname` | Application display name shown in the UI and browser title. | `Gameboard` |
+| `apphost` | Base URL for the Gameboard application | `/gb` |
+| `tochost` | URL for table of contents/static markdown docs | `/gb/docs` |
+| `custom_background` | Set the background color to a custom color | `custom-bg-black` |
+| `unityclienthost` | Set the Unity Client Host for "External" game types that use a Unity game client (e.g., [Cubespace](https://github.com/cmu-sei/cubespace/)) | `https://gameboard.example.com/cubespace` |
+| `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `gameboard-ui` |
+| `oidc.authority` | The base URL of the identity provider (OIDC authority) that issues tokens. | `https://identity.example.com` |
+| `oidc.redirect_uri` | The URL where users are redirected after a successful login via OIDC. | `https://gameboard.example.com/oidc` |
+| `oidc.silent_redirect_uri` | The hidden iframe endpoint used for silently renewing tokens without user interaction. | `https://gameboard.example.com/oidc-silent.html` |
+| `oidc.response_type` | The OAuth2 flow response type to request during login, typically `code` for PKCE authorization code flow. | `code` |
+| `oidc.scope` | The list of identity and API scopes requested during authentication. | `openid profile gameboard-api` |
+| `oidc.automaticSilentRenew` | Enables automatic background token refresh before expiration to maintain user sessions. | `true` |
+| `oidc.useLocalStorage` | Stores authentication tokens in localStorage instead of sessionStorage to persist login across browser sessions. | `true` |
+
+[ConsoleForge](https://github.com/cmu-sei/console-forge) is a shared library for interacting with Virtual Machine consoles in the web browser. As of [Gameboard version 3.33.0](https://github.com/cmu-sei/Gameboard/releases/tag/3.33.0), ConsoleForge is used for Gameboard consoles and requires additional configuration. The minimal configuration is below. Additional settings are available to view in the [ConsoleForge repository](https://github.com/cmu-sei/console-forge/blob/main/projects/console-forge/src/lib/config/console-forge-config.ts).
+
+| Setting | Description | Example |
+|---------|-------------|----------|
+| `consoleForgeConfig.defaultConsoleType` | VM console type based on the hypervisor used by the Game Engine (`vmware` or `vnc` for Proxmox consoles) | `vnc` |
+
+### Ingress
+
+To host Gameboard from a subpath, set `basehref` and configure the ingress accordingly
+
+```yaml
+gameboard-ui:
+  basehref: "/gb"
   ingress:
-    annotations:
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    enabled: true
+    className: nginx
+    hosts:
+      - host: gameboard.example.com
+        paths:
+          - path: /gb
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: tls-secret-name # this tls secret should already exist
+      hosts:
+         - gameboard.example.com
+```
+
+### OpenGraph
+
+You can configure OpenGraph for enhanced link preview support.
+
+```yaml
+gameboard-ui:
+  openGraph: >
+    <!-- Open Graph info for link previews -->
+    <meta property="og:title" content="Gameboard" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://gameboard.example.com/gb/favicon.ico" />
+    <meta property="og:url" content="https://gameboard.example.com/gb" />
+    <meta property="og:description" content="Gameboard is a feature rich cyber competition platform." />
+```
+
+### Favicons
+
+You can customize favicons using a URL to a tgz favicon bundle. The bundle's `favicon.html` will be merged into `index.html`.
+
+```yaml
+gameboard-ui:
+  faviconsUrl: https://example.com/files/gameboard-favicons.tgz
 ```
 
 ## Troubleshooting
@@ -416,7 +297,7 @@ gameboard-api:
 
 ### Challenge Deployment Problems
 - Check `Core__GameEngineDeployBatchSize` - lower if overwhelming infrastructure
-- Verify game engine (TopoMojo) is healthy and has resources
+- Verify game engine (TopoMojo) is healthy and underlying hypervisor has resources available
 - Check OAuth credentials have necessary permissions for creating gamespaces
 - Review API logs for specific deployment errors
 
@@ -431,4 +312,5 @@ gameboard-api:
 - [Gameboard Documentation](https://cmu-sei.github.io/crucible/Gameboard/)
 - [Gameboard API Repository](https://github.com/cmu-sei/Gameboard)
 - [Gameboard UI Repository](https://github.com/cmu-sei/Gameboard-ui)
-- [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo/about/) (typical game engine)
+- [ConsoleForge Repository](https://github.com/cmu-sei/console-forge)
+- [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo) (typical game engine)
