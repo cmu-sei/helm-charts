@@ -122,17 +122,6 @@ Static markdown documentation can be synchronized from a git repository:
 | `gitbranch` | Branch to pull from | `"main"` |
 | `pollInterval` | Minutes between git pulls | `5` |
 
-#### Image Override
-It is recommended to use the helm chart's default image configuration, however, you can override the container image that is used to deploy the application:
-
-```yaml
-gameboard-api:
-  image:
-    repository: cmusei/gameboard-api
-    pullPolicy: Always
-    tag: "1.2.3"
-```
-
 #### Ingress
 Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
@@ -179,20 +168,6 @@ gameboard-api:
     size: "100Gi"
     mode: ReadWriteOnce
     class: "nfs-client"
-```
-
-#### Resources
-While it is not required to specify resource requests/limits, you can choose to specify these in the chart. The requests/limits you define should reflect your deployment's needs. See the [Kubernetes documentation for resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits).
-
-```yaml
-gameboard-api:
-  resources:
-    limits:
-      cpu: 200m
-      memory: 2000Mi
-    requests:
-      cpu: 100m
-      memory: 1000Mi
 ```
 
 #### Certificate Trust
@@ -314,3 +289,4 @@ gameboard-ui:
 - [Gameboard UI Repository](https://github.com/cmu-sei/Gameboard-ui)
 - [ConsoleForge Repository](https://github.com/cmu-sei/console-forge)
 - [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo) (typical game engine)
+- [Cubespace Video Game](https://github.com/cmu-sei/cubespace/) (example Unity external game type)
