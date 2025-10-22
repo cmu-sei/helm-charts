@@ -1,15 +1,15 @@
 # Gallery Helm Chart
 
-[Gallery](https://cmu-sei.github.io/crucible/gallery/) is Crucible's application that enables participants to review cyber incident data by source type. Information is grouped by critical infrastructure sector or organizational categories, with support for multiple source types including intelligence, reporting, orders, news, social media, telephone, and email.
+[Gallery](https://cmu-sei.github.io/crucible/gallery/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables participants to review cyber incident data by source type. Information is grouped by critical infrastructure sector or organizational categories, with support for multiple source types including intelligence, reporting, orders, news, social media, telephone, and email.
 
-This Helm chart deploys Gallery with both API and UI components.
+This Helm chart deploys Gallery with both [API](https://github.com/cmu-sei/Gallery.Api) and [UI](https://github.com/cmu-sei/Gallery.Ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
 
 ## Installation
 
@@ -18,99 +18,47 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install gallery sei/gallery -f values.yaml
 ```
 
-## Configuration
+## Gallery API Configuration
 
-### Gallery API
+The following are configured via the `gallery-api.env` settings. These Gallery API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Gallery.Api/blob/development/Gallery.Api/appsettings.json) which may contain more options than are described here. Setting names in the table omit the `gallery-api.env.` prefix used in your values file.
 
-#### Database
+### Database Settings
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `gallery-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | **Yes** |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;"` |
 
-**Important:** Database requires the `uuid-ossp` extension:
+**Important:** The PostgreSQL database must include the `uuid-ossp` extension:
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
-**Example:**
-```yaml
-gallery-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=gallery_api;Username=gallery;Password=PASSWORD;"
-```
+### Authentication (OIDC)
 
-#### OAuth2/OIDC
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider base URL | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `Authorization__AuthorizationScope` | OAuth scope requested by the API | `gallery-api` |
+| `Authorization__ClientId` | OAuth client ID used by Swagger and other interactive clients | `gallery-api` |
+| `Authorization__ClientName` | Display name for the client (optional) | `Gallery` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `gallery-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `gallery-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `gallery-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `gallery-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `gallery` |
-| `gallery-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `gallery.swagger` |
-| `gallery-api.env.Authorization__ClientName` | Client display name | No | `Gallery API Swagger` |
 
-#### CORS
+### Helm Deployment Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `gallery-api.env.CorsPolicy__Origins__0` | Allowed CORS origin (typically Gallery UI) | `https://gallery.example.com` |
+The following are configurations for the Gallery API Helm Chart and application configurations that are configured outside of the `gallery-api.env` section.
 
-### Gallery UI
+#### Ingress
 
-```yaml
-gallery-ui:
-  settingsYaml:
-    ApiUrl: https://gallery.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: gallery-ui
-      redirect_uri: https://gallery.example.com/auth-callback
-      post_logout_redirect_uri: https://gallery.example.com
-      response_type: code
-      scope: openid profile gallery
-      automaticSilentRenew: true
-      silent_redirect_uri: https://gallery.example.com/auth-callback-silent
-    AppTitle: Gallery
-    AppTopBarHexColor: "#2d69b4"
-    AppTopBarHexTextColor: "#FFFFFF"
-    AppTopBarText: "Gallery - Exercise Information Sharing"
-    AppTopBarImage: /assets/img/monitor-dashboard-white.png
-    UseLocalAuthStorage: true
-```
-
-## Minimal Production Configuration
-
-```yaml
-gallery-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;"
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "gallery"
-    Authorization__ClientId: gallery-swagger
-    CorsPolicy__Origins__0: "https://gallery.example.com"
-
-gallery-ui:
-  settingsYaml:
-    ApiUrl: https://gallery.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: gallery-ui
-      redirect_uri: https://gallery.example.com/auth-callback
-      response_type: code
-      scope: openid profile gallery
-```
-
-## Ingress Configuration
-
-Requires long timeouts for SignalR:
+Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
 ```yaml
 gallery-api:
   ingress:
+    enabled: true
+    className: "nginx"
     annotations:
       nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
@@ -118,15 +66,33 @@ gallery-api:
     hosts:
       - host: gallery.example.com
         paths:
-          - path: /(api|swagger/hubs)
+          - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
 ```
 
-## Security Best Practices
 
-1. **Secrets Management**: Use Kubernetes secrets for sensitive values
-2. **TLS Everywhere**: Always use HTTPS in production
-3. **CORS Configuration**: Only allow necessary origins
+## Gallery UI Configuration
+
+Use `settingsYaml` to configure the Angular UI application. The table below highlights common settings.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ApiUrl` | Base URL for the Gallery API | `https://gallery.example.com` |
+| `AppTitle` | Browser/application title | `Gallery` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
+| `AppTopBarText` | Banner text displayed in the top bar | `"Gallery - Exercise Information Sharing"` |
+| `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
+| `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |
+| `OIDCSettings.client_id` | OAuth client ID for the Gallery UI | `gallery-ui` |
+| `OIDCSettings.redirect_uri` | Callback URL after login | `https://gallery.example.com/auth-callback` |
+| `OIDCSettings.post_logout_redirect_uri` | URL users return to after logout | `https://gallery.example.com` |
+| `OIDCSettings.response_type` | OAuth response type | `code` |
+| `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile gallery` |
+| `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent` |
+| `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+
 
 ## References
 

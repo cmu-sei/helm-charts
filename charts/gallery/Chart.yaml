@@ -1,5 +1,9 @@
 apiVersion: v2
 name: gallery
-description: A Helm chart for Kubernetes
+description: Gallery enables participants to review cyber incident data by source type.
 type: application
 version: 1.6.4
+home: https://cmu-sei.github.io/crucible/gallery/
+sources:
+  - https://github.com/cmu-sei/Gallery.Api/
+  - https://github.com/cmu-sei/Gallery.Ui/
