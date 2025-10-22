@@ -1,6 +1,6 @@
 # TopoMojo Helm Chart
 
-[TopoMojo](https://cmu-sei.github.io/crucible/topomojo/about/) is the [Crucible](https://cmu-sei.github.io/crucible/) application for designing labs and challenges using a simple user interface. Deploy and configure virtual machines, define networks, and write a guide.
+[TopoMojo](https://cmu-sei.github.io/crucible/topomojo/) is the [Crucible](https://cmu-sei.github.io/crucible/) application for designing labs and challenges using a simple user interface. Deploy and configure virtual machines, define networks, and write a guide.
 
 This Helm chart deploys TopoMojo with both [API](https://github.com/cmu-sei/TopoMojo) and [UI](https://github.com/cmu-sei/TopoMojo-ui) components.
 
@@ -22,7 +22,7 @@ helm install topomojo sei/topomojo -f values.yaml
 
 ## TopoMojo API Configuration
 
-The following are configured via the `topomojo-api.env` settings. These TopoMojo API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf) which may contain more settings than are described here.
+The following are configured via the `topomojo-api.env` settings. These TopoMojo API settings reflect the application's [appsettings.conf](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf) which may contain more settings than are described here.
 
 ### Database Settings
 
@@ -386,7 +386,7 @@ topomojo-ui:
 
 ## References
 
-- [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo/about/)
+- [TopoMojo Documentation](https://cmu-sei.github.io/crucible/topomojo)
 - [TopoMojo API Repository](https://github.com/cmu-sei/TopoMojo)
 - [TopoMojo UI Repository](https://github.com/cmu-sei/topomojo-ui)
 - [Additional API Settings](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf)
