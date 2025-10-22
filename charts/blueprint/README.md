@@ -1,15 +1,15 @@
 # Blueprint Helm Chart
 
-[Blueprint](https://cmu-sei.github.io/crucible/blueprint/) is Crucible's application that enables collaborative creation and visualization of a Master Scenario Event List (MSEL) for an exercise. Scenario events are mapped to specific simulation objectives and organized into a timeline.
+[Blueprint](https://cmu-sei.github.io/crucible/blueprint/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables collaborative creation and visualization of a Master Scenario Event List (MSEL) for an exercise. Scenario events are mapped to specific simulation objectives and organized into a timeline.
 
-This Helm chart deploys Blueprint with both API and UI components.
+This Helm chart deploys Blueprint with both [API](https://github.com/cmu-sei/Blueprint.Api) and [UI](https://github.com/cmu-sei/Blueprint.Ui) components.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (IdentityServer/Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
 
 ## Installation
 
@@ -18,95 +18,39 @@ helm repo add sei https://helm.cmusei.dev/charts
 helm install blueprint sei/blueprint -f values.yaml
 ```
 
-## Configuration
+## Blueprint API Configuration
 
-### Blueprint API
+The following are configured via the `blueprint-api.env` settings. These Blueprint API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Blueprint.Api/blob/development/Blueprint.Api/appsettings.json) which may contain more settings than are described here.
 
-#### Database
+### Database Settings
 
-| Parameter | Description | Required |
-|-----------|-------------|----------|
-| `blueprint-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | **Yes** |
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=blueprint;Username=blueprint;Password=PASSWORD;"` |
 
-**Important:** Database requires the `uuid-ossp` extension:
+**Important:** The PostgreSQL database must include the `uuid-ossp` extension:
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
-**Example:**
-```yaml
-blueprint-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=blueprint_api;Username=blueprint;Password=PASSWORD;"
-```
+### Authentication (OIDC)
 
-#### OAuth2/OIDC
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Authorization__Authority` | Identity provider base URL | `https://identity.example.com` |
+| `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
+| `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
+| `Authorization__AuthorizationScope` | OAuth scope requested by the API | `blueprint` |
+| `Authorization__ClientId` | OAuth client ID used by the API and interactive clients | `blueprint-api` |
+| `Authorization__ClientName` | Display name for the client (optional) | `Blueprint` |
 
-| Parameter | Description | Required | Default |
-|-----------|-------------|----------|---------|
-| `blueprint-api.env.Authorization__Authority` | Identity provider URL | **Yes** | `https://identity.example.com` |
-| `blueprint-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | **Yes** | `https://identity.example.com/connect/authorize` |
-| `blueprint-api.env.Authorization__TokenUrl` | Token endpoint | **Yes** | `https://identity.example.com/connect/token` |
-| `blueprint-api.env.Authorization__AuthorizationScope` | OAuth scopes | **Yes** | `blueprint` |
-| `blueprint-api.env.Authorization__ClientId` | OAuth client ID | **Yes** | `blueprint.swagger` |
-| `blueprint-api.env.Authorization__ClientName` | Client display name | No | `Blueprint API Swagger` |
 
-#### CORS
+### Helm Deployment Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `blueprint-api.env.CorsPolicy__Origins__0` | Allowed CORS origin (typically Blueprint UI) | `https://blueprint.example.com` |
+The following are configurations for the Blueprint API Helm Chart and application configurations that are configured outside of the `blueprint-api.env` section.
 
-### Blueprint UI
-
-```yaml
-blueprint-ui:
-  settingsYaml:
-    ApiUrl: https://blueprint.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: blueprint-ui
-      redirect_uri: https://blueprint.example.com/auth-callback
-      post_logout_redirect_uri: https://blueprint.example.com
-      response_type: code
-      scope: openid profile blueprint
-      automaticSilentRenew: true
-      silent_redirect_uri: https://blueprint.example.com/auth-callback-silent
-    AppTitle: Blueprint
-    AppTopBarHexColor: "#2d69b4"
-    AppTopBarHexTextColor: "#FFFFFF"
-    AppTopBarText: "Blueprint - Exercise Planning"
-    AppTopBarImage: /assets/img/monitor-dashboard-white.png
-    UseLocalAuthStorage: true
-```
-
-## Minimal Production Configuration
-
-```yaml
-blueprint-api:
-  env:
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=blueprint;Username=blueprint;Password=PASSWORD;"
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
-    Authorization__AuthorizationScope: "blueprint"
-    Authorization__ClientId: blueprint-swagger
-    CorsPolicy__Origins__0: "https://blueprint.example.com"
-
-blueprint-ui:
-  settingsYaml:
-    ApiUrl: https://blueprint.example.com
-    OIDCSettings:
-      authority: https://identity.example.com/
-      client_id: blueprint-ui
-      redirect_uri: https://blueprint.example.com/auth-callback
-      response_type: code
-      scope: openid profile blueprint
-```
-
-## Ingress Configuration
-
-Requires long timeouts for SignalR:
+#### Ingress
 
 ```yaml
 blueprint-api:
@@ -118,15 +62,32 @@ blueprint-api:
     hosts:
       - host: blueprint.example.com
         paths:
-          - path: /(api|swagger/hubs)
+          - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
 ```
 
-## Security Best Practices
+## Blueprint UI Configuration
 
-1. **Secrets Management**: Use Kubernetes secrets for sensitive values
-2. **TLS Everywhere**: Always use HTTPS in production
-3. **CORS Configuration**: Only allow necessary origins
+Use `settingsYaml` to configure the Angular UI application. Nested keys in the table below (e.g., `OIDCSettings.authority`) use dot notation for readability.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ApiUrl` | Base URL for the Blueprint API | `https://blueprint.example.com` |
+| `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |
+| `OIDCSettings.client_id` | OAuth client ID for the Blueprint UI | `blueprint-ui` |
+| `OIDCSettings.redirect_uri` | Callback URL after login | `https://blueprint.example.com/auth-callback` |
+| `OIDCSettings.post_logout_redirect_uri` | URL users return to after logout | `https://blueprint.example.com` |
+| `OIDCSettings.response_type` | OAuth response type | `code` |
+| `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile blueprint` |
+| `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://blueprint.example.com/auth-callback-silent` |
+| `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+| `AppTitle` | Browser/application title | `Blueprint` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
+| `AppTopBarText` | Banner text displayed in the top bar | `"Blueprint - Exercise Planning"` |
+| `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
+
 
 ## References
 
