@@ -20,7 +20,7 @@ helm install gallery sei/gallery -f values.yaml
 
 ## Gallery API Configuration
 
-The following are configured via the `gallery-api.env` settings. These Gallery API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Gallery.Api/blob/development/Gallery.Api/appsettings.json) which may contain more options than are described here. Setting names in the table omit the `gallery-api.env.` prefix used in your values file.
+The following are configured via the `gallery-api.env` settings. These Gallery API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Gallery.Api/blob/development/Gallery.Api/appsettings.json) which may contain more options than are described here.
 
 ### Database Settings
 
