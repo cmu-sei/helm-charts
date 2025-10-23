@@ -1,6 +1,6 @@
 # Alloy Helm Chart
 
-[Alloy](https://cmu-sei.github.io/crucible/alloy/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables users to launch on-demand events or join instances of already-running simulations. Following the event, reports can provide a summary of knowledge and performance assessments.
+[Alloy](https://cmu-sei.github.io/crucible/alloy/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables users to launch on-demand events or join instances of already-running simulations.
 
 This Helm chart deploys Alloy with both [API](https://github.com/cmu-sei/Alloy.Api) and [UI](https://github.com/cmu-sei/Alloy.Ui) components.
 
@@ -10,7 +10,7 @@ This Helm chart deploys Alloy with both [API](https://github.com/cmu-sei/Alloy.A
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
 - Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
-- Crucible services: [Player](https://cmu-sei.github.io/crucible/player), [Caster](https://cmu-sei.github.io/crucible/caster), and [Steamfitter](https://cmu-sei.github.io/crucible/steamfitter)
+- Crucible services: [Player](https://cmu-sei.github.io/crucible/player) and optionally [Caster](https://cmu-sei.github.io/crucible/caster) and [Steamfitter](https://cmu-sei.github.io/crucible/steamfitter)
 
 ## Installation
 
@@ -43,7 +43,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | Space-delimited scopes requested by the API | `alloy-api player-api caster-api steamfitter-api vm-api` |
-| `Authorization__ClientId` | OAuth client ID used by Swagger or other interactive clients | `alloy-api-dev` |
+| `Authorization__ClientId` | OAuth client ID used by Swagger or other interactive clients | `alloy-api` |
 | `Authorization__ClientName` | Optional display name for the client | `Alloy API` |
 
 ### Service Account (Resource Owner Flow)

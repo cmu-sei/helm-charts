@@ -10,9 +10,11 @@ This Helm chart deploys Caster with both [API](https://github.com/cmu-sei/Caster
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
 - Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
-- GitLab instance for Terraform state storage
-- VMware vSphere, Proxmox, or AWS/Azure cloud infrastructure
 - Internet access for Terraform plugin installation (or pre-cached plugins)
+
+## Recommended Infrastructure Backends
+
+VMware vSphere, Proxmox, or AWS/Azure cloud infrastructure are all supported options for infrastructure backends for Caster to target deploying workloads.
 
 ## Installation
 
@@ -45,7 +47,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `caster-api` |
-| `Authorization__ClientId` | OAuth client ID for the API (Swagger or interactive clients) | `caster-api-dev` |
+| `Authorization__ClientId` | OAuth client ID for the API (Swagger or interactive clients) | `caster-api` |
 
 ### Service Account (Player / VM API Integration)
 
@@ -63,6 +65,8 @@ You can store sensitive credentials in a Kubernetes Secret and reference it via 
 
 ### Player Integration
 
+The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/crucible/player/) is by using the [Crucible Terraform Provider](https://github.com/cmu-sei/terraform-provider-crucible). However, you can also configure the integration via these settings.
+
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `Player__VmApiUrl` | Base URL to the VM API | `https://vm.example.com` |
@@ -75,7 +79,7 @@ You can store sensitive credentials in a Kubernetes Secret and reference it via 
 | `Terraform__DefaultVersion` | Default Terraform/OpenTofu version used for plans | `1.5.7` |
 | `Terraform__GitlabApiUrl` | GitLab API endpoint for state projects | `https://gitlab.example.com/api/v4/` |
 | `Terraform__GitlabToken` | GitLab access token with `api` scope | `glpat-xxxxxxxxxxxxxxxxxxxx` |
-| `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform state projects | `42` |
+| `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
 | `Terraform__PluginDirectory` | Optional path containing pre-staged providers (set to `""` when using `terraformrc`) | `""` |
 
 > **GitLab prerequisites:** create a dedicated group for Caster projects, generate a token with `api` scope, and confirm the token has access to the group.
@@ -112,7 +116,11 @@ caster-api:
 
 When enabling a mirror, set `Terraform__PluginDirectory` to an empty string to avoid conflicting paths.
 
-#### Crucible Terraform Provider (cmu-sei/crucible)
+#### Terraform Providers
+
+The following Terraform Providers are supported if you choose to use them.
+
+##### [Crucible Terraform Provider (cmu-sei/crucible)](https://registry.terraform.io/providers/cmu-sei/crucible/latest)
 
 | Setting | Description | Example |
 |---------|-------------|---------|
@@ -125,7 +133,7 @@ When enabling a mirror, set `Terraform__PluginDirectory` to an empty string to a
 | `SEI_CRUCIBLE_VM_API_URL` | VM API base URL | `https://vm.example.com/api/` |
 | `SEI_CRUCIBLE_PLAYER_API_URL` | Player API base URL | `https://player.example.com/` |
 
-#### Azure Terraform Provider
+##### [Azure Terraform Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest)
 
 | Setting | Description | Example |
 |---------|-------------|---------|
@@ -137,6 +145,15 @@ When enabling a mirror, set `Terraform__PluginDirectory` to an empty string to a
 | `ARM_SKIP_PROVIDER_REGISTRATION` | Skip automatic provider registration (`true` for restricted environments) | `false` |
 
 Use `caster-api.certificateMap` to mount CA certificates required for Azure or other providers.
+
+##### [VMware vSphere Provider](https://registry.terraform.io/providers/vmware/vsphere/latest)
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `VSPHERE_SERVER` | vCenter hostname | `vcenter.example.com` |
+| `VSPHERE_USER` | vCenter username | `caster-service@vsphere.local` |
+| `VSPHERE_PASSWORD` | vCenter password | `"PASSWORD"` |
+| `VSPHERE_ALLOW_UNVERIFIED_SSL` | Allow self-signed certificates (prefer adding [CA certificates](#certificate-trust)) | `false` |
 
 ### Git Credentials
 
@@ -165,28 +182,24 @@ caster-api:
     NO_PROXY: .local
 ```
 
-### VMware vSphere Configuration
-
-| Setting | Description | Example |
-|---------|-------------|---------|
-| `VSPHERE_SERVER` | vCenter hostname | `vcenter.example.com` |
-| `VSPHERE_USER` | vCenter username | `caster-service@vsphere.local` |
-| `VSPHERE_PASSWORD` | vCenter password | `"PASSWORD"` |
-| `VSPHERE_ALLOW_UNVERIFIED_SSL` | Allow self-signed certificates (prefer adding [CA certificates](#certificate-trust)) | `false` |
-
 ### Seed Data
 
-Bootstrap initial users and permissions at startup:
+Bootstrap initial users and roles at startup:
 
 ```yaml
 caster-api:
   env:
+    SeedData__Roles__0__name: "Rangetech Admin"
+    SeedData__Roles__0__allPermissions: false
+    SeedData__Roles__0__permissions__0: "CreateProjects"
+    SeedData__Roles__0__permissions__1: "ViewProjects"
+    SeedData__Roles__0__permissions__2: "EditProjects"
+    SeedData__Roles__0__permissions__3: "ManageProjects"
+    SeedData__Roles__0__permissions__4: "ImportProjects"
+    SeedData__Roles__0__permissions__5: "LockFiles"
     SeedData__Users__0__id: "user-guid-1"
-    SeedData__Users__0__name: "Admin User"
-    SeedData__Users__1__id: "user-guid-2"
-    SeedData__Users__1__name: "Developer User"
-    SeedData__UserPermissions__0__UserId: "user-guid-1"
-    SeedData__UserPermissions__0__PermissionId: "permission-guid-1"
+    SeedData__Users__0__name: "Rangetech Admin"
+    SeedData__Users__0__role__name: "Rangetech Admin"
 ```
 
 ### Helm Deployment Configuration
@@ -250,7 +263,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 |---------|-------------|---------|
 | `ApiUrl` | Base URL for the Caster API | `https://caster.example.com` |
 | `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |
-| `OIDCSettings.client_id` | OAuth client ID for the Caster UI | `caster-ui-dev` |
+| `OIDCSettings.client_id` | OAuth client ID for the Caster UI | `caster-ui` |
 | `OIDCSettings.redirect_uri` | Callback URL after login | `https://caster.example.com/auth-callback/` |
 | `OIDCSettings.post_logout_redirect_uri` | URL users return to after logout | `https://caster.example.com/` |
 | `OIDCSettings.response_type` | OAuth response type | `code` |
@@ -295,7 +308,6 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 ### State File Issues
 - Configure persistent storage to avoid data loss (avoid `emptyDir` for production).
-- Confirm GitLab projects are created for Terraform state backends.
 - Check GitLab permissions for the token used by Caster.
 - Review Terraform backend configuration within designs.
 

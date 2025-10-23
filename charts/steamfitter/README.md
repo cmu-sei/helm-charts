@@ -136,7 +136,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `VmApiUrl`         | Base URL for the VM API used by Steamfitter                     | `https://vm.example.com/api`                      |
 | `ApiPlayerUrl`     | Base URL for the Player API interface                           | `https://player.example.com/api`                  |
 | `OIDCSettings.authority` | URL of the identity provider (OIDC authority)             | `https://identity.example.com`                    |
-| `OIDCSettings.client_id` | OAuth client ID used by the Steamfitter UI                | `steamfitter-ui-dev`                              |
+| `OIDCSettings.client_id` | OAuth client ID used by the Steamfitter UI                | `steamfitter-ui`                              |
 | `OIDCSettings.redirect_uri`  | URI where the identity provider redirects after login | `https://steamfitter.example.com/auth-callback/`  |
 | `OIDCSettings.post_logout_redirect_uri` | URI users are redirected to after logout   | `https://steamfitter.example.com`                 |
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
