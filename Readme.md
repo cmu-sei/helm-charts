@@ -1,8 +1,6 @@
-# CMU SEI Helm Charts
+# Helm at cmu-sei
 
 Helm charts for deploying CMU Software Engineering Institute applications to Kubernetes.
-
-All charts are designed for use with **Helm 3**.
 
 ## Repository
 
@@ -20,16 +18,16 @@ helm repo update
 helm search repo sei
 
 # Show default values for a chart
-helm show values sei/identity > identity.values.yaml
+helm show values sei/topomojo > topomojo.values.yaml
 
 # Edit values as needed
-vim identity.values.yaml
+vim topomojo.values.yaml
 
 # Deploy the chart
-helm install my-identity sei/identity -f identity.values.yaml
+helm install topomojo sei/topomojo -f topomojo.values.yaml
 
 # Upgrade an existing deployment
-helm upgrade my-identity sei/identity -f identity.values.yaml
+helm upgrade topomojo sei/topomojo -f topomojo.values.yaml
 ```
 
 ## Available Charts
@@ -40,7 +38,6 @@ The [Crucible](https://cmu-sei.github.io/crucible/) project provides a framework
 
 | Chart | Description | Documentation |
 |-------|-------------|---------------|
-| [identity](charts/identity/) | OAuth2/OIDC identity provider for authentication | [README](charts/identity/README.md) |
 | [player](charts/player/) | Virtual environment collaboration platform | [README](charts/player/README.md) |
 | [alloy](charts/alloy/) | Event orchestration and simulation launcher | [README](charts/alloy/README.md) |
 | [caster](charts/caster/) | Infrastructure-as-code deployment with Terraform/OpenTofu | [README](charts/caster/README.md) |
@@ -51,18 +48,12 @@ The [Crucible](https://cmu-sei.github.io/crucible/) project provides a framework
 | [gallery](charts/gallery/) | Exercise information and incident data sharing | [README](charts/gallery/README.md) |
 | [cite](charts/cite/) | Collaborative Incident Threat Evaluator | [README](charts/cite/README.md) |
 
-### Supporting Applications
-
-| Chart | Description |
-|-------|-------------|
-| [appmailrelay](charts/appmailrelay/) | Email relay service for applications |
-| [stackstorm](charts/stackstorm/) | Event-driven automation platform |
-
 ### Additional Applications
 
 | Chart | Description |
 |-------|-------------|
 | [authhoc](charts/authhoc/) | Authentication and authorization service |
+| [appmailrelay](charts/appmailrelay/) | Email relay service for applications |
 | [buckets](charts/buckets/) | Object storage management |
 | [code-server](charts/code-server/) | VS Code in the browser |
 | [cubescore](charts/cubescore/) | Scoring engine |
@@ -78,51 +69,7 @@ The [Crucible](https://cmu-sei.github.io/crucible/) project provides a framework
 | [mattermost-team-edition](charts/mattermost-team-edition/) | Team collaboration platform |
 | [mkdocs-material](charts/mkdocs-material/) | Documentation site generator |
 | [osticket](charts/osticket/) | Support ticket system |
+| [stackstorm](charts/stackstorm/) | Event-driven automation platform |
 | [statesman](charts/statesman/) | State management service |
 | [staticweb](charts/staticweb/) | Static website hosting |
 | [webmail](charts/webmail/) | Web-based email client |
-
-## Deployment Patterns
-
-### Typical Crucible Stack
-
-A complete Crucible environment typically includes:
-
-1. **Identity** - Authentication provider
-2. **Player** - Core platform (includes VM API)
-3. **TopoMojo** OR **Gameboard** - Lab/game engine
-4. **Alloy** - Event orchestration (optional)
-5. **Caster** - Infrastructure deployment (optional)
-6. **Steamfitter** - Automation (optional)
-7. **Blueprint** - Exercise planning (optional)
-8. **Gallery** - Information sharing (optional)
-9. **CITE** - Incident evaluation (optional)
-
-### Infrastructure Requirements
-
-- **PostgreSQL**: One database per application (or separate instances)
-- **GitLab**: Required for Caster (Terraform state storage)
-- **StackStorm**: Required for Steamfitter
-- **vSphere/Proxmox**: Required for TopoMojo, Player VM API, Caster
-- **Redis**: Recommended for multi-replica deployments
-- **NFS**: Recommended for ISO storage and shared files
-
-### Service Integration
-
-Many Crucible applications integrate with each other:
-
-```
-Identity ──┬──> Player ──> VM API ──> vSphere
-           ├──> TopoMojo ──> vSphere
-           ├──> Gameboard ──> TopoMojo
-           ├──> Alloy ──┬──> Player
-           │            ├──> Caster ──> vSphere/Azure
-           │            └──> Steamfitter ──> StackStorm
-           └──> Caster
-```
-
-## License
-
-Charts are provided by the Carnegie Mellon University Software Engineering Institute.
-
-For specific licensing information, refer to individual application repositories.
