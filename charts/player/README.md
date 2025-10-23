@@ -14,7 +14,7 @@ This Helm chart deploys the full Player stack of integrated components:
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL
-- Identity provider (Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - VMware vSphere/vCenter or Proxmox for VM management
 - NFS storage for ISO files (optional)
 

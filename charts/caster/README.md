@@ -9,7 +9,7 @@ This Helm chart deploys Caster with both [API](https://github.com/cmu-sei/Caster
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - GitLab instance for Terraform state storage
 - VMware vSphere, Proxmox, or AWS/Azure cloud infrastructure
 - Internet access for Terraform plugin installation (or pre-cached plugins)

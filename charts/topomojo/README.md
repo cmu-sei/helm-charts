@@ -9,7 +9,7 @@ This Helm chart deploys TopoMojo with both [API](https://github.com/cmu-sei/Topo
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL or SQL Server database
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - Supported Hypervisor (VMware vSphere/vCenter or Proxmox). Note that each TopoMojo instance supports either vSphere or Proxmox, not both simultaneously.
 - Persistent storage for VM files and ISOs
 
@@ -47,7 +47,7 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 
 #### Identity Provider Role Mapping
 
-TopoMojo can ingest roles from the identity provider (e.g. Keycloak). For example, an identity administrator can add roles like administrator, builder, or any custom role of their choosing and configure TopoMojo's API to map those IDP roles to TopoMojo roles.
+TopoMojo can ingest roles from the identity provider. For example, an identity administrator can add roles like administrator, builder, or any custom role of their choosing and configure TopoMojo's API to map those IDP roles to TopoMojo roles.
 
 Use the `Oidc__UserRolesClaimPath` setting to provide the JWT path to identity role assignments.
 

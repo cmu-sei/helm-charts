@@ -9,7 +9,7 @@ This Helm chart deploys Gallery with both [API](https://github.com/cmu-sei/Galle
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 
 ## Installation
 

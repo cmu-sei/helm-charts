@@ -9,7 +9,7 @@ This Helm chart deploys Alloy with both [API](https://github.com/cmu-sei/Alloy.A
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - Crucible services: [Player](https://cmu-sei.github.io/crucible/player), [Caster](https://cmu-sei.github.io/crucible/caster), and [Steamfitter](https://cmu-sei.github.io/crucible/steamfitter)
 
 ## Installation

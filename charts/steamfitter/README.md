@@ -15,7 +15,7 @@ This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/s
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - [StackStorm](https://stackstorm.com/) instance for task execution
 - Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api) instances
 

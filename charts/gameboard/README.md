@@ -9,7 +9,7 @@ This Helm chart deploys Gameboard with both [API](https://github.com/cmu-sei/gam
 - Kubernetes 1.19+
 - Helm 3.0+
 - PostgreSQL database
-- Identity provider (e.g., Keycloak) for OAuth2/OIDC authentication
+- Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
 - Game Engine (typically [TopoMojo](https://cmu-sei.github.io/crucible/topomojo/)) for challenge deployment
 
 ## Installation
