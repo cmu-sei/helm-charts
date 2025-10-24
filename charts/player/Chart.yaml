@@ -2,7 +2,7 @@ apiVersion: v2
 name: player
 description: Player is a window into virtual environments - enabling assignment of team membership and customization of responsive, browser-based user interfaces.
 type: application
-version: 1.7.4
+version: 1.7.5
 home: https://cmu-sei.github.io/crucible/player
 sources:
   - https://github.com/cmu-sei/Player.Api
