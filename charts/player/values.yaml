@@ -99,7 +99,6 @@ player-api:
     Authorization__ClientName: "Player API"
 
     # Basic seed data to jumpstart deployement
-    # TODO - Document Seed Data
     # This is a placeholder and needs to be updated for a new install.
     # Upgrades should keep administrators from the previous install.
 
