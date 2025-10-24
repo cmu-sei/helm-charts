@@ -26,7 +26,7 @@ The following are configured via the `gallery-api.env` settings. These Gallery A
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -79,9 +79,9 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 |---------|-------------|---------|
 | `ApiUrl` | Base URL for the Gallery API | `https://gallery.example.com` |
 | `AppTitle` | Browser/application title | `Gallery` |
-| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
-| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
-| `AppTopBarText` | Banner text displayed in the top bar | `"Gallery - Exercise Information Sharing"` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppTopBarText` | Banner text displayed in the top bar | `Gallery - Exercise Information Sharing` |
 | `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
 | `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |
 | `OIDCSettings.client_id` | OAuth client ID for the Gallery UI | `gallery-ui` |

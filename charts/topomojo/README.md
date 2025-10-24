@@ -29,9 +29,9 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 | Setting | Description | Values | Example |
 |---------|-------------|--------|---------|
 | `Database__Provider` | Database type | `InMemory`, `PostgreSQL`, `SqlServer` | `InMemory` |
-| `Database__ConnectionString` | Database connection string | Connection string | `"Server=postgres;Port=5432;Database=topomojo;Username=topomojo;Password=PASSWORD;"` |
-| `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `"<GUID>"` |
-| `Database__AdminName` | Initial admin display name | String | `"Admin"` |
+| `Database__ConnectionString` | Database connection string | Connection string | `Server=postgres;Port=5432;Database=topomojo;Username=topomojo;Password=PASSWORD;` |
+| `Database__AdminId` | Initial admin user ID (subject claim) | GUID or email | `<GUID>` |
+| `Database__AdminName` | Initial admin display name | String | `Admin` |
 
 **Important:**
 - `InMemory` is for development only - data is lost on restart
@@ -57,7 +57,7 @@ You can add any number of unique entries in this format to TopoMojo API's config
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
+| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `realm_access.roles` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
 | `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to TopoMojo role | Default mapping below. |
 
 ##### Default Mapping
@@ -101,7 +101,7 @@ topomojo-api:
 |---------|-------------|---------|
 | `OpenApi__Enabled` | Enable the built-in Swagger/OpenAPI UI and JSON endpoint. | `false` (Default) |
 | `OpenApi__ApiName` | Display name for the API in the Swagger/OpenAPI UI. | `TopoMojo API` (Default) |
-| `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `"topomojo-swagger"` |
+| `OpenApi__Client__ClientId` | OAuth2/OpenID Connect client ID used for authenticating via the Swagger UI. | `topomojo-swagger` |
 
 ### Mock Hypervisor Configuration
 

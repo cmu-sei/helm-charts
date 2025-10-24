@@ -34,7 +34,7 @@ The following are configured via the `steamfitter-api.env` settings. These Steam
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;` |
 
 **Important:**
 Database requires the `uuid-ossp` extension:
@@ -59,7 +59,7 @@ steamfitter-api:
 | `Authorization__TokenUrl` | Identity provider token endpoint for the user authentication flow | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes for the Steamfitter to request for the user authentication flow | `player-api steamfitter-api vm-api` |
 | `Authorization__ClientId` | OAuth client ID | `steamfitter-api` |
-| `Authorization__ClientName` | OAuth client display name | `"Steamfitter API"` |
+| `Authorization__ClientName` | OAuth client display name | `Steamfitter API` |
 
 ### Crucible Integration (Player and VM API)
 
@@ -67,8 +67,8 @@ Steamfitter needs to integrate with Crucible [Player](https://github.com/cmu-sei
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ClientSettings__urls__playerApi` | Player API URL | `"https://player.example.com/"` |
-| `ClientSettings__urls__vmApi` | VM API URL | `"https://vm.example.com/"` |
+| `ClientSettings__urls__playerApi` | Player API URL | `https://player.example.com/` |
+| `ClientSettings__urls__vmApi` | VM API URL | `https://vm.example.com/` |
 
 **URLs must include trailing slash.**
 
@@ -76,11 +76,11 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ResourceOwnerAuthorization__Authority` | Identity provider URL | `"https://identity.example.com"` |
-| `ResourceOwnerAuthorization__ClientId` | Service account client ID | `"steamfitter-api"` |
-| `ResourceOwnerAuthorization__UserName` | Service account username | `"steamfitter-service"` |
-| `ResourceOwnerAuthorization__Password` | Service account password | `"password"` |
-| `ResourceOwnerAuthorization__Scope` | Service account scopes | `"vm-api"` |
+| `ResourceOwnerAuthorization__Authority` | Identity provider URL | `https://identity.example.com` |
+| `ResourceOwnerAuthorization__ClientId` | Service account client ID | `steamfitter-api` |
+| `ResourceOwnerAuthorization__UserName` | Service account username | `steamfitter-service` |
+| `ResourceOwnerAuthorization__Password` | Service account password | `password` |
+| `ResourceOwnerAuthorization__Scope` | Service account scopes | `vm-api` |
 
 ### StackStorm Integration
 
@@ -88,9 +88,9 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 |---------|-------------|---------|
 | `VmTaskProcessing__ApiType` | Task processing API type | `st2` |
 | `VmTaskProcessing__ApiUsername` | StackStorm username | `st2admin` |
-| `VmTaskProcessing__ApiPassword` | StackStorm password | `"password"` |
+| `VmTaskProcessing__ApiPassword` | StackStorm password | `password` |
 | `VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | `https://stackstorm.example.com` |
-| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `"cluster1,cluster2"` |
+| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `cluster1,cluster2` |
 
 **StackStorm Setup**
 1. Deploy StackStorm instance
@@ -126,7 +126,7 @@ Configure the ingress to allow connections to the application (typically uses an
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | To host Steamfitter from a subpath | `"/steamfitter"` |
+| `APP_BASEHREF` | To host Steamfitter from a subpath | `/steamfitter` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 

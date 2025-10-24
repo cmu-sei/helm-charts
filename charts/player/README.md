@@ -33,7 +33,7 @@ The following are configured via the `player-api.env` settings. These Player API
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;` |
 
 **Important:**
 Database requires the `uuid-ossp` extension:
@@ -130,7 +130,7 @@ player-api:
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | To host Player from a subpath | `"/player"` |
+| `APP_BASEHREF` | To host Player from a subpath | `/player` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 
@@ -158,7 +158,7 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 
 | Setting | Description | Example |
 |---------|-------------|----------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for VM API | `"Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for VM API | `Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;` |
 
 ### Authentication (OIDC)
 
@@ -178,10 +178,10 @@ VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/
 |---------|-------------|----------|
 | `ClientSettings__urls__playerApi` | Player API URL | `https://player.example.com/` |
 | `IdentityClient__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
-| `IdentityClient__ClientId` | Service account client ID | `"vm-api"` |
-| `IdentityClient__Username` | Service account username | `"vm-service"` |
-| `IdentityClient__Password` | Service account password | `"password"` |
-| `IdentityClient__Scope` | Service account scopes | `"player-api"` |
+| `IdentityClient__ClientId` | Service account client ID | `vm-api` |
+| `IdentityClient__Username` | Service account username | `vm-service` |
+| `IdentityClient__Password` | Service account password | `password` |
+| `IdentityClient__Scope` | Service account scopes | `player-api` |
 
 
 ### vSphere Configuration
@@ -193,8 +193,8 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 | `Vsphere__Hosts__*__Enabled` | Boolean that enables this vSphere host | `true` |
 | `Vsphere__Hosts__*__Address` | vCenter hostname or IP address | `vcenter.example.com` |
 | `Vsphere__Hosts__*__Username` | vCenter username | `player-account@vsphere.local` |
-| `Vsphere__Hosts__*__Password` | vCenter password | `"password"` |
-| `Vsphere__Hosts__*__DsName` | Datastore name for file storage | `"nfs-player"` |
+| `Vsphere__Hosts__*__Password` | vCenter password | `password` |
+| `Vsphere__Hosts__*__DsName` | Datastore name for file storage | `nfs-player` |
 | `Vsphere__Hosts__*__BaseFolder` | Folder within datastore | `player` |
 
 **Important:**
@@ -278,7 +278,7 @@ vm-api:
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | To host VM UI from a subpath | `"/vm-ui"` |
+| `APP_BASEHREF` | To host VM UI from a subpath | `/vm-ui` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 
@@ -302,7 +302,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | To host Console UI from a subpath | `"/console-ui"` |
+| `APP_BASEHREF` | To host Console UI from a subpath | `/console-ui` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 

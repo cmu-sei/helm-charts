@@ -27,9 +27,9 @@ The following are configured via the `gameboard-api.env` settings. These Gameboa
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `Database__ConnectionString` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=gameboard;Username=gameboard;Password=PASSWORD;"` |
-| `Database__AdminId` | (Optional) Subject claim (GUID) of initial admin user (seeded on first deployment) | `"<GUID>"` |
-| `Database__AdminName` | (Optional) Display name for initial admin user | `"Administrator"` |
+| `Database__ConnectionString` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=gameboard;Username=gameboard;Password=PASSWORD;` |
+| `Database__AdminId` | (Optional) Subject claim (GUID) of initial admin user (seeded on first deployment) | `<GUID>` |
+| `Database__AdminName` | (Optional) Display name for initial admin user | `Administrator` |
 
 ### Core Settings
 
@@ -64,7 +64,7 @@ You can add any number of unique entries in this format to Gameboard API's confi
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `"realm_access.roles"` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
+| `Oidc__UserRolesClaimPath` | Path to roles in JWT | `realm_access.roles` (Keycloak default). <br> Set this to `""` to disable IDP role mapping. |
 | `Oidc__UserRolesClaimMap__[identityRoleName]` | Identity role name to map to Gameboard role | Default mapping below. |
 
 ##### Default Mapping
@@ -118,8 +118,8 @@ Static markdown documentation can be synchronized from a git repository:
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `giturl` | Git repository URL for markdown docs | `"https://github.com/cmu-sei/helm-charts.git"` |
-| `gitbranch` | Branch to pull from | `"main"` |
+| `giturl` | Git repository URL for markdown docs | `https://github.com/cmu-sei/helm-charts.git` |
+| `gitbranch` | Branch to pull from | `main` |
 | `pollInterval` | Minutes between git pulls | `5` |
 
 #### Ingress
@@ -176,9 +176,9 @@ Trust custom CA certificates.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `cacert` | Inline CA certificate content | `"<Certificate Content>"` |
-| `cacertSecret` | Existing secret with CA cert | `"cert-secret"` |
-| `cacertSecretKey` | Key in secret containing cert | `"ca.crt"` |
+| `cacert` | Inline CA certificate content | `<Certificate Content>` |
+| `cacertSecret` | Existing secret with CA cert | `cert-secret` |
+| `cacertSecretKey` | Key in secret containing cert | `ca.crt` |
 
 ## Gameboard UI Configuration
 

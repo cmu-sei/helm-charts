@@ -26,7 +26,7 @@ The following are configured via the `blueprint-api.env` settings. These Bluepri
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=blueprint;Username=blueprint;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=blueprint;Username=blueprint;Password=PASSWORD;` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -83,9 +83,9 @@ Use `settingsYaml` to configure the Angular UI application. Nested keys in the t
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://blueprint.example.com/auth-callback-silent` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 | `AppTitle` | Browser/application title | `Blueprint` |
-| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
-| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
-| `AppTopBarText` | Banner text displayed in the top bar | `"Blueprint - Exercise Planning"` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppTopBarText` | Banner text displayed in the top bar | `Blueprint - Exercise Planning` |
 | `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
 
 

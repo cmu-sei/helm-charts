@@ -27,7 +27,7 @@ The following are configured via the `alloy-api.env` settings. These Alloy API s
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `"Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;` |
 
 **Important:** The database must include the `uuid-ossp` extension:
 
@@ -54,9 +54,9 @@ Alloy uses a service account to call downstream Crucible services via the resour
 |---------|-------------|---------|
 | `ResourceOwnerAuthorization__Authority` | Identity provider base URL | `https://identity.example.com` |
 | `ResourceOwnerAuthorization__ClientId` | OAuth client ID for the service account | `alloy-api` |
-| `ResourceOwnerAuthorization__ClientSecret` | Client secret associated with the service account | `"SECRET"` |
-| `ResourceOwnerAuthorization__UserName` | Service account username | `"alloy-sa"` |
-| `ResourceOwnerAuthorization__Password` | Service account password | `"PASSWORD"` |
+| `ResourceOwnerAuthorization__ClientSecret` | Client secret associated with the service account | `SECRET` |
+| `ResourceOwnerAuthorization__UserName` | Service account username | `alloy-sa` |
+| `ResourceOwnerAuthorization__Password` | Service account password | `PASSWORD` |
 | `ResourceOwnerAuthorization__Scope` | Space-delimited scopes required for downstream APIs | `alloy-api player-api caster-api steamfitter-api vm-api` |
 
 Store secrets in a Kubernetes Secret and reference it via `alloy-api.existingSecret`.
@@ -136,7 +136,7 @@ Certificates are mounted to `/usr/local/share/ca-certificates`.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | Set when hosting the UI from a subpath | `"/alloy"` |
+| `APP_BASEHREF` | Set when hosting the UI from a subpath | `/alloy` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 
@@ -153,7 +153,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://alloy.example.com/auth-callback-silent` |
 | `AppTitle` | Browser/application title | `Alloy` |
 | `AppTopBarText` | Text displayed in the UI header | `Alloy` |
-| `AppTopBarHexColor` | Hex color for the header background | `"#b00"` |
+| `AppTopBarHexColor` | Hex color for the header background | `#b00` |
 | `PlayerUIAddress` | Player UI URL for cross-navigation | `https://player.example.com` |
 | `UseLocalAuthStorage` | Persist auth state in local storage | `true` |
 

@@ -26,7 +26,7 @@ The following are configured via the `cite-api.env` settings. These CITE API set
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `"Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -93,12 +93,12 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 | `AppTitle` | Browser/application title | `CITE` |
-| `AppTopBarHexColor` | Hex color for the top bar background | `"#2d69b4"` |
-| `AppTopBarHexTextColor` | Hex color for the top bar text | `"#FFFFFF"` |
-| `AppTopBarText` | Banner text displayed in the top bar | `"CITE - Collaborative Incident Threat Evaluator"` |
-| `DefaultScoringModelId` | Optional ID to pre-select a scoring model | `""` |
-| `DefaultEvaluationId` | Optional ID to pre-select an evaluation | `""` |
-| `DefaultTeamId` | Optional ID to pre-select a team | `""` |
+| `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
+| `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppTopBarText` | Banner text displayed in the top bar | `CITE - Collaborative Incident Threat Evaluator` |
+| `DefaultScoringModelId` | Optional ID to pre-select a scoring model | `` |
+| `DefaultEvaluationId` | Optional ID to pre-select an evaluation | `` |
+| `DefaultTeamId` | Optional ID to pre-select a team | `` |
 
 ### Ingress
 

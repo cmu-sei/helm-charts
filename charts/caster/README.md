@@ -31,7 +31,7 @@ The following settings are applied through `caster-api.env`. These Caster API se
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Caster API | `"Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=PASSWORD;"` |
+| `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Caster API | `Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=PASSWORD;` |
 
 **Important:** Ensure the database has the `uuid-ossp` extension installed:
 
@@ -55,8 +55,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 |---------|-------------|---------|
 | `Client__TokenUrl` | Token endpoint for the service account | `https://identity.example.com/connect/token` |
 | `Client__ClientId` | Service account client ID | `caster-admin` |
-| `Client__UserName` | Service account username | `"caster-sa"` |
-| `Client__Password` | Service account password | `"PASSWORD"` |
+| `Client__UserName` | Service account username | `caster-sa` |
+| `Client__Password` | Service account password | `PASSWORD` |
 | `Client__Scope` | Space-delimited scopes required for downstream APIs | `player-api vm-api` |
 
 **Note:**
@@ -125,11 +125,11 @@ The following Terraform Providers are supported if you choose to use them.
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `SEI_CRUCIBLE_USERNAME` | Service account username for the provider | `caster-service` |
-| `SEI_CRUCIBLE_PASSWORD` | Service account password | `"SECRET"` |
+| `SEI_CRUCIBLE_PASSWORD` | Service account password | `SECRET` |
 | `SEI_CRUCIBLE_AUTH_URL` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `SEI_CRUCIBLE_TOK_URL` | Token endpoint | `https://identity.example.com/connect/token` |
 | `SEI_CRUCIBLE_CLIENT_ID` | OAuth client ID | `player.provider` |
-| `SEI_CRUCIBLE_CLIENT_SECRET` | OAuth client secret | `"SECRET"` |
+| `SEI_CRUCIBLE_CLIENT_SECRET` | OAuth client secret | `SECRET` |
 | `SEI_CRUCIBLE_VM_API_URL` | VM API base URL | `https://vm.example.com/api/` |
 | `SEI_CRUCIBLE_PLAYER_API_URL` | Player API base URL | `https://player.example.com/` |
 
@@ -152,7 +152,7 @@ Use `caster-api.certificateMap` to mount CA certificates required for Azure or o
 |---------|-------------|---------|
 | `VSPHERE_SERVER` | vCenter hostname | `vcenter.example.com` |
 | `VSPHERE_USER` | vCenter username | `caster-service@vsphere.local` |
-| `VSPHERE_PASSWORD` | vCenter password | `"PASSWORD"` |
+| `VSPHERE_PASSWORD` | vCenter password | `PASSWORD` |
 | `VSPHERE_ALLOW_UNVERIFIED_SSL` | Allow self-signed certificates (prefer adding [CA certificates](#certificate-trust)) | `false` |
 
 ### Git Credentials
@@ -255,7 +255,7 @@ Certificates are mounted to `/usr/local/share/ca-certificates`.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `APP_BASEHREF` | Set when hosting the UI from a subpath | `"/caster"` |
+| `APP_BASEHREF` | Set when hosting the UI from a subpath | `/caster` |
 
 Use `settingsYaml` to configure settings for the Angular UI application.
 
