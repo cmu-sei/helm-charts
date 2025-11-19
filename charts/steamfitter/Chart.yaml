@@ -1,5 +1,9 @@
 apiVersion: v2
 name: steamfitter
-description: A Helm chart for Kubernetes
+description: Steamfitter enables the organization and execution of scenario tasks on virtual machines by integrating with StackStorm automation.
 type: application
-version: 1.6.7
+version: 1.6.8
+home: https://cmu-sei.github.io/crucible/steamfitter
+sources:
+  - https://github.com/cmu-sei/steamfitter.api
+  - https://github.com/cmu-sei/steamfitter.ui

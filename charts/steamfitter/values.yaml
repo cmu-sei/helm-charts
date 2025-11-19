@@ -71,25 +71,11 @@ steamfitter-api:
     ClientSettings__urls__vmApi: https://vm.example.com/
 
     # Stackstorm Configuration
-    # TODO - Document Stackstorm dependencies
     VmTaskProcessing__ApiType: st2
     VmTaskProcessing__ApiUsername: "st2admin"
     VmTaskProcessing__ApiPassword:
     VmTaskProcessing__ApiBaseUrl: "https://stackstorm.example.com"
     VmTaskProcessing__ApiParameters__clusters: ""
-
-    # Basic seed data to jumpstart deployement
-    # TODO - Document Seed data
-    # SeedData__Users__0__id: ""
-    # SeedData__Users__0__name: ""
-
-    # SeedData__Users__1__id: ""
-    # SeedData__Users__1__name: ""
-
-    # SeedData__UserPermissions__0__UserId: ""
-    # SeedData__UserPermissions__0__PermissionId: ""
-    # SeedData__UserPermissions__1__UserId: ""
-    # SeedData__UserPermissions__1__PermissionId: ""
 
 steamfitter-ui:
   # Ingress configuration example for NGINX
