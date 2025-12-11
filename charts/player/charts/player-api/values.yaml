@@ -182,3 +182,10 @@ env:
   FileUpload__allowedExtensions__5: ".docx"
   FileUpload__allowedExtensions__6: ".gif"
   FileUpload__allowedExtensions__7: ".txt"
+
+  # Optional: Configure an open telemetry endpoint for sending OTLP
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  # Optional: force HTTP instead of the default gRPC protocol
+  # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  # Optional: override the service name reported to collectors
+  # OTEL_SERVICE_NAME: player-api
