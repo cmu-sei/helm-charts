@@ -182,3 +182,6 @@ env:
   FileUpload__allowedExtensions__5: ".docx"
   FileUpload__allowedExtensions__6: ".gif"
   FileUpload__allowedExtensions__7: ".txt"
+
+  # (Optional) Configure an open telemetry endpoint for sending OTLP
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317

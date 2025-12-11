@@ -126,6 +126,51 @@ player-api:
             pathType: ImplementationSpecific
 ```
 
+## OpenTelemetry
+
+Player.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Player to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
+
+```yaml
+player-api:
+  env:
+    # This can be a kubernetes service address if the collector is running in the cluster
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: player-api
+```
+
+### Custom metrics from Player
+- Meter: `player_view_users`
+- Gauge: `player_view_active_users` (current active users)
+- Exposed both via OTLP and the built-in Prometheus scraper endpoint.
+
+### Default metrics from ServiceDefaults
+- Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
+- Built-in meters: `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Server.Kestrel`, `System.Net.Http`, `System.Net.NameResolution`, `Microsoft.EntityFrameworkCore`, plus runtime/process meters.
+- Resource attribute `service_name` defaults to `player-api` (or your `OTEL_SERVICE_NAME` override).
+
+### Example Grafana/Prometheus queries
+Use the Prometheus datasource in Grafana:
+
+```promql
+# Custom Player gauge (should have recent samples when active users exist)
+max_over_time(player_view_active_users{service_name="player-api"}[5m])
+
+# ASP.NET Core request rate (default instrumentation)
+rate(http_server_request_duration_seconds_count{service_name="player-api"}[5m])
+
+# Process CPU (default process instrumentation)
+avg(rate(process_cpu_seconds_total{service_name="player-api"}[5m])) by (service_name)
+
+# EF Core command latency (default EF instrumentation)
+histogram_quantile(0.95, sum by (le)(
+  rate(entityframeworkcore_command_duration_seconds_bucket{service_name="player-api"}[5m])
+))
+```
+
 ## Player UI
 
 | Setting | Description | Example |
