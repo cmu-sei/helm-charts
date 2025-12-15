@@ -1,5 +1,5 @@
 apiVersion: v2
 name: caster-ui
 type: application
-version: 1.6.5
+version: 1.6.7
 appVersion: 3.4.2
