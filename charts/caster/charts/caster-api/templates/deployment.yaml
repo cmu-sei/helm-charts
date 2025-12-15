@@ -89,7 +89,7 @@ spec:
             - mountPath: /root/.git-credentials
               subPath: .git-credentials
               name: {{ include "caster-api.fullname" . }}-gitcredentials
-            {{ if .Values.terraformrc.enabled }}
+            {{- if .Values.terraformrc.enabled }}
             - mountPath: /root/.terraformrc
               subPath: .terraformrc
               name: {{ include "caster-api.fullname" . }}-terraformrc
@@ -100,12 +100,12 @@ spec:
             - mountPath: /install-terraform.sh
               subPath: install-terraform.sh
               name: {{ include "caster-api.fullname" . }}-scripts
-            {{ if .Values.certificateMap }}
+            {{- if .Values.certificateMap }}
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
             {{- end }}
       volumes:
-        {{ if .Values.certificateMap }}
+        {{- if .Values.certificateMap }}
         - name: certificates
           configMap:
             name: {{ .Values.certificateMap }}
@@ -113,7 +113,7 @@ spec:
         {{- if .Values.storage.existing }}
         - name: {{ include "caster-api.name" . }}-vol
           persistentVolumeClaim:
-            claimName: {{ .Values.storage.existing }}
+            claimName: {{ (tpl .Values.storage.existing .) }}
         {{- else if .Values.storage.size }}
         - name: {{ include "caster-api.name" . }}-vol
           persistentVolumeClaim:
@@ -129,7 +129,7 @@ spec:
         - name: {{ include "caster-api.fullname" . }}-gitcredentials
           configMap:
             name: {{ include "caster-api.fullname" . }}-gitcredentials
-        {{ if .Values.terraformrc.enabled }}
+        {{- if .Values.terraformrc.enabled }}
         - name: {{ include "caster-api.fullname" . }}-terraformrc
           configMap:
             name: {{ include "caster-api.fullname" . }}-terraformrc
