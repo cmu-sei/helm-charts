@@ -162,6 +162,9 @@ gameboard-api:
       - secretName: tls-secret-name # this tls secret should already exist
         hosts:
          - gameboard.example.com
+    # If hosting GB using a path, you must include the PathBase environment variable
+    env:
+      PathBase: /gb
 ```
 
 #### Storage
