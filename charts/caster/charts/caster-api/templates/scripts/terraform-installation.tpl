@@ -1,6 +1,11 @@
 {{- define "terraform-installation" }}
 #!/bin/bash
 
+# Create Terraform directories
+mkdir -p "$Terraform__RootWorkingDirectory"
+mkdir -p "$Terraform__PluginDirectory"
+mkdir -p "$Terraform__PluginCache"
+
 if [ "${SKIP_TERRAFORM_INSTALLATION,,}" == "true" ]; then
     exit 0
 fi
@@ -11,11 +16,7 @@ if [ ! -d $Terraform__BinaryPath ]; then
     # Install Unzip
     apt-get update && apt-get install -y unzip curl jq
 
-    # Create Terraform directories
-    mkdir -p "$Terraform__RootWorkingDirectory"
-    mkdir -p "$Terraform__PluginDirectory"
     mkdir -p "$Terraform__BinaryPath"
-    mkdir -p "$Terraform__PluginCache"
 
     # Get current Terraform version
     TERRAFORM_VERSION=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | jq -r .name)
