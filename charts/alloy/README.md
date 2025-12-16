@@ -99,6 +99,15 @@ Alloy’s background worker coordinates event lifecycles and Caster operations. 
 | `NO_PROXY` | Domains/IPs excluded from the proxy | `.local,10.0.0.0/8` |
 | `no_proxy` | Lowercase exclusion list for libraries that expect it | `.local,10.0.0.0/8` |
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+alloy-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### Helm Deployment Configuration
 
 The following are configurations for the Alloy API Helm Chart and application configurations that are configured outside of the `alloy-api.env` section.
@@ -119,15 +128,6 @@ alloy-api:
         paths:
           - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
-```
-
-#### Certificate Trust
-
-Mount custom certificate authorities when using internal PKI:
-
-```yaml
-alloy-api:
-  certificateMap: "custom-ca-certs"
 ```
 
 Certificates are mounted to `/usr/local/share/ca-certificates`.

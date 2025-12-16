@@ -108,6 +108,15 @@ Gameboard requires integration with a Game Engine (typically [TopoMojo](https://
 ##### Migration Note
 If currently using API keys, create an OAuth client in your identity provider and switch to `GameEngine__ClientId/ClientSecret`.
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+gameboard-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### Helm Deployment Configuration
 
 The following are configurations for the Gameboard API Helm Chart and application configurations that are configured outside of the `gameboard-api.env` section.

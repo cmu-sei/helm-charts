@@ -72,6 +72,15 @@ topomojo-api:
     Oidc__UserRolesClaimMap__user: User                    # Standard user
 ```
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+topomojo-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### File Storage
 
 | Setting | Description | Example |

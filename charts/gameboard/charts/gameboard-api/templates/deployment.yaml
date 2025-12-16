@@ -34,6 +34,11 @@ spec:
           command: ["/bin/sh"]
           args: ["/start/start.sh"]
           {{- end }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
+          {{- end }}
           {{- if .Values.existingSecret }}
           envFrom:
             - secretRef:
@@ -53,6 +58,10 @@ spec:
           {{- if or .Values.cacert .Values.cacertSecret }}
             - mountPath: /start
               name: {{ include "gameboard-api.name" . }}-conf
+          {{- end }}
+          {{- if .Values.certificateMap }}
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
           {{- end }}
             - mountPath: /app/.dpk
               name: {{ include "gameboard-api.name" . }}-vol
@@ -101,6 +110,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- if .Values.certificateMap }}
+      - name: certificates
+        configMap:
+          name: {{ .Values.certificateMap }}
+      {{- end }}
       - name: {{ include "gameboard-api.name" . }}-conf
         configMap:
           name: {{ include "gameboard-api.fullname" . }}
@@ -108,7 +122,7 @@ spec:
       {{- if .Values.storage.existing }}
       - name: {{ include "gameboard-api.name" . }}-vol
         persistentVolumeClaim:
-          claimName: {{ .Values.storage.existing }}
+          claimName: {{ (tpl .Values.storage.existing .) }}
       {{- else if .Values.storage.size }}
       - name: {{ include "gameboard-api.name" . }}-vol
         persistentVolumeClaim:

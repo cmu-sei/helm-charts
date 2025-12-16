@@ -182,6 +182,15 @@ caster-api:
     NO_PROXY: .local
 ```
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+caster-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### Seed Data
 
 Bootstrap initial users and roles at startup:

@@ -57,7 +57,7 @@ spec:
           args: {{ .Values.customStart.args }}
           {{- end }}
           {{- include "topomojo-api.env" . | nindent 10 }}
-          {{- if or .Values.securityContext.readOnlyRootFilesystem (include "topomojo-api.seedSecret" .) }}
+          {{- if or .Values.securityContext.readOnlyRootFilesystem (include "topomojo-api.seedSecret" .) .Values.certificateMap }}
           env:
           {{- if .Values.securityContext.readOnlyRootFilesystem }}
             - name: DOTNET_EnableDiagnostics
@@ -69,6 +69,10 @@ spec:
             - name: Database__SeedFile
               value: "/seed/seed-data.json"
           {{- end }}
+          {{- if .Values.certificateMap }}
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
+          {{- end }}
           {{- end }}
           ports:
             - name: http
@@ -78,6 +82,10 @@ spec:
           {{- if .Values.customStart }}
             - mountPath: /home/app/start
               name: {{ include "topomojo-api.name" . }}-conf
+          {{- end }}
+          {{- if .Values.certificateMap }}
+            - mountPath: /usr/local/share/ca-certificates
+              name: certificates
           {{- end }}
           {{- if .Values.existingSecret }}
             - mountPath: /home/app/conf
@@ -112,6 +120,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- if .Values.certificateMap }}
+      - name: certificates
+        configMap:
+          name: {{ .Values.certificateMap }}
+      {{- end }}
       {{- if .Values.customStart }}
       - name: {{ include "topomojo-api.name" . }}-conf
         configMap:
