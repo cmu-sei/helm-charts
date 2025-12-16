@@ -61,6 +61,15 @@ steamfitter-api:
 | `Authorization__ClientId` | OAuth client ID | `steamfitter-api` |
 | `Authorization__ClientName` | OAuth client display name | `Steamfitter API` |
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+steamfitter-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### Crucible Integration (Player and VM API)
 
 Steamfitter needs to integrate with Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api)

@@ -45,6 +45,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__ClientId` | OAuth client ID used by Swagger and other interactive clients | `gallery-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Gallery` |
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+gallery-api:
+  certificateMap: "custom-ca-certs"
+```
 
 ### Helm Deployment Configuration
 

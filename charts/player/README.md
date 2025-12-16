@@ -52,6 +52,15 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | OAuth scopes | `player-api` |
 | `Authorization__ClientId` | OAuth client ID | `vm-api` |
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+player-api:
+  certificateMap: "custom-ca-certs"
+```
+
 ### CORS
 
 Add CORS origins to allow bidirectional communication between Player and the integrated apps.
@@ -126,7 +135,7 @@ player-api:
             pathType: ImplementationSpecific
 ```
 
-## OpenTelemetry
+### OpenTelemetry
 
 Player.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Player to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
 
@@ -142,17 +151,17 @@ player-api:
     # OTEL_SERVICE_NAME: player-api
 ```
 
-### Custom metrics from Player
+#### Custom metrics from Player
 - Meter: `player_view_users`
 - Gauge: `player_view_active_users` (current active users)
 - Exposed both via OTLP and the built-in Prometheus scraper endpoint.
 
-### Default metrics from ServiceDefaults
+#### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
 - Built-in meters: `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Server.Kestrel`, `System.Net.Http`, `System.Net.NameResolution`, `Microsoft.EntityFrameworkCore`, plus runtime/process meters.
 - Resource attribute `service_name` defaults to `player-api` (or your `OTEL_SERVICE_NAME` override).
 
-### Example Grafana/Prometheus queries
+#### Example Grafana/Prometheus queries
 Use the Prometheus datasource in Grafana:
 
 ```promql
@@ -198,7 +207,6 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 The following are configured via the `vm-api.env` settings. These VM API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Vm.Api/blob/main/src/Player.Vm.Api/appsettings.json) which may contain more settings than are described here.
 
-
 ### Database
 
 | Setting | Description | Example |
@@ -214,6 +222,15 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes | `vm-api player-api` |
 | `Authorization__ClientId` | OAuth client ID | `vm-api` |
+
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+vm-api:
+  certificateMap: "custom-ca-certs"
+```
 
 ### Player API Integration
 

@@ -45,6 +45,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__ClientId` | OAuth client ID used by the API and interactive clients | `blueprint-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Blueprint` |
 
+### Certificate Trust
+
+Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.
+
+```yaml
+blueprint-api:
+  certificateMap: "custom-ca-certs"
+```
 
 ### Helm Deployment Configuration
 
