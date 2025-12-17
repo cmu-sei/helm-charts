@@ -60,11 +60,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: {{- toYaml .Values.command | nindent 10 }}
           {{- include "caster-api.env" . | nindent 10 }}
-          {{- if .Values.certificateMap }}
-          env:
-            - name: SSL_CERT_DIR
-              value: /usr/local/share/ca-certificates/
-          {{- end }}
           ports:
             - name: http
               containerPort: {{ default 8080 .Values.service.targetPort }}
@@ -86,11 +81,11 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /root/.git-credentials
+            - mountPath: /app/.git-credentials
               subPath: .git-credentials
               name: {{ include "caster-api.fullname" . }}-gitcredentials
             {{- if .Values.terraformrc.enabled }}
-            - mountPath: /root/.terraformrc
+            - mountPath: /app/.terraformrc
               subPath: .terraformrc
               name: {{ include "caster-api.fullname" . }}-terraformrc
             {{- end }}
