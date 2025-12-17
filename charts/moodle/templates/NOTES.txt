@@ -1,0 +1,33 @@
+{{- $moodle := .Values.moodle | default dict }}
+{{- $admin := $moodle.admin | default dict }}
+{{- $service := .Values.service | default dict }}
+{{- $ingress := .Values.ingress | default dict }}
+1. Get the application URL by running these commands:
+{{- if $ingress.enabled }}
+{{- range $ingress.extraHosts }}
+  http{{ if $ingress.tls }}s{{ end }}://{{ .name }}{{ $ingress.path }}
+{{- end }}
+  http{{ if $ingress.tls }}s{{ end }}://{{ $ingress.hostname }}{{ $ingress.path }}
+{{- else if contains "NodePort" $service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "moodle.serviceName" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" $service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+        You can watch the status by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "moodle.serviceName" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "moodle.serviceName" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ ($service.ports).http }}
+{{- else if contains "ClusterIP" $service.type }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} service/{{ include "moodle.serviceName" . }} 8080:http
+{{- end }}
+
+2. Administrator credentials:
+
+  Username: {{ $admin.username | default "admin" }}
+  Password: Run the following command to retrieve your password:
+{{- $secretKey := $admin.existingSecretKey | default "admin-password" }}
+{{- if $admin.existingSecret }}
+    kubectl get secret --namespace {{ .Release.Namespace }} {{ $admin.existingSecret }} -o jsonpath="{.data.{{ $secretKey }}}" | base64 --decode
+{{- else }}
+    kubectl get secret --namespace {{ .Release.Namespace }} {{ include "moodle.admin.secretName" . }} -o jsonpath="{.data.{{ $secretKey }}}" | base64 --decode
+{{- end }}

@@ -1,0 +1,61 @@
+{{- $moodle := .Values.moodle | default dict -}}
+{{- $database := $moodle.database | default dict -}}
+{{- if $database.create_database }}
+{{- $dbName := tpl ($database.name | default "moodledb") . -}}
+{{- $dbUser := tpl ($database.user | default "moodle") . -}}
+{{- $dbHost := tpl ($database.host | default "pg-postgresql") . -}}
+{{- $dbPort := $database.port | default "5432" -}}
+{{- $dbSecretName := tpl ($database.existingSecret | default "pg-postgresql") . -}}
+{{- $dbSecretKey := $database.existingSecretKey | default "password" -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "moodle.fullname" . }}-create-database
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database-init
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "moodle.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: database-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: create-database
+        image: postgres:15-alpine
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $dbSecretName }}
+              key: {{ $dbSecretKey }}
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" ; do
+            echo "PostgreSQL not ready yet, waiting..."
+            sleep 5
+          done
+          echo "PostgreSQL is ready - checking Moodle database"
+
+          # Check if database exists
+          DB_EXISTS=$(psql -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='{{ $dbName }}'")
+
+          if [ "$DB_EXISTS" = "1" ]; then
+            echo "Database '{{ $dbName }}' already exists, skipping creation"
+          else
+            echo "Creating database '{{ $dbName }}'"
+            psql -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" -d postgres \
+              -c "CREATE DATABASE {{ $dbName }};"
+            echo "Database '{{ $dbName }}' created successfully"
+          fi
+{{- end }}

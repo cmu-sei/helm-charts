@@ -1,0 +1,37 @@
+{{- $persistence := .Values.persistence | default dict }}
+{{- range $name, $config := $persistence }}
+{{- if $config.enabled }}
+{{- $type := $config.type | default "persistentVolumeClaim" }}
+{{- if and (eq $type "persistentVolumeClaim") (not $config.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "moodle.fullname" $ }}-{{ $name }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" $ | nindent 4 }}
+  {{- if $config.retain }}
+  annotations:
+    helm.sh/resource-policy: keep
+    {{- with $.Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- else }}
+  {{- with $.Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ $config.accessMode | default "ReadWriteOnce" }}
+  {{- if $config.storageClass }}
+  storageClassName: {{ $config.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $config.size | default "8Gi" }}
+{{- end }}
+{{- end }}
+{{- end }}
