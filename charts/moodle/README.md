@@ -42,10 +42,11 @@ The following settings configure the Moodle application via environment variable
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `moodle.site.url` | Full URL where Moodle will be accessed | `https://moodle.example.com` |
-| `moodle.site.name` | Site name displayed in Moodle | `Crucible Moodle` (default) |
+| `moodle.site.name` | Site name displayed in Moodle | `Moodle` (default) |
 | `moodle.site.language` | Default site language | `en` (default) |
 
-**Important:** `moodle.site.url` must match your actual domain or ingress hostname. Moodle uses this for generating links and redirects.
+**Important:**
+- `moodle.site.url` must match your actual domain or ingress hostname. Moodle uses this for generating links and redirects.
 
 ### Proxy Configuration
 
@@ -71,13 +72,15 @@ Configure proxy settings when Moodle is behind a reverse proxy or load balancer.
 | `moodle.database.password` | Database password (leave empty if using existingSecret) | `""` |
 | `moodle.database.existingSecret` | Secret containing database password | `crucible-moodle-secret` |
 | `moodle.database.existingSecretKey` | Key in secret containing password | `database-password` |
-| `moodle.database.create_database` | Automatically create database if it doesn't exist (runs as pre-install/pre-upgrade hook) | `true` |
+| `moodle.database.create_database` | Automatically create database if it doesn't exist (runs as a Kubernetes Job) | `true` |
 
 **Important:**
 
 - The default configuration uses `crucible-moodle-secret` with key `database-password`
 - Database credentials must be provided via `existingSecret` or `password` field (required for deployment)
-- When `moodle.database.create_database` is `true` (default), the chart will automatically create the database if it doesn't exist
+- When `moodle.database.create_database` is `true` (default), the chart deploys a Kubernetes Job that:
+  - Waits for PostgreSQL to be ready using `pg_isready`
+  - Creates the database only if it doesn't exist (idempotent)
 - If `moodle.database.create_database` is `false`, you must manually create the database before deploying
 - Ensure database character set is UTF-8
 

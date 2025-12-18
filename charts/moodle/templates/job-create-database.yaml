@@ -10,7 +10,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "moodle.fullname" . }}-create-database
+  name: {{ include "moodle.fullname" . }}-create-database-{{ .Release.Revision }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "moodle.labels" . | nindent 4 }}

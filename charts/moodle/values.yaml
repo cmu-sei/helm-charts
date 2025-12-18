@@ -138,7 +138,7 @@ moodle:
   ## url must match your actual domain or ingress hostname
   site:
     url: "http://localhost:8080"
-    name: "Crucible Moodle"
+    name: "Moodle"
     language: "en"
 
   ## Proxy Configuration
