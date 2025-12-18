@@ -104,32 +104,39 @@ GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodle;
 
 ### SMTP Configuration (Optional)
 
-Configure email sending via SMTP.
+Configure email sending via SMTP. **All SMTP settings must be configured together** - if you set any SMTP variable, you must set all of them (host, port, user, password/existingSecret).
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `moodle.smtp.host` | SMTP server hostname | `""` (not configured) |
-| `moodle.smtp.port` | SMTP port | `587` |
-| `moodle.smtp.user` | SMTP username | `""` (not configured) |
-| `moodle.smtp.password` | SMTP password (leave empty if using existingSecret) | `""` |
-| `moodle.smtp.existingSecret` | Secret containing SMTP password | `crucible-moodle-secret` |
-| `moodle.smtp.existingSecretKey` | Key in secret | `smtp-password` |
-| `moodle.smtp.protocol` | SMTP protocol (`tls` or `ssl`) | `tls` |
-| `moodle.mail.noreplyAddress` | No-reply email address | `""` (not configured) |
-| `moodle.mail.prefix` | Email subject prefix | `[Crucible Moodle]` |
+| Setting | Description | Default | Recommended Value |
+|---------|-------------|---------|-------------------|
+| `moodle.smtp.host` | SMTP server hostname | `""` (not configured) | e.g., `smtp.gmail.com` |
+| `moodle.smtp.port` | SMTP port | `""` (not configured) | `587` (TLS standard) |
+| `moodle.smtp.user` | SMTP username | `""` (not configured) | Your SMTP username |
+| `moodle.smtp.password` | SMTP password (leave empty if using existingSecret) | `""` | - |
+| `moodle.smtp.existingSecret` | Secret containing SMTP password | `""` (not configured) | `crucible-moodle-secret` |
+| `moodle.smtp.existingSecretKey` | Key in secret | `smtp-password` | - |
+| `moodle.smtp.protocol` | SMTP protocol (`tls` or `ssl`) | `""` (not configured) | `tls` |
+| `moodle.mail.noreplyAddress` | No-reply email address | `""` (not configured) | e.g., `noreply@example.com` |
+| `moodle.mail.prefix` | Email subject prefix | `[Crucible Moodle]` | - |
 
-**Note:** SMTP is optional. If `moodle.smtp.host` is not configured, email functionality will be disabled. The default configuration uses TLS on port 587, which is the standard for modern SMTP services.
+**Important Notes:**
+- SMTP is **disabled by default**. Email functionality will only work if ALL required SMTP settings are configured
+- When configuring SMTP, you must set: `host`, `port`, `user`, and either `password` or `existingSecret`
+- Recommended: Use `existingSecret` for the SMTP password in production instead of `password`
+- Standard SMTP configuration uses TLS on port 587
 
 ### Redis Configuration (Optional)
 
 Configure Redis for session storage. Required for multi-replica deployments.
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `moodle.redis.host` | Redis server hostname | `""` (not configured) |
-| `moodle.redis.port` | Redis port | `6379` |
+| Setting | Description | Default | Recommended Value |
+|---------|-------------|---------|-------------------|
+| `moodle.redis.host` | Redis server hostname | `""` (not configured) | Your Redis service hostname |
+| `moodle.redis.port` | Redis port | `""` (not configured) | `6379` (standard) |
 
-**Important:** Redis is required for multi-replica deployments to share sessions across pods. If `moodle.redis.host` is not configured, Redis session storage will be disabled.
+**Important:**
+- Redis is **disabled by default** and only required for multi-replica deployments to share sessions across pods
+- If `moodle.redis.host` is not configured, Redis session storage will be disabled
+- Standard Redis port is 6379
 
 ### Advanced Settings
 
