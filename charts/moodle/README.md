@@ -255,7 +255,7 @@ readOnlyDirroot:
 
 ```yaml
 ingress:
-  enabled: true
+  enabled: true # Default
   className: "nginx"
   hostname: "moodle.example.com"
   annotations:
