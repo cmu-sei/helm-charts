@@ -16,7 +16,6 @@ metadata:
     {{- include "moodle.labels" . | nindent 4 }}
     app.kubernetes.io/component: database-init
   annotations:
-    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
     "helm.sh/hook-weight": "-5"
 spec:

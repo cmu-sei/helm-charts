@@ -198,14 +198,14 @@ Enable read-only Moodle code directory for security and multi-replica support.
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `readOnlyDirroot.enabled` | Enable read-only application directory | `true` |
+| `readOnlyDirroot.enabled` | Enable read-only application directory | `false` |
 | `readOnlyDirroot.volume` | Kubernetes volume configuration (emptyDir, PVC, etc.) | `emptyDir` with 1Gi size limit |
 | `readOnlyDirroot.secret.name` | Secret containing config.php (leave empty to auto-generate) | `""` (auto-generated) |
 | `readOnlyDirroot.secret.key` | Key in secret containing config.php | `config.php` |
 
 **Why Enable Read-Only Dirroot:**
 
-Read-only dirroot is enabled by default and provides several important benefits:
+Read-only dirroot is **disabled by default** but provides several important benefits when enabled:
 
 1. **Security Hardening**: Prevents runtime modifications to application code
 2. **Multi-Replica Support**: Allows multiple pods to safely share the same Moodle codebase without conflicts
@@ -214,11 +214,20 @@ Read-only dirroot is enabled by default and provides several important benefits:
 
 When enabled, an init container seeds the Moodle code directory on pod startup from the container image. The `config.php` file is mounted separately from a secret, allowing for environment-specific configuration while keeping the codebase immutable.
 
-**Example with EmptyDir (Default Configuration):**
+**⚠️ Important Limitation with existingSecret:**
+
+When using `database.existingSecret` that is created in the same Helm release (e.g., from a PostgreSQL subchart), **readOnlyDirroot must be disabled on first deploy**. This is because the auto-generated config.php uses Helm's `lookup` function to read the database password, but the secret doesn't exist yet during template rendering, resulting in an empty password.
+
+**Workarounds:**
+1. **Recommended**: Leave `readOnlyDirroot.enabled: false` (default) - the alpine-moodle image generates config.php at runtime from environment variables
+2. Create the database secret manually before deploying Moodle
+3. Provide your own config secret via `readOnlyDirroot.secret.name`
+
+**Example with EmptyDir:**
 
 ```yaml
 readOnlyDirroot:
-  enabled: true
+  enabled: true  # Only enable if database secret exists before deployment
   volume:
     emptyDir:
       sizeLimit: "1Gi"

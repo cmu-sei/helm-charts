@@ -64,7 +64,11 @@ replicaCount: 1
 ##       name: ""  # Empty = auto-generate
 ##       key: "config.php"
 readOnlyDirroot:
-  enabled: true
+  # IMPORTANT: When using database.existingSecret from the same Helm release,
+  # set enabled=false. The lookup function cannot find secrets that don't exist yet,
+  # resulting in an empty password in config.php. The alpine-moodle image will
+  # generate config.php at runtime from environment variables instead.
+  enabled: false
   volume:
     emptyDir:
       sizeLimit: "1Gi"
