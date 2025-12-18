@@ -134,13 +134,13 @@ moodle:
   ## url must match your actual domain or ingress hostname
   site:
     url: "http://localhost:8080"
-    name: "Moodle"
+    name: "Crucible Moodle"
     language: "en"
 
   ## Proxy Configuration
   proxy:
     reverseProxy: false
-    sslProxy: false
+    sslProxy: true
 
   ## Database Configuration
   database:
@@ -152,7 +152,7 @@ moodle:
     prefix: "mdl_"
     password: ""
     existingSecret: "pg-postgresql"  # Name of secret containing db password (recommended)
-    existingSecretKey: "password"  # Key in the secret containing the password
+    existingSecretKey: "postgres-password"  # Key in the secret containing the password
     ## Create Database
     ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
     create_database: true

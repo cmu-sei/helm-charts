@@ -6,7 +6,7 @@
 {{- $dbHost := tpl ($database.host | default "pg-postgresql") . -}}
 {{- $dbPort := $database.port | default "5432" -}}
 {{- $dbSecretName := tpl ($database.existingSecret | default "pg-postgresql") . -}}
-{{- $dbSecretKey := $database.existingSecretKey | default "password" -}}
+{{- $dbSecretKey := $database.existingSecretKey | default "postgres-password" -}}
 apiVersion: batch/v1
 kind: Job
 metadata:

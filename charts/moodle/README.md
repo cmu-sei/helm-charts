@@ -20,27 +20,30 @@ helm install moodle sei/moodle -f values.yaml
 
 ## Moodle Configuration
 
-The following settings configure the Moodle application via environment variables. These correspond to the [alpine-moodle image configuration](https://github.com/erseco/alpine-moodle#configuration).
+The following settings configure the Moodle application via environment variables. Most settings correspond to the [alpine-moodle image configuration](https://github.com/erseco/alpine-moodle#configuration).
 
 ### Administrator Account
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
 | `moodle.admin.username` | Initial admin username | `admin` |
 | `moodle.admin.email` | Admin email address | `admin@example.com` |
-| `moodle.admin.password` | Admin password (leave empty to auto-generate) | `SecurePassword123!` |
-| `moodle.admin.existingSecret` | Use existing secret for admin password (recommended for production) | `moodle-admin-secret` |
+| `moodle.admin.password` | Admin password (leave empty to auto-generate) | `""` (auto-generated) |
+| `moodle.admin.existingSecret` | Use existing secret for admin password | `crucible-moodle-secret` |
 | `moodle.admin.existingSecretKey` | Key in existing secret containing the password | `admin-password` |
 
-**Security Note:** Use `existingSecret` for production deployments instead of storing passwords in values files.
+**Important:**
+- If `moodle.admin.password` is empty (default) and no `existingSecret` is provided, a random password will be automatically generated
+- The default configuration uses `crucible-moodle-secret` with key `admin-password`
+- For production, create the secret manually before deployment or leave the default configuration to auto-generate credentials
 
 ### Site Configuration
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `moodle.site.url` | Full URL where Moodle will be accessed | `https://moodle.example.com` |
-| `moodle.site.name` | Site name displayed in Moodle | `My Learning Platform` |
-| `moodle.site.language` | Default site language | `en` |
+| `moodle.site.name` | Site name displayed in Moodle | `Crucible Moodle` (default) |
+| `moodle.site.language` | Default site language | `en` (default) |
 
 **Important:** `moodle.site.url` must match your actual domain or ingress hostname. Moodle uses this for generating links and redirects.
 
@@ -50,33 +53,37 @@ Configure proxy settings when Moodle is behind a reverse proxy or load balancer.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `moodle.proxy.reverseProxy` | Enable reverse proxy support | `true` |
-| `moodle.proxy.sslProxy` | Trust SSL headers from proxy | `true` |
+| `moodle.proxy.reverseProxy` | Enable reverse proxy support | `false` (default) |
+| `moodle.proxy.sslProxy` | Trust SSL headers from proxy | `true` (default) |
 
 **Note:** Enable `sslProxy` if SSL/TLS is terminated at the load balancer or ingress controller.
 
 ### Database Configuration
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
 | `moodle.database.type` | Database type (`pgsql`, `mysqli`, or `mariadb`) | `pgsql` |
-| `moodle.database.host` | Database hostname | `postgres` |
+| `moodle.database.host` | Database hostname | `pg-postgresql` |
 | `moodle.database.port` | Database port | `5432` |
 | `moodle.database.name` | Database name | `moodledb` |
 | `moodle.database.user` | Database username | `moodle` |
 | `moodle.database.prefix` | Table prefix (do not use numeric values) | `mdl_` |
-| `moodle.database.password` | Database password (leave empty if using existingSecret) | `MyDBPassword` |
-| `moodle.database.existingSecret` | Secret containing database password (recommended for production) | `postgres-secret` |
-| `moodle.database.existingSecretKey` | Key in secret containing password | `password` |
+| `moodle.database.password` | Database password (leave empty if using existingSecret) | `""` |
+| `moodle.database.existingSecret` | Secret containing database password | `crucible-moodle-secret` |
+| `moodle.database.existingSecretKey` | Key in secret containing password | `database-password` |
 | `moodle.database.create_database` | Automatically create database if it doesn't exist (runs as pre-install/pre-upgrade hook) | `true` |
 
 **Important:**
 
+- The default configuration uses `crucible-moodle-secret` with key `database-password`
+- Database credentials must be provided via `existingSecret` or `password` field (required for deployment)
 - When `moodle.database.create_database` is `true` (default), the chart will automatically create the database if it doesn't exist
 - If `moodle.database.create_database` is `false`, you must manually create the database before deploying
 - Ensure database character set is UTF-8
 
 **Example PostgreSQL Database Setup:**
+
+If using the option `moodle.database.create_database`, the Moodle database will be created automatically if it does not already exist. If you choose, you can manually configure the Moodle database before deploying Moodle.
 
 ```sql
 CREATE DATABASE moodledb WITH ENCODING 'UTF8';
@@ -86,48 +93,50 @@ GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodle;
 
 ### PHP and Upload Configuration
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
-| `moodle.php.postMaxSize` | Maximum POST data size | `100M` |
-| `moodle.php.uploadMaxFilesize` | Maximum file upload size | `100M` |
-| `moodle.php.clientMaxBodySize` | Nginx client body size limit | `100M` |
+| `moodle.php.postMaxSize` | Maximum POST data size | `50M` |
+| `moodle.php.uploadMaxFilesize` | Maximum file upload size | `50M` |
+| `moodle.php.clientMaxBodySize` | Nginx client body size limit | `50M` |
 | `moodle.php.maxInputVars` | Maximum input variables | `5000` |
 
-**Note:** Increase these values if users need to upload large course files or assignments.
+**Note:** Increase these values if users need to upload large course files or assignments. The defaults are suitable for most standard Moodle deployments.
 
 ### SMTP Configuration (Optional)
 
 Configure email sending via SMTP.
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
-| `moodle.smtp.host` | SMTP server hostname | `smtp.gmail.com` |
+| `moodle.smtp.host` | SMTP server hostname | `""` (not configured) |
 | `moodle.smtp.port` | SMTP port | `587` |
-| `moodle.smtp.user` | SMTP username | `moodle@example.com` |
-| `moodle.smtp.password` | SMTP password (leave empty if using existingSecret) | `SMTPPassword123` |
-| `moodle.smtp.existingSecret` | Secret containing SMTP password (recommended) | `smtp-credentials` |
-| `moodle.smtp.existingSecretKey` | Key in secret | `password` |
+| `moodle.smtp.user` | SMTP username | `""` (not configured) |
+| `moodle.smtp.password` | SMTP password (leave empty if using existingSecret) | `""` |
+| `moodle.smtp.existingSecret` | Secret containing SMTP password | `crucible-moodle-secret` |
+| `moodle.smtp.existingSecretKey` | Key in secret | `smtp-password` |
 | `moodle.smtp.protocol` | SMTP protocol (`tls` or `ssl`) | `tls` |
-| `moodle.mail.noreplyAddress` | No-reply email address | `noreply@example.com` |
-| `moodle.mail.prefix` | Email subject prefix | `[Moodle]` |
+| `moodle.mail.noreplyAddress` | No-reply email address | `""` (not configured) |
+| `moodle.mail.prefix` | Email subject prefix | `[Crucible Moodle]` |
+
+**Note:** SMTP is optional. If `moodle.smtp.host` is not configured, email functionality will be disabled. The default configuration uses TLS on port 587, which is the standard for modern SMTP services.
 
 ### Redis Configuration (Optional)
 
 Configure Redis for session storage. Required for multi-replica deployments.
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
-| `moodle.redis.host` | Redis server hostname | `redis-master` |
+| `moodle.redis.host` | Redis server hostname | `""` (not configured) |
 | `moodle.redis.port` | Redis port | `6379` |
 
-**Important:** Redis is required for multi-replica deployments to share sessions across pods.
+**Important:** Redis is required for multi-replica deployments to share sessions across pods. If `moodle.redis.host` is not configured, Redis session storage will be disabled.
 
 ### Advanced Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `moodle.autoUpdateMoodle` | Automatically update Moodle at startup | `false` |
-| `moodle.debug` | Enable debug mode | `false` |
+| `moodle.autoUpdateMoodle` | Automatically update Moodle at startup | `false` (default) |
+| `moodle.debug` | Enable debug mode | `false` (default) |
 
 ## Helm Deployment Configuration
 
@@ -139,6 +148,7 @@ Configure storage for Moodle data directory (user uploads, course files, etc.).
 
 #### Using EmptyDir (Testing Only)
 
+**Default Configuration:**
 ```yaml
 persistence:
   moodledata:
@@ -156,14 +166,14 @@ persistence:
   moodledata:
     enabled: true
     type: persistentVolumeClaim
-    existingClaim: ""           # Leave empty to create new PVC
+    existingClaim: ""           # Leave empty or omit to create new PVC
     accessMode: ReadWriteMany   # Required for multi-replica
     size: 20Gi
     storageClass: "efs-sc"      # EFS, NFS, Azure Files, etc.
     retain: true                # Keep PVC on helm uninstall
 ```
 
-**Note:** Multi-replica deployments require `ReadWriteMany` access mode (EFS, NFS, Azure Files, etc.).
+**Note:** Multi-replica deployments require `ReadWriteMany` access mode (EFS, NFS, Azure Files, etc.). You can either leave `existingClaim` as an empty string or omit it entirely to create a new PVC dynamically.
 
 #### Using Existing PVC
 
@@ -171,6 +181,7 @@ persistence:
 persistence:
   moodledata:
     enabled: true
+    type: persistentVolumeClaim
     existingClaim: "my-moodle-data-pvc"
 ```
 
@@ -178,16 +189,25 @@ persistence:
 
 Enable read-only Moodle code directory for security and multi-replica support.
 
-| Setting | Description |
-|---------|-------------|
-| `readOnlyDirroot.enabled` | Enable read-only application directory |
-| `readOnlyDirroot.volume` | Kubernetes volume configuration (emptyDir, PVC, etc.) |
-| `readOnlyDirroot.secret.name` | Secret containing config.php (leave empty to auto-generate) |
-| `readOnlyDirroot.secret.key` | Key in secret containing config.php |
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `readOnlyDirroot.enabled` | Enable read-only application directory | `true` |
+| `readOnlyDirroot.volume` | Kubernetes volume configuration (emptyDir, PVC, etc.) | `emptyDir` with 1Gi size limit |
+| `readOnlyDirroot.secret.name` | Secret containing config.php (leave empty to auto-generate) | `""` (auto-generated) |
+| `readOnlyDirroot.secret.key` | Key in secret containing config.php | `config.php` |
 
-When enabled, an init container seeds the Moodle code directory on pod startup. The config.php file is mounted separately from a secret.
+**Why Enable Read-Only Dirroot:**
 
-**Example with EmptyDir:**
+Read-only dirroot is enabled by default and provides several important benefits:
+
+1. **Security Hardening**: Prevents runtime modifications to application code
+2. **Multi-Replica Support**: Allows multiple pods to safely share the same Moodle codebase without conflicts
+3. **Immutable Infrastructure**: Ensures all pods run identical code, making deployments more predictable and easier to debug
+4. **Compliance**: Helps meet security requirements that mandate separation of code and data
+
+When enabled, an init container seeds the Moodle code directory on pod startup from the container image. The `config.php` file is mounted separately from a secret, allowing for environment-specific configuration while keeping the codebase immutable.
+
+**Example with EmptyDir (Default Configuration):**
 
 ```yaml
 readOnlyDirroot:
@@ -220,25 +240,35 @@ ingress:
   className: "nginx"
   hostname: "moodle.example.com"
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m"  # Default - match or exceed clientMaxBodySize
+    # Optional: Add cert-manager annotation if using TLS with cert-manager
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
   tls:
     - secretName: moodle-tls
       hosts:
         - moodle.example.com
 ```
 
-**Important:** Set `proxy-body-size` to match or exceed `moodle.php.clientMaxBodySize` for large file uploads.
+**Important:**
+- Set `proxy-body-size` to match or exceed `moodle.php.clientMaxBodySize` for large file uploads (default: 512m)
+- TLS/SSL configuration is optional - add cert-manager annotations only if you're using cert-manager for TLS certificates
 
 ### Resource Configuration
 
 Configure resource requests and limits using presets or custom values.
 
+**Default Configuration:**
+
+The chart uses the `small` preset by default, which allocates:
+- CPU Request: 250m, Limit: 500m
+- Memory Request: 256Mi, Limit: 512Mi
+
+This is suitable for development and small production deployments. Adjust based on your workload.
+
 **Using Presets:**
 
 ```yaml
-resourcesPreset: "large"  # Options: nano, small, medium, large, xlarge, 2xlarge
+resourcesPreset: "small"  # Default - Options: nano, micro, small, medium, large, xlarge, 2xlarge
 ```
 
 | Preset | CPU Request | Memory Request | CPU Limit | Memory Limit |
@@ -282,10 +312,12 @@ All probes use `/login/index.php` as the health check endpoint.
 
 #### Horizontal Pod Autoscaling
 
+Autoscaling is **disabled by default** since the default deployment uses a single replica.
+
 ```yaml
 autoscaling:
-  enabled: true
-  minReplicas: 2
+  enabled: false   # Default - set to true to enable
+  minReplicas: 1
   maxReplicas: 10
   targetCPU: 80
   targetMemory: 80
@@ -295,51 +327,93 @@ autoscaling:
 
 - Redis for session storage
 - ReadWriteMany storage for moodledata
-- Read-only dirroot for shared Moodle code
+- Read-only dirroot for shared Moodle code (enabled by default)
 
 #### Pod Disruption Budget
 
+Pod Disruption Budget is **disabled by default** since single-replica deployments don't benefit from PDB protection.
+
 ```yaml
 pdb:
-  create: true
+  create: false    # Default - set to true for multi-replica deployments
   minAvailable: 1
 ```
 
+**Note:** Enable PDB only when running 2 or more replicas to ensure availability during voluntary disruptions (node drains, cluster upgrades, etc.).
+
 ### Security Context
 
-Configure pod and container security contexts.
+Configure pod and container security contexts. The chart uses secure defaults following Kubernetes security best practices.
+
+**Default Configuration:**
 
 ```yaml
 podSecurityContext:
   enabled: true
-  fsGroup: 65534
-  runAsUser: 65534
-  runAsGroup: 65534
-  runAsNonRoot: true
+  fsGroupChangePolicy: Always
+  sysctls: []
+  supplementalGroups: []
+  fsGroup: 65534                     # nobody/nogroup
+  runAsUser: 65534                   # nobody user
+  runAsGroup: 65534                  # nogroup
+  runAsNonRoot: true                 # runs as non-root user
 
 containerSecurityContext:
   enabled: true
-  runAsUser: 65534
-  runAsNonRoot: true
-  readOnlyRootFilesystem: false
-  allowPrivilegeEscalation: false
+  seLinuxOptions: {}
+  runAsUser: 65534                   # nobody user
+  runAsGroup: 65534                  # nogroup
+  runAsNonRoot: true                 # runs as non-root user
+  privileged: false                  # no privileged mode
+  readOnlyRootFilesystem: false      # writable filesystem needed for Moodle
+  allowPrivilegeEscalation: false    # prevents privilege escalation
   capabilities:
-    drop: ["ALL"]
+    drop: ["ALL"]                    # drops all Linux capabilities
   seccompProfile:
-    type: RuntimeDefault
+    type: RuntimeDefault             # uses runtime default seccomp profile
 ```
+
+**Security Best Practices:**
+
+- Runs as non-root user (UID 65534 - nobody) by default
+- Uses dedicated group (GID 65534 - nogroup)
+- Drops all Linux capabilities
+- Prevents privilege escalation
+- Uses seccomp runtime default profile
+- Compatible with restricted Pod Security Standards
+- FSGroup ownership changes applied to volumes
 
 ### Network Policy
 
-Enable network policies for security.
+Network policies provide network-level security by controlling pod-to-pod and external communication.
+
+**Default Configuration:**
+
+```yaml
+networkPolicy:
+  enabled: false               # Disabled by default
+  policyTypes:
+    - Ingress
+    - Egress
+  allowExternal: true          # Allow external ingress traffic
+  allowExternalEgress: true    # Allow all egress traffic
+  databaseSelector: {}         # No database pod selector
+```
+
+**Enabling Network Policies:**
 
 ```yaml
 networkPolicy:
   enabled: true
-  allowExternal: false
+  allowExternal: false         # Restrict ingress to specific namespaces
+  allowExternalEgress: false   # Restrict egress to specific services
   databaseSelector:
-    app: postgres
+    app: postgres              # Allow egress to database pods
+  ingressNSMatchLabels:
+    name: ingress-nginx        # Allow ingress from nginx namespace
 ```
+
+**Note:** Network policies require a CNI plugin that supports NetworkPolicy (e.g., Calico, Cilium, Weave Net). The default configuration allows all traffic, making it suitable for testing and development environments. For production, enable and configure policies based on your security requirements.
 
 ## Troubleshooting
 

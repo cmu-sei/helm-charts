@@ -133,13 +133,13 @@ spec:
             - name: SITE_URL
               value: {{ tpl ($site.url | default "http://localhost:8080") $ | quote }}
             - name: MOODLE_SITENAME
-              value: {{ tpl ($site.name | default "Moodle") $ | quote }}
+              value: {{ tpl ($site.name | default "Crucible Moodle") $ | quote }}
             - name: MOODLE_LANGUAGE
               value: {{ $site.language | default "en" | quote }}
             - name: REVERSEPROXY
               value: {{ $proxy.reverseProxy | default false | quote }}
             - name: SSLPROXY
-              value: {{ $proxy.sslProxy | default false | quote }}
+              value: {{ $proxy.sslProxy | default true | quote }}
             - name: DB_TYPE
               value: {{ $database.type | default "pgsql" | quote }}
             - name: DB_HOST
@@ -157,10 +157,10 @@ spec:
                 secretKeyRef:
                   {{- if $database.existingSecret }}
                   name: {{ tpl $database.existingSecret $ }}
-                  key: {{ $database.existingSecretKey | default "password" }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
                   {{- else }}
                   name: {{ include "moodle.database.secretName" $ }}
-                  key: {{ $database.existingSecretKey | default "password" }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
                   {{- end }}
             - name: post_max_size
               value: {{ $php.postMaxSize | default "50M" | quote }}
@@ -294,13 +294,13 @@ spec:
             - name: SITE_URL
               value: {{ tpl ($site.url | default "http://localhost:8080") $ | quote }}
             - name: MOODLE_SITENAME
-              value: {{ $site.name | default "Moodle" | quote }}
+              value: {{ $site.name | default "Crucible Moodle" | quote }}
             - name: MOODLE_LANGUAGE
               value: {{ $site.language | default "en" | quote }}
             - name: REVERSEPROXY
               value: {{ $proxy.reverseProxy | default false | quote }}
             - name: SSLPROXY
-              value: {{ $proxy.sslProxy | default false | quote }}
+              value: {{ $proxy.sslProxy | default true | quote }}
             - name: DB_TYPE
               value: {{ $database.type | default "pgsql" | quote }}
             - name: DB_HOST
@@ -318,10 +318,10 @@ spec:
                 secretKeyRef:
                   {{- if $database.existingSecret }}
                   name: {{ tpl $database.existingSecret $ }}
-                  key: {{ $database.existingSecretKey | default "password" }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
                   {{- else }}
                   name: {{ include "moodle.database.secretName" $ }}
-                  key: {{ $database.existingSecretKey | default "password" }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
                   {{- end }}
             - name: post_max_size
               value: {{ $php.postMaxSize | default "50M" | quote }}
