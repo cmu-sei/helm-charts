@@ -130,7 +130,7 @@ moodle:
   admin:
     username: "admin"
     email: "admin@example.com"
-    password: ""  # Used only if existingSecret is empty
+    password: "" # Used only if existingSecret is empty
     existingSecret: ""
     existingSecretKey: "admin-password"
 
@@ -155,8 +155,8 @@ moodle:
     user: "moodle"
     prefix: "mdl_"
     password: ""
-    existingSecret: "pg-postgresql"  # Name of secret containing db password (recommended)
-    existingSecretKey: "postgres-password"  # Key in the secret containing the password
+    existingSecret: "pg-postgresql" # Name of secret containing db password (recommended)
+    existingSecretKey: "postgres-password" # Key in the secret containing the password
     ## Create Database
     ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
     create_database: true
@@ -173,7 +173,7 @@ moodle:
     host: ""
     port: ""
     user: ""
-    password: ""  # Used only if existingSecret is empty
+    password: "" # Used only if existingSecret is empty
     existingSecret: ""
     existingSecretKey: "password"
     protocol: ""

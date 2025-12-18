@@ -389,23 +389,23 @@ spec:
             - name: PRE_CONFIGURE_COMMANDS
               value: |
                 # Override functions that try modifying read-only dirroot
-                upgrade_config_file() { 
-                  echo "[OVERRIDE] upgrade_config_file() skipped"; 
-                  return 0; 
+                upgrade_config_file() {
+                  echo "[OVERRIDE] upgrade_config_file() skipped";
+                  return 0;
                 }
                 final_configurations() {
                   echo "[OVERRIDE] final_configurations() skipped";
                   return 0;
                 }
-                
+
                 # Leader election for multi-replica deployments
                 LOCK_FILE="/var/www/moodledata/.moodle_install.lock"
                 MAX_WAIT=300
                 SLEEP_INTERVAL=4
-                
+
                 echo "[INIT] Sleeping for ${SLEEP_INTERVAL} seconds for leader election..."
                 sleep ${SLEEP_INTERVAL}
-                
+
                 elapsed=0
                 while [ $elapsed -lt $MAX_WAIT ]; do
                   if mkdir "$LOCK_FILE" 2>/dev/null; then
@@ -424,7 +424,7 @@ spec:
                     fi
                   fi
                 done
-                
+
                 if [ $elapsed -ge $MAX_WAIT ]; then
                   echo "[ERROR] Timeout waiting for installation lock"
                   exit 1
@@ -433,9 +433,9 @@ spec:
             - name: PRE_CONFIGURE_COMMANDS
               value: |
                 # Override functions that try modifying read-only dirroot
-                upgrade_config_file() { 
-                  echo "[OVERRIDE] upgrade_config_file() skipped"; 
-                  return 0; 
+                upgrade_config_file() {
+                  echo "[OVERRIDE] upgrade_config_file() skipped";
+                  return 0;
                 }
                 final_configurations() {
                   echo "[OVERRIDE] final_configurations() skipped";
