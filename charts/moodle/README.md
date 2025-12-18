@@ -258,6 +258,7 @@ ingress:
 
 **Important:**
 - Set `proxy-body-size` to match or exceed `moodle.php.clientMaxBodySize` for large file uploads (default: 512m)
+  - **Automatic Validation**: The chart will fail installation if `proxy-body-size` is smaller than `clientMaxBodySize`, preventing upload failures
 - TLS/SSL configuration is optional - add cert-manager annotations only if you're using cert-manager for TLS certificates
 
 ### Resource Configuration
@@ -434,7 +435,9 @@ networkPolicy:
 ### File Upload Issues
 
 - Verify `moodle.php.uploadMaxFilesize` is sufficient
-- Check ingress `proxy-body-size` annotation matches PHP limits
+- Check ingress `proxy-body-size` annotation matches or exceeds `moodle.php.clientMaxBodySize`
+  - The chart will automatically validate this and fail installation if misconfigured
+  - If you see a validation error, update `ingress.annotations["nginx.ingress.kubernetes.io/proxy-body-size"]`
 - Ensure moodledata volume has sufficient space
 - Check permissions on moodledata directory (should be writable by user 65534)
 

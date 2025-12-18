@@ -14,6 +14,35 @@ metadata:
   {{- if $ingress.annotations }}
   {{- $_ := merge $annotations $ingress.annotations }}
   {{- end }}
+  {{- /*
+  Validate that ingress proxy-body-size is >= moodle.php.clientMaxBodySize
+  This prevents upload failures due to ingress blocking requests before they reach Moodle
+  */ -}}
+  {{- $moodle := .Values.moodle | default dict }}
+  {{- $php := $moodle.php | default dict }}
+  {{- $clientMaxBodySize := $php.clientMaxBodySize | default "50M" | upper }}
+  {{- $proxyBodySize := index $annotations "nginx.ingress.kubernetes.io/proxy-body-size" | default "" | upper }}
+  {{- if and $proxyBodySize (ne $proxyBodySize "0") }}
+  {{- $clientNum := regexReplaceAll "[^0-9.]" $clientMaxBodySize "" | float64 }}
+  {{- $clientUnit := regexReplaceAll "[0-9.]" $clientMaxBodySize "" | trim }}
+  {{- $proxyNum := regexReplaceAll "[^0-9.]" $proxyBodySize "" | float64 }}
+  {{- $proxyUnit := regexReplaceAll "[0-9.]" $proxyBodySize "" | trim }}
+  {{- $clientMB := $clientNum }}
+  {{- if eq $clientUnit "K" }}
+  {{- $clientMB = divf $clientNum 1024 }}
+  {{- else if eq $clientUnit "G" }}
+  {{- $clientMB = mulf $clientNum 1024 }}
+  {{- end }}
+  {{- $proxyMB := $proxyNum }}
+  {{- if eq $proxyUnit "K" }}
+  {{- $proxyMB = divf $proxyNum 1024 }}
+  {{- else if eq $proxyUnit "G" }}
+  {{- $proxyMB = mulf $proxyNum 1024 }}
+  {{- end }}
+  {{- if lt $proxyMB $clientMB }}
+  {{- fail (printf "\n\nERROR: Ingress proxy-body-size (%s) is smaller than moodle.php.clientMaxBodySize (%s).\n\nThis will cause upload failures when users try to upload files larger than %s.\n\nFix by updating ingress.annotations:\n  nginx.ingress.kubernetes.io/proxy-body-size: \"%s\"  # or larger\n\nOr set it to match or exceed clientMaxBodySize.\n" $proxyBodySize $clientMaxBodySize $proxyBodySize $clientMaxBodySize) }}
+  {{- end }}
+  {{- end }}
   {{- if gt (len $annotations) 0 }}
   annotations:
     {{- range $key, $value := $annotations }}
