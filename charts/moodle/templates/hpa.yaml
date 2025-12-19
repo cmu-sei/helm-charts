@@ -1,0 +1,38 @@
+{{- $autoscaling := .Values.autoscaling | default dict }}
+{{- if $autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "moodle.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "moodle.fullname" . }}
+  minReplicas: {{ $autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ $autoscaling.maxReplicas | default 10 }}
+  metrics:
+    {{- if $autoscaling.targetCPU }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $autoscaling.targetCPU }}
+    {{- end }}
+    {{- if $autoscaling.targetMemory }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ $autoscaling.targetMemory }}
+    {{- end }}
+{{- end }}

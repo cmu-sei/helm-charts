@@ -1,0 +1,622 @@
+{{- include "moodle.validateValues" . -}}
+{{- $autoscaling := .Values.autoscaling | default dict }}
+{{- $podSecurityContext := .Values.podSecurityContext | default dict }}
+{{- $containerSecurityContext := .Values.containerSecurityContext | default dict }}
+{{- $containerPorts := .Values.containerPorts | default dict }}
+{{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "moodle.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not $autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 1 }}
+  {{- end }}
+  {{- if .Values.updateStrategy }}
+  strategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "moodle.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.configMaps }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- $moodle := .Values.moodle | default dict }}
+        {{- $admin := $moodle.admin | default dict }}
+        {{- if not $admin.existingSecret }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secret-admin.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "moodle.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "moodle.serviceAccountName" . }}
+      {{- if $podSecurityContext.enabled }}
+      securityContext:
+        {{- omit $podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- $serviceAccount := .Values.serviceAccount | default dict }}
+      automountServiceAccountToken: {{ $serviceAccount.automount | default false }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml .Values.hostAliases | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- else if or .Values.podAffinityPreset .Values.podAntiAffinityPreset $nodeAffinityPreset.type }}
+      affinity:
+        {{- if .Values.podAffinityPreset }}
+        podAffinity: {{- include "moodle.affinities.pods" (dict "type" .Values.podAffinityPreset "customLabels" (.Values.podLabels | default dict) "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.podAntiAffinityPreset }}
+        podAntiAffinity: {{- include "moodle.affinities.antiPods" (dict "type" .Values.podAntiAffinityPreset "customLabels" (.Values.podLabels | default dict) "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if $nodeAffinityPreset.type }}
+        nodeAffinity: {{- include "moodle.affinities.nodes" (dict "type" $nodeAffinityPreset.type "key" ($nodeAffinityPreset.key | default "") "values" ($nodeAffinityPreset.values | default list)) | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
+      {{- if or .Values.initContainers $readOnlyDirroot.enabled }}
+      initContainers:
+        {{- if $readOnlyDirroot.enabled }}
+        - name: seed-dirroot
+          image: {{ include "moodle.image" . }}
+          imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
+          {{- if $containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit $containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
+          env:
+            {{- $moodle := $.Values.moodle | default dict }}
+            {{- $admin := $moodle.admin | default dict }}
+            {{- $site := $moodle.site | default dict }}
+            {{- $proxy := $moodle.proxy | default dict }}
+            {{- $database := $moodle.database | default dict }}
+            {{- $php := $moodle.php | default dict }}
+            {{- $smtp := $moodle.smtp | default dict }}
+            {{- $mail := $moodle.mail | default dict }}
+            {{- $redis := $moodle.redis | default dict }}
+            - name: MOODLE_USERNAME
+              value: {{ $admin.username | default "admin" | quote }}
+            - name: MOODLE_EMAIL
+              value: {{ $admin.email | default "admin@example.com" | quote }}
+            - name: MOODLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if $admin.existingSecret }}
+                  name: {{ tpl $admin.existingSecret $ }}
+                  key: {{ $admin.existingSecretKey | default "admin-password" }}
+                  {{- else }}
+                  name: {{ include "moodle.admin.secretName" $ }}
+                  key: {{ $admin.existingSecretKey | default "admin-password" }}
+                  {{- end }}
+            - name: SITE_URL
+              value: {{ tpl ($site.url | default "http://localhost:8080") $ | quote }}
+            - name: MOODLE_SITENAME
+              value: {{ tpl ($site.name | default "Crucible Moodle") $ | quote }}
+            - name: MOODLE_LANGUAGE
+              value: {{ $site.language | default "en" | quote }}
+            - name: REVERSEPROXY
+              value: {{ $proxy.reverseProxy | default false | quote }}
+            - name: SSLPROXY
+              value: {{ $proxy.sslProxy | default true | quote }}
+            - name: DB_TYPE
+              value: {{ $database.type | default "pgsql" | quote }}
+            - name: DB_HOST
+              value: {{ tpl ($database.host | default "pg-postgresql") $ | quote }}
+            - name: DB_PORT
+              value: {{ $database.port | default "5432" | quote }}
+            - name: DB_NAME
+              value: {{ $database.name | default "moodledb" | quote }}
+            - name: DB_USER
+              value: {{ tpl ($database.user | default "moodle") $ | quote }}
+            - name: DB_PREFIX
+              value: {{ tpl ($database.prefix | default "mdl_") $ | quote }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  {{- if $database.existingSecret }}
+                  name: {{ tpl $database.existingSecret $ }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  {{- else }}
+                  name: {{ include "moodle.database.secretName" $ }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  {{- end }}
+            - name: post_max_size
+              value: {{ $php.postMaxSize | default "50M" | quote }}
+            - name: upload_max_filesize
+              value: {{ $php.uploadMaxFilesize | default "50M" | quote }}
+            - name: client_max_body_size
+              value: {{ $php.clientMaxBodySize | default "50M" | quote }}
+            - name: max_input_vars
+              value: {{ $php.maxInputVars | default "5000" | quote }}
+            {{- if $smtp.host }}
+            - name: SMTP_HOST
+              value: {{ $smtp.host | quote }}
+            {{- end }}
+            {{- if $smtp.port }}
+            - name: SMTP_PORT
+              value: {{ $smtp.port | quote }}
+            {{- end }}
+            {{- if $smtp.user }}
+            - name: SMTP_USER
+              value: {{ $smtp.user | quote }}
+            {{- end }}
+            {{- if or $smtp.password $smtp.existingSecret }}
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if $smtp.existingSecret }}
+                  name: {{ tpl $smtp.existingSecret $ }}
+                  key: {{ $smtp.existingSecretKey | default "password" }}
+                  {{- else }}
+                  name: {{ include "moodle.admin.secretName" $ }}
+                  key: smtp-password
+                  {{- end }}
+            {{- end }}
+            {{- if $smtp.protocol }}
+            - name: SMTP_PROTOCOL
+              value: {{ $smtp.protocol | quote }}
+            {{- end }}
+            {{- if $mail.noreplyAddress }}
+            - name: MOODLE_MAIL_NOREPLY_ADDRESS
+              value: {{ $mail.noreplyAddress | quote }}
+            {{- end }}
+            {{- if $mail.prefix }}
+            - name: MOODLE_MAIL_PREFIX
+              value: {{ $mail.prefix | quote }}
+            {{- end }}
+            {{- if $redis.host }}
+            - name: REDIS_HOST
+              value: {{ $redis.host | quote }}
+            {{- end }}
+            {{- if $redis.port }}
+            - name: REDIS_PORT
+              value: {{ $redis.port | quote }}
+            {{- end }}
+            {{- if hasKey $moodle "autoUpdateMoodle" }}
+            - name: AUTO_UPDATE_MOODLE
+              value: {{ $moodle.autoUpdateMoodle | quote }}
+            {{- end }}
+            {{- if hasKey $moodle "debug" }}
+            - name: DEBUG
+              value: {{ $moodle.debug | quote }}
+            {{- end }}
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -e
+              echo "[init] Checking if /mnt/dirroot needs seeding..."
+
+              if [ -f "/mnt/dirroot/version.php" ]; then
+                echo "[init] /mnt/dirroot already contains Moodle code, skipping seed"
+              else
+                echo "[init] Seeding /mnt/dirroot with Moodle code from /var/www/html..."
+                cp -r /var/www/html/. /mnt/dirroot/
+              fi
+
+              if [ ! -f "/mnt/dirroot/config.php" ]; then
+                echo "[init] Creating placeholder config.php for Secret mount..."
+                touch /mnt/dirroot/config.php
+              fi
+
+              echo "[init] Seed complete!"
+          volumeMounts:
+            - name: dirroot
+              mountPath: /mnt/dirroot
+        {{- end }}
+        {{- if .Values.initContainers }}
+        {{- toYaml .Values.initContainers | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: moodle
+          image: {{ include "moodle.image" . }}
+          imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
+          {{- if $containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit $containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.command }}
+          command:
+            {{- toYaml .Values.command | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args:
+            {{- toYaml .Values.args | nindent 12 }}
+          {{- end }}
+          env:
+            {{- $moodle := $.Values.moodle | default dict }}
+            {{- $admin := $moodle.admin | default dict }}
+            {{- $site := $moodle.site | default dict }}
+            {{- $proxy := $moodle.proxy | default dict }}
+            {{- $database := $moodle.database | default dict }}
+            {{- $php := $moodle.php | default dict }}
+            {{- $smtp := $moodle.smtp | default dict }}
+            {{- $mail := $moodle.mail | default dict }}
+            {{- $redis := $moodle.redis | default dict }}
+            - name: MOODLE_USERNAME
+              value: {{ $admin.username | default "admin" | quote }}
+            - name: MOODLE_EMAIL
+              value: {{ $admin.email | default "admin@example.com" | quote }}
+            - name: MOODLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if $admin.existingSecret }}
+                  name: {{ tpl $admin.existingSecret $ }}
+                  key: {{ $admin.existingSecretKey | default "admin-password" }}
+                  {{- else }}
+                  name: {{ include "moodle.admin.secretName" $ }}
+                  key: {{ $admin.existingSecretKey | default "admin-password" }}
+                  {{- end }}
+            - name: SITE_URL
+              value: {{ tpl ($site.url | default "http://localhost:8080") $ | quote }}
+            - name: MOODLE_SITENAME
+              value: {{ $site.name | default "Crucible Moodle" | quote }}
+            - name: MOODLE_LANGUAGE
+              value: {{ $site.language | default "en" | quote }}
+            - name: REVERSEPROXY
+              value: {{ $proxy.reverseProxy | default false | quote }}
+            - name: SSLPROXY
+              value: {{ $proxy.sslProxy | default true | quote }}
+            - name: DB_TYPE
+              value: {{ $database.type | default "pgsql" | quote }}
+            - name: DB_HOST
+              value: {{ tpl ($database.host | default "pg-postgresql") $ | quote }}
+            - name: DB_PORT
+              value: {{ $database.port | default "5432" | quote }}
+            - name: DB_NAME
+              value: {{ $database.name | default "moodledb" | quote }}
+            - name: DB_USER
+              value: {{ tpl ($database.user | default "moodle") $ | quote }}
+            - name: DB_PREFIX
+              value: {{ tpl ($database.prefix | default "mdl_") $ | quote }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  {{- if $database.existingSecret }}
+                  name: {{ tpl $database.existingSecret $ }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  {{- else }}
+                  name: {{ include "moodle.database.secretName" $ }}
+                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  {{- end }}
+            - name: post_max_size
+              value: {{ $php.postMaxSize | default "50M" | quote }}
+            - name: upload_max_filesize
+              value: {{ $php.uploadMaxFilesize | default "50M" | quote }}
+            - name: client_max_body_size
+              value: {{ $php.clientMaxBodySize | default "50M" | quote }}
+            - name: max_input_vars
+              value: {{ $php.maxInputVars | default "5000" | quote }}
+            {{- if $smtp.host }}
+            - name: SMTP_HOST
+              value: {{ $smtp.host | quote }}
+            {{- end }}
+            {{- if $smtp.port }}
+            - name: SMTP_PORT
+              value: {{ $smtp.port | quote }}
+            {{- end }}
+            {{- if $smtp.user }}
+            - name: SMTP_USER
+              value: {{ $smtp.user | quote }}
+            {{- end }}
+            {{- if or $smtp.password $smtp.existingSecret }}
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if $smtp.existingSecret }}
+                  name: {{ tpl $smtp.existingSecret $ }}
+                  key: {{ $smtp.existingSecretKey | default "password" }}
+                  {{- else }}
+                  name: {{ include "moodle.admin.secretName" $ }}
+                  key: smtp-password
+                  {{- end }}
+            {{- end }}
+            {{- if $smtp.protocol }}
+            - name: SMTP_PROTOCOL
+              value: {{ $smtp.protocol | quote }}
+            {{- end }}
+            {{- if $mail.noreplyAddress }}
+            - name: MOODLE_MAIL_NOREPLY_ADDRESS
+              value: {{ $mail.noreplyAddress | quote }}
+            {{- end }}
+            {{- if $mail.prefix }}
+            - name: MOODLE_MAIL_PREFIX
+              value: {{ $mail.prefix | quote }}
+            {{- end }}
+            {{- if $redis.host }}
+            - name: REDIS_HOST
+              value: {{ $redis.host | quote }}
+            {{- end }}
+            {{- if $redis.port }}
+            - name: REDIS_PORT
+              value: {{ $redis.port | quote }}
+            {{- end }}
+            {{- if hasKey $moodle "autoUpdateMoodle" }}
+            - name: AUTO_UPDATE_MOODLE
+              value: {{ $moodle.autoUpdateMoodle | quote }}
+            {{- end }}
+            {{- if hasKey $moodle "debug" }}
+            - name: DEBUG
+              value: {{ $moodle.debug | quote }}
+            {{- end }}
+            {{- $readOnlyDirroot := $.Values.readOnlyDirroot | default dict }}
+            {{- if $readOnlyDirroot.enabled }}
+            {{- if gt ($.Values.replicaCount | int) 1 }}
+            - name: PRE_CONFIGURE_COMMANDS
+              value: |
+                # Override functions that try modifying read-only dirroot
+                upgrade_config_file() {
+                  echo "[OVERRIDE] upgrade_config_file() skipped";
+                  return 0;
+                }
+                final_configurations() {
+                  echo "[OVERRIDE] final_configurations() skipped";
+                  return 0;
+                }
+
+                # Leader election for multi-replica deployments
+                LOCK_FILE="/var/www/moodledata/.moodle_install.lock"
+                MAX_WAIT=300
+                SLEEP_INTERVAL=4
+
+                echo "[INIT] Sleeping for ${SLEEP_INTERVAL} seconds for leader election..."
+                sleep ${SLEEP_INTERVAL}
+
+                elapsed=0
+                while [ $elapsed -lt $MAX_WAIT ]; do
+                  if mkdir "$LOCK_FILE" 2>/dev/null; then
+                    echo "[INIT] This replica won the election and will perform installation"
+                    trap "rmdir '$LOCK_FILE' 2>/dev/null || true" EXIT
+                    break
+                  else
+                    if [ -d "$LOCK_FILE" ]; then
+                      echo "[INIT] Another replica is performing installation, waiting..."
+                      sleep ${SLEEP_INTERVAL}
+                      elapsed=$((elapsed + SLEEP_INTERVAL))
+                      continue
+                    else
+                      echo "[INIT] Installation complete, proceeding..."
+                      break
+                    fi
+                  fi
+                done
+
+                if [ $elapsed -ge $MAX_WAIT ]; then
+                  echo "[ERROR] Timeout waiting for installation lock"
+                  exit 1
+                fi
+            {{- else }}
+            - name: PRE_CONFIGURE_COMMANDS
+              value: |
+                # Override functions that try modifying read-only dirroot
+                upgrade_config_file() {
+                  echo "[OVERRIDE] upgrade_config_file() skipped";
+                  return 0;
+                }
+                final_configurations() {
+                  echo "[OVERRIDE] final_configurations() skipped";
+                  return 0;
+                }
+            {{- end }}
+            {{- end }}
+          {{- if .Values.extraEnvVars }}
+            {{- toYaml .Values.extraEnvVars | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.extraEnvVarsCM .Values.extraEnvVarsSecret }}
+          envFrom:
+            {{- if .Values.extraEnvVarsCM }}
+            - configMapRef:
+                name: {{ .Values.extraEnvVarsCM }}
+            {{- end }}
+            {{- if .Values.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ .Values.extraEnvVarsSecret }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle:
+            {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ $containerPorts.http | default 8080 }}
+              protocol: TCP
+            - name: https
+              containerPort: {{ $containerPorts.https | default 8443 }}
+              protocol: TCP
+            {{- if .Values.extraContainerPorts }}
+            {{- toYaml .Values.extraContainerPorts | nindent 12 }}
+            {{- end }}
+          {{- $startupProbe := .Values.startupProbe | default dict }}
+          {{- if .Values.customStartupProbe }}
+          startupProbe:
+            {{- toYaml .Values.customStartupProbe | nindent 12 }}
+          {{- else if $startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ $startupProbe.path | default "/login/index.php" }}
+              port: http
+            initialDelaySeconds: {{ $startupProbe.initialDelaySeconds | default 0 }}
+            periodSeconds: {{ $startupProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ $startupProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ $startupProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $startupProbe.failureThreshold | default 30 }}
+          {{- end }}
+          {{- $livenessProbe := .Values.livenessProbe | default dict }}
+          {{- if .Values.customLivenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.customLivenessProbe | nindent 12 }}
+          {{- else if $livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ $livenessProbe.path | default "/login/index.php" }}
+              port: http
+            initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default 120 }}
+            periodSeconds: {{ $livenessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ $livenessProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ $livenessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $livenessProbe.failureThreshold | default 6 }}
+          {{- end }}
+          {{- $readinessProbe := .Values.readinessProbe | default dict }}
+          {{- if .Values.customReadinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.customReadinessProbe | nindent 12 }}
+          {{- else if $readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ $readinessProbe.path | default "/login/index.php" }}
+              port: http
+            initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ $readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ $readinessProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ $readinessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ $readinessProbe.failureThreshold | default 6 }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- else if ne (.Values.resourcesPreset | default "none") "none" }}
+          resources: {{- include "moodle.resources.preset" (dict "type" .Values.resourcesPreset) | nindent 12 }}
+          {{- end }}
+          {{- $persistence := .Values.persistence | default dict }}
+          {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
+          {{- if or $persistence $readOnlyDirroot.enabled }}
+          volumeMounts:
+            {{- if $readOnlyDirroot.enabled }}
+            - name: dirroot
+              mountPath: /var/www/html
+              readOnly: true
+            {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
+            {{- $configKey := $secretConfig.key | default "config.php" }}
+            - name: config
+              mountPath: /var/www/html/config.php
+              subPath: {{ $configKey }}
+              readOnly: true
+            {{- end }}
+            {{- range $key, $value := $persistence }}
+            {{- if $value.enabled }}
+            {{- if not (and $readOnlyDirroot.enabled (eq $key "dirroot")) }}
+            {{- $defaultMountPath := "" }}
+            {{- if eq $key "moodledata" }}
+            {{- $defaultMountPath = "/var/www/moodledata" }}
+            {{- else if eq $key "moodle" }}
+            {{- $defaultMountPath = "/var/www/html" }}
+            {{- end }}
+            - name: {{ $key }}
+              mountPath: {{ $value.mountPath | default $defaultMountPath }}
+              {{- if $value.subPath }}
+              subPath: {{ $value.subPath }}
+              {{- end }}
+              {{- if $value.readOnly }}
+              readOnly: {{ $value.readOnly }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if $.Values.extraVolumeMounts }}
+            {{- toYaml $.Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- if .Values.sidecars }}
+        {{- toYaml .Values.sidecars | nindent 8 }}
+        {{- end }}
+      {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
+      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled }}
+      volumes:
+        {{- if $readOnlyDirroot.enabled }}
+        - name: dirroot
+          {{- toYaml $readOnlyDirroot.volume | nindent 10 }}
+        {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
+        {{- $configKey := $secretConfig.key | default "config.php" }}
+        - name: config
+          secret:
+            {{- if $secretConfig.name }}
+            secretName: {{ $secretConfig.name }}
+            {{- else }}
+            secretName: {{ include "moodle.fullname" $ }}-config
+            {{- end }}
+            defaultMode: 0444
+            items:
+              - key: {{ $configKey }}
+                path: {{ $configKey }}
+        {{- end }}
+        {{- range $key, $value := $persistence }}
+        {{- if $value.enabled }}
+        {{- if not (and $readOnlyDirroot.enabled (eq $key "dirroot")) }}
+        {{- $type := $value.type | default "persistentVolumeClaim" }}
+        - name: {{ $key }}
+          {{- if eq $type "persistentVolumeClaim" }}
+          persistentVolumeClaim:
+            claimName: {{ $value.existingClaim | default (printf "%s-%s" (include "moodle.fullname" $) $key) }}
+          {{- else if eq $type "emptyDir" }}
+          emptyDir:
+            {{- if $value.medium }}
+            medium: {{ $value.medium }}
+            {{- end }}
+            {{- if $value.sizeLimit }}
+            sizeLimit: {{ $value.sizeLimit }}
+            {{- end }}
+          {{- else if eq $type "configMap" }}
+          configMap:
+            name: {{ tpl $value.name $ }}
+            {{- if $value.defaultMode }}
+            defaultMode: {{ $value.defaultMode }}
+            {{- end }}
+          {{- else if eq $type "secret" }}
+          secret:
+            secretName: {{ tpl $value.name $ }}
+            {{- if $value.defaultMode }}
+            defaultMode: {{ $value.defaultMode }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if $.Values.extraVolumes }}
+        {{- toYaml $.Values.extraVolumes | nindent 8 }}
+        {{- end }}
+      {{- end }}
