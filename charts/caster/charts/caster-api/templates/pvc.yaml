@@ -1,4 +1,4 @@
-{{- if and (.Values.storage.size) (eq .Values.kind "Deployment") }}
+{{- if .Values.storage.size }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

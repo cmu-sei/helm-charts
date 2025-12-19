@@ -159,7 +159,7 @@ Use `caster-api.certificateMap` to mount CA certificates required for Azure or o
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `gitcredentials` | Credential helper entry written to `/root/.git-credentials` for Git operations | `https://git-access-token:glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.example.com` |
+| `gitcredentials` | Credential helper entry written to `/app/.git-credentials` for Git operations | `https://git-access-token:glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.example.com` |
 
 ### File Version Management
 
