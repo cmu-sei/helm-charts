@@ -1,0 +1,92 @@
+# Crucible Infrastructure Chart Values (Custom)
+# This is a sample configuration based on the original deployment
+
+global:
+  domain: crucible
+  namespace: default
+  version: "0.0.0"
+  security:
+    allowInsecureImages: true
+
+# NFS Server Provisioner for shared storage
+# https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner
+nfs-server-provisioner:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 20Gi
+  storageClass:
+    name: nfs
+
+# Ingress NGINX Controller
+# https://kubernetes.github.io/ingress-nginx/
+ingress-nginx:
+  enabled: true
+  controller:
+    config:
+      hsts: "false"
+      annotations-risk-level: critical
+    allowSnippetAnnotations: true
+  # TCP port forwarding for NFS
+  tcp:
+    2049: "{{ .Release.Namespace }}/{{ .Release.Name }}-nfs-server-provisioner:2049"
+
+# PostgreSQL Database
+# https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres
+postgresql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: "17"
+  env:
+    vars:
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "postgres"
+    fromSecret:
+      POSTGRES_PASSWORD:
+        from: "{{ .Release.Name }}-postgresql"
+        key: postgres-password
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    storageClass: nfs
+
+# pgAdmin for database management
+# https://artifacthub.io/packages/helm/runix/pgadmin4
+pgadmin4:
+  enabled: true
+  fullnameOverride: "{{ .Release.Name }}-pgadmin"
+  existingSecret: "{{ .Release.Name }}-pgadmin"
+  env:
+    email: pgadmin@crucible.dev
+    contextPath: /pgadmin
+    variables:
+      - name: PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED
+        value: "False"
+      - name: PGADMIN_CONFIG_SSL_VERIFY
+        value: "False"
+  serverDefinitions:
+    servers:
+      crucible-postgres:
+        Name: "Crucible Postgres"
+        Group: "Servers"
+        Host: "{{ .Release.Name }}-postgresql"
+        Port: "5432"
+        Username: "postgres"
+        SSLMode: "prefer"
+        MaintenanceDB: "postgres"
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - host: "{{ .Values.global.domain }}"
+        paths:
+          - path: /pgadmin
+            pathType: Prefix
+    tls:
+      - hosts:
+          - "{{ .Values.global.domain }}"
+        secretName: crucible-cert

@@ -1,0 +1,125 @@
+# Crucible Infrastructure Chart Values
+# This chart deploys the foundational infrastructure for Crucible platform
+
+global:
+  # Domain name for the Crucible deployment
+  domain: crucible
+
+  # Kubernetes namespace (use Release.Namespace in most cases)
+  namespace: default
+  version: "0.0.0"
+
+  # Security settings
+  security:
+    # Allow pulling images without enforcing security policies (useful for development and required for bitnami keycloak)
+    allowInsecureImages: true
+
+# NFS Server Provisioner
+# Provides dynamic provisioning of NFS-backed persistent volumes
+# https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner
+nfs-server-provisioner:
+  enabled: true
+  persistence:
+    enabled: true
+
+# Ingress NGINX Controller
+# Routes external traffic to services within the cluster
+# https://kubernetes.github.io/ingress-nginx/
+ingress-nginx:
+  enabled: true
+  controller:
+    config:
+      hsts: "false"
+      annotations-risk-level: critical
+    allowSnippetAnnotations: true
+
+  # TCP port forwarding for NFS server
+  # This allows NFS clients to connect through the ingress controller
+  tcp:
+    2049: "{{ .Release.Namespace }}/{{ .Release.Name }}-nfs-server-provisioner:2049"
+
+# PostgreSQL Database
+# Primary database for Crucible applications
+# https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres
+postgresql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: "16"
+
+  # Environment variables for PostgreSQL
+  env:
+    vars:
+      # Default postgres superuser name
+      POSTGRES_USER: "postgres"
+      # Default postgres database
+      POSTGRES_DB: "postgres"
+
+    # Password is managed via secret (see templates/secret.yaml)
+    fromSecret:
+      POSTGRES_PASSWORD:
+        from: "crucible-infra-postgresql"
+        key: postgres-password
+
+  # Persistent storage for database
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: "1Gi"
+    storageClass: standard
+
+# pgAdmin4
+# Web-based PostgreSQL administration tool
+# https://artifacthub.io/packages/helm/runix/pgadmin4
+pgadmin4:
+  enabled: true
+  fullnameOverride: crucible-infra-pgadmin
+  # Secret containing pgAdmin password
+  existingSecret: crucible-infra-pgadmin
+
+  env:
+    # Email address for the default admin user
+    email: admin@crucible.local
+
+    # pgAdmin served at /pgadmin
+    contextPath: /pgadmin
+
+    variables:
+      # Disable upgrade check
+      - name: PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED
+        value: "False"
+
+      # Ignore SSL verification errors (for self-signed certs)
+      - name: PGADMIN_CONFIG_SSL_VERIFY
+        value: "False"
+
+      # Allow use of the .local domain in an email address
+      - name: PGADMIN_CONFIG_ALLOW_SPECIAL_EMAIL_DOMAINS
+        value: "['local']"
+
+  # Configure PostgreSQL server connection
+  serverDefinitions:
+    servers:
+      crucible-postgres:
+        Name: "Crucible PostgreSQL"
+        Group: "Servers"
+        Host: "{{ .Release.Name }}-postgresql"
+        Port: "5432"
+        Username: "postgres"
+        SSLMode: "prefer"
+        MaintenanceDB: "postgres"
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - host: "{{ .Values.global.domain }}"
+        paths:
+          - path: /pgadmin
+            pathType: Prefix
+    tls:
+      - hosts:
+          - "{{ .Values.global.domain }}"
+        secretName: crucible-cert

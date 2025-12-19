@@ -1,0 +1,11 @@
+{{- if .Values.keycloak.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "crucible.fullname" . }}-keycloak-config-cli
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+data:
+  realm.json: |-
+{{ (.Files.Get "files/crucible-realm.json" | nindent 4) }}
+{{- end }}
