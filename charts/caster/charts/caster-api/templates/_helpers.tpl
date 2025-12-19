@@ -73,3 +73,42 @@ envFrom:
       name: {{ (tpl .Values.existingSecret .) }}
 {{- end }}
 {{- end }}
+
+{{/*
+Collect and merge ConfigMaps - user env vars override chart defaults by Name
+*/}}
+{{- define "caster-api.k8sJobConfigMaps" -}}
+{{- $configMapsByName := dict -}}
+
+{{- /* Add chart defaults */ -}}
+{{- if .Values.certificateMap }}
+  {{- $_ := set $configMapsByName .Values.certificateMap "/usr/local/share/ca-certificates" }}
+{{- end }}
+{{- if .Values.gitcredentials }}
+  {{- $name := printf "%s-gitcredentials" (include "caster-api.fullname" .) }}
+  {{- $_ := set $configMapsByName $name "/app/.git-credentials" }}
+{{- end }}
+{{- if .Values.terraformrc.enabled }}
+  {{- $name := printf "%s-terraformrc" (include "caster-api.fullname" .) }}
+  {{- $_ := set $configMapsByName $name "/app/.terraformrc" }}
+{{- end }}
+
+{{- /* Add/override with user values */ -}}
+{{- range $key, $val := .Values.env }}
+  {{- if hasPrefix "Terraform__KubernetesJobs__ConfigMaps__" $key }}
+    {{- if hasSuffix "__Name" $key }}
+      {{- $mountKey := regexReplaceAll "__Name$" $key "__MountPath" }}
+      {{- $mountPath := index $.Values.env $mountKey | default "" }}
+      {{- $_ := set $configMapsByName $val $mountPath }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- /* Output with sequential indexing */ -}}
+{{- $index := 0 }}
+{{- range $name, $mountPath := $configMapsByName }}
+{{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__Name" $index }}: {{ $name | quote }}
+{{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__MountPath" $index }}: {{ $mountPath | quote }}
+  {{- $index = add1 $index }}
+{{- end }}
+{{- end }}
