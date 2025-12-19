@@ -1,0 +1,15 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "caster-api.serviceAccountName" . }}-binding
+  labels:
+    {{- include "caster-api.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "caster-api.serviceAccountName" . }}
+roleRef:
+  kind: Role
+  name: {{ include "caster-api.serviceAccountName" . }}-job-access
+  apiGroup: rbac.authorization.k8s.io
+{{- end -}}
