@@ -4,6 +4,8 @@
 {{- $containerSecurityContext := .Values.containerSecurityContext | default dict }}
 {{- $containerPorts := .Values.containerPorts | default dict }}
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
+{{- $moodle := .Values.moodle | default dict }}
+{{- $keycloak := $moodle.keycloak | default dict }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -384,10 +386,11 @@ spec:
               value: {{ $moodle.debug | quote }}
             {{- end }}
             {{- $readOnlyDirroot := $.Values.readOnlyDirroot | default dict }}
-            {{- if $readOnlyDirroot.enabled }}
-            {{- if gt ($.Values.replicaCount | int) 1 }}
+            {{- if or $readOnlyDirroot.enabled $moodle.preConfigureCommands }}
             - name: PRE_CONFIGURE_COMMANDS
               value: |
+                {{- if $readOnlyDirroot.enabled }}
+                {{- if gt ($.Values.replicaCount | int) 1 }}
                 # Override functions that try modifying read-only dirroot
                 upgrade_config_file() {
                   echo "[OVERRIDE] upgrade_config_file() skipped";
@@ -429,9 +432,7 @@ spec:
                   echo "[ERROR] Timeout waiting for installation lock"
                   exit 1
                 fi
-            {{- else }}
-            - name: PRE_CONFIGURE_COMMANDS
-              value: |
+                {{- else }}
                 # Override functions that try modifying read-only dirroot
                 upgrade_config_file() {
                   echo "[OVERRIDE] upgrade_config_file() skipped";
@@ -441,7 +442,60 @@ spec:
                   echo "[OVERRIDE] final_configurations() skipped";
                   return 0;
                 }
+                {{- end }}
+                {{- end }}
+                {{- if $moodle.preConfigureCommands }}
+                # User: Custom pre-configure commands
+                {{ $moodle.preConfigureCommands | nindent 16 }}
+                {{- end }}
             {{- end }}
+            {{- if or $keycloak.enabled $moodle.postConfigureCommands }}
+            - name: POST_CONFIGURE_COMMANDS
+              value: |
+                {{- if $keycloak.enabled }}
+                # System: Configure Keycloak OAuth2
+                /opt/sei/custom-scripts/configure_keycloak.sh
+                {{- end }}
+                {{- if $moodle.postConfigureCommands }}
+                # User: Custom post-configure commands
+                {{ $moodle.postConfigureCommands | nindent 16 }}
+                {{- end }}
+            {{- end }}
+            {{- if $keycloak.enabled }}
+            - name: KEYCLOAK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_DOMAIN
+              value: {{ $keycloak.domain | quote }}
+            - name: KEYCLOAK_REALM
+              value: {{ $keycloak.realm | quote }}
+            - name: KEYCLOAK_CLIENTID
+              value: {{ $keycloak.clientId | quote }}
+            - name: KEYCLOAK_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  {{- if $keycloak.existingSecret }}
+                  name: {{ tpl $keycloak.existingSecret $ }}
+                  key: {{ $keycloak.existingSecretKey | default "client-secret" }}
+                  {{- else }}
+                  name: {{ include "moodle.keycloak.secretName" $ }}
+                  key: {{ $keycloak.existingSecretKey | default "client-secret" }}
+                  {{- end }}
+            - name: KEYCLOAK_NAME
+              value: {{ $keycloak.name | quote }}
+            - name: KEYCLOAK_IMAGE
+              value: {{ $keycloak.icon | quote }}
+            - name: KEYCLOAK_LOGINSCOPES
+              value: {{ $keycloak.loginScopes | quote }}
+            - name: KEYCLOAK_LOGINSCOPESOFFLINE
+              value: {{ $keycloak.loginScopesOffline | quote }}
+            - name: KEYCLOAK_REQUIRECONFIRMATION
+              value: {{ ternary "1" "0" $keycloak.requireConfirmation | quote }}
+            - name: KEYCLOAK_SHOWONLOGINPAGE
+              value: {{ ternary "1" "0" $keycloak.showOnLoginPage | quote }}
+            - name: KEYCLOAK_USERFIELDMAPPINGS
+              value: {{ join " " $keycloak.userFieldMappings | quote }}
+            - name: KEYCLOAK_DISABLE_CURL_SECURITY
+              value: {{ $keycloak.disableCurlSecurityBlockedHosts | quote }}
             {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- toYaml .Values.extraEnvVars | nindent 12 }}
@@ -524,7 +578,7 @@ spec:
           {{- end }}
           {{- $persistence := .Values.persistence | default dict }}
           {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-          {{- if or $persistence $readOnlyDirroot.enabled }}
+          {{- if or $persistence $readOnlyDirroot.enabled $keycloak.enabled }}
           volumeMounts:
             {{- if $readOnlyDirroot.enabled }}
             - name: dirroot
@@ -557,6 +611,11 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- if $keycloak.enabled }}
+            - name: keycloak-scripts
+              mountPath: /opt/sei/custom-scripts
+              readOnly: true
+            {{- end }}
             {{- if $.Values.extraVolumeMounts }}
             {{- toYaml $.Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -565,7 +624,7 @@ spec:
         {{- toYaml .Values.sidecars | nindent 8 }}
         {{- end }}
       {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled }}
+      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled $keycloak.enabled }}
       volumes:
         {{- if $readOnlyDirroot.enabled }}
         - name: dirroot
@@ -615,6 +674,12 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
+        {{- end }}
+        {{- if $keycloak.enabled }}
+        - name: keycloak-scripts
+          configMap:
+            name: {{ include "moodle.fullname" $ }}-keycloak
+            defaultMode: 0755
         {{- end }}
         {{- if $.Values.extraVolumes }}
         {{- toYaml $.Values.extraVolumes | nindent 8 }}

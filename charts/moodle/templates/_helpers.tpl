@@ -87,6 +87,42 @@ Database secret name
 {{- end }}
 
 {{/*
+Keycloak secret name
+*/}}
+{{- define "moodle.keycloak.secretName" -}}
+{{- printf "%s-keycloak" (include "moodle.fullname" .) }}
+{{- end }}
+
+{{/*
+Normalize Keycloak domain; add https:// if no scheme is provided.
+*/}}
+{{- define "moodle.keycloak.domain" -}}
+{{- $moodle := .Values.moodle | default dict -}}
+{{- $keycloak := $moodle.keycloak | default dict -}}
+{{- $domain := $keycloak.domain | default "" -}}
+{{- if and $domain (not (regexMatch "^https?://" $domain)) -}}
+  {{- $domain = printf "https://%s" $domain -}}
+{{- end -}}
+{{- $domain | trimSuffix "/" -}}
+{{- end }}
+
+{{/*
+Normalize Keycloak logo URL; add https:// if no scheme is provided.
+*/}}
+{{- define "moodle.keycloak.logo" -}}
+{{- $moodle := .Values.moodle | default dict -}}
+{{- $keycloak := $moodle.keycloak | default dict -}}
+{{- $logo := $keycloak.logo | default "" -}}
+{{- if $logo -}}
+  {{- if regexMatch "^https?://" $logo -}}
+    {{- $logo -}}
+  {{- else -}}
+    {{- printf "https://%s" $logo -}}
+  {{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Return the proper Moodle image name with digest support
 */}}
 {{- define "moodle.image" -}}
@@ -409,6 +445,43 @@ Validate required values for Moodle deployment
 {{- end }}
 {{- end }}
 
+{{- end }}
+
+{{/* Validate that PRE/POST_CONFIGURE_COMMANDS are not in extraEnvVars */}}
+{{- range .Values.extraEnvVars }}
+  {{- if eq .name "PRE_CONFIGURE_COMMANDS" }}
+    {{- fail "ERROR: Do not set PRE_CONFIGURE_COMMANDS in extraEnvVars.\n  This variable is managed by the chart.\n  To add your own pre-configure commands, use: moodle.preConfigureCommands" }}
+  {{- end }}
+  {{- if eq .name "POST_CONFIGURE_COMMANDS" }}
+    {{- fail "ERROR: Do not set POST_CONFIGURE_COMMANDS in extraEnvVars.\n  This variable is managed by the chart.\n  To add your own post-configure commands, use: moodle.postConfigureCommands" }}
+  {{- end }}
+{{- end }}
+
+{{/* Validate Keycloak configuration */}}
+{{- $keycloak := $moodle.keycloak | default dict }}
+{{- if $keycloak.enabled }}
+  {{- $domain := $keycloak.domain | default "" }}
+  {{- if not $domain }}
+    {{- fail "ERROR: moodle.keycloak.domain is required when keycloak.enabled=true.\n  Set moodle.keycloak.domain (e.g., 'https://keycloak.example.com' or 'https://example.com/keycloak)" }}
+  {{- end }}
+  {{- if not $keycloak.realm }}
+    {{- fail "ERROR: moodle.keycloak.realm is required when keycloak.enabled=true" }}
+  {{- end }}
+  {{- if not $keycloak.clientId }}
+    {{- fail "ERROR: moodle.keycloak.clientId is required when keycloak.enabled=true" }}
+  {{- end }}
+  {{- if and (not $keycloak.existingSecret) (not $keycloak.clientSecret) }}
+    {{- fail "ERROR: Keycloak client secret must be configured.\n  Either:\n  1. Set moodle.keycloak.clientSecret (for dev/testing)\n  2. Set moodle.keycloak.existingSecret (recommended for production)\n  Note: This secret must match the client secret configured in your Keycloak client settings." }}
+  {{- end }}
+  {{- if not $keycloak.loginScopes }}
+    {{- fail "ERROR: moodle.keycloak.loginScopes is required when keycloak.enabled=true" }}
+  {{- end }}
+  {{- if not $keycloak.loginScopesOffline }}
+    {{- fail "ERROR: moodle.keycloak.loginScopesOffline is required when keycloak.enabled=true" }}
+  {{- end }}
+  {{- if not $keycloak.userFieldMappings }}
+    {{- fail "ERROR: moodle.keycloak.userFieldMappings is required when keycloak.enabled=true.\n  At minimum, set: userFieldMappings: [\"sub:idnumber\"]" }}
+  {{- end }}
 {{- end }}
 
 {{- end }}
