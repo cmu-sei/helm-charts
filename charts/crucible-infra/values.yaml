@@ -46,7 +46,7 @@ postgresql:
   image:
     registry: docker.io
     repository: postgres
-    tag: "16"
+    tag: "18.1"
 
   # Environment variables for PostgreSQL
   env:
@@ -55,20 +55,24 @@ postgresql:
       POSTGRES_USER: "postgres"
       # Default postgres database
       POSTGRES_DB: "postgres"
+      # Use a subdirectory so postgres owns the data dir without chmod on the mount root
+      PGDATA: "/var/lib/postgresql/18/docker/pgdata"
 
     # Password is managed via secret (see templates/secret.yaml)
     fromSecret:
       POSTGRES_PASSWORD:
-        from: "crucible-infra-postgresql"
+        from: "{{ .Release.Name }}-postgresql"
         key: postgres-password
 
   # Persistent storage for database
   persistence:
     enabled: true
+    annotations: {}
+    storageClass: null
     accessModes:
       - ReadWriteOnce
     size: "1Gi"
-    storageClass: standard
+    selector: null
 
 # pgAdmin4
 # Web-based PostgreSQL administration tool

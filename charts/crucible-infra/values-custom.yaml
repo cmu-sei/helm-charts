@@ -43,6 +43,8 @@ postgresql:
     vars:
       POSTGRES_USER: "postgres"
       POSTGRES_DB: "postgres"
+      # Match the PVC mount path used by the postgres chart
+      PGDATA: "/var/lib/postgresql/18/docker/pgdata"
     fromSecret:
       POSTGRES_PASSWORD:
         from: "{{ .Release.Name }}-postgresql"
@@ -53,6 +55,13 @@ postgresql:
       - ReadWriteOnce
     size: 10Gi
     storageClass: nfs
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+  securityContext:
+    allowPrivilegeEscalation: false
 
 # pgAdmin for database management
 # https://artifacthub.io/packages/helm/runix/pgadmin4

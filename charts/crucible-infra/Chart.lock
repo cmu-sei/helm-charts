@@ -10,6 +10,6 @@ dependencies:
   version: 1.50.0
 - name: postgres
   repository: https://self-hosters-by-night.github.io/helm-charts
-  version: 0.12.0
-digest: sha256:8cbe224097830a83d7aa350ede2514a8737a4c160ebf8a3df49230a8e302a861
-generated: "2025-12-19T16:22:38.570507551Z"
+  version: 0.13.0
+digest: sha256:1be7ee1d49cbc170b1a41407083d0a81f4d24a8f2472002a39573cddf24ae231
+generated: "2025-12-23T15:17:50.437424406Z"
