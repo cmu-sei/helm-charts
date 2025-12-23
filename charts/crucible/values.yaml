@@ -535,6 +535,12 @@ player:
     existingSecret: "{{ .Release.Name }}-player-api-custom"
     env:
       PathBase: /player
+      Logging__Debug__LogLevel__Default: Debug
+      Logging__Debug__LogLevel__Microsoft: Debug
+      Logging__Debug__LogLevel__System: Debug
+      Logging__Console__LogLevel__Default: Debug
+      Logging__Console__LogLevel__Microsoft: Debug
+      Logging__Console__LogLevel__System: Debug
       # Use Keycloak client configurations
       Authorization__Authority: https://{{ .Values.global.domain }}/keycloak/realms/crucible
       Authorization__AuthorizationUrl: https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth
@@ -547,9 +553,11 @@ player:
       # Trust the custom ca-cert
       SSL_CERT_FILE: /usr/local/share/ca-certificates/crucible-dev.crt
       SSL_CERT_DIR: /usr/local/share/ca-certificates
-      # Configure an OTLP collector for sending opentelemetry
-      # Use the kubernetes cluster address for the collector
-      OTEL_EXPORTER_OTLP_ENDPOINT: crucible-grafana-alloy:4317
+      # Configure OpenTelemetry to send metrics, logs, and traces to Grafana Alloy via gRPC
+      # Alloy will then forward to Prometheus, Loki, and Tempo
+      # Note: Endpoint must include http:// prefix for gRPC (not https)
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://crucible-monitoring-grafana-alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
   player-ui:
     ingress:
       className: nginx

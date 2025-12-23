@@ -6,7 +6,7 @@
 
 global:
   # Domain name for the Crucible deployment
-  domain: crucible.local
+  domain: crucible
 
   # Kubernetes namespace
   namespace: default
@@ -37,7 +37,7 @@ grafana:
     path: /grafana
     pathType: Prefix
     tls:
-      - secretName: crucible-cert
+      - secretName: crucible-infra-cert
         hosts:
           - "{{ .Values.global.domain }}"
 
@@ -159,7 +159,7 @@ loki:
     replicas: 1
     persistence:
       enabled: true
-      size: 10Gi
+      size: 5Gi
 
     # Trust custom CA certificates
     extraEnv:
@@ -235,7 +235,7 @@ tempo:
   # Persistent storage for traces
   persistence:
     enabled: true
-    size: 10Gi
+    size: 5Gi
 
   # Disable Tempo Query (use Grafana instead)
   tempoQuery:
@@ -245,8 +245,7 @@ tempo:
 # Routes logs to Loki, metrics to Prometheus, traces to Tempo
 # https://artifacthub.io/packages/helm/grafana/alloy
 grafana-alloy:
-  enabled: false  # Disabled by default, enable when needed
-  fullnameOverride: "crucible-grafana-alloy"
+  enabled: true
 
   controller:
     type: daemonset
@@ -289,46 +288,63 @@ grafana-alloy:
         targetPort: 4318
         protocol: TCP
 
-    # Alloy configuration for collecting and routing telemetry
     configMap:
+      # Grafana Alloy Configuration
+      # Reference: https://grafana.com/docs/alloy/latest/reference/components/
+      # Reference: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/
+      # Reference: https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
+      # Consider adding the following in the future:
+      # 1. Kubernetes Cluster Events: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#kubernetes-cluster-events
+      # 2. Kuberenetes Node Logs: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#system-logs
+      # 3. Grafana Alloy Meta-Metrics (metrics about the metrics collector): https://grafana.com/docs/alloy/latest/collect/metamonitoring/
       content: |-
         logging {
           level = "info"
         }
 
-        // Kubernetes pod discovery
+        // Begin Kubernetes discovery configuration
+
+        // discovery.kubernetes allows you to find scrape targets from Kubernetes resources.
+        // this spec will automatically discover all kubernetes pods in the cluster
         discovery.kubernetes "pods" {
           role = "pod"
         }
 
-        // Relabel discovered pods
+        // discovery.relabel rewrites the label set of the input targets by applying one or more relabeling rules.
+        // this simplifies the names of labels
         discovery.relabel "pod_logs" {
           targets = discovery.kubernetes.pods.targets
 
+          // Label creation - "namespace" field from "__meta_kubernetes_namespace"
           rule {
             source_labels = ["__meta_kubernetes_namespace"]
             action        = "replace"
             target_label  = "namespace"
           }
 
+          // Label creation - "pod" field from "__meta_kubernetes_pod_name"
           rule {
             source_labels = ["__meta_kubernetes_pod_name"]
             action        = "replace"
             target_label  = "pod"
           }
 
+          // Label creation - "container" field from "__meta_kubernetes_pod_container_name"
           rule {
             source_labels = ["__meta_kubernetes_pod_container_name"]
             action        = "replace"
             target_label  = "container"
           }
 
+          // Label creation -  "app" field from "__meta_kubernetes_pod_label_app_kubernetes_io_name"
           rule {
             source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
             action        = "replace"
             target_label  = "app"
           }
 
+          // Label creation -  "job" field from "__meta_kubernetes_namespace" and "__meta_kubernetes_pod_container_name"
+          // Concatenate values __meta_kubernetes_namespace/__meta_kubernetes_pod_container_name
           rule {
             source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
             action        = "replace"
@@ -338,59 +354,73 @@ grafana-alloy:
           }
         }
 
-        // Tail logs from Kubernetes pods
+        // End Kubernetes discovery configuration
+
+        // Begin Loki configuration
+
+        // loki.source.kubernetes tails logs from Kubernetes containers using the Kubernetes API.
         loki.source.kubernetes "pods" {
           targets    = discovery.relabel.pod_logs.output
           forward_to = [loki.process.pods.receiver]
         }
 
-        // Process logs (parse docker format)
+        // loki.process receives log entries from other Loki components, applies one or more processing stages,
+        // and forwards the results to the list of receivers in the component's arguments.
         loki.process "pods" {
           stage.docker {}
           forward_to = [loki.write.default.receiver]
         }
 
-        // Write logs to Loki
+        // loki.write sends logs to the Loki endpoint
         loki.write "default" {
           endpoint {
             url = "http://{{ .Release.Name }}-loki:3100/loki/api/v1/push"
           }
         }
 
-        // Write metrics to Prometheus
+        // End Loki configuration
+
+        // Begin Prometheus configuration
+
+        // Remote write endpoint for OTLP metrics
+        // Application metrics received via OTLP will be forwarded here
         prometheus.remote_write "default" {
           endpoint {
             url = "http://{{ .Release.Name }}-prometheus-server/api/v1/write"
           }
         }
 
-        // Scrape Prometheus metrics from Kubernetes pods
-        prometheus.scrape "pods" {
-          targets    = discovery.kubernetes.pods.targets
-          forward_to = [prometheus.remote_write.default.receiver]
-        }
+        // NOTE: Pod scraping is disabled in Alloy.
+        // Prometheus handles infrastructure metric scraping directly using its own
+        // Kubernetes service discovery (node-exporter, kube-state-metrics, etc.).
+        // Alloy focuses on receiving OTLP telemetry from instrumented applications.
 
-        // Export OTLP logs to Loki
+        // End Prometheus configuration
+
+        // Begin OpenTelemetry configuration
+
+        // Export otel logs to Loki
         otelcol.exporter.loki "default" {
           forward_to = [loki.write.default.receiver]
         }
 
-        // Export OTLP traces to Tempo
+        // Export otel traces to Tempo via gRPC
         otelcol.exporter.otlp "default" {
           client {
             endpoint = "{{ .Release.Name }}-tempo:4317"
+            // insecure is ok since this just stays in the cluster
             tls {
               insecure = true
             }
           }
         }
 
-        // Export OTLP metrics to Prometheus
+        // Export otel metrics to Prometheus
         otelcol.exporter.prometheus "default" {
           forward_to = [prometheus.remote_write.default.receiver]
         }
 
-        // Batch OTLP exports
+        // Batch otel exports to reduce network chatter
         otelcol.processor.batch "default" {
           output {
             metrics = [otelcol.exporter.prometheus.default.input]
@@ -399,7 +429,8 @@ grafana-alloy:
           }
         }
 
-        // OTLP receiver for applications
+        // Configure an otel receiver for apps to send otel to
+        // This is a compatible Otel Collector for http and grpc
         otelcol.receiver.otlp "default" {
           grpc {
             endpoint = "0.0.0.0:4317"
@@ -409,9 +440,13 @@ grafana-alloy:
             endpoint = "0.0.0.0:4318"
           }
 
+          // Send output to the batch processor
+          // Batch processor then forwards to the correct services
           output {
             metrics = [otelcol.processor.batch.default.input]
             logs    = [otelcol.processor.batch.default.input]
             traces  = [otelcol.processor.batch.default.input]
           }
         }
+
+        // End OpenTelemetry configuration
