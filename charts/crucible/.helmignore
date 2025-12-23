@@ -21,5 +21,3 @@
 .idea/
 *.tmproj
 .vscode/
-# Custom values reference
-values-custom.yaml

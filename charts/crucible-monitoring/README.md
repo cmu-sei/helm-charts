@@ -2,26 +2,30 @@
 
 This Helm chart deploys the monitoring and observability stack for the [Crucible](https://cmu-sei.github.io/crucible/) platform, including Prometheus, Grafana, Loki, Tempo, and Grafana Alloy for comprehensive metrics, logs, and traces collection.
 
+**The default values file for this chart is designed as a development deployment typically used with the [Crucible Dev Container](https://github.com/cmu-sei/crucible-development).**
+
 ## Overview
 
 The crucible-monitoring chart provides a complete observability solution for Crucible applications, implementing the LGTM stack (Loki for logs, Grafana for visualization, Tempo for traces, and Mimir/Prometheus for metrics).
 
 ### Components
 
-- **Prometheus**: Metrics collection and storage with remote-write receiver
-- **Grafana**: Visualization dashboards with Keycloak OAuth integration
-- **Loki**: Log aggregation and querying
-- **Tempo**: Distributed tracing with OpenTelemetry support
-- **Grafana Alloy**: OpenTelemetry collector for routing logs, metrics, and traces
+Chart components are enabled by default, but can be disabled via the values file.
+
+- [Prometheus](https://prometheus.io/docs/introduction/overview/): Metrics collection and storage with remote-write receiver
+- [Grafana](https://grafana.com/docs/grafana/latest/): Visualization dashboards with Keycloak OAuth integration
+- [Grafana Loki](https://grafana.com/docs/loki/latest/): Log aggregation and querying
+- [Grafana Tempo](https://grafana.com/docs/tempo/latest/): Distributed tracing with OpenTelemetry support
+- [Grafana Alloy](https://grafana.com/docs/alloy/latest/): OpenTelemetry collector for routing logs, metrics, and traces
 
 ## Prerequisites
 
-1. **Kubernetes 1.19+**
-2. **Helm 3.0+**
-3. **crucible-infra chart must be deployed first**
+1. Kubernetes 1.19+
+2. Helm 3.0+
+3. **Default values assume crucible-infra chart is deployed first**
    - Provides ingress controller
    - Provides CA certificate ConfigMap
-4. **(Optional) crucible chart for Keycloak OAuth integration with Grafana**
+4. **Default values assume crucible chart is deployed first for Keycloak OAuth integration with Grafana. You can optionally disable Keycloak auth.**
 
 ## Installation
 
@@ -33,16 +37,6 @@ helm install crucible-monitoring ./crucible-monitoring
 
 # Access Grafana
 # Navigate to https://<your-domain>/grafana
-```
-
-### With Keycloak OAuth
-
-If the crucible chart is deployed with Keycloak:
-
-```bash
-# Grafana will automatically integrate with Keycloak for authentication
-helm install crucible-monitoring ./crucible-monitoring \
-  --set grafana.grafana\\.ini.auth\\.generic_oauth.enabled=true
 ```
 
 ## Configuration
@@ -87,7 +81,7 @@ helm install crucible-monitoring ./crucible-monitoring \
 |-----------|-------------|---------|
 | `loki.enabled` | Enable Loki deployment | `true` |
 | `loki.deploymentMode` | Deployment mode | `SingleBinary` |
-| `loki.singleBinary.persistence.size` | Storage size | `10Gi` |
+| `loki.singleBinary.persistence.size` | Storage size | `5Gi` |
 
 **SingleBinary Mode**: Simplified deployment suitable for development and small-scale production. All Loki components run in a single pod.
 
@@ -96,7 +90,7 @@ helm install crucible-monitoring ./crucible-monitoring \
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `tempo.enabled` | Enable Tempo deployment | `true` |
-| `tempo.persistence.size` | Storage size | `10Gi` |
+| `tempo.persistence.size` | Storage size | `5Gi` |
 | `tempo.tempo.receivers.otlp` | OTLP receiver config | Enabled on ports 4317/4318 |
 
 **OpenTelemetry**: Applications can send traces directly to Tempo or via Grafana Alloy.
@@ -105,10 +99,8 @@ helm install crucible-monitoring ./crucible-monitoring \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `grafana-alloy.enabled` | Enable Grafana Alloy | `false` |
+| `grafana-alloy.enabled` | Enable Grafana Alloy | `true` |
 | `grafana-alloy.controller.type` | Controller type | `daemonset` |
-
-**Note**: Grafana Alloy is disabled by default. Enable it to automatically collect logs, metrics, and traces from all Kubernetes pods.
 
 When enabled, Alloy:
 - Collects logs from all pods and sends to Loki

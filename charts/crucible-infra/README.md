@@ -6,7 +6,11 @@ This Helm chart deploys the foundational infrastructure components for the [Cruc
 
 The crucible-infra chart provides the core infrastructure services that the Crucible applications depend on. It is designed to be deployed before the `crucible` and `crucible-monitoring` charts.
 
+**The default values file for this chart is designed as a development deployment typically used with the [Crucible Dev Container](https://github.com/cmu-sei/crucible-development).**
+
 ### Components
+
+Chart components are enabled by default, but can be disabled via the values file.
 
 - **Ingress NGINX**: Routes external traffic to services within the cluster
 - **PostgreSQL**: Primary database for all Crucible applications
@@ -15,9 +19,9 @@ The crucible-infra chart provides the core infrastructure services that the Cruc
 
 ## Prerequisites
 
-- Kubernetes 1.19+
-- Helm 3.0+
-- Sufficient cluster resources for database and storage
+1. Kubernetes 1.19+
+2. Helm 3.0+
+3. Sufficient cluster resources for database and storage
 
 ## Installation
 
@@ -47,7 +51,6 @@ helm install crucible-infra ./crucible-infra -f my-values.yaml
 | `global.domain` | Domain name for Crucible deployment | `crucible.local` |
 | `global.namespace` | Kubernetes namespace | `default` |
 | `global.version` | Version tag for Crucible components | `0.0.0` |
-| `global.security.allowInsecureImages` | Allow images without security enforcement | `true` |
 
 ### NFS Server Provisioner
 
@@ -66,9 +69,7 @@ The NFS server provisioner creates a StorageClass named `nfs` that can be used b
 | `ingress-nginx.enabled` | Enable ingress controller | `true` |
 | `ingress-nginx.controller.config.hsts` | Enable HTTP Strict Transport Security | `false` |
 | `ingress-nginx.controller.allowSnippetAnnotations` | Allow snippet annotations | `true` |
-| `ingress-nginx.tcp.2049` | TCP port forwarding for NFS | Configured |
 
-**Important**: The ingress controller is configured to forward TCP port 2049 to the NFS server provisioner service, allowing NFS clients to connect through the ingress.
 
 ### PostgreSQL
 
@@ -87,14 +88,17 @@ The NFS server provisioner creates a StorageClass named `nfs` that can be used b
 kubectl get secret crucible-infra-postgresql -o jsonpath='{.data.postgres-password}' | base64 --decode
 ```
 
+**Postgres password(s) should be properly managed by kubernetes secrets in production deployments.**
+
 ### pgAdmin
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `pgadmin4.enabled` | Enable pgAdmin | `true` |
 | `pgadmin4.env.email` | Admin user email | `admin@crucible.local` |
-| `pgadmin4.env.contextPath` | URL context path | `/pgadmin` |
+| `pgadmin4.env.contextPath` | URL context path for path-based hosting | `/pgadmin` |
 | `pgadmin4.ingress.enabled` | Enable ingress for pgAdmin | `true` |
+| `pgadmin4.env.variables`   | List additional env vars for pgadmin4 here | `- name: PGADMIN_CONFIG_ALLOW_SPECIAL_EMAIL_DOMAINS`<br>` value: "['local']"` |
 
 **Access pgAdmin**: After deployment, pgAdmin is accessible at `https://{{ .Values.global.domain }}/pgadmin`
 
@@ -102,28 +106,6 @@ The PostgreSQL server is pre-configured in pgAdmin using the connection details 
 
 ```bash
 kubectl get secret crucible-infra-pgadmin -o jsonpath='{.data.password}' | base64 --decode
-```
-
-### NFS Persistent Volume Claims
-
-The chart creates several PVCs for use by Crucible applications:
-
-| PVC Name | Purpose | Default Size |
-|----------|---------|--------------|
-| `{release-name}-nfs` | General shared storage | `10Gi` |
-| `{release-name}-topomojo-api-nfs` | TopoMojo file storage | `10Gi` |
-| `{release-name}-gameboard-api-nfs` | Gameboard file storage | `5Gi` |
-| `{release-name}-caster-api-nfs` | Caster file storage | `5Gi` |
-
-Configure PVC sizes:
-
-```yaml
-nfs:
-  enabled: true
-  size: "20Gi"              # General shared storage
-  topomojoSize: "50Gi"      # TopoMojo storage
-  gameboardSize: "10Gi"     # Gameboard storage
-  casterSize: "10Gi"        # Caster storage
 ```
 
 ### Custom CA Certificates
@@ -136,21 +118,6 @@ The chart supports loading custom CA certificates from the `files/` directory:
 These certificates are made available to all pods via the `crucible-ca-cert` ConfigMap. Applications that need to trust these certificates should mount this ConfigMap.
 
 ## Example Configurations
-
-### Minimal Development Setup
-
-```yaml
-global:
-  domain: crucible.dev
-
-postgresql:
-  persistence:
-    size: 5Gi
-
-nfs-server-provisioner:
-  persistence:
-    size: 5Gi
-```
 
 ### Production Setup
 
@@ -169,12 +136,6 @@ nfs-server-provisioner:
   persistence:
     size: 100Gi
     storageClass: "standard"
-
-nfs:
-  size: "50Gi"
-  topomojoSize: "200Gi"
-  gameboardSize: "50Gi"
-  casterSize: "50Gi"
 
 ingress-nginx:
   controller:

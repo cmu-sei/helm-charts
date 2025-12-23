@@ -4,9 +4,13 @@ This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) plat
 
 ## Overview
 
-The crucible chart is designed to work with the `crucible-infra` chart, which provides the foundational infrastructure (PostgreSQL, ingress controller, NFS storage). Deploy `crucible-infra` first, then deploy this chart.
+The crucible chart is designed to work with the `crucible-infra` chart, which provides the foundational infrastructure (PostgreSQL, ingress controller, NFS storage). The default deployed assumes you have deployed `crucible-infra` first.
+
+**The default values file for this chart is designed as a development deployment typically used with the [Crucible Dev Container](https://github.com/cmu-sei/crucible-development).**
 
 ### Components
+
+Chart components are enabled by default, but can be disabled via the values file.
 
 - **Keycloak**: Identity and access management for all Crucible applications
 - **Player**: Exercise player interface and VM management
@@ -24,7 +28,7 @@ The crucible chart is designed to work with the `crucible-infra` chart, which pr
 
 1. **Kubernetes 1.19+**
 2. **Helm 3.0+**
-3. **crucible-infra chart must be deployed first**
+3. **Default assumes crucible-infra chart is deployed first**
    - Provides PostgreSQL database
    - Provides ingress controller
    - Provides NFS storage
@@ -104,43 +108,7 @@ The chart references NFS PVCs from the crucible-infra chart:
 kubectl get secret crucible-keycloak-auth -o jsonpath='{.data.admin-password}' | base64 --decode
 ```
 
-**Realm Import**: The chart automatically imports the Crucible realm configuration on first Keycloak startup. If the realm already exists, it will not be overwritten.
-
-### Application Enable/Disable
-
-Each application can be individually enabled or disabled:
-
-```yaml
-crucible-alloy:
-  enabled: true
-
-blueprint:
-  enabled: true
-
-caster:
-  enabled: true
-
-cite:
-  enabled: true
-
-gallery:
-  enabled: true
-
-gameboard:
-  enabled: true
-
-player:
-  enabled: true
-
-steamfitter:
-  enabled: true
-
-topomojo:
-  enabled: true
-
-moodle:
-  enabled: true
-```
+**Realm Import**: The chart automatically imports the Crucible realm configuration on first Keycloak startup. If the realm already exists, it will **not** be overwritten.
 
 ### Application Configuration
 
@@ -150,8 +118,6 @@ All applications are pre-configured with:
 - Keycloak OAuth/OIDC integration
 - Shared domain and TLS certificate
 - CA certificate trust (from crucible-ca-cert ConfigMap)
-
-For detailed application-specific configuration, see `values-custom.yaml` or the individual application chart documentation.
 
 ## Example Configurations
 

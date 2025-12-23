@@ -9,11 +9,6 @@ global:
   namespace: default
   version: "0.0.0"
 
-  # Security settings
-  security:
-    # Allow pulling images without enforcing security policies (useful for development and required for bitnami keycloak)
-    allowInsecureImages: true
-
 # NFS Server Provisioner
 # Provides dynamic provisioning of NFS-backed persistent volumes
 # https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner
@@ -32,11 +27,6 @@ ingress-nginx:
       hsts: "false"
       annotations-risk-level: critical
     allowSnippetAnnotations: true
-
-  # TCP port forwarding for NFS server
-  # This allows NFS clients to connect through the ingress controller
-  tcp:
-    2049: "{{ .Release.Namespace }}/{{ .Release.Name }}-nfs-server-provisioner:2049"
 
 # PostgreSQL Database
 # Primary database for Crucible applications
@@ -79,7 +69,6 @@ postgresql:
 # https://artifacthub.io/packages/helm/runix/pgadmin4
 pgadmin4:
   enabled: true
-  fullnameOverride: crucible-infra-pgadmin
   # Secret containing pgAdmin password
   existingSecret: crucible-infra-pgadmin
 

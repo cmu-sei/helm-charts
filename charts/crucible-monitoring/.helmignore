@@ -16,6 +16,3 @@
 .idea/
 *.tmproj
 .vscode/
-
-# Custom values files (user-specific configurations)
-values-custom.yaml

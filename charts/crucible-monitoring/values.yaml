@@ -48,7 +48,7 @@ grafana:
       serve_from_sub_path: true
 
     auth:
-      disable_login_form: true
+      disable_login_form: true # OAuth only via Keycloak
       signout_redirect_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/logout?redirect_uri=https://{{ .Values.global.domain }}/grafana/"
 
     # Keycloak OAuth integration
