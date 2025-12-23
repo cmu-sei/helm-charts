@@ -1,0 +1,401 @@
+# Global settings
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+
+# Common annotations and labels
+commonAnnotations: {}
+commonLabels: {}
+
+# Image pull secrets
+imagePullSecrets: []
+
+# Moodle container image
+image:
+  registry: ""
+  repository: erseco/alpine-moodle
+  tag: v5.0.1
+  digest: ""
+  pullPolicy: IfNotPresent
+
+# Number of replicas
+replicaCount: 1
+
+## Read-Only Dirroot Configuration
+## Enables immutable application directory for security and multi-replica support
+## When enabled:
+##   - Moodle code is mounted read-only from a volume
+##   - config.php is mounted separately from a secret
+##   - Prevents runtime modifications to application files
+##
+## Recommended Volume Configurations:
+##
+## 1. EmptyDir:
+##   readOnlyDirroot:
+##     enabled: true
+##     volume:
+##       emptyDir:
+##         sizeLimit: "1Gi"
+##
+## 2. PersistentVolumeClaim with EFS:
+##   readOnlyDirroot:
+##     enabled: true
+##     volume:
+##       persistentVolumeClaim:
+##         claimName: "moodle-code-pvc"
+##
+##   Note: Requires ReadWriteMany access mode (EFS, NFS, Azure Files, etc.)
+##
+## Advanced: Any Kubernetes volume type is supported (hostPath, nfs, csi, etc.)
+##
+## Config.php Secret:
+## - If secret.name is empty, chart auto-generates minimal config.php using database password lookup
+## - For production, provide your own secret with config.php
+##
+## Example with External Secret:
+##   readOnlyDirroot:
+##     secret:
+##       name: "moodle-config"  # Your pre-created secret
+##       key: "config.php"      # Key in the secret
+##
+## Auto-generation:
+##   readOnlyDirroot:
+##     secret:
+##       name: ""  # Empty = auto-generate
+##       key: "config.php"
+readOnlyDirroot:
+  # IMPORTANT: When using database.existingSecret from the same Helm release,
+  # set enabled=false. The lookup function cannot find secrets that don't exist yet,
+  # resulting in an empty password in config.php. The alpine-moodle image will
+  # generate config.php at runtime from environment variables instead.
+  enabled: false
+  volume:
+    emptyDir:
+      sizeLimit: "1Gi"
+  secret:
+    name: ""
+    key: "config.php"
+
+## Deployment update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+# Pod annotations and labels
+podAnnotations: {}
+podLabels: {}
+
+# Pod-level security context
+podSecurityContext:
+  enabled: true
+  fsGroupChangePolicy: Always
+  sysctls: []
+  supplementalGroups: []
+  fsGroup: 65534
+  runAsUser: 65534
+  runAsGroup: 65534
+  runAsNonRoot: false
+
+# Container-level security context
+containerSecurityContext:
+  enabled: true
+  seLinuxOptions: {}
+  runAsUser: 65534
+  runAsGroup: 65534
+  runAsNonRoot: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: RuntimeDefault
+
+# Service account
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+# Container ports
+containerPorts:
+  http: 8080
+  https: 8443
+
+## Moodle Configuration
+moodle:
+  admin:
+    username: "admin"
+    email: "admin@example.com"
+    password: "" # Used only if existingSecret is empty
+    existingSecret: ""
+    existingSecretKey: "admin-password"
+
+  ## Site Configuration
+  ## url must match your actual domain or ingress hostname
+  site:
+    url: "http://localhost:8080"
+    name: "Moodle"
+    language: "en"
+
+  ## Proxy Configuration
+  proxy:
+    reverseProxy: false
+    sslProxy: true
+
+  ## Database Configuration
+  database:
+    type: "pgsql"
+    host: "pg-postgresql"
+    port: "5432"
+    name: "moodledb"
+    user: "moodle"
+    prefix: "mdl_"
+    password: ""
+    existingSecret: "pg-postgresql" # Name of secret containing db password (recommended)
+    existingSecretKey: "postgres-password" # Key in the secret containing the password
+    ## Create Database
+    ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
+    create_database: true
+
+  ## PHP/Upload Limits Configuration
+  php:
+    postMaxSize: "50M"
+    uploadMaxFilesize: "50M"
+    clientMaxBodySize: "50M"
+    maxInputVars: "5000"
+
+  ## SMTP/Mail Configuration
+  smtp:
+    host: ""
+    port: ""
+    user: ""
+    password: "" # Used only if existingSecret is empty
+    existingSecret: ""
+    existingSecretKey: "password"
+    protocol: ""
+
+  mail:
+    noreplyAddress: ""
+    prefix: ""
+
+  ## Redis Configuration
+  redis:
+    host: ""
+    port: ""
+
+  ## Keycloak OAuth2 Configuration
+  keycloak:
+    enabled: false
+    domain: "" ## Keycloak domain (defaults to global.domain if not specified)
+    realm: "" ## Keycloak realm name
+    clientId: "" ## OAuth2 client ID configured in Keycloak
+    clientSecret: "" ## Client secret (used only if existingSecret is empty)
+    existingSecret: "" ## Name of secret containing containing client secret (recommended)
+    existingSecretKey: "client-secret"
+    name: "Keycloak" ## OAuth2 provider display name
+    icon: "" ## OAuth2 provider icon URL (required)
+    loginScopes: "openid profile email" ## OAuth2 scopes for standard login
+    loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes for offline access
+    requireConfirmation: false ## Require email confirmation for new accounts
+    showOnLoginPage: true ## Show OAuth2 provider on login page
+    ## User field mappings (maps OAuth2 claims to Moodle user fields)
+    ## Format: "external:internal"
+    userFieldMappings:
+      - "sub:idnumber"
+    ## Site configuration for internal Keycloak communication
+    disableCurlSecurityBlockedHosts: true
+    disableCurlSecurityAllowedPorts: true
+
+  ## Additional Settings
+  preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade
+  postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
+  autoUpdateMoodle: false
+  debug: false
+
+## Extra environment variables
+extraEnvVars: []
+
+## Name of existing ConfigMap containing extra environment variables
+extraEnvVarsCM: ""
+
+## Name of existing Secret containing extra environment variables
+extraEnvVarsSecret: ""
+
+## Command and args for overriding default container command
+command: []
+args: []
+
+## Lifecycle hooks for the container
+lifecycleHooks: {}
+
+## Startup probe
+startupProbe:
+  enabled: true
+  path: "/login/index.php"
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
+
+## Liveness probe values
+livenessProbe:
+  enabled: true
+  path: "/login/index.php"
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Readiness probe values
+readinessProbe:
+  enabled: true
+  path: "/login/index.php"
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Resource requests and limits
+resourcesPreset: "small"
+resources: {}
+
+# Extra container ports
+extraContainerPorts: []
+
+# Init containers
+initContainers: []
+
+## Persistence Configuration
+## Configure storage for Moodle data directory (/var/www/moodledata)
+## This directory stores user uploads, course files, and application data
+##
+## Recommended Configurations:
+##
+## 1. EmptyDir:
+##   persistence:
+##     moodledata:
+##       enabled: true
+##       type: emptyDir
+##       sizeLimit: "5Gi"
+##       mountPath: /var/www/moodledata
+##
+##   Use case: Testing, ephemeral deployments
+##   Warning: Data is lost when pod is deleted or restarted
+##
+## 2. PersistentVolumeClaim - Create New:
+##   persistence:
+##     moodledata:
+##       enabled: true
+##       type: persistentVolumeClaim
+##       existingClaim: ""
+##       accessMode: ReadWriteOnce
+##       size: 20Gi
+##       storageClass: "gp3"         # AWS EBS, Azure Disk, etc.
+##       retain: false
+##       mountPath: /var/www/moodledata
+##
+## 3. Existing PVC (use pre-created PVC):
+##   persistence:
+##     moodledata:
+##       enabled: true
+##       type: persistentVolumeClaim
+##       existingClaim: "my-moodle-data-pvc"
+##       mountPath: /var/www/moodledata
+##
+##
+## Other volume types supported (hostPath, nfs, csi, etc.)
+## See: https://kubernetes.io/docs/concepts/storage/volumes/
+persistence:
+  moodledata:
+    enabled: true
+    type: emptyDir
+    sizeLimit: "5Gi"
+    mountPath: /var/www/moodledata
+    ## For persistentVolumeClaim type, configure these:
+    # existingClaim: ""           # Use existing PVC (leave empty to create new)
+    # accessMode: ReadWriteMany   # ReadWriteOnce or ReadWriteMany
+    # size: 20Gi                  # Size of PVC to create
+    # storageClass: "efs-sc"      # Storage class name
+    # retain: true                # Keep PVC after helm uninstall
+
+## Extra volumes to add to the deployment
+extraVolumes: []
+
+## Extra volume mounts to add to the container
+extraVolumeMounts: []
+
+# Service configuration
+service:
+  type: ClusterIP
+  ports:
+    http: 8080
+    https: 8443
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m"
+  hostname: moodle.example.com
+  path: /
+  pathType: Prefix
+  tls: []
+  extraHosts: []
+  extraPaths: []
+  extraRules: []
+
+# ConfigMaps
+configMaps: {}
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  policyTypes:
+    - Ingress
+    - Egress
+  allowExternal: true
+  allowExternalEgress: true
+  databaseSelector: {}
+  ingressNSMatchLabels: {}
+  ingressNSPodMatchLabels: {}
+  ingressRules: []
+  extraIngress: []
+  extraEgress: []
+
+# Pod Disruption Budget
+pdb:
+  create: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+# Horizontal Pod Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPU: 80
+  targetMemory: 80
+
+# Advanced scheduling
+hostAliases: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAffinityPreset: ""
+podAntiAffinityPreset: "soft"
+nodeAffinityPreset:
+  type: ""
+  key: ""
+  values: []
+priorityClassName: ""
+schedulerName: ""
+topologySpreadConstraints: []

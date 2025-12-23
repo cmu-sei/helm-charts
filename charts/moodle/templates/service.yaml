@@ -1,0 +1,72 @@
+{{- $service := .Values.service | default dict }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "moodle.serviceName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+  {{- $annotations := dict }}
+  {{- if .Values.commonAnnotations }}
+  {{- $_ := merge $annotations .Values.commonAnnotations }}
+  {{- end }}
+  {{- if $service.annotations }}
+  {{- $_ := merge $annotations $service.annotations }}
+  {{- end }}
+  {{- if gt (len $annotations) 0 }}
+  annotations:
+    {{- range $key, $value := $annotations }}
+    {{ $key }}: {{ tpl ($value | toString) $ | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  type: {{ $service.type | default "ClusterIP" }}
+  {{- if and $service.clusterIP (eq ($service.type | default "ClusterIP") "ClusterIP") }}
+  clusterIP: {{ $service.clusterIP }}
+  {{- end }}
+  {{- if or (eq ($service.type | default "ClusterIP") "LoadBalancer") (eq ($service.type | default "ClusterIP") "NodePort") }}
+  externalTrafficPolicy: {{ $service.externalTrafficPolicy | default "Cluster" }}
+  {{- end }}
+  {{- if and (eq ($service.type | default "ClusterIP") "LoadBalancer") $service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml $service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- if and (eq ($service.type | default "ClusterIP") "LoadBalancer") (not (empty $service.loadBalancerIP)) }}
+  loadBalancerIP: {{ $service.loadBalancerIP }}
+  {{- end }}
+  {{- if $service.sessionAffinity }}
+  sessionAffinity: {{ $service.sessionAffinity }}
+  {{- end }}
+  {{- if $service.sessionAffinityConfig }}
+  sessionAffinityConfig:
+    {{- toYaml $service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  ports:
+    - name: http
+      port: {{ $service.ports.http | default 80 }}
+      targetPort: http
+      protocol: TCP
+      {{- if and (or (eq ($service.type | default "ClusterIP") "NodePort") (eq ($service.type | default "ClusterIP") "LoadBalancer")) (not (empty ($service.nodePorts).http)) }}
+      nodePort: {{ ($service.nodePorts).http }}
+      {{- else if eq ($service.type | default "ClusterIP") "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+    - name: https
+      port: {{ $service.ports.https | default 443 }}
+      targetPort: https
+      protocol: TCP
+      {{- if and (or (eq ($service.type | default "ClusterIP") "NodePort") (eq ($service.type | default "ClusterIP") "LoadBalancer")) (not (empty ($service.nodePorts).https)) }}
+      nodePort: {{ ($service.nodePorts).https }}
+      {{- else if eq ($service.type | default "ClusterIP") "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+    {{- if $service.extraPorts }}
+    {{- range $service.extraPorts }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort | default .name }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "moodle.selectorLabels" . | nindent 4 }}

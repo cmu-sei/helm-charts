@@ -1,0 +1,85 @@
+{{- $networkPolicy := .Values.networkPolicy | default dict }}
+{{- if $networkPolicy.enabled }}
+{{- $moodle := .Values.moodle | default dict }}
+{{- $database := $moodle.database | default dict }}
+{{- $containerPorts := .Values.containerPorts | default dict }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "moodle.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "moodle.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    {{- if $networkPolicy.policyTypes }}
+    {{- toYaml $networkPolicy.policyTypes | nindent 4 }}
+    {{- else }}
+    - Ingress
+    - Egress
+    {{- end }}
+  {{- if $networkPolicy.allowExternalEgress }}
+  egress:
+    - {}
+  {{- else }}
+  egress:
+    # Allow DNS resolution
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow outbound connections to database
+    - ports:
+        - port: {{ ($database.port | default "5432" | int) }}
+          protocol: TCP
+      {{- if $networkPolicy.databaseSelector }}
+      to:
+        - podSelector:
+            matchLabels:
+              {{- toYaml $networkPolicy.databaseSelector | nindent 14 }}
+      {{- end }}
+    {{- if $networkPolicy.extraEgress }}
+    {{- toYaml $networkPolicy.extraEgress | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- if $networkPolicy.ingressRules }}
+  ingress:
+    {{- toYaml $networkPolicy.ingressRules | nindent 4 }}
+  {{- else }}
+  ingress:
+    - ports:
+        - port: {{ ($containerPorts.http | default 8080 | int) }}
+          protocol: TCP
+        - port: {{ ($containerPorts.https | default 8443 | int) }}
+          protocol: TCP
+      {{- if not $networkPolicy.allowExternal }}
+      from:
+        # Allow from same namespace
+        - podSelector:
+            matchLabels:
+              {{- include "moodle.selectorLabels" . | nindent 14 }}
+        {{- if $networkPolicy.ingressNSMatchLabels }}
+        # Allow from specific namespaces
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml $networkPolicy.ingressNSMatchLabels | nindent 14 }}
+          {{- if $networkPolicy.ingressNSPodMatchLabels }}
+          podSelector:
+            matchLabels:
+              {{- toYaml $networkPolicy.ingressNSPodMatchLabels | nindent 14 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- if $networkPolicy.extraIngress }}
+    {{- toYaml $networkPolicy.extraIngress | nindent 4 }}
+    {{- end }}
+  {{- end }}
+{{- end }}

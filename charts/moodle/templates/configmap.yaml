@@ -1,0 +1,18 @@
+{{- $configMaps := .Values.configMaps | default dict }}
+{{- range $name, $configMap := $configMaps }}
+{{- if $configMap.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "moodle.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "moodle.labels" $ | nindent 4 }}
+  {{- with $.Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  {{- toYaml $configMap.data | nindent 2 }}
+{{- end }}
+{{- end }}
