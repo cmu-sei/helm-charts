@@ -465,7 +465,7 @@ spec:
             - name: KEYCLOAK_ENABLED
               value: "true"
             - name: KEYCLOAK_DOMAIN
-              value: {{ $keycloak.domain | quote }}
+              value: {{ $keycloak.url | quote }}
             - name: KEYCLOAK_REALM
               value: {{ $keycloak.realm | quote }}
             - name: KEYCLOAK_CLIENTID

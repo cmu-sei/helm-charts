@@ -190,7 +190,7 @@ moodle:
   ## Keycloak OAuth2 Configuration
   keycloak:
     enabled: false
-    domain: "" ## Keycloak domain (defaults to global.domain if not specified)
+    url: "" ## Keycloak domain
     realm: "" ## Keycloak realm name
     clientId: "" ## OAuth2 client ID configured in Keycloak
     clientSecret: "" ## Client secret (used only if existingSecret is empty)
