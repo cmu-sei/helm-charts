@@ -143,39 +143,18 @@ Configure Redis for session storage. Required for multi-replica deployments.
 
 ### Keycloak OAuth2 Configuration (Optional)
 
-Configure Keycloak for single sign-on (SSO) authentication.
+Configure Moodle to use Keycloak as an OAuth2 provider. These settings control how long the Keycloak setup script waits for the realm metadata endpoint to become available before failing, and how to trust custom CA certificates.
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `moodle.keycloak.enabled` | Enable Keycloak OAuth2 integration | `false` |
-| `moodle.keycloak.url` | Keycloak server URL (e.g., `https://keycloak.example.com` or `https://example.com/keycloak`) | `""` (not configured) |
-| `moodle.keycloak.realm` | Keycloak realm name | `""` (not configured) |
-| `moodle.keycloak.clientId` | OAuth2 client ID configured in Keycloak | `""` (not configured) |
-| `moodle.keycloak.clientSecret` | Client secret (leave empty if using existingSecret) | `""` |
-| `moodle.keycloak.existingSecret` | Secret containing client secret | `""` (not configured) |
-| `moodle.keycloak.existingSecretKey` | Key in secret containing the client secret | `client-secret` |
-| `moodle.keycloak.name` | OAuth2 provider display name shown on login page | `Keycloak` |
-| `moodle.keycloak.icon` | OAuth2 provider logo URL | `""` |
-| `moodle.keycloak.loginScopes` | OAuth2 scopes for standard login | `openid profile email` |
-| `moodle.keycloak.loginScopesOffline` | OAuth2 scopes for offline access | `openid profile email offline_access` |
-| `moodle.keycloak.requireConfirmation` | Require email confirmation for new accounts | `false` |
-| `moodle.keycloak.showOnLoginPage` | Show OAuth2 provider on login page | `true` |
-| `moodle.keycloak.userFieldMappings` | Maps OAuth2 claims to Moodle user fields (format: "external:internal") | `["sub:idnumber"]` |
-| `moodle.keycloak.disableCurlSecurityBlockedHosts` | Disable curl blocked hosts check for internal Keycloak communication | `false` |
-| `moodle.keycloak.disableCurlSecurityAllowedPorts` | Disable curl allowed ports check | `false` |
+| `moodle.keycloak.waitTimeout` | Total time to wait for Keycloak metadata (seconds) | `300` |
+| `moodle.keycloak.waitInterval` | Delay between readiness checks (seconds) | `5` |
+| `moodle.keycloak.caCert.existingSecret` | Secret containing the CA certificate | `""` |
+| `moodle.keycloak.caCert.existingConfigMap` | ConfigMap containing the CA certificate | `""` |
+| `moodle.keycloak.caCert.key` | Key in the secret/configmap for the CA certificate | `ca.crt` |
+| `moodle.keycloak.caCert.path` | File path inside the container for the CA certificate | `""` (defaults to `/opt/sei/certs/keycloak-ca.crt` when a secret/configmap is set) |
 
-**Important Notes:**
-- Keycloak integration is **disabled by default**
-- When enabling Keycloak, you must configure: `url`, `realm`, `clientId`, and either `clientSecret` or `existingSecret`
-- The `clientSecret` must match the secret configured in your Keycloak client settings
-- Recommended: Use `existingSecret` for the client secret in production instead of `clientSecret`
-- The `icon` URL is required for the OAuth2 provider to display properly on the login page
-- `userFieldMappings` maps OAuth2 claims from Keycloak to Moodle user profile fields
-  - Minimum required: `sub:idnumber` (maps the subject claim to Moodle's ID number field)
-  - Additional mappings can be added (e.g., `given_name:firstname`, `family_name:lastname`)
-- Set `disableCurlSecurityBlockedHosts: true` if Keycloak is accessible via internal Kubernetes service names
-- A configuration script automatically sets up the OAuth2 provider in Moodle during pod startup
-
+**Note:** The Keycloak settings `domain`, `realm`, `clientId`, `existingSecret`, `existingSecretKey`, `name`, and `icon` support Helm templating (for example, `https://{{ .Release.Name }}/keycloak`).
 
 ### Advanced Settings
 

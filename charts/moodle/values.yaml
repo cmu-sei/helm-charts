@@ -2,6 +2,7 @@
 global:
   nameOverride: ""
   fullnameOverride: ""
+  domain: ""  # Inherited from parent chart when used as subchart
 
 # Common annotations and labels
 commonAnnotations: {}
@@ -187,10 +188,12 @@ moodle:
     host: ""
     port: ""
 
+<<<<<<< Updated upstream
+=======
   ## Keycloak OAuth2 Configuration
   keycloak:
     enabled: false
-    url: "" ## Keycloak domain
+    domain: "" ## Keycloak domain (defaults to global.domain if not specified)
     realm: "" ## Keycloak realm name
     clientId: "" ## OAuth2 client ID configured in Keycloak
     clientSecret: "" ## Client secret (used only if existingSecret is empty)
@@ -209,7 +212,17 @@ moodle:
     ## Site configuration for internal Keycloak communication
     disableCurlSecurityBlockedHosts: true
     disableCurlSecurityAllowedPorts: true
+    ## Keycloak readiness wait configuration (seconds)
+    waitTimeout: 300
+    waitInterval: 5
+    ## Custom CA certificate for Keycloak HTTPS (optional)
+    caCert:
+      existingSecret: "" ## Secret containing the CA certificate
+      existingConfigMap: "" ## ConfigMap containing the CA certificate
+      key: "ca.crt"
+      path: "/opt/sei/certs/keycloak-ca.crt" ## File path in the container; defaults to /opt/sei/certs/keycloak-ca.crt when a secret/configmap is set
 
+>>>>>>> Stashed changes
   ## Additional Settings
   preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade
   postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
