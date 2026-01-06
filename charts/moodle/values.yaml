@@ -2,6 +2,7 @@
 global:
   nameOverride: ""
   fullnameOverride: ""
+  domain: "" # Inherited from parent chart when used as subchart
 
 # Common annotations and labels
 commonAnnotations: {}
@@ -20,6 +21,106 @@ image:
 
 # Number of replicas
 replicaCount: 1
+
+## Moodle Configuration
+moodle:
+  admin:
+    username: "moodle-local-admin"
+    email: "moodle-local-admin@example.com"
+    password: "" # Used only if existingSecret is empty
+    existingSecret: ""
+    existingSecretKey: "admin-password"
+
+  ## Site Configuration
+  ## url must match your actual domain or ingress hostname
+  site:
+    url: "http://localhost:8080"
+    name: "Moodle"
+    language: "en"
+
+  ## Proxy Configuration
+  proxy:
+    reverseProxy: false
+    sslProxy: true
+
+  ## Database Configuration
+  database:
+    type: "pgsql"
+    host: "pg-postgresql"
+    port: "5432"
+    name: "moodledb"
+    user: "moodle"
+    prefix: "mdl_"
+    password: ""
+    existingSecret: "pg-postgresql" # Name of secret containing db password (recommended)
+    existingSecretKey: "postgres-password" # Key in the secret containing the password
+    ## Create Database
+    ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
+    create_database: true
+
+  ## Keycloak OAuth2 Configuration
+  keycloak:
+    enabled: false
+    domain: "" ## Keycloak domain (defaults to global.domain if not specified)
+    realm: "" ## Keycloak realm name
+    clientId: "" ## OAuth2 client ID configured in Keycloak
+    clientSecret: "" ## Client secret (used only if existingSecret is empty)
+    existingSecret: "" ## Name of secret containing containing client secret (recommended)
+    existingSecretKey: "client-secret"
+    name: "Keycloak" ## OAuth2 provider display name
+    icon: "" ## OAuth2 provider icon URL (required)
+    loginScopes: "openid profile email" ## OAuth2 scopes for standard login
+    loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes for offline access
+    requireConfirmation: false ## Require email confirmation for new accounts
+    showOnLoginPage: true ## Show OAuth2 provider on login page
+    ## User field mappings (maps OAuth2 claims to Moodle user fields)
+    ## Format: "external:internal"
+    userFieldMappings:
+      - "sub:idnumber"
+    ## Site configuration for internal Keycloak communication
+    disableCurlSecurityBlockedHosts: true
+    disableCurlSecurityAllowedPorts: true
+    ## Keycloak readiness wait configuration (seconds)
+    waitTimeout: 300
+    waitInterval: 5
+    ## Custom CA certificate for Keycloak HTTPS (optional)
+    caCert:
+      existingSecret: "" ## Secret containing the CA certificate
+      existingConfigMap: "" ## ConfigMap containing the CA certificate
+      key: "ca.crt"
+      path: "/opt/sei/certs/keycloak-ca.crt" ## File path in the container; defaults to /opt/sei/certs/keycloak-ca.crt when a secret/configmap is set
+
+  ## PHP/Upload Limits Configuration
+  php:
+    postMaxSize: "50M"
+    uploadMaxFilesize: "50M"
+    clientMaxBodySize: "50M"
+    maxInputVars: "5000"
+
+  ## SMTP/Mail Configuration
+  smtp:
+    host: ""
+    port: ""
+    user: ""
+    password: "" # Used only if existingSecret is empty
+    existingSecret: ""
+    existingSecretKey: "password"
+    protocol: ""
+
+  mail:
+    noreplyAddress: ""
+    prefix: ""
+
+  ## Redis Configuration
+  redis:
+    host: ""
+    port: ""
+
+  ## Additional Settings
+  preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade
+  postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
+  autoUpdateMoodle: false
+  debug: false
 
 ## Read-Only Dirroot Configuration
 ## Enables immutable application directory for security and multi-replica support
@@ -124,97 +225,6 @@ serviceAccount:
 containerPorts:
   http: 8080
   https: 8443
-
-## Moodle Configuration
-moodle:
-  admin:
-    username: "admin"
-    email: "admin@example.com"
-    password: "" # Used only if existingSecret is empty
-    existingSecret: ""
-    existingSecretKey: "admin-password"
-
-  ## Site Configuration
-  ## url must match your actual domain or ingress hostname
-  site:
-    url: "http://localhost:8080"
-    name: "Moodle"
-    language: "en"
-
-  ## Proxy Configuration
-  proxy:
-    reverseProxy: false
-    sslProxy: true
-
-  ## Database Configuration
-  database:
-    type: "pgsql"
-    host: "pg-postgresql"
-    port: "5432"
-    name: "moodledb"
-    user: "moodle"
-    prefix: "mdl_"
-    password: ""
-    existingSecret: "pg-postgresql" # Name of secret containing db password (recommended)
-    existingSecretKey: "postgres-password" # Key in the secret containing the password
-    ## Create Database
-    ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
-    create_database: true
-
-  ## PHP/Upload Limits Configuration
-  php:
-    postMaxSize: "50M"
-    uploadMaxFilesize: "50M"
-    clientMaxBodySize: "50M"
-    maxInputVars: "5000"
-
-  ## SMTP/Mail Configuration
-  smtp:
-    host: ""
-    port: ""
-    user: ""
-    password: "" # Used only if existingSecret is empty
-    existingSecret: ""
-    existingSecretKey: "password"
-    protocol: ""
-
-  mail:
-    noreplyAddress: ""
-    prefix: ""
-
-  ## Redis Configuration
-  redis:
-    host: ""
-    port: ""
-
-  ## Keycloak OAuth2 Configuration
-  keycloak:
-    enabled: false
-    domain: "" ## Keycloak domain (defaults to global.domain if not specified)
-    realm: "" ## Keycloak realm name
-    clientId: "" ## OAuth2 client ID configured in Keycloak
-    clientSecret: "" ## Client secret (used only if existingSecret is empty)
-    existingSecret: "" ## Name of secret containing containing client secret (recommended)
-    existingSecretKey: "client-secret"
-    name: "Keycloak" ## OAuth2 provider display name
-    icon: "" ## OAuth2 provider icon URL (required)
-    loginScopes: "openid profile email" ## OAuth2 scopes for standard login
-    loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes for offline access
-    requireConfirmation: false ## Require email confirmation for new accounts
-    showOnLoginPage: true ## Show OAuth2 provider on login page
-    ## User field mappings (maps OAuth2 claims to Moodle user fields)
-    ## Format: "external:internal"
-    userFieldMappings:
-      - "sub:idnumber"
-    ## Site configuration for internal Keycloak communication
-    disableCurlSecurityBlockedHosts: true
-    disableCurlSecurityAllowedPorts: true
-
-  ## Additional Settings
-  preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade
-  postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
-  autoUpdateMoodle: false
-  debug: false
 
 ## Extra environment variables
 extraEnvVars: []

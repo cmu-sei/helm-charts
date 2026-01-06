@@ -6,6 +6,17 @@
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
 {{- $moodle := .Values.moodle | default dict }}
 {{- $keycloak := $moodle.keycloak | default dict }}
+{{- $keycloakDomain := tpl ($keycloak.domain | default "") . }}
+{{- $keycloakRealm := tpl ($keycloak.realm | default "") . }}
+{{- $keycloakClientId := tpl ($keycloak.clientId | default "") . }}
+{{- $keycloakName := tpl ($keycloak.name | default "") . }}
+{{- $keycloakIcon := tpl ($keycloak.icon | default "") . }}
+{{- $keycloakCaCert := $keycloak.caCert | default dict }}
+{{- $keycloakCaCertMount := or $keycloakCaCert.existingSecret $keycloakCaCert.existingConfigMap }}
+{{- $keycloakCaCertEnabled := or $keycloakCaCertMount $keycloakCaCert.path }}
+{{- $keycloakCaCertPath := $keycloakCaCert.path | default "/opt/sei/certs/keycloak-ca.crt" }}
+{{- $keycloakCaCertKey := $keycloakCaCert.key | default "ca.crt" }}
+{{- $keycloakExistingSecretKey := tpl ($keycloak.existingSecretKey | default "client-secret") $ }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -442,12 +453,6 @@ spec:
                   echo "[OVERRIDE] final_configurations() skipped";
                   return 0;
                 }
-                {{- end }}
-                {{- end }}
-                {{- if $moodle.preConfigureCommands }}
-                # User: Custom pre-configure commands
-                {{ $moodle.preConfigureCommands | nindent 16 }}
-                {{- end }}
             {{- end }}
             {{- if or $keycloak.enabled $moodle.postConfigureCommands }}
             - name: POST_CONFIGURE_COMMANDS
@@ -465,25 +470,25 @@ spec:
             - name: KEYCLOAK_ENABLED
               value: "true"
             - name: KEYCLOAK_DOMAIN
-              value: {{ $keycloak.domain | quote }}
+              value: {{ $keycloakDomain | quote }}
             - name: KEYCLOAK_REALM
-              value: {{ $keycloak.realm | quote }}
+              value: {{ $keycloakRealm | quote }}
             - name: KEYCLOAK_CLIENTID
-              value: {{ $keycloak.clientId | quote }}
+              value: {{ $keycloakClientId | quote }}
             - name: KEYCLOAK_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
                   {{- if $keycloak.existingSecret }}
                   name: {{ tpl $keycloak.existingSecret $ }}
-                  key: {{ $keycloak.existingSecretKey | default "client-secret" }}
+                  key: {{ $keycloakExistingSecretKey }}
                   {{- else }}
                   name: {{ include "moodle.keycloak.secretName" $ }}
-                  key: {{ $keycloak.existingSecretKey | default "client-secret" }}
+                  key: {{ $keycloakExistingSecretKey }}
                   {{- end }}
             - name: KEYCLOAK_NAME
-              value: {{ $keycloak.name | quote }}
+              value: {{ $keycloakName | quote }}
             - name: KEYCLOAK_IMAGE
-              value: {{ $keycloak.icon | quote }}
+              value: {{ $keycloakIcon | quote }}
             - name: KEYCLOAK_LOGINSCOPES
               value: {{ $keycloak.loginScopes | quote }}
             - name: KEYCLOAK_LOGINSCOPESOFFLINE
@@ -496,6 +501,14 @@ spec:
               value: {{ join " " $keycloak.userFieldMappings | quote }}
             - name: KEYCLOAK_DISABLE_CURL_SECURITY
               value: {{ $keycloak.disableCurlSecurityBlockedHosts | quote }}
+            {{- if $keycloakCaCertEnabled }}
+            - name: KEYCLOAK_CA_CERT_PATH
+              value: {{ tpl $keycloakCaCertPath $ | quote }}
+            {{- end }}
+            - name: KEYCLOAK_WAIT_TIMEOUT
+              value: {{ $keycloak.waitTimeout | quote }}
+            - name: KEYCLOAK_WAIT_INTERVAL
+              value: {{ $keycloak.waitInterval | quote }}
             {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- toYaml .Values.extraEnvVars | nindent 12 }}
@@ -616,6 +629,12 @@ spec:
               mountPath: /opt/sei/custom-scripts
               readOnly: true
             {{- end }}
+            {{- if and $keycloak.enabled $keycloakCaCertMount }}
+            - name: keycloak-ca-cert
+              mountPath: {{ tpl $keycloakCaCertPath $ | quote }}
+              subPath: {{ tpl $keycloakCaCertKey $ | quote }}
+              readOnly: true
+            {{- end }}
             {{- if $.Values.extraVolumeMounts }}
             {{- toYaml $.Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -680,6 +699,22 @@ spec:
           configMap:
             name: {{ include "moodle.fullname" $ }}-keycloak
             defaultMode: 0755
+        {{- end }}
+        {{- if and $keycloak.enabled $keycloakCaCertMount }}
+        - name: keycloak-ca-cert
+          {{- if $keycloakCaCert.existingSecret }}
+          secret:
+            secretName: {{ tpl $keycloakCaCert.existingSecret $ }}
+            items:
+              - key: {{ tpl $keycloakCaCertKey $ }}
+                path: {{ tpl $keycloakCaCertKey $ }}
+          {{- else if $keycloakCaCert.existingConfigMap }}
+          configMap:
+            name: {{ tpl $keycloakCaCert.existingConfigMap $ }}
+            items:
+              - key: {{ tpl $keycloakCaCertKey $ }}
+                path: {{ tpl $keycloakCaCertKey $ }}
+          {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
         {{- toYaml $.Values.extraVolumes | nindent 8 }}

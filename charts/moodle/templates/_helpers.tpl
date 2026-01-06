@@ -96,10 +96,10 @@ Keycloak secret name
 {{/*
 Normalize Keycloak domain; add https:// if no scheme is provided.
 */}}
-{{- define "moodle.keycloak.domain" -}}
+{{- define "moodle.keycloak.url" -}}
 {{- $moodle := .Values.moodle | default dict -}}
 {{- $keycloak := $moodle.keycloak | default dict -}}
-{{- $domain := $keycloak.domain | default "" -}}
+{{- $domain := $keycloak.url | default "" -}}
 {{- if and $domain (not (regexMatch "^https?://" $domain)) -}}
   {{- $domain = printf "https://%s" $domain -}}
 {{- end -}}
@@ -460,9 +460,9 @@ Validate required values for Moodle deployment
 {{/* Validate Keycloak configuration */}}
 {{- $keycloak := $moodle.keycloak | default dict }}
 {{- if $keycloak.enabled }}
-  {{- $domain := $keycloak.domain | default "" }}
+  {{- $domain := $keycloak.url | default "" }}
   {{- if not $domain }}
-    {{- fail "ERROR: moodle.keycloak.domain is required when keycloak.enabled=true.\n  Set moodle.keycloak.domain (e.g., 'https://keycloak.example.com' or 'https://example.com/keycloak)" }}
+    {{- fail "ERROR: moodle.keycloak.url is required when keycloak.enabled=true.\n  Set moodle.keycloak.url (e.g., 'https://keycloak.example.com' or 'https://example.com/keycloak)" }}
   {{- end }}
   {{- if not $keycloak.realm }}
     {{- fail "ERROR: moodle.keycloak.realm is required when keycloak.enabled=true" }}
