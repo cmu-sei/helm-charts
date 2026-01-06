@@ -154,6 +154,135 @@ Configure Moodle to use Keycloak as an OAuth2 provider. These settings control h
 | `moodle.keycloak.caCert.key` | Key in the secret/configmap for the CA certificate | `ca.crt` |
 | `moodle.keycloak.caCert.path` | File path inside the container for the CA certificate | `""` (defaults to `/opt/sei/certs/keycloak-ca.crt` when a secret/configmap is set) |
 
+#### Configuring the Keycloak Client
+
+To enable Moodle OAuth2 authentication with Keycloak, you must configure a client in your Keycloak realm. Follow these steps:
+
+##### 1. Create the Moodle Client in Keycloak
+
+Log into your Keycloak admin console and navigate to your realm. Create a new client with the following configuration:
+
+**Basic Settings:**
+- **Client ID**: `moodle-client` (or your preferred ID - must match `moodle.keycloak.clientId` in values.yaml)
+- **Client type**: `openid-connect`
+- **Name**: `Moodle` (or your preferred display name)
+- **Enabled**: `true`
+
+**Capability config:**
+- **Client authentication**: `On` (enables confidential client with secret)
+- **Authorization**: `Off` (not required for Moodle)
+- **Standard flow**: `On` (enables authorization code flow)
+- **Implicit flow**: `Off` (not recommended)
+- **Direct access grants**: `On` (enables direct grant/password flow if needed)
+- **Service accounts**: `On` (enables service account for Moodle's internal operations)
+
+**Access settings:**
+- **Root URL**: `https://your-domain.com` (your Moodle site domain)
+- **Valid redirect URIs**:
+  - `https://your-domain.com/admin/oauth2callback.php`
+- **Valid post logout redirect URIs**: `https://your-domain.com`
+- **Web origins**: `https://your-domain.com`
+
+##### 2. Configure Client Scopes
+
+The Moodle client should have access to the following scopes in its **Default Client Scopes**:
+
+**Required scopes:**
+- `openid` - OpenID Connect authentication
+- `profile` - User profile information (name, username, etc.)
+- `email` - Email address
+- `roles` - User roles from Keycloak
+
+**Optional scopes** (add if needed):
+- `offline_access` - For persistent refresh tokens
+- Any custom scopes your realm provides
+
+To configure these:
+1. Go to the client's **Client scopes** tab
+2. Ensure `openid`, `profile`, `email`, and `roles` are in the **Assigned default client scopes** list
+3. Add any additional scopes as needed
+
+##### 3. Retrieve the Client Secret
+
+After creating the client:
+1. Navigate to the **Credentials** tab
+2. Copy the **Client Secret** value
+3. Store this secret in a Kubernetes secret (recommended) or set it directly in values.yaml
+
+**Example Kubernetes secret:**
+
+```bash
+kubectl create secret generic moodle-keycloak-secret \
+  --from-literal=client-secret='your-client-secret-here'
+```
+
+Then reference it in your Moodle Helm values:
+
+```yaml
+moodle:
+  keycloak:
+    enabled: true
+    existingSecret: "moodle-keycloak-secret"
+    existingSecretKey: "client-secret"
+```
+
+##### Example Keycloak Client Configuration
+
+Below is an example client configuration from the Crucible realm export showing a properly configured Moodle client:
+
+```json
+{
+  "clientId": "moodle-client",
+  "name": "Moodle",
+  "enabled": true,
+  "clientAuthenticatorType": "client-secret",
+  "secret": "super-safe-secret",
+  "redirectUris": [
+    "https://crucible/admin/oauth2callback.php"
+  ],
+  "webOrigins": [
+    "https://crucible"
+  ],
+  "standardFlowEnabled": true,
+  "directAccessGrantsEnabled": true,
+  "serviceAccountsEnabled": true,
+  "publicClient": false,
+  "protocol": "openid-connect",
+  "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "profile",
+    "roles",
+    "email"
+  ],
+  "optionalClientScopes": [
+    "address",
+    "phone",
+    "offline_access",
+    "microprofile-jwt"
+  ]
+}
+```
+
+##### Verify Configuration
+
+After configuring both Keycloak and deploying Moodle with Keycloak integration enabled:
+
+1. Navigate to your Moodle login page
+2. You should see a "Log in with Keycloak" button
+3. Click the button to test OAuth2 authentication
+4. You should be redirected to Keycloak, then back to Moodle after successful authentication
+
+**Troubleshooting:**
+
+- If the OAuth2 button doesn't appear, check that `moodle.keycloak.showOnLoginPage` is `true`
+- If authentication fails, verify:
+  - The redirect URI matches exactly (including trailing slashes)
+  - The client secret is correct
+  - The realm name in Moodle configuration matches Keycloak
+  - The Keycloak domain is accessible from both the Moodle pods and user browsers
+  - Moodle trusts the TLS certificate used by Keycloak
+
 ### Advanced Settings
 
 | Setting | Description | Example |
