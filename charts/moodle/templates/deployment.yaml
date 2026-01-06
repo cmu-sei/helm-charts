@@ -4,6 +4,19 @@
 {{- $containerSecurityContext := .Values.containerSecurityContext | default dict }}
 {{- $containerPorts := .Values.containerPorts | default dict }}
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
+{{- $moodle := .Values.moodle | default dict }}
+{{- $keycloak := $moodle.keycloak | default dict }}
+{{- $keycloakDomain := tpl ($keycloak.domain | default "") . }}
+{{- $keycloakRealm := tpl ($keycloak.realm | default "") . }}
+{{- $keycloakClientId := tpl ($keycloak.clientId | default "") . }}
+{{- $keycloakName := tpl ($keycloak.name | default "") . }}
+{{- $keycloakIcon := tpl ($keycloak.icon | default "") . }}
+{{- $keycloakCaCert := $keycloak.caCert | default dict }}
+{{- $keycloakCaCertMount := or $keycloakCaCert.existingSecret $keycloakCaCert.existingConfigMap }}
+{{- $keycloakCaCertEnabled := or $keycloakCaCertMount $keycloakCaCert.path }}
+{{- $keycloakCaCertPath := $keycloakCaCert.path | default "/opt/sei/certs/keycloak-ca.crt" }}
+{{- $keycloakCaCertKey := $keycloakCaCert.key | default "ca.crt" }}
+{{- $keycloakExistingSecretKey := tpl ($keycloak.existingSecretKey | default "client-secret") $ }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -384,10 +397,11 @@ spec:
               value: {{ $moodle.debug | quote }}
             {{- end }}
             {{- $readOnlyDirroot := $.Values.readOnlyDirroot | default dict }}
-            {{- if $readOnlyDirroot.enabled }}
-            {{- if gt ($.Values.replicaCount | int) 1 }}
+            {{- if or $readOnlyDirroot.enabled $moodle.preConfigureCommands }}
             - name: PRE_CONFIGURE_COMMANDS
               value: |
+                {{- if $readOnlyDirroot.enabled }}
+                {{- if gt ($.Values.replicaCount | int) 1 }}
                 # Override functions that try modifying read-only dirroot
                 upgrade_config_file() {
                   echo "[OVERRIDE] upgrade_config_file() skipped";
@@ -429,9 +443,7 @@ spec:
                   echo "[ERROR] Timeout waiting for installation lock"
                   exit 1
                 fi
-            {{- else }}
-            - name: PRE_CONFIGURE_COMMANDS
-              value: |
+                {{- else }}
                 # Override functions that try modifying read-only dirroot
                 upgrade_config_file() {
                   echo "[OVERRIDE] upgrade_config_file() skipped";
@@ -442,6 +454,61 @@ spec:
                   return 0;
                 }
             {{- end }}
+            {{- if or $keycloak.enabled $moodle.postConfigureCommands }}
+            - name: POST_CONFIGURE_COMMANDS
+              value: |
+                {{- if $keycloak.enabled }}
+                # System: Configure Keycloak OAuth2
+                /opt/sei/custom-scripts/configure_keycloak.sh
+                {{- end }}
+                {{- if $moodle.postConfigureCommands }}
+                # User: Custom post-configure commands
+                {{ $moodle.postConfigureCommands | nindent 16 }}
+                {{- end }}
+            {{- end }}
+            {{- if $keycloak.enabled }}
+            - name: KEYCLOAK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_DOMAIN
+              value: {{ $keycloakDomain | quote }}
+            - name: KEYCLOAK_REALM
+              value: {{ $keycloakRealm | quote }}
+            - name: KEYCLOAK_CLIENTID
+              value: {{ $keycloakClientId | quote }}
+            - name: KEYCLOAK_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  {{- if $keycloak.existingSecret }}
+                  name: {{ tpl $keycloak.existingSecret $ }}
+                  key: {{ $keycloakExistingSecretKey }}
+                  {{- else }}
+                  name: {{ include "moodle.keycloak.secretName" $ }}
+                  key: {{ $keycloakExistingSecretKey }}
+                  {{- end }}
+            - name: KEYCLOAK_NAME
+              value: {{ $keycloakName | quote }}
+            - name: KEYCLOAK_IMAGE
+              value: {{ $keycloakIcon | quote }}
+            - name: KEYCLOAK_LOGINSCOPES
+              value: {{ $keycloak.loginScopes | quote }}
+            - name: KEYCLOAK_LOGINSCOPESOFFLINE
+              value: {{ $keycloak.loginScopesOffline | quote }}
+            - name: KEYCLOAK_REQUIRECONFIRMATION
+              value: {{ ternary "1" "0" $keycloak.requireConfirmation | quote }}
+            - name: KEYCLOAK_SHOWONLOGINPAGE
+              value: {{ ternary "1" "0" $keycloak.showOnLoginPage | quote }}
+            - name: KEYCLOAK_USERFIELDMAPPINGS
+              value: {{ join " " $keycloak.userFieldMappings | quote }}
+            - name: KEYCLOAK_DISABLE_CURL_SECURITY
+              value: {{ $keycloak.disableCurlSecurityBlockedHosts | quote }}
+            {{- if $keycloakCaCertEnabled }}
+            - name: KEYCLOAK_CA_CERT_PATH
+              value: {{ tpl $keycloakCaCertPath $ | quote }}
+            {{- end }}
+            - name: KEYCLOAK_WAIT_TIMEOUT
+              value: {{ $keycloak.waitTimeout | quote }}
+            - name: KEYCLOAK_WAIT_INTERVAL
+              value: {{ $keycloak.waitInterval | quote }}
             {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- toYaml .Values.extraEnvVars | nindent 12 }}
@@ -524,7 +591,7 @@ spec:
           {{- end }}
           {{- $persistence := .Values.persistence | default dict }}
           {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-          {{- if or $persistence $readOnlyDirroot.enabled }}
+          {{- if or $persistence $readOnlyDirroot.enabled $keycloak.enabled }}
           volumeMounts:
             {{- if $readOnlyDirroot.enabled }}
             - name: dirroot
@@ -557,6 +624,17 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- if $keycloak.enabled }}
+            - name: keycloak-scripts
+              mountPath: /opt/sei/custom-scripts
+              readOnly: true
+            {{- end }}
+            {{- if and $keycloak.enabled $keycloakCaCertMount }}
+            - name: keycloak-ca-cert
+              mountPath: {{ tpl $keycloakCaCertPath $ | quote }}
+              subPath: {{ tpl $keycloakCaCertKey $ | quote }}
+              readOnly: true
+            {{- end }}
             {{- if $.Values.extraVolumeMounts }}
             {{- toYaml $.Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -565,7 +643,7 @@ spec:
         {{- toYaml .Values.sidecars | nindent 8 }}
         {{- end }}
       {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled }}
+      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled $keycloak.enabled }}
       volumes:
         {{- if $readOnlyDirroot.enabled }}
         - name: dirroot
@@ -615,6 +693,28 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
+        {{- end }}
+        {{- if $keycloak.enabled }}
+        - name: keycloak-scripts
+          configMap:
+            name: {{ include "moodle.fullname" $ }}-keycloak
+            defaultMode: 0755
+        {{- end }}
+        {{- if and $keycloak.enabled $keycloakCaCertMount }}
+        - name: keycloak-ca-cert
+          {{- if $keycloakCaCert.existingSecret }}
+          secret:
+            secretName: {{ tpl $keycloakCaCert.existingSecret $ }}
+            items:
+              - key: {{ tpl $keycloakCaCertKey $ }}
+                path: {{ tpl $keycloakCaCertKey $ }}
+          {{- else if $keycloakCaCert.existingConfigMap }}
+          configMap:
+            name: {{ tpl $keycloakCaCert.existingConfigMap $ }}
+            items:
+              - key: {{ tpl $keycloakCaCertKey $ }}
+                path: {{ tpl $keycloakCaCertKey $ }}
+          {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
         {{- toYaml $.Values.extraVolumes | nindent 8 }}

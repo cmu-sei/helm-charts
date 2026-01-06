@@ -16,3 +16,22 @@ data:
   {{- toYaml $configMap.data | nindent 2 }}
 {{- end }}
 {{- end }}
+
+---
+{{- $moodle := .Values.moodle | default dict }}
+{{- $keycloak := $moodle.keycloak | default dict }}
+{{- if $keycloak.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "moodle.fullname" . }}-keycloak
+  labels:
+    {{- include "moodle.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  configure_keycloak.sh: {{ .Files.Get "files/configure_keycloak.sh" | quote }}
+  setup_environment.php: {{ .Files.Get "files/setup_environment.php" | quote }}
+{{- end }}
