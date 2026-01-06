@@ -2,7 +2,7 @@
 global:
   nameOverride: ""
   fullnameOverride: ""
-  domain: ""  # Inherited from parent chart when used as subchart
+  domain: "" # Inherited from parent chart when used as subchart
 
 # Common annotations and labels
 commonAnnotations: {}
@@ -58,32 +58,6 @@ moodle:
     ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
     create_database: true
 
-  ## PHP/Upload Limits Configuration
-  php:
-    postMaxSize: "50M"
-    uploadMaxFilesize: "50M"
-    clientMaxBodySize: "50M"
-    maxInputVars: "5000"
-
-  ## SMTP/Mail Configuration
-  smtp:
-    host: ""
-    port: ""
-    user: ""
-    password: "" # Used only if existingSecret is empty
-    existingSecret: ""
-    existingSecretKey: "password"
-    protocol: ""
-
-  mail:
-    noreplyAddress: ""
-    prefix: ""
-
-  ## Redis Configuration
-  redis:
-    host: ""
-    port: ""
-
   ## Keycloak OAuth2 Configuration
   keycloak:
     enabled: false
@@ -115,6 +89,32 @@ moodle:
       existingConfigMap: "" ## ConfigMap containing the CA certificate
       key: "ca.crt"
       path: "/opt/sei/certs/keycloak-ca.crt" ## File path in the container; defaults to /opt/sei/certs/keycloak-ca.crt when a secret/configmap is set
+
+  ## PHP/Upload Limits Configuration
+  php:
+    postMaxSize: "50M"
+    uploadMaxFilesize: "50M"
+    clientMaxBodySize: "50M"
+    maxInputVars: "5000"
+
+  ## SMTP/Mail Configuration
+  smtp:
+    host: ""
+    port: ""
+    user: ""
+    password: "" # Used only if existingSecret is empty
+    existingSecret: ""
+    existingSecretKey: "password"
+    protocol: ""
+
+  mail:
+    noreplyAddress: ""
+    prefix: ""
+
+  ## Redis Configuration
+  redis:
+    host: ""
+    port: ""
 
   ## Additional Settings
   preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade

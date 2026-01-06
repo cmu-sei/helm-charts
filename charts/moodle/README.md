@@ -154,8 +154,6 @@ Configure Moodle to use Keycloak as an OAuth2 provider. These settings control h
 | `moodle.keycloak.caCert.key` | Key in the secret/configmap for the CA certificate | `ca.crt` |
 | `moodle.keycloak.caCert.path` | File path inside the container for the CA certificate | `""` (defaults to `/opt/sei/certs/keycloak-ca.crt` when a secret/configmap is set) |
 
-**Note:** The Keycloak settings `domain`, `realm`, `clientId`, `existingSecret`, `existingSecretKey`, `name`, and `icon` support Helm templating (for example, `https://{{ .Release.Name }}/keycloak`).
-
 ### Advanced Settings
 
 | Setting | Description | Example |
