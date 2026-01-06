@@ -2,7 +2,7 @@ apiVersion: v2
 name: moodle
 type: application
 description: Moodle is an open source Learning Management System.
-version: 0.2.0
+version: 0.2.1
 appVersion: "5.0.1"
 home: https://moodle.org/
 sources:
