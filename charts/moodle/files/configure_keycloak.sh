@@ -8,6 +8,10 @@ LOG_FILE="/tmp/keycloak_script.log"
 MOODLE_DIR="/var/www/html"
 OAUTH2_ISSUER_ID=""
 
+if [ -z "$KEYCLOAK_URL" ] && [ -n "$KEYCLOAK_DOMAIN" ]; then
+  KEYCLOAK_URL="$KEYCLOAK_DOMAIN"
+fi
+
 # Function to log messages
 log() {
     echo "[INFO] $1" | tee -a "$LOG_FILE"
@@ -56,20 +60,20 @@ configure_oauth2() {
   log "Configuring OAuth2 settings..."
 
   # Build URLs from environment variables
-  if printf '%s' "$KEYCLOAK_DOMAIN" | grep -qE '^https?://'; then
-    KEYCLOAK_BASE="$KEYCLOAK_DOMAIN"
+  if printf '%s' "$KEYCLOAK_URL" | grep -qE '^https?://'; then
+    KEYCLOAK_BASE="$KEYCLOAK_URL"
   else
-    KEYCLOAK_BASE="https://${KEYCLOAK_DOMAIN}"
+    KEYCLOAK_BASE="https://${KEYCLOAK_URL}"
   fi
-  KEYCLOAK_URL="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/"
+  KEYCLOAK_REALM_URL="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/"
   KEYCLOAK_TOKEN_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token"
   KEYCLOAK_USERINFO_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo"
   if [ -z "$KEYCLOAK_IMAGE" ]; then
-    KEYCLOAK_IMAGE="https://${KEYCLOAK_DOMAIN}/favicon.svg"
+    KEYCLOAK_IMAGE="${KEYCLOAK_BASE}/favicon.svg"
   fi
 
   # Verify required keys
-  REQUIRED_KEYS="KEYCLOAK_DOMAIN KEYCLOAK_REALM KEYCLOAK_CLIENTID KEYCLOAK_CLIENTSECRET KEYCLOAK_LOGINSCOPES KEYCLOAK_LOGINSCOPESOFFLINE KEYCLOAK_NAME"
+  REQUIRED_KEYS="KEYCLOAK_URL KEYCLOAK_REALM KEYCLOAK_CLIENTID KEYCLOAK_CLIENTSECRET KEYCLOAK_LOGINSCOPES KEYCLOAK_LOGINSCOPESOFFLINE KEYCLOAK_NAME"
   for key in $REQUIRED_KEYS; do
     eval val=\$$key
     if [ -z "$val" ]; then
@@ -110,7 +114,7 @@ configure_oauth2() {
   log "Creating a new OAuth2 provider..."
   PROVIDER_OUTPUT=$(php /opt/sei/custom-scripts/setup_environment.php \
     --step=manage_oauth \
-    --baseurl="$KEYCLOAK_URL" \
+    --baseurl="$KEYCLOAK_REALM_URL" \
     --clientid="$KEYCLOAK_CLIENTID" \
     --clientsecret="$KEYCLOAK_CLIENTSECRET" \
     --loginscopes="$KEYCLOAK_LOGINSCOPES" \
@@ -200,8 +204,8 @@ configure_site() {
   else
     log "Adding Keycloak domain to allowed hosts..."
 
-    # Extract base domain from KEYCLOAK_DOMAIN (remove path if present)
-    KEYCLOAK_HOST=$(echo "$KEYCLOAK_DOMAIN" | cut -d'/' -f1)
+    # Extract base host from KEYCLOAK_URL (remove scheme/path if present)
+    KEYCLOAK_HOST=$(echo "$KEYCLOAK_URL" | sed -e 's#^https\\?://##' -e 's#/.*##')
 
     # Get current allowed hosts and add Keycloak host
     CURRENT_ALLOWED=$(php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts 2>/dev/null | grep -v "^$" | tail -1 || echo "")

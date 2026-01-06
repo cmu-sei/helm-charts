@@ -6,7 +6,7 @@
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
 {{- $moodle := .Values.moodle | default dict }}
 {{- $keycloak := $moodle.keycloak | default dict }}
-{{- $keycloakDomain := tpl ($keycloak.domain | default "") . }}
+{{- $keycloakUrl := tpl ($keycloak.url | default "") . }}
 {{- $keycloakRealm := tpl ($keycloak.realm | default "") . }}
 {{- $keycloakClientId := tpl ($keycloak.clientId | default "") . }}
 {{- $keycloakName := tpl ($keycloak.name | default "") . }}
@@ -453,6 +453,8 @@ spec:
                   echo "[OVERRIDE] final_configurations() skipped";
                   return 0;
                 }
+                {{- end }}
+                {{- end }}
             {{- end }}
             {{- if or $keycloak.enabled $moodle.postConfigureCommands }}
             - name: POST_CONFIGURE_COMMANDS
@@ -469,8 +471,8 @@ spec:
             {{- if $keycloak.enabled }}
             - name: KEYCLOAK_ENABLED
               value: "true"
-            - name: KEYCLOAK_DOMAIN
-              value: {{ $keycloakDomain | quote }}
+            - name: KEYCLOAK_URL
+              value: {{ $keycloakUrl | quote }}
             - name: KEYCLOAK_REALM
               value: {{ $keycloakRealm | quote }}
             - name: KEYCLOAK_CLIENTID
