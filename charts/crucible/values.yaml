@@ -535,12 +535,12 @@ player:
     existingSecret: "{{ .Release.Name }}-player-api-custom"
     env:
       PathBase: /player
-      Logging__Debug__LogLevel__Default: Debug
-      Logging__Debug__LogLevel__Microsoft: Debug
-      Logging__Debug__LogLevel__System: Debug
-      Logging__Console__LogLevel__Default: Debug
-      Logging__Console__LogLevel__Microsoft: Debug
-      Logging__Console__LogLevel__System: Debug
+      Logging__Debug__LogLevel__Default: Information
+      Logging__Debug__LogLevel__Microsoft: Information
+      Logging__Debug__LogLevel__System: Information
+      Logging__Console__LogLevel__Default: Information
+      Logging__Console__LogLevel__Microsoft: Information
+      Logging__Console__LogLevel__System: Information
       # Use Keycloak client configurations
       Authorization__Authority: https://{{ .Values.global.domain }}/keycloak/realms/crucible
       Authorization__AuthorizationUrl: https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth
@@ -819,10 +819,10 @@ moodle:
   enabled: true
   moodle:
     admin:
-      # Admin username (defaults to "admin" if not set)
-      # username: "admin"
-      # Admin email (defaults to "admin@example.com" if not set)
-      # email: "admin@crucible.dev"
+      # Admin username=
+      username: "moodle-local-admin"
+      # Admin email (defaults to "moodle-local-admin@example.com" if not set)
+      # email: "moodle-local-admin@example.com"
       # Admin password will be auto-generated and preserved across upgrades
       # To use an existing secret instead:
       # existingSecret: "moodle-admin-secret"
@@ -837,6 +837,51 @@ moodle:
       user: "postgres"
       existingSecret: "{{ .Values.global.postgresql.secretName }}"
       existingSecretKey: "postgres-password"
+    ## Keycloak OAuth2 Configuration
+    keycloak:
+      enabled: true
+      url: "https://crucible/keycloak"
+      realm: "crucible"
+      clientId: "moodle-client"
+      existingSecret: "crucible-moodle"
+      existingSecretKey: "client-secret"
+      name: "Crucible Keycloak"
+      icon: "https://crucible/keycloak/resources/awfhy/login/keycloak/img/keycloak-logo.png"
+      loginScopes: "openid profile email"
+      loginScopesOffline: "openid profile email offline_access"
+      requireConfirmation: false
+      showOnLoginPage: true
+      ## User field mappings (maps OAuth2 claims to Moodle user fields)
+      userFieldMappings:
+        - "preferred_username:username"
+        - "given_name:firstname"
+        - "family_name:lastname"
+        - "email:email"
+        - "sub:idnumber"
+      ## Site configuration for internal Keycloak communication
+      disableCurlSecurityBlockedHosts: true
+      disableCurlSecurityAllowedPorts: true
+      ## Custom CA certificate for Keycloak HTTPS
+      caCert:
+        key: "crucible-dev.crt"
+        path: "/opt/sei/certs/crucible-dev.crt"
+  ## Extra environment variables to trust the Crucible CA certificate system-wide
+  extraEnvVars:
+    - name: SSL_CERT_FILE
+      value: /opt/sei/certs/crucible-dev.crt
+    - name: SSL_CERT_DIR
+      value: /opt/sei/certs
+    - name: CURL_CA_BUNDLE
+      value: /opt/sei/certs/crucible-dev.crt
+  ## Mount the crucible CA certificate ConfigMap
+  extraVolumes:
+    - name: crucible-ca-cert
+      configMap:
+        name: crucible-ca-cert
+  extraVolumeMounts:
+    - name: crucible-ca-cert
+      mountPath: /opt/sei/certs
+      readOnly: true
   ingress:
     hostname: "{{ .Values.global.domain }}"
     path: /
