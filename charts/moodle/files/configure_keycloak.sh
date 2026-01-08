@@ -12,6 +12,112 @@ if [ -z "$KEYCLOAK_URL" ] && [ -n "$KEYCLOAK_DOMAIN" ]; then
   KEYCLOAK_URL="$KEYCLOAK_DOMAIN"
 fi
 
+PHP_CA_FLAGS=""
+if [ -n "$KEYCLOAK_CA_CERT_PATH" ]; then
+  PHP_CA_FLAGS="-d curl.cainfo=${KEYCLOAK_CA_CERT_PATH} -d openssl.cafile=${KEYCLOAK_CA_CERT_PATH}"
+  export CURL_CA_BUNDLE="$KEYCLOAK_CA_CERT_PATH"
+  export SSL_CERT_FILE="$KEYCLOAK_CA_CERT_PATH"
+fi
+
+php_exec() {
+  php $PHP_CA_FLAGS "$@"
+}
+
+wait_for_keycloak() {
+  local url="$1"
+  local timeout="${KEYCLOAK_WAIT_TIMEOUT:-300}"
+  local interval="${KEYCLOAK_WAIT_INTERVAL:-5}"
+  local start
+  start=$(date +%s)
+  local attempt=0
+
+  while true; do
+    attempt=$((attempt + 1))
+    log "Waiting for Keycloak discovery endpoint (attempt ${attempt}): ${url}"
+
+    local output
+    output=$(KEYCLOAK_DISCOVERY_URL="$url" KEYCLOAK_DISCOVERY_TIMEOUT="$interval" \
+      php_exec -r '
+        $url = getenv("KEYCLOAK_DISCOVERY_URL");
+        $timeout = (int)getenv("KEYCLOAK_DISCOVERY_TIMEOUT");
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_exec($ch);
+        $err = curl_error($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($err) {
+          fwrite(STDERR, $err);
+          exit(1);
+        }
+        if ($code < 200 || $code >= 400) {
+          fwrite(STDERR, "HTTP " . $code);
+          exit(1);
+        }
+        echo $code;
+      ' 2>&1)
+    local rc=$?
+
+    if [ $rc -eq 0 ]; then
+      log "Keycloak discovery endpoint is ready (status: ${output})"
+      return 0
+    fi
+
+    log "Keycloak discovery not ready yet: ${output}"
+
+    local now
+    now=$(date +%s)
+    if [ $now -ge $((start + timeout)) ]; then
+      log "Keycloak discovery endpoint did not become ready within ${timeout}s"
+      return 1
+    fi
+
+    sleep "$interval"
+  done
+}
+
+user_field_mapping_exists() {
+  local issuer_id="$1"
+  local external="$2"
+  local internal="$3"
+
+  local output
+  output=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+    --step=manage_oauth \
+    --check-user-field \
+    --id="$issuer_id" \
+    --externalfield="$external" \
+    --internalfield="$internal" \
+    --json=1 2>&1)
+  local rc=$?
+
+  if [ $rc -ne 0 ]; then
+    log "User field mapping check failed for $external -> $internal: $output"
+    return 2
+  fi
+
+  printf '%s\n' "$output" | php -r '
+    $data = json_decode(stream_get_contents(STDIN), true);
+    if (!is_array($data)) {
+        exit(2);
+    }
+    exit(!empty($data["exists"]) ? 0 : 1);
+  '
+  rc=$?
+  if [ $rc -eq 0 ]; then
+    return 0
+  fi
+  if [ $rc -eq 1 ]; then
+    return 1
+  fi
+
+  log "User field mapping check returned unexpected output: $output"
+  return 2
+}
+
 # Function to log messages
 log() {
     echo "[INFO] $1" | tee -a "$LOG_FILE"
@@ -59,19 +165,6 @@ configure_oauth2() {
   section="OAuth2 Configuration"
   log "Configuring OAuth2 settings..."
 
-  # Build URLs from environment variables
-  if printf '%s' "$KEYCLOAK_URL" | grep -qE '^https?://'; then
-    KEYCLOAK_BASE="$KEYCLOAK_URL"
-  else
-    KEYCLOAK_BASE="https://${KEYCLOAK_URL}"
-  fi
-  KEYCLOAK_REALM_URL="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/"
-  KEYCLOAK_TOKEN_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token"
-  KEYCLOAK_USERINFO_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo"
-  if [ -z "$KEYCLOAK_IMAGE" ]; then
-    KEYCLOAK_IMAGE="${KEYCLOAK_BASE}/favicon.svg"
-  fi
-
   # Verify required keys
   REQUIRED_KEYS="KEYCLOAK_URL KEYCLOAK_REALM KEYCLOAK_CLIENTID KEYCLOAK_CLIENTSECRET KEYCLOAK_LOGINSCOPES KEYCLOAK_LOGINSCOPESOFFLINE KEYCLOAK_NAME"
   for key in $REQUIRED_KEYS; do
@@ -81,10 +174,35 @@ configure_oauth2() {
     fi
   done
 
+  # Build URLs from environment variables
+  if printf '%s' "$KEYCLOAK_URL" | grep -qE '^https?://'; then
+    KEYCLOAK_BASE="$KEYCLOAK_URL"
+  else
+    KEYCLOAK_BASE="https://${KEYCLOAK_URL}"
+  fi
+  KEYCLOAK_REALM_URL="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/"
+  KEYCLOAK_WELLKNOWN_URL="${KEYCLOAK_REALM_URL}.well-known/openid-configuration"
+  KEYCLOAK_TOKEN_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token"
+  KEYCLOAK_USERINFO_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo"
+  if [ -z "$KEYCLOAK_IMAGE" ]; then
+    KEYCLOAK_IMAGE="${KEYCLOAK_BASE}/favicon.svg"
+  fi
+
+  log "Keycloak base URL: ${KEYCLOAK_BASE}"
+  log "Keycloak realm URL: ${KEYCLOAK_REALM_URL}"
+  log "Keycloak discovery URL: ${KEYCLOAK_WELLKNOWN_URL}"
+  log "Keycloak token endpoint: ${KEYCLOAK_TOKEN_ENDPOINT}"
+  log "Keycloak userinfo endpoint: ${KEYCLOAK_USERINFO_ENDPOINT}"
+  log "Keycloak CA cert path: ${KEYCLOAK_CA_CERT_PATH:-<not set>}"
+
+  if ! wait_for_keycloak "$KEYCLOAK_WELLKNOWN_URL"; then
+    error "$section" "Keycloak discovery endpoint not ready at ${KEYCLOAK_WELLKNOWN_URL}"
+  fi
+
   # Check if issuer already exists
   log "Checking for existing OAuth2 provider named '$KEYCLOAK_NAME'..."
 
-  EXISTING_JSON=$(php /opt/sei/custom-scripts/setup_environment.php \
+  EXISTING_JSON=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
       --step=manage_oauth \
       --list \
       --json=1 2>/dev/null)
@@ -112,7 +230,7 @@ configure_oauth2() {
   log "No existing provider found. Creating a new one..."
 
   log "Creating a new OAuth2 provider..."
-  PROVIDER_OUTPUT=$(php /opt/sei/custom-scripts/setup_environment.php \
+  PROVIDER_OUTPUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
     --step=manage_oauth \
     --baseurl="$KEYCLOAK_REALM_URL" \
     --clientid="$KEYCLOAK_CLIENTID" \
@@ -148,28 +266,52 @@ configure_oauth2() {
     internal=$(printf '%s' "$m" | cut -d':' -f2)
     json=$(printf '{"externalfieldname":"%s","internalfieldname":"%s"}' "$external" "$internal")
 
-    log "Creating user field mapping ($external -> $internal) for provider ID: $NEW_ISSUER_ID..."
-    MAP_OUT=$(php /opt/sei/custom-scripts/setup_environment.php \
-      --step=manage_oauth \
-      --create-user-field \
-      --id="$NEW_ISSUER_ID" \
-      --json="$json" 2>&1)
-    rc=$?
-    log "User field mapping output: $MAP_OUT"
+    if user_field_mapping_exists "$NEW_ISSUER_ID" "$external" "$internal"; then
+      log "Mapping ($external -> $internal) already exists; continuing."
+      continue
+    fi
 
-    if [ "$rc" -ne 0 ]; then
+    local_attempt=1
+    max_attempts="${KEYCLOAK_USERFIELD_RETRY_MAX:-5}"
+    interval="${KEYCLOAK_USERFIELD_RETRY_INTERVAL:-5}"
+
+    while true; do
+      log "Creating user field mapping ($external -> $internal) for provider ID: $NEW_ISSUER_ID (attempt ${local_attempt}/${max_attempts})..."
+      MAP_OUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+        --step=manage_oauth \
+        --create-user-field \
+        --id="$NEW_ISSUER_ID" \
+        --json="$json" 2>&1)
+      rc=$?
+      log "User field mapping output: $MAP_OUT"
+
+      if [ "$rc" -eq 0 ]; then
+        if printf '%s\n' "$MAP_OUT" | grep -q "User field mapping created"; then
+          log "Mapping ($external -> $internal) created successfully."
+        else
+          log "Mapping ($external -> $internal) returned rc=0 but no success line; continuing."
+        fi
+        break
+      fi
+
       if printf '%s\n' "$MAP_OUT" | grep -qi "already exists"; then
         log "Mapping ($external -> $internal) already exists; continuing."
-      else
+        break
+      fi
+
+      if user_field_mapping_exists "$NEW_ISSUER_ID" "$external" "$internal"; then
+        log "Mapping ($external -> $internal) detected after failure; continuing."
+        break
+      fi
+
+      if [ "$local_attempt" -ge "$max_attempts" ]; then
         error "$section" "Failed to create mapping ($external -> $internal) (rc=$rc)."
       fi
-    else
-      if printf '%s\n' "$MAP_OUT" | grep -q "User field mapping created"; then
-        log "Mapping ($external -> $internal) created successfully."
-      else
-        log "Mapping ($external -> $internal) returned rc=0 but no success line; continuing."
-      fi
-    fi
+
+      log "Retrying mapping ($external -> $internal) in ${interval}s..."
+      sleep "$interval"
+      local_attempt=$((local_attempt + 1))
+    done
   done
 
   log "OAuth2 configuration completed successfully."
@@ -179,7 +321,7 @@ configure_oauth2() {
 enable_oauth2_plugin() {
   section="Enable OAuth2 Plugin"
   log "Enabling OAuth2 auth plugin..."
-  out="$(php /opt/sei/custom-scripts/setup_environment.php --step=enable_auth_oauth2 2>&1)"
+  out="$(php_exec /opt/sei/custom-scripts/setup_environment.php --step=enable_auth_oauth2 2>&1)"
   rc=$?
   if [ "$rc" -ne 0 ]; then
     error "$section" "Failed to enable OAuth2 auth plugin: $out"
@@ -196,9 +338,9 @@ configure_site() {
     log "Disabling CURL security restrictions for internal Keycloak communication..."
 
     # Allow all hosts by setting an empty blocklist and empty allowlist
-    php /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
-    php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set='' || error "$section" "Failed to set curlsecurityallowedhosts"
-    php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
+    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
+    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set='' || error "$section" "Failed to set curlsecurityallowedhosts"
+    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
 
     log "CURL security restrictions disabled."
   else
@@ -208,7 +350,7 @@ configure_site() {
     KEYCLOAK_HOST=$(echo "$KEYCLOAK_URL" | sed -e 's#^https\\?://##' -e 's#/.*##')
 
     # Get current allowed hosts and add Keycloak host
-    CURRENT_ALLOWED=$(php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts 2>/dev/null | grep -v "^$" | tail -1 || echo "")
+    CURRENT_ALLOWED=$(php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts 2>/dev/null | grep -v "^$" | tail -1 || echo "")
     if [ -z "$CURRENT_ALLOWED" ] || [ "$CURRENT_ALLOWED" = "curlsecurityallowedhosts" ]; then
       NEW_ALLOWED="$KEYCLOAK_HOST"
     else
@@ -220,7 +362,7 @@ configure_site() {
       fi
     fi
 
-    php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set="$NEW_ALLOWED" || error "$section" "Failed to set curlsecurityallowedhosts"
+    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set="$NEW_ALLOWED" || error "$section" "Failed to set curlsecurityallowedhosts"
     log "Keycloak domain ($KEYCLOAK_HOST) added to allowed hosts."
   fi
 }
@@ -249,7 +391,7 @@ execute_section "Enable OAuth2 Plugin" enable_oauth2_plugin
 ADMINUSERID=$(moosh -n user-list 2>/dev/null | grep "$MOODLE_EMAIL" | sed -e "s/admin.*(\([0-9]\+\)),.*/\1/")
 if [ -n "$ADMINUSERID" ]; then
     log "Found user $MOODLE_EMAIL with ID: $ADMINUSERID and resetting siteadmins list"
-    php /var/www/html/admin/cli/cfg.php --name=siteadmins --set="2,$ADMINUSERID"
+    php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins --set="2,$ADMINUSERID"
 fi
 
 log "Keycloak OAuth2 configuration script completed successfully!"

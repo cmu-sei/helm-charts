@@ -29,10 +29,13 @@ list($options, $unrecognized) = cli_get_params([
     'delete' => false,
     'delete-all' => false,
     'create-user-field' => false,
+    'check-user-field' => false,
     'json' => false,
     'requireconfirmation' => false,
     'tokenendpoint' => '',
     'userinfoendpoint' => '',
+    'externalfield' => '',
+    'internalfield' => '',
 ]);
 
 // Step dispatcher
@@ -64,6 +67,28 @@ function manage_oauth($options) {
     ];
 
     $results = ['success' => true, 'data' => []];
+
+    if ($options['check-user-field']) {
+        if (empty($options['id']) || $options['externalfield'] === '' || $options['internalfield'] === '') {
+            cli_error("Missing required fields for user field mapping check.");
+        }
+
+        $results = ['success' => true, 'exists' => false];
+        try {
+            global $DB;
+            $results['exists'] = $DB->record_exists('oauth2_user_field_mapping', [
+                'issuerid' => $options['id'],
+                'externalfield' => $options['externalfield'],
+                'internalfield' => $options['internalfield'],
+            ]);
+        } catch (Exception $e) {
+            $results['success'] = false;
+            $results['error'] = $e->getMessage();
+        }
+
+        output_results($options, $results);
+        return;
+    }
 
     if ($options['create-user-field'] && $options['id'] && $options['json']) {
         $mapping_data = json_decode($options['json']);
@@ -142,6 +167,16 @@ function manage_oauth($options) {
         cli_error("Missing required fields: baseurl, clientid, clientsecret, name.");
     }
 
+    $discoveryurl = rtrim($data->baseurl, '/') . '/.well-known/openid-configuration';
+    cli_writeln("OAuth2 baseurl: {$data->baseurl}");
+    cli_writeln("OAuth2 discovery URL: {$discoveryurl}");
+    if (!empty($options['tokenendpoint'])) {
+        cli_writeln("OAuth2 token endpoint: {$options['tokenendpoint']}");
+    }
+    if (!empty($options['userinfoendpoint'])) {
+        cli_writeln("OAuth2 userinfo endpoint: {$options['userinfoendpoint']}");
+    }
+
     if (empty($data->id)) {
         try {
             $issuer = $api->create_issuer($data);
@@ -152,7 +187,7 @@ function manage_oauth($options) {
                 cli_error("Failed to retrieve ID of new provider.");
             }
         } catch (Exception $e) {
-            cli_error("Error creating OAuth2 issuer: " . $e->getMessage());
+            cli_error("Error creating OAuth2 issuer for baseurl {$data->baseurl}: " . $e->getMessage());
         }
     } else {
         try {
