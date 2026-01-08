@@ -2,7 +2,7 @@ apiVersion: v2
 name: crucible-monitoring
 description: Crucible platform monitoring and observability stack (Prometheus, Grafana, Loki, Tempo, Alloy)
 type: application
-version: 0.0.0
+version: 0.0.1
 
 dependencies:
   # Metrics collection and storage

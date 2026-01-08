@@ -2,7 +2,7 @@ apiVersion: v2
 name: crucible-infra
 description: Crucible platform infrastructure deployment (ingress, database, storage)
 type: application
-version: 0.0.0
+version: 0.0.1
 
 dependencies:
   # NFS storage provisioner for shared storage
