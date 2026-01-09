@@ -1,0 +1,452 @@
+# Crucible Monitoring Chart Values
+# This chart deploys the monitoring and observability stack for Crucible
+
+# IMPORTANT: This chart assumes crucible-infra is already deployed
+# The infra chart provides: Ingress Controller, CA certificates
+
+global:
+  # Domain name for the Crucible deployment
+  domain: crucible
+
+  # Kubernetes namespace
+  namespace: default
+
+# Prometheus - Metrics Collection and Storage
+# https://artifacthub.io/packages/helm/prometheus-community/prometheus
+prometheus:
+  enabled: true
+  server:
+    # Enable remote-write receiver for Grafana Alloy
+    extraArgs:
+      web.enable-remote-write-receiver: ""
+
+# Grafana - Dashboards and Visualization
+# https://artifacthub.io/packages/helm/grafana/grafana
+grafana:
+  enabled: true
+
+  # Ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        rewrite ^(/grafana)$ $1/ break;
+    hosts:
+      - "{{ .Values.global.domain }}"
+    path: /grafana
+    pathType: Prefix
+    tls:
+      - secretName: crucible-infra-cert
+        hosts:
+          - "{{ .Values.global.domain }}"
+
+  # Grafana configuration
+  grafana.ini:
+    server:
+      root_url: "https://{{ .Values.global.domain }}/grafana/"
+      serve_from_sub_path: true
+
+    auth:
+      disable_login_form: true # OAuth only via Keycloak
+      signout_redirect_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/logout?redirect_uri=https://{{ .Values.global.domain }}/grafana/"
+
+    # Keycloak OAuth integration
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak
+      allow_sign_up: true
+      client_id: grafana
+      client_secret: ${GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+      scopes: "openid profile email"
+      auth_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth"
+      token_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/token"
+      api_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/userinfo"
+      email_attribute_path: email
+      login_attribute_path: email
+      name_attribute_path: preferred_username
+      role_attribute_path: "contains(realm_access.roles[*], 'Administrator') && 'Admin' || 'Viewer'"
+
+  # Configure datasources for Prometheus, Loki, and Tempo
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: prometheus
+          type: prometheus
+          url: "http://{{ .Release.Name }}-prometheus-server"
+          isDefault: true
+        - name: Loki
+          uid: loki
+          type: loki
+          url: "http://{{ .Release.Name }}-loki:3100"
+          jsonData:
+            maxLines: 1000
+        - name: Tempo
+          uid: tempo
+          type: tempo
+          url: "http://{{ .Release.Name }}-tempo:3100"
+          jsonData:
+            httpMethod: GET
+            tracesToMetrics:
+              datasourceUid: prometheus
+            serviceMap:
+              datasourceUid: prometheus
+
+  # Trust custom CA certificates from crucible-infra chart
+  env:
+    SSL_CERT_FILE: /etc/ssl/certs/combined-ca/ca-certificates.crt
+    # OAuth client secret for Keycloak integration
+    # CHANGE THIS in production deployments
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "516aea1d6915825e2dd757834a34386bd21c942c6c42e7cbc52ef2ba7cfb5518"
+
+  # Init container to combine system CA certs with custom certs
+  extraInitContainers:
+    - name: grafana-ca-bundle
+      image: alpine:3.19
+      command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/ca-certificates.crt
+          cat /crucible-ca/crucible-dev.crt >> /ca-bundle/ca-certificates.crt
+          if [ -f /crucible-ca/zscaler-ca.crt ]; then
+            cat /crucible-ca/zscaler-ca.crt >> /ca-bundle/ca-certificates.crt
+          fi
+      volumeMounts:
+        - name: ca-bundle
+          mountPath: /ca-bundle
+        - name: crucible-ca
+          mountPath: /crucible-ca
+
+  # Mount custom CA cert ConfigMap from crucible-infra
+  extraVolumes:
+    - name: crucible-ca
+      configMap:
+        name: crucible-ca-cert
+        items:
+          - key: crucible-dev.crt
+            path: crucible-dev.crt
+          - key: zscaler-ca.crt
+            path: zscaler-ca.crt
+    - name: ca-bundle
+      emptyDir: {}
+
+  extraVolumeMounts:
+    - name: crucible-ca
+      mountPath: /crucible-ca/crucible-dev.crt
+      subPath: crucible-dev.crt
+      readOnly: true
+    - name: ca-bundle
+      mountPath: /etc/ssl/certs/combined-ca
+      readOnly: true
+
+# Loki - Log Aggregation
+# https://artifacthub.io/packages/helm/grafana/loki
+loki:
+  enabled: true
+
+  # SingleBinary mode for simplified deployment
+  deploymentMode: SingleBinary
+
+  # Disable gateway (not needed for small deployments)
+  gateway:
+    enabled: false
+
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 5Gi
+
+    # Trust custom CA certificates
+    extraEnv:
+      - name: SSL_CERT_FILE
+        value: /usr/local/share/ca-certificates/crucible-dev.crt
+
+    extraVolumes:
+      - name: crucible-ca
+        configMap:
+          name: crucible-ca-cert
+          items:
+            - key: crucible-dev.crt
+              path: crucible-dev.crt
+
+    extraVolumeMounts:
+      - name: crucible-ca
+        mountPath: /usr/local/share/ca-certificates/crucible-dev.crt
+        subPath: crucible-dev.crt
+        readOnly: true
+
+  # Disable read/write/backend for SingleBinary mode
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+
+  # Loki configuration
+  loki:
+    # Disable auth for simplified deployment (cluster-internal only)
+    auth_enabled: false
+
+    # Use filesystem storage
+    storage:
+      type: filesystem
+      filesystem:
+        chunks_directory: /var/loki/chunks
+        rules_directory: /var/loki/rules
+
+    commonConfig:
+      replication_factor: 1
+
+    # Use test schema for simplified deployment
+    useTestSchema: true
+
+# Tempo - Distributed Tracing
+# https://artifacthub.io/packages/helm/grafana/tempo
+tempo:
+  enabled: true
+  replicas: 1
+
+  # Tempo configuration
+  tempo:
+    # Use local storage for trace data
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+
+    # OTLP receivers for gRPC and HTTP
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+
+  # Persistent storage for traces
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  # Disable Tempo Query (use Grafana instead)
+  tempoQuery:
+    enabled: false
+
+# Grafana Alloy - OpenTelemetry Collector
+# Routes logs to Loki, metrics to Prometheus, traces to Tempo
+# https://artifacthub.io/packages/helm/grafana/alloy
+grafana-alloy:
+  enabled: true
+
+  controller:
+    type: daemonset
+
+    volumes:
+      extra:
+        - name: crucible-ca
+          configMap:
+            name: crucible-ca-cert
+            items:
+              - key: crucible-dev.crt
+                path: crucible-dev.crt
+
+  alloy:
+    stabilityLevel: experimental
+
+    # Trust custom CA certificates
+    extraEnv:
+      - name: SSL_CERT_FILE
+        value: /usr/local/share/ca-certificates/crucible-dev.crt
+
+    # Mount log directories and CA cert
+    mounts:
+      varlog: true
+      dockercontainers: true
+      extra:
+        - name: crucible-ca
+          mountPath: /usr/local/share/ca-certificates/crucible-dev.crt
+          subPath: crucible-dev.crt
+          readOnly: true
+
+    # Extra ports for OTLP receivers
+    extraPorts:
+      - name: otlp-grpc
+        port: 4317
+        targetPort: 4317
+        protocol: TCP
+      - name: otlp-http
+        port: 4318
+        targetPort: 4318
+        protocol: TCP
+
+    configMap:
+      # Grafana Alloy Configuration
+      # Reference: https://grafana.com/docs/alloy/latest/reference/components/
+      # Reference: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/
+      # Reference: https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
+      # Consider adding the following in the future:
+      # 1. Kubernetes Cluster Events: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#kubernetes-cluster-events
+      # 2. Kuberenetes Node Logs: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#system-logs
+      # 3. Grafana Alloy Meta-Metrics (metrics about the metrics collector): https://grafana.com/docs/alloy/latest/collect/metamonitoring/
+      content: |-
+        logging {
+          level = "info"
+        }
+
+        // Begin Kubernetes discovery configuration
+
+        // discovery.kubernetes allows you to find scrape targets from Kubernetes resources.
+        // this spec will automatically discover all kubernetes pods in the cluster
+        discovery.kubernetes "pods" {
+          role = "pod"
+        }
+
+        // discovery.relabel rewrites the label set of the input targets by applying one or more relabeling rules.
+        // this simplifies the names of labels
+        discovery.relabel "pod_logs" {
+          targets = discovery.kubernetes.pods.targets
+
+          // Label creation - "namespace" field from "__meta_kubernetes_namespace"
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            action        = "replace"
+            target_label  = "namespace"
+          }
+
+          // Label creation - "pod" field from "__meta_kubernetes_pod_name"
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            action        = "replace"
+            target_label  = "pod"
+          }
+
+          // Label creation - "container" field from "__meta_kubernetes_pod_container_name"
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            action        = "replace"
+            target_label  = "container"
+          }
+
+          // Label creation -  "app" field from "__meta_kubernetes_pod_label_app_kubernetes_io_name"
+          rule {
+            source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+            action        = "replace"
+            target_label  = "app"
+          }
+
+          // Label creation -  "job" field from "__meta_kubernetes_namespace" and "__meta_kubernetes_pod_container_name"
+          // Concatenate values __meta_kubernetes_namespace/__meta_kubernetes_pod_container_name
+          rule {
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+            action        = "replace"
+            target_label  = "job"
+            separator     = "/"
+            replacement   = "$1"
+          }
+        }
+
+        // End Kubernetes discovery configuration
+
+        // Begin Loki configuration
+
+        // loki.source.kubernetes tails logs from Kubernetes containers using the Kubernetes API.
+        loki.source.kubernetes "pods" {
+          targets    = discovery.relabel.pod_logs.output
+          forward_to = [loki.process.pods.receiver]
+        }
+
+        // loki.process receives log entries from other Loki components, applies one or more processing stages,
+        // and forwards the results to the list of receivers in the component's arguments.
+        loki.process "pods" {
+          stage.docker {}
+          forward_to = [loki.write.default.receiver]
+        }
+
+        // loki.write sends logs to the Loki endpoint
+        loki.write "default" {
+          endpoint {
+            url = "http://{{ .Release.Name }}-loki:3100/loki/api/v1/push"
+          }
+        }
+
+        // End Loki configuration
+
+        // Begin Prometheus configuration
+
+        // Remote write endpoint for OTLP metrics
+        // Application metrics received via OTLP will be forwarded here
+        prometheus.remote_write "default" {
+          endpoint {
+            url = "http://{{ .Release.Name }}-prometheus-server/api/v1/write"
+          }
+        }
+
+        // NOTE: Pod scraping is disabled in Alloy.
+        // Prometheus handles infrastructure metric scraping directly using its own
+        // Kubernetes service discovery (node-exporter, kube-state-metrics, etc.).
+        // Alloy focuses on receiving OTLP telemetry from instrumented applications.
+
+        // End Prometheus configuration
+
+        // Begin OpenTelemetry configuration
+
+        // Export otel logs to Loki
+        otelcol.exporter.loki "default" {
+          forward_to = [loki.write.default.receiver]
+        }
+
+        // Export otel traces to Tempo via gRPC
+        otelcol.exporter.otlp "default" {
+          client {
+            endpoint = "{{ .Release.Name }}-tempo:4317"
+            // insecure is ok since this just stays in the cluster
+            tls {
+              insecure = true
+            }
+          }
+        }
+
+        // Export otel metrics to Prometheus
+        otelcol.exporter.prometheus "default" {
+          forward_to = [prometheus.remote_write.default.receiver]
+        }
+
+        // Batch otel exports to reduce network chatter
+        otelcol.processor.batch "default" {
+          output {
+            metrics = [otelcol.exporter.prometheus.default.input]
+            logs    = [otelcol.exporter.loki.default.input]
+            traces  = [otelcol.exporter.otlp.default.input]
+          }
+        }
+
+        // Configure an otel receiver for apps to send otel to
+        // This is a compatible Otel Collector for http and grpc
+        otelcol.receiver.otlp "default" {
+          grpc {
+            endpoint = "0.0.0.0:4317"
+          }
+
+          http {
+            endpoint = "0.0.0.0:4318"
+          }
+
+          // Send output to the batch processor
+          // Batch processor then forwards to the correct services
+          output {
+            metrics = [otelcol.processor.batch.default.input]
+            logs    = [otelcol.processor.batch.default.input]
+            traces  = [otelcol.processor.batch.default.input]
+          }
+        }
+
+        // End OpenTelemetry configuration

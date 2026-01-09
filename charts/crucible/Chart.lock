@@ -1,0 +1,36 @@
+dependencies:
+- name: keycloak
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 24.6.4
+- name: alloy
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.9
+- name: blueprint
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.6
+- name: caster
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.7
+- name: cite
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.10
+- name: gallery
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.8
+- name: gameboard
+  repository: https://helm.cmusei.dev/charts
+  version: 0.5.12
+- name: player
+  repository: https://helm.cmusei.dev/charts
+  version: 1.8.0
+- name: steamfitter
+  repository: https://helm.cmusei.dev/charts
+  version: 1.6.8
+- name: topomojo
+  repository: https://helm.cmusei.dev/charts
+  version: 0.5.14
+- name: moodle
+  repository: https://helm.cmusei.dev/charts
+  version: 0.2.2
+digest: sha256:fb58d33582277be2443e576207718c43b383609ad558d548833b73085cd2eecd
+generated: "2026-01-08T13:43:17.916512659Z"
