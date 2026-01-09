@@ -3,11 +3,44 @@
 
 global:
   # Domain name for the Crucible deployment
-  domain: crucible
+  domain: ""
 
   # Kubernetes namespace (use Release.Namespace in most cases)
   namespace: default
-  version: "0.0.0"
+
+# TLS Certificate Configuration
+# Configure TLS certificates for ingress resources
+tls:
+  # Create a TLS secret from certificate files
+  # Set to false if using cert-manager or providing your own secret
+  create: false
+
+  # Name of the TLS secret to create or reference
+  # If create=true, this secret will be created
+  # If create=false, ingresses will reference this existing secret
+  secretName: "crucible-cert"
+
+  # Path to certificate file relative to chart root (e.g., "files/tls.crt")
+  certFile: ""
+
+  # Path to key file relative to chart root (e.g., "files/tls.key")
+  keyFile: ""
+
+# Custom CA Certificates
+# Load custom CA certificates to trust in applications
+caCerts:
+  # Create a ConfigMap with CA certificates
+  create: false
+
+  # Name of the ConfigMap to create
+  configMapName: "crucible-ca-cert"
+
+  # Map of certificate names to file paths
+  # Example:
+  # files:
+  #   my-ca.crt: "files/my-ca.crt"
+  #   corporate-proxy.crt: "files/corporate-proxy.crt"
+  files: {}
 
 # NFS Server Provisioner
 # Provides dynamic provisioning of NFS-backed persistent volumes

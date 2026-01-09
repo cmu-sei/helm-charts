@@ -1,19 +1,25 @@
-{{- $crucibleCa := .Files.Get "files/crucible-dev.crt" -}}
-{{- $zscalerCa := .Files.Get "files/zscaler-ca.crt" -}}
-{{- if or $crucibleCa $zscalerCa }}
+{{- /* CA Certificate ConfigMap - only created if caCerts.create is enabled and cert files are provided */ -}}
+{{- if .Values.caCerts.create }}
+{{- $hasCerts := false -}}
+{{- $certs := dict -}}
+{{- range $name, $path := .Values.caCerts.files }}
+{{-   $content := $.Files.Get $path -}}
+{{-   if $content }}
+{{-     $_ := set $certs $name $content -}}
+{{-     $hasCerts = true -}}
+{{-   end }}
+{{- end }}
+{{- if $hasCerts }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "crucible-ca-cert"
+  name: {{ .Values.caCerts.configMapName | default "crucible-ca-cert" }}
   labels:
     {{- include "crucible-infra.labels" $ | nindent 4 }}
 data:
-  {{- if $crucibleCa }}
-  crucible-dev.crt: |
-{{ $crucibleCa | nindent 4 }}
-  {{- end }}
-  {{- if $zscalerCa }}
-  zscaler-ca.crt: |
-{{ $zscalerCa | nindent 4 }}
-  {{- end }}
+{{- range $name, $content := $certs }}
+  {{ $name }}: |
+{{ $content | nindent 4 }}
+{{- end }}
+{{- end }}
 {{- end }}

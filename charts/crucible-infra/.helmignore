@@ -21,3 +21,18 @@
 .idea/
 *.tmproj
 .vscode/
+
+# Exclude certificate and key files in the files/ directory
+# This prevents accidental inclusion of sensitive certificates and keys
+files/*.key
+files/*.crt
+files/*.pem
+files/*-dev.*
+files/*-local.*
+
+# Exclude Keycloak realm configurations
+files/*realm*.json
+
+# Exclude environment-specific files
+files/*.env
+files/*.local

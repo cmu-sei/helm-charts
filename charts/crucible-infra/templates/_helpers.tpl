@@ -73,3 +73,17 @@ Return the name of the secret that stores the postgresql password.
 {{- define "crucible-infra.postgresql.secretName" -}}
 {{- printf "%s-postgresql" (include "crucible-infra.fullname" . ) -}}
 {{- end }}
+
+{{/*
+Return the name of the TLS secret for ingress resources.
+*/}}
+{{- define "crucible-infra.tls.secretName" -}}
+{{- .Values.tls.secretName | default "crucible-cert" -}}
+{{- end }}
+
+{{/*
+Return the name of the CA certificates ConfigMap.
+*/}}
+{{- define "crucible-infra.caCerts.configMapName" -}}
+{{- .Values.caCerts.configMapName | default "crucible-ca-cert" -}}
+{{- end }}
