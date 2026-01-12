@@ -33,5 +33,4 @@ dependencies:
   - name: alloy
     repository: https://grafana.github.io/helm-charts
     version: 1.5.0
-    alias: grafana-alloy
-    condition: grafana-alloy.enabled
+    condition: alloy.enabled
