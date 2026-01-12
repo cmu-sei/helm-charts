@@ -162,7 +162,14 @@ spec:
             - name: DB_NAME
               value: {{ $database.name | default "moodledb" | quote }}
             - name: DB_USER
+              {{- if and $database.existingSecret $database.existingSecretUserKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl $database.existingSecret $ }}
+                  key: {{ $database.existingSecretUserKey }}
+              {{- else }}
               value: {{ tpl ($database.user | default "moodle") $ | quote }}
+              {{- end }}
             - name: DB_PREFIX
               value: {{ tpl ($database.prefix | default "mdl_") $ | quote }}
             - name: DB_PASS
@@ -170,10 +177,10 @@ spec:
                 secretKeyRef:
                   {{- if $database.existingSecret }}
                   name: {{ tpl $database.existingSecret $ }}
-                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  key: {{ $database.existingSecretPasswordKey | default "postgres-password" }}
                   {{- else }}
                   name: {{ include "moodle.database.secretName" $ }}
-                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  key: {{ $database.existingSecretPasswordKey | default "postgres-password" }}
                   {{- end }}
             - name: post_max_size
               value: {{ $php.postMaxSize | default "50M" | quote }}
@@ -323,7 +330,14 @@ spec:
             - name: DB_NAME
               value: {{ $database.name | default "moodledb" | quote }}
             - name: DB_USER
+              {{- if and $database.existingSecret $database.existingSecretUserKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl $database.existingSecret $ }}
+                  key: {{ $database.existingSecretUserKey }}
+              {{- else }}
               value: {{ tpl ($database.user | default "moodle") $ | quote }}
+              {{- end }}
             - name: DB_PREFIX
               value: {{ tpl ($database.prefix | default "mdl_") $ | quote }}
             - name: DB_PASS
@@ -331,10 +345,10 @@ spec:
                 secretKeyRef:
                   {{- if $database.existingSecret }}
                   name: {{ tpl $database.existingSecret $ }}
-                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  key: {{ $database.existingSecretPasswordKey | default "postgres-password" }}
                   {{- else }}
                   name: {{ include "moodle.database.secretName" $ }}
-                  key: {{ $database.existingSecretKey | default "postgres-password" }}
+                  key: {{ $database.existingSecretPasswordKey | default "postgres-password" }}
                   {{- end }}
             - name: post_max_size
               value: {{ $php.postMaxSize | default "50M" | quote }}
