@@ -6,22 +6,34 @@
 
 global:
   # Domain name for the Crucible deployment
-  domain: crucible
+  domain: ""
 
   # Kubernetes namespace
   namespace: default
 
+  # TLS secret name (accessible to subcharts via global values)
+  tlsSecretName: ""
+
+# Custom CA Certificates Configuration
+# Enable this if Grafana needs to trust custom CA certificates (e.g., for OAuth with Keycloak behind corporate proxy)
+# When enabled, ALL certificate files in the ConfigMap will be mounted to Grafana
+caCerts:
+  enabled: false
+  configMapName: "" # Name of ConfigMap containing CA certificates
+
 # Prometheus - Metrics Collection and Storage
 # https://artifacthub.io/packages/helm/prometheus-community/prometheus
+# https://prometheus.io/docs/introduction/overview/
 prometheus:
   enabled: true
   server:
-    # Enable remote-write receiver for Grafana Alloy
+    # Enable remote-write receiver for Alloy to send metrics
     extraArgs:
       web.enable-remote-write-receiver: ""
 
 # Grafana - Dashboards and Visualization
 # https://artifacthub.io/packages/helm/grafana/grafana
+# https://grafana.com/docs/grafana/latest/
 grafana:
   enabled: true
 
@@ -37,7 +49,7 @@ grafana:
     path: /grafana
     pathType: Prefix
     tls:
-      - secretName: crucible-infra-cert
+      - secretName: "{{ .Values.global.tlsSecretName }}"
         hosts:
           - "{{ .Values.global.domain }}"
 
@@ -48,29 +60,31 @@ grafana:
       serve_from_sub_path: true
 
     auth:
-      disable_login_form: true # OAuth only via Keycloak
-      signout_redirect_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/logout?redirect_uri=https://{{ .Values.global.domain }}/grafana/"
+      disable_login_form: true # OAuth only (no local users)
+      signout_redirect_url: ""
 
-    # Keycloak OAuth integration
+    # OAuth integration
     auth.generic_oauth:
-      enabled: true
-      name: Keycloak
+      enabled: false
+      name: ""
       allow_sign_up: true
       client_id: grafana
       client_secret: ${GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
       scopes: "openid profile email"
-      auth_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth"
-      token_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/token"
-      api_url: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/userinfo"
+      auth_url: ""
+      token_url: ""
+      api_url: ""
       email_attribute_path: email
       login_attribute_path: email
       name_attribute_path: preferred_username
+      # This allows Keycloak users in the Admin or Viewer groups to use grafana
       role_attribute_path: "contains(realm_access.roles[*], 'Administrator') && 'Admin' || 'Viewer'"
 
   # Configure datasources for Prometheus, Loki, and Tempo
   datasources:
     datasources.yaml:
       apiVersion: 1
+      # datasources use k8s service addresses to keep traffic cluster-internal
       datasources:
         - name: Prometheus
           uid: prometheus
@@ -94,61 +108,54 @@ grafana:
             serviceMap:
               datasourceUid: prometheus
 
-  # Trust custom CA certificates from crucible-infra chart
+  # Env var can optionally be used for OAuth client secret for integration
   env:
-    SSL_CERT_FILE: /etc/ssl/certs/combined-ca/ca-certificates.crt
-    # OAuth client secret for Keycloak integration
-    # CHANGE THIS in production deployments
-    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "516aea1d6915825e2dd757834a34386bd21c942c6c42e7cbc52ef2ba7cfb5518"
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ""
 
-  # Init container to combine system CA certs with custom certs
-  extraInitContainers:
-    - name: grafana-ca-bundle
-      image: alpine:3.19
-      command:
-        - /bin/sh
-        - -c
-        - |
-          set -e
-          cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/ca-certificates.crt
-          cat /crucible-ca/crucible-dev.crt >> /ca-bundle/ca-certificates.crt
-          if [ -f /crucible-ca/zscaler-ca.crt ]; then
-            cat /crucible-ca/zscaler-ca.crt >> /ca-bundle/ca-certificates.crt
-          fi
-      volumeMounts:
-        - name: ca-bundle
-          mountPath: /ca-bundle
-        - name: crucible-ca
-          mountPath: /crucible-ca
-
-  # Mount custom CA cert ConfigMap from crucible-infra
-  extraVolumes:
-    - name: crucible-ca
-      configMap:
-        name: crucible-ca-cert
-        items:
-          - key: crucible-dev.crt
-            path: crucible-dev.crt
-          - key: zscaler-ca.crt
-            path: zscaler-ca.crt
-    - name: ca-bundle
-      emptyDir: {}
-
-  extraVolumeMounts:
-    - name: crucible-ca
-      mountPath: /crucible-ca/crucible-dev.crt
-      subPath: crucible-dev.crt
-      readOnly: true
-    - name: ca-bundle
-      mountPath: /etc/ssl/certs/combined-ca
-      readOnly: true
+  # NOTE: To enable custom CA certificates for Grafana, set caCerts.enabled: true
+  # Use the following configuration when deploying with custom certs:
+  # env:
+  #   SSL_CERT_FILE: /etc/ssl/certs/combined-ca/ca-certificates.crt
+  # extraInitContainers:
+  #   - name: grafana-ca-bundle
+  #     image: alpine:3.19
+  #     command:
+  #       - /bin/sh
+  #       - -c
+  #       - |
+  #         set -e
+  #         cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/ca-certificates.crt
+  #         # Append all certificate files from the ConfigMap
+  #         for cert in /crucible-ca/*; do
+  #           if [ -f "$cert" ]; then
+  #             cat "$cert" >> /ca-bundle/ca-certificates.crt
+  #           fi
+  #         done
+  #     volumeMounts:
+  #       - name: ca-bundle
+  #         mountPath: /ca-bundle
+  #       - name: crucible-ca
+  #         mountPath: /crucible-ca
+  # extraVolumes:
+  #   - name: crucible-ca
+  #     configMap:
+  #       name: "{{ .Values.caCerts.configMapName }}"
+  #       # No items specified - mounts ALL keys from ConfigMap
+  #   - name: ca-bundle
+  #     emptyDir: {}
+  # extraVolumeMounts:
+  #   - name: ca-bundle
+  #     mountPath: /etc/ssl/certs/combined-ca
+  #     readOnly: true
 
 # Loki - Log Aggregation
 # https://artifacthub.io/packages/helm/grafana/loki
+# https://grafana.com/docs/loki/latest/
 loki:
   enabled: true
 
   # SingleBinary mode for simplified deployment
+  # https://grafana.com/docs/loki/latest/get-started/deployment-modes/
   deploymentMode: SingleBinary
 
   # Disable gateway (not needed for small deployments)
@@ -160,25 +167,6 @@ loki:
     persistence:
       enabled: true
       size: 5Gi
-
-    # Trust custom CA certificates
-    extraEnv:
-      - name: SSL_CERT_FILE
-        value: /usr/local/share/ca-certificates/crucible-dev.crt
-
-    extraVolumes:
-      - name: crucible-ca
-        configMap:
-          name: crucible-ca-cert
-          items:
-            - key: crucible-dev.crt
-              path: crucible-dev.crt
-
-    extraVolumeMounts:
-      - name: crucible-ca
-        mountPath: /usr/local/share/ca-certificates/crucible-dev.crt
-        subPath: crucible-dev.crt
-        readOnly: true
 
   # Disable read/write/backend for SingleBinary mode
   read:
@@ -208,6 +196,7 @@ loki:
 
 # Tempo - Distributed Tracing
 # https://artifacthub.io/packages/helm/grafana/tempo
+# https://grafana.com/docs/tempo/latest/
 tempo:
   enabled: true
   replicas: 1
@@ -244,38 +233,20 @@ tempo:
 # Grafana Alloy - OpenTelemetry Collector
 # Routes logs to Loki, metrics to Prometheus, traces to Tempo
 # https://artifacthub.io/packages/helm/grafana/alloy
-grafana-alloy:
+# https://grafana.com/docs/alloy/latest/
+alloy:
   enabled: true
 
   controller:
     type: daemonset
 
-    volumes:
-      extra:
-        - name: crucible-ca
-          configMap:
-            name: crucible-ca-cert
-            items:
-              - key: crucible-dev.crt
-                path: crucible-dev.crt
-
   alloy:
     stabilityLevel: experimental
 
-    # Trust custom CA certificates
-    extraEnv:
-      - name: SSL_CERT_FILE
-        value: /usr/local/share/ca-certificates/crucible-dev.crt
-
-    # Mount log directories and CA cert
+    # Mount log directories for Kubernetes log collection
     mounts:
       varlog: true
       dockercontainers: true
-      extra:
-        - name: crucible-ca
-          mountPath: /usr/local/share/ca-certificates/crucible-dev.crt
-          subPath: crucible-dev.crt
-          readOnly: true
 
     # Extra ports for OTLP receivers
     extraPorts:
@@ -290,10 +261,20 @@ grafana-alloy:
 
     configMap:
       # Grafana Alloy Configuration
-      # Reference: https://grafana.com/docs/alloy/latest/reference/components/
-      # Reference: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/
-      # Reference: https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
-      # Consider adding the following in the future:
+      # The default configuration will:
+      # - Discover and tail logs from all Kubernetes pods in the cluster and forward to Loki
+      # - Receive OpenTelemetry metrics, logs, and traces from instrumented applications
+      # - Export OTLP metrics to Prometheus via remote write
+      # - Export OTLP logs to Loki
+      # - Export OTLP traces to Tempo via gRPC
+      # - Batch OTLP exports to reduce network overhead
+      #
+      # Reference:
+      #    - https://grafana.com/docs/alloy/latest/reference/components/
+      #    - https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/
+      #    - https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
+      #
+      # TODO: Consider adding the following:
       # 1. Kubernetes Cluster Events: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#kubernetes-cluster-events
       # 2. Kuberenetes Node Logs: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#system-logs
       # 3. Grafana Alloy Meta-Metrics (metrics about the metrics collector): https://grafana.com/docs/alloy/latest/collect/metamonitoring/

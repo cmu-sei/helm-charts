@@ -22,20 +22,30 @@ Chart components are enabled by default, but can be disabled via the values file
 
 1. Kubernetes 1.19+
 2. Helm 3.0+
-3. **Default values assume crucible-infra chart is deployed first**
-   - Provides ingress controller
-   - Provides CA certificate ConfigMap
-4. **Default values assume crucible chart is deployed first for Keycloak OAuth integration with Grafana. You can optionally disable Keycloak auth.**
+3. **Ingress Controller** - Required for Grafana access (crucible-infra provides this)
+4. **TLS Certificate** - Required for ingress (see [TLS Configuration](#tls-configuration))
+5. **Keycloak** - Optional for Grafana OAuth (crucible chart provides this, can be disabled)
 
 ## Installation
 
 ### Quick Start
 
 ```bash
-# Install monitoring stack
-helm install crucible-monitoring ./crucible-monitoring
+# 1. Create a TLS secret for ingress
+kubectl create secret tls my-tls-secret \
+  --cert=/path/to/tls.crt \
+  --key=/path/to/tls.key
 
-# Access Grafana
+# 2. Create a values file with your TLS secret name
+cat > my-values.yaml <<EOF
+global:
+  tlsSecretName: my-tls-secret
+EOF
+
+# 3. Install monitoring stack
+helm install crucible-monitoring ./crucible-monitoring -f my-values.yaml
+
+# 4. Access Grafana
 # Navigate to https://<your-domain>/grafana
 ```
 
@@ -45,8 +55,55 @@ helm install crucible-monitoring ./crucible-monitoring
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `global.domain` | Domain name for Crucible deployment | `crucible.local` |
+| `global.domain` | Domain name for Crucible deployment | `""` |
 | `global.namespace` | Kubernetes namespace | `default` |
+| `global.tlsSecretName` | TLS secret name for Grafana ingress | `""` (required) |
+
+### TLS Configuration
+
+The chart requires a TLS certificate secret for the Grafana ingress. You **must** provide a TLS secret name via `global.tlsSecretName`.
+
+You can either:
+- Create the secret before deployment using `kubectl create secret tls`
+- Reference an existing secret created by crucible-infra chart
+- Use cert-manager to automatically provision certificates
+
+To configure the TLS secret name, set it in your values file:
+```yaml
+global:
+  tlsSecretName: my-tls-secret  # Your TLS secret name
+```
+
+The TLS secret will be automatically used by the Grafana ingress via the template `{{ .Values.global.tlsSecretName }}`.
+
+### Custom CA Certificates
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `caCerts.enabled` | Enable custom CA certificate mounting | `false` |
+| `caCerts.configMapName` | Name of ConfigMap containing CA certificates | `""` (must be set if enabled) |
+
+**When to enable**: Set `caCerts.enabled: true` if your environment requires trusting additional CA certificates (e.g., corporate proxy, internal PKI).
+
+**How it works**:
+- **All** certificate files in the ConfigMap are automatically mounted and trusted
+- No specific key names are required - any certificate files will work
+- Supports `.crt`, `.pem`, `.cer` file extensions
+- Certificates are mounted into Grafana, Loki, and Grafana Alloy pods
+
+**Example**:
+```yaml
+# values.yaml
+caCerts:
+  enabled: true
+  configMapName: my-ca-certs
+
+# Create ConfigMap with any number of certificate files
+kubectl create configmap my-ca-certs \
+  --from-file=corporate-ca.crt=/path/to/corporate-ca.crt \
+  --from-file=proxy-ca.crt=/path/to/proxy-ca.crt \
+  --from-file=internal-ca.pem=/path/to/internal-ca.pem
+```
 
 ### Prometheus
 
@@ -111,6 +168,94 @@ When enabled, Alloy:
 
 ## Example Configurations
 
+### Local Development (with crucible-development)
+
+If you're using the [Crucible Development Container](https://github.com/cmu-sei/crucible-development), enable CA certificates to trust local development certificates:
+
+```yaml
+# crucible-monitoring.values.yaml
+global:
+  domain: crucible
+  tlsSecretName: crucible-cert  # Created by helm-deploy.sh
+
+caCerts:
+  enabled: true  # Enable for local development
+  configMapName: crucible-ca-cert  # Created by helm-deploy.sh
+
+grafana:
+
+  env:
+    SSL_CERT_FILE: /etc/ssl/certs/combined-ca/ca-certificates.crt
+    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "516aea1d6915825e2dd757834a34386bd21c942c6c42e7cbc52ef2ba7cfb5518"
+
+  extraInitContainers:
+    - name: grafana-ca-bundle
+      image: alpine:3.19
+      command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/ca-certificates.crt
+          # Append all certificate files from the ConfigMap
+          for cert in /crucible-ca/*; do
+            if [ -f "$cert" ]; then
+              cat "$cert" >> /ca-bundle/ca-certificates.crt
+            fi
+          done
+      volumeMounts:
+        - name: ca-bundle
+          mountPath: /ca-bundle
+        - name: crucible-ca
+          mountPath: /crucible-ca
+
+  extraVolumes:
+    - name: crucible-ca
+      configMap:
+        name: crucible-ca-cert
+        # No items specified - mounts ALL keys from ConfigMap
+    - name: ca-bundle
+      emptyDir: {}
+
+  extraVolumeMounts:
+    - name: ca-bundle
+      mountPath: /etc/ssl/certs/combined-ca
+      readOnly: true
+
+loki:
+  singleBinary:
+    extraEnv:
+      - name: SSL_CERT_DIR
+        value: /usr/local/share/ca-certificates
+    extraVolumes:
+      - name: crucible-ca
+        configMap:
+          name: crucible-ca-cert
+          # No items specified - mounts ALL keys from ConfigMap
+    extraVolumeMounts:
+      - name: crucible-ca
+        mountPath: /usr/local/share/ca-certificates
+        readOnly: true
+
+grafana-alloy:
+  controller:
+    volumes:
+      extra:
+        - name: crucible-ca
+          configMap:
+            name: crucible-ca-cert
+            # No items specified - mounts ALL keys from ConfigMap
+  alloy:
+    extraEnv:
+      - name: SSL_CERT_DIR
+        value: /usr/local/share/ca-certificates
+    mounts:
+      extra:
+        - name: crucible-ca
+          mountPath: /usr/local/share/ca-certificates
+          readOnly: true
+```
+
 ### Enable Grafana Alloy
 
 ```yaml
@@ -150,8 +295,15 @@ grafana-alloy:
 ```yaml
 global:
   domain: crucible.example.com
+  tlsSecretName: crucible-tls  # Use cert-manager or pre-created secret
+
+# Enable if behind corporate proxy or using internal CA
+caCerts:
+  enabled: false  # Set to true if needed
+  configMapName: crucible-ca-cert
 
 grafana:
+
   env:
     # Use a strong, unique client secret
     GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "your-secure-secret-here"
