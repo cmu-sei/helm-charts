@@ -49,11 +49,12 @@ moodle:
     host: "pg-postgresql"
     port: "5432"
     name: "moodledb"
-    user: "moodle"
+    user: "moodle"  # Used only if existingSecret is empty or existingSecretUserKey is not set
     prefix: "mdl_"
-    password: ""
-    existingSecret: "pg-postgresql" # Name of secret containing db password (recommended)
-    existingSecretKey: "postgres-password" # Key in the secret containing the password
+    password: ""  # Used only if existingSecret is empty
+    existingSecret: "pg-postgresql"  # Name of secret containing db credentials (recommended)
+    existingSecretUserKey: ""  # Key in the secret containing the username (optional, uses 'user' field if empty)
+    existingSecretPasswordKey: "postgres-password"  # Key in the secret containing the password
     ## Create Database
     ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
     create_database: true

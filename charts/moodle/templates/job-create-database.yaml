@@ -6,7 +6,8 @@
 {{- $dbHost := tpl ($database.host | default "pg-postgresql") . -}}
 {{- $dbPort := $database.port | default "5432" -}}
 {{- $dbSecretName := tpl ($database.existingSecret | default "pg-postgresql") . -}}
-{{- $dbSecretKey := $database.existingSecretKey | default "postgres-password" -}}
+{{- $dbSecretUserKey := $database.existingSecretUserKey | default "" -}}
+{{- $dbSecretPasswordKey := $database.existingSecretPasswordKey | default "postgres-password" -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -27,30 +28,45 @@ spec:
       - name: create-database
         image: postgres:15-alpine
         env:
+        {{- if $dbSecretUserKey }}
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: {{ $dbSecretName }}
+              key: {{ $dbSecretUserKey }}
+        {{- end }}
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $dbSecretName }}
-              key: {{ $dbSecretKey }}
+              key: {{ $dbSecretPasswordKey }}
         command:
         - sh
         - -c
         - |
+          {{- if $dbSecretUserKey }}
+          # Use username from secret (via PGUSER environment variable)
+          DB_USER="${PGUSER}"
+          {{- else }}
+          # Use username from values
+          DB_USER="{{ $dbUser }}"
+          {{- end }}
+
           echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" ; do
+          until pg_isready -h {{ $dbHost }} -p {{ $dbPort }} -U "${DB_USER}" ; do
             echo "PostgreSQL not ready yet, waiting..."
             sleep 5
           done
           echo "PostgreSQL is ready - checking Moodle database"
 
           # Check if database exists
-          DB_EXISTS=$(psql -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='{{ $dbName }}'")
+          DB_EXISTS=$(psql -h {{ $dbHost }} -p {{ $dbPort }} -U "${DB_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='{{ $dbName }}'")
 
           if [ "$DB_EXISTS" = "1" ]; then
             echo "Database '{{ $dbName }}' already exists, skipping creation"
           else
             echo "Creating database '{{ $dbName }}'"
-            psql -h {{ $dbHost }} -p {{ $dbPort }} -U "{{ $dbUser }}" -d postgres \
+            psql -h {{ $dbHost }} -p {{ $dbPort }} -U "${DB_USER}" -d postgres \
               -c "CREATE DATABASE {{ $dbName }};"
             echo "Database '{{ $dbName }}' created successfully"
           fi
