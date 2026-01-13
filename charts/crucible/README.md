@@ -219,27 +219,7 @@ helm install crucible oci://registry.example.com/crucible -f my-values.yaml
 
 If you're using an external PostgreSQL service:
 
-#### 1. Prepare PostgreSQL Database
-
-Ensure your PostgreSQL instance is accessible from your Kubernetes cluster and create the required databases:
-
-```sql
--- Connect to your PostgreSQL instance and create databases
-CREATE DATABASE keycloak;
-CREATE DATABASE alloy;
-CREATE DATABASE blueprint;
-CREATE DATABASE caster;
-CREATE DATABASE cite;
-CREATE DATABASE gallery;
-CREATE DATABASE gameboard;
-CREATE DATABASE player;
-CREATE DATABASE steamfitter;
-CREATE DATABASE topomojo;
-CREATE DATABASE vm;
--- Optional: CREATE DATABASE moodle;
-```
-
-#### 2. Create PostgreSQL Credentials Secret
+#### 1. Create PostgreSQL Credentials Secret
 
 ```bash
 kubectl create secret generic postgres-credentials \
@@ -247,14 +227,14 @@ kubectl create secret generic postgres-credentials \
   --from-literal=password='your-postgres-password'
 ```
 
-#### 3. Prepare Other Prerequisites
+#### 2. Prepare Other Prerequisites
 
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
 - TLS certificate secret
 - Keycloak realm ConfigMap (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
 
-#### 4. Create Your Values File
+#### 3. Create Your Values File
 
 ```yaml
 global:
@@ -282,10 +262,10 @@ gameboard:
 # Note: You'll need to provide your own ingress controller and storage
 ```
 
-#### 5. Install the Crucible Chart
+#### 4. Install the Crucible Chart
 
 ```bash
-helm install crucible oci://registry.example.com/crucible -f my-values.yaml
+helm install crucible sei/crucible -f my-values.yaml
 ```
 
 **Note**: When using external PostgreSQL, you must also provide:
@@ -350,11 +330,7 @@ keycloak:
 
 ### PostgreSQL Connection Settings
 
-Configure connection to your PostgreSQL database. The chart supports multiple PostgreSQL deployment options:
-- **crucible-infra chart** - PostgreSQL deployed via the infra chart
-- **External PostgreSQL** - Self-hosted PostgreSQL server
-- **Cloud databases** - AWS RDS, Google Cloud SQL, Azure Database for PostgreSQL
-- **Managed services** - Any PostgreSQL-compatible service
+Configure connection to your PostgreSQL database.
 
 | Parameter | Description | Default | Required |
 |-----------|-------------|---------|----------|
@@ -375,15 +351,6 @@ global:
     usernameKey: "username"
     passwordKey: "postgres-password"
 
-# Using AWS RDS
-global:
-  postgresql:
-    serviceName: "my-db.abc123.us-east-1.rds.amazonaws.com"
-    port: 5432
-    secretName: "rds-postgres-credentials"
-    usernameKey: "username"
-    passwordKey: "password"
-
 # Using external PostgreSQL
 global:
   postgresql:
@@ -401,21 +368,6 @@ global:
 kubectl create secret generic postgres-credentials \
   --from-literal=username='postgres' \
   --from-literal=password='your-secure-password'
-
-# For RDS or external PostgreSQL
-kubectl create secret generic postgres-credentials \
-  --from-literal=username='crucible_admin' \
-  --from-literal=password='your-secure-password'
-
-# From environment variables
-kubectl create secret generic postgres-credentials \
-  --from-literal=username="${POSTGRES_USER}" \
-  --from-literal=password="${POSTGRES_PASSWORD}"
-
-# For crucible-infra chart compatibility (username in secret)
-kubectl create secret generic crucible-infra-postgresql \
-  --from-literal=username='postgres' \
-  --from-literal=postgres-password='your-password'
 ```
 
 ### Keycloak Configuration
@@ -454,185 +406,13 @@ crucible-alloy:
 
 #### Gameboard Game Engine
 
+This allows Gameboard to interact with TopoMojo for deploying challenges.
+
 ```yaml
 gameboard:
   gameboard-api:
     gameEngineClientSecret: ""  # Required: TopoMojo client secret
 ```
-
-## Example Configurations
-
-### Production Deployment
-
-```yaml
-global:
-  domain: crucible.example.com
-  tlsSecretName: crucible-tls
-  security:
-    allowInsecureImages: false
-  # Optional: Customize Keycloak configuration
-  # keycloak:
-  #   basePath: "/auth"
-  #   realm: "production"
-
-crucible-alloy:
-  alloy-api:
-    resourceOwnerAuthorization:
-      clientSecret: "{{ .Values.secrets.alloyClientSecret }}"
-      userName: "crucible-admin"
-      password: "{{ .Values.secrets.alloyPassword }}"
-
-gameboard:
-  gameboard-api:
-    gameEngineClientSecret: "{{ .Values.secrets.gameboardClientSecret }}"
-
-# Disable optional components if not needed
-moodle:
-  enabled: false
-```
-
-### Development Deployment
-
-For local development only:
-
-```yaml
-global:
-  domain: crucible.local
-  tlsSecretName: crucible-dev-tls
-  security:
-    allowInsecureImages: true  # Only for development
-
-crucible-alloy:
-  alloy-api:
-    resourceOwnerAuthorization:
-      clientSecret: "dev-secret-change-me"
-      userName: "admin"
-      password: "admin"
-
-gameboard:
-  gameboard-api:
-    gameEngineClientSecret: "dev-secret-change-me"
-```
-
-**⚠️ WARNING**: Never use development secrets in production environments.
-
-### Minimal Deployment
-
-Deploy only essential applications:
-
-```yaml
-global:
-  domain: crucible.example.com
-  tlsSecretName: crucible-tls
-
-# Disable optional applications
-gameboard:
-  enabled: false
-
-moodle:
-  enabled: false
-```
-
-### External PostgreSQL / Cloud Database
-
-Using AWS RDS, Google Cloud SQL, Azure Database, or external PostgreSQL:
-
-```yaml
-global:
-  domain: crucible.example.com
-  tlsSecretName: crucible-tls
-  postgresql:
-    # AWS RDS example
-    serviceName: "crucible-db.abc123.us-west-2.rds.amazonaws.com"
-    port: 5432
-    secretName: "rds-postgres-secret"
-    usernameKey: "username"
-    passwordKey: "password"
-
-# Configure OAuth secrets as needed
-crucible-alloy:
-  alloy-api:
-    resourceOwnerAuthorization:
-      clientSecret: "your-secret"
-      userName: "admin"
-      password: "your-password"
-
-gameboard:
-  gameboard-api:
-    gameEngineClientSecret: "your-secret"
-```
-
-**Prerequisites for external PostgreSQL:**
-- Databases must be pre-created (see [Option B Installation](#option-b-using-external-postgresql-rds-cloud-sql-etc))
-- Network connectivity from Kubernetes to PostgreSQL
-- Secret containing database password
-- Your own ingress controller
-- Your own persistent storage (StorageClass)
-
-## Accessing Services
-
-After deployment, services are accessible at:
-
-| Service | URL |
-|---------|-----|
-| Keycloak Admin | `https://<domain>/keycloak/admin/crucible/console/` |
-| Player | `https://<domain>/player` |
-| Alloy | `https://<domain>/alloy` |
-| Blueprint | `https://<domain>/blueprint` |
-| Caster | `https://<domain>/caster` |
-| CITE | `https://<domain>/cite` |
-| Gallery | `https://<domain>/gallery` |
-| Gameboard | `https://<domain>/gameboard` |
-| Steamfitter | `https://<domain>/steamfitter` |
-| TopoMojo | `https://<domain>/topomojo` |
-| Moodle | `https://<domain>/` |
-
-## Security Best Practices
-
-### Secret Management
-
-**Do not store secrets in values files committed to version control.**
-
-Recommended approaches:
-
-1. **External Secret Operators** (Recommended)
-   - [External Secrets Operator](https://external-secrets.io/)
-   - [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
-   - Cloud provider secret managers (AWS Secrets Manager, Azure Key Vault, GCP Secret Manager)
-
-2. **Helm Secrets Plugin**
-   ```bash
-   helm secrets install crucible ./crucible -f secrets.yaml
-   ```
-
-3. **CI/CD Pipeline Injection**
-   - Store secrets in CI/CD secret stores (GitHub Secrets, GitLab CI Variables)
-   - Inject at deployment time
-
-### OAuth Client Configuration
-
-- Generate unique secrets for each environment (dev, staging, prod)
-- Use strong random strings (minimum 32 characters)
-- Rotate secrets periodically
-- Restrict client redirect URIs (no wildcards)
-- Use confidential clients for backend services
-- Review and minimize client scopes
-
-### TLS Configuration
-
-- Use cert-manager with Let's Encrypt for automatic certificate renewal
-- Never commit TLS private keys to git
-- Use strong cipher suites
-- Enable HSTS (HTTP Strict Transport Security)
-- Consider mutual TLS (mTLS) for service-to-service communication
-
-### Database Security
-
-- Use strong PostgreSQL passwords
-- Restrict database network access
-- Enable SSL/TLS for database connections
-- Regular database backups
-- Implement database access auditing
 
 ## Troubleshooting
 
@@ -719,43 +499,6 @@ If applications cannot authenticate with Keycloak:
 3. Verify DNS resolution for your domain
 
 4. Check TLS certificate is valid and matches domain
-
-## Upgrading
-
-To upgrade the chart:
-
-```bash
-helm upgrade crucible oci://registry.example.com/crucible -f my-values.yaml
-```
-
-**Note**: Secrets with `helm.sh/resource-policy: keep` annotation are preserved during upgrades.
-
-## Uninstallation
-
-To remove the chart:
-
-```bash
-helm uninstall crucible
-```
-
-**Important**: This will not delete:
-- Secrets with the `keep` resource policy
-- Database data in PostgreSQL (managed by crucible-infra)
-- PVCs (managed by crucible-infra)
-- ConfigMaps (realm configuration, certificates)
-
-To clean up secrets:
-
-```bash
-kubectl delete secret <release-name>-keycloak-auth
-kubectl delete configmap crucible-realm-config
-```
-
-To also remove the infrastructure:
-
-```bash
-helm uninstall crucible-infra
-```
 
 ## References
 

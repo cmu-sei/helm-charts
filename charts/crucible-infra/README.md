@@ -503,3 +503,7 @@ kubectl delete pvc -l app.kubernetes.io/instance=crucible-infra
 - [Ingress NGINX Documentation](https://kubernetes.github.io/ingress-nginx/)
 - [PostgreSQL Chart](https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres)
 - [NFS Server Provisioner](https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner)
+
+## License
+
+Copyright 2025 Carnegie Mellon University. See LICENSE.md in the project root for license information.

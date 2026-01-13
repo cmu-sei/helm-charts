@@ -268,3 +268,7 @@ If PVCs remain in "Pending" status:
 - [Tempo Documentation](https://grafana.com/docs/tempo/)
 - [Grafana Alloy Documentation](https://grafana.com/docs/alloy/)
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
+
+## License
+
+Copyright 2025 Carnegie Mellon University. See LICENSE.md in the project root for license information.
