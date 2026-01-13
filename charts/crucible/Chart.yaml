@@ -62,5 +62,5 @@ dependencies:
   # Moodle LMS
   - name: moodle
     repository: https://helm.cmusei.dev/charts
-    version: 0.3.0
+    version: 0.2.3
     condition: moodle.enabled
