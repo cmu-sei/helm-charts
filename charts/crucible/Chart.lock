@@ -31,6 +31,6 @@ dependencies:
   version: 0.5.14
 - name: moodle
   repository: https://helm.cmusei.dev/charts
-  version: 0.2.2
-digest: sha256:fb58d33582277be2443e576207718c43b383609ad558d548833b73085cd2eecd
-generated: "2026-01-08T13:43:17.916512659Z"
+  version: 0.2.3
+digest: sha256:ee297ec2d7e8073d4efb9db2c20f3dc6c138be692ce05826cddbad08237ea7f1
+generated: "2026-01-13T14:50:24.5458745Z"

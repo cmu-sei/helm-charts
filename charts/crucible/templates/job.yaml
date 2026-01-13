@@ -1,19 +1,12 @@
-{{- $postgresConfig := .Values.global.postgresql | default dict -}}
-{{- if not $postgresConfig }}
-{{- $postgresConfig = .Values.postgresql | default dict -}}
-{{- end }}
-{{- $postgresUser := $postgresConfig.user | default "postgres" -}}
-{{- $postgresPort := $postgresConfig.port | default 5432 -}}
-{{- $postgresHost := include "crucible.postgresql.serviceName" . -}}
-{{- $postgresSecretName := include "crucible.postgresql.secretName" . -}}
 {{- $keycloakConfig := .Values.keycloak | default dict -}}
 {{- $keycloakExternalDb := $keycloakConfig.externalDatabase | default dict -}}
 {{- $keycloakDbName := tpl ($keycloakExternalDb.database | default "keycloak") . -}}
 {{- $keycloakDbUser := tpl ($keycloakExternalDb.user | default "postgres") . -}}
-{{- $keycloakDbHost := tpl ($keycloakExternalDb.host | default (include "crucible.postgresql.serviceName" .)) . -}}
-{{- $keycloakDbSecretName := tpl ($keycloakExternalDb.existingSecret | default $postgresSecretName) . -}}
+{{- $keycloakDbHost := tpl ($keycloakExternalDb.host | default "") . -}}
+{{- $keycloakDbPort := $keycloakExternalDb.port | default 5432 -}}
+{{- $keycloakDbSecretName := tpl ($keycloakExternalDb.existingSecret | default "") . -}}
 {{- $keycloakDbSecretKey := $keycloakExternalDb.existingSecretPasswordKey | default "postgres-password" -}}
-{{- if $keycloakConfig.enabled }}
+{{- if and $keycloakConfig.enabled $keycloakDbHost $keycloakDbSecretName }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -39,20 +32,20 @@ spec:
         - -c
         - |
           # Wait for Keycloak database host to be ready
-          until pg_isready -h {{ $keycloakDbHost }} -p {{ $postgresPort }} -U "{{ $keycloakDbUser }}" ; do
+          until pg_isready -h {{ $keycloakDbHost }} -p {{ $keycloakDbPort }} -U "{{ $keycloakDbUser }}" ; do
             echo "Waiting for PostgreSQL to be ready..."
             sleep 5
           done
           echo "PostgreSQL is ready - checking Keycloak database"
 
           # Check if Keycloak database exists
-          DB_EXISTS=$(PGPASSWORD="${KEYCLOAK_PGPASSWORD}" psql -h {{ $keycloakDbHost }} -p {{ $postgresPort }} -U "{{ $keycloakDbUser }}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='{{ $keycloakDbName }}'")
+          DB_EXISTS=$(PGPASSWORD="${KEYCLOAK_PGPASSWORD}" psql -h {{ $keycloakDbHost }} -p {{ $keycloakDbPort }} -U "{{ $keycloakDbUser }}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='{{ $keycloakDbName }}'")
 
           if [ "$DB_EXISTS" = "1" ]; then
             echo "Database '{{ $keycloakDbName }}' already exists, skipping creation"
           else
             echo "Creating database '{{ $keycloakDbName }}'"
-            PGPASSWORD="${KEYCLOAK_PGPASSWORD}" psql -h {{ $keycloakDbHost }} -p {{ $postgresPort }} -U "{{ $keycloakDbUser }}" -d postgres \
+            PGPASSWORD="${KEYCLOAK_PGPASSWORD}" psql -h {{ $keycloakDbHost }} -p {{ $keycloakDbPort }} -U "{{ $keycloakDbUser }}" -d postgres \
               -c "CREATE DATABASE {{ $keycloakDbName }};"
             echo "Database '{{ $keycloakDbName }}' created successfully"
           fi
