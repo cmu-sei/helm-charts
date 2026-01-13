@@ -90,3 +90,43 @@ Return the name of the TLS certificate secret.
 {{- "crucible-cert" -}}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the Keycloak base URL (authority).
+*/}}
+{{- define "crucible.keycloak.authority" -}}
+{{- $keycloak := .Values.global.keycloak | default dict -}}
+{{- $basePath := $keycloak.basePath | default "/keycloak" -}}
+{{- $realm := $keycloak.realm | default "crucible" -}}
+{{- printf "https://%s%s/realms/%s" .Values.global.domain $basePath $realm -}}
+{{- end }}
+
+{{/*
+Return the Keycloak authorization endpoint URL.
+*/}}
+{{- define "crucible.keycloak.authorizationUrl" -}}
+{{- printf "%s/protocol/openid-connect/auth" (include "crucible.keycloak.authority" .) -}}
+{{- end }}
+
+{{/*
+Return the Keycloak token endpoint URL.
+*/}}
+{{- define "crucible.keycloak.tokenUrl" -}}
+{{- printf "%s/protocol/openid-connect/token" (include "crucible.keycloak.authority" .) -}}
+{{- end }}
+
+{{/*
+Return the Keycloak OpenID configuration URL.
+*/}}
+{{- define "crucible.keycloak.metadataAddress" -}}
+{{- printf "%s/.well-known/openid-configuration" (include "crucible.keycloak.authority" .) -}}
+{{- end }}
+
+{{/*
+Return the Keycloak realm name.
+*/}}
+{{- define "crucible.keycloak.realm" -}}
+{{- $keycloak := .Values.global.keycloak | default dict -}}
+{{- $realm := $keycloak.realm | default "crucible" -}}
+{{- $realm -}}
+{{- end }}

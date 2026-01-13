@@ -1,8 +1,9 @@
 apiVersion: v2
 name: crucible
-description: Crucible framework application deployment (Keycloak, Crucible Core Applications, Moodle)
+description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.0.1
+version: 0.0.2
+home: https://cmu-sei.github.io/crucible/
 
 dependencies:
   # Identity Provider
@@ -61,5 +62,5 @@ dependencies:
   # Moodle LMS
   - name: moodle
     repository: https://helm.cmusei.dev/charts
-    version: 0.2.2
+    version: 0.3.0
     condition: moodle.enabled

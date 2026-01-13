@@ -1,11 +1,4 @@
-{{- if .Values.keycloak.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "crucible.fullname" . }}-keycloak-config-cli
-  labels:
-    {{- include "crucible.labels" . | nindent 4 }}
-data:
-  realm.json: |-
-{{ (.Files.Get "files/crucible-realm.json" | nindent 4) }}
-{{- end }}
+# Keycloak realm import is configured via the keycloak.extraEnvVars,
+# keycloak.extraVolumes, and keycloak.extraVolumeMounts in values.yaml
+# By default, realm import is disabled (commented out)
+# Uncomment those sections to enable automatic realm import from a ConfigMap
