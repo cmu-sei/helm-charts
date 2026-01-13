@@ -22,9 +22,9 @@ Chart components are enabled by default, but can be disabled via the values file
 
 1. Kubernetes 1.19+
 2. Helm 3.0+
-3. **Ingress Controller** - Required for Grafana access (crucible-infra provides this)
+3. **Ingress Controller** - Required for Grafana access
 4. **TLS Certificate** - Required for ingress (see [TLS Configuration](#tls-configuration))
-5. **Keycloak** - Optional for Grafana OAuth (crucible chart provides this, can be disabled)
+5. **Keycloak** - Optional for Grafana OAuth
 
 ## Installation
 
@@ -65,7 +65,7 @@ The chart requires a TLS certificate secret for the Grafana ingress. You **must*
 
 You can either:
 - Create the secret before deployment using `kubectl create secret tls`
-- Reference an existing secret created by crucible-infra chart
+- Reference an existing secret
 - Use cert-manager to automatically provision certificates
 
 To configure the TLS secret name, set it in your values file:
@@ -121,9 +121,7 @@ kubectl create configmap my-ca-certs \
 | `grafana.enabled` | Enable Grafana deployment | `true` |
 | `grafana.ingress.enabled` | Enable ingress | `true` |
 | `grafana.grafana.ini.auth.disable_login_form` | Disable login form (OAuth only) | `true` |
-| `grafana.env.GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET` | Keycloak OAuth client secret | `516aea1d...` |
-
-**Important**: Change the OAuth client secret in production deployments.
+| `grafana.env.GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET` | Keycloak OAuth client secret |  |
 
 **Datasources**: Grafana is pre-configured with datasources for:
 - Prometheus (metrics)
@@ -150,7 +148,7 @@ kubectl create configmap my-ca-certs \
 | `tempo.persistence.size` | Storage size | `5Gi` |
 | `tempo.tempo.receivers.otlp` | OTLP receiver config | Enabled on ports 4317/4318 |
 
-**OpenTelemetry**: Applications can send traces directly to Tempo or via Grafana Alloy.
+**OpenTelemetry**: Applications can send traces directly to Tempo but via Grafana Alloy is preferred.
 
 ### Grafana Alloy
 
@@ -166,170 +164,6 @@ When enabled, Alloy:
 - Routes traces to Tempo
 - Routes metrics to Prometheus
 
-## Example Configurations
-
-### Local Development (with crucible-development)
-
-If you're using the [Crucible Development Container](https://github.com/cmu-sei/crucible-development), enable CA certificates to trust local development certificates:
-
-```yaml
-# crucible-monitoring.values.yaml
-global:
-  domain: crucible
-  tlsSecretName: crucible-cert  # Created by helm-deploy.sh
-
-caCerts:
-  enabled: true  # Enable for local development
-  configMapName: crucible-ca-cert  # Created by helm-deploy.sh
-
-grafana:
-
-  env:
-    SSL_CERT_FILE: /etc/ssl/certs/combined-ca/ca-certificates.crt
-    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "516aea1d6915825e2dd757834a34386bd21c942c6c42e7cbc52ef2ba7cfb5518"
-
-  extraInitContainers:
-    - name: grafana-ca-bundle
-      image: alpine:3.19
-      command:
-        - /bin/sh
-        - -c
-        - |
-          set -e
-          cp /etc/ssl/certs/ca-certificates.crt /ca-bundle/ca-certificates.crt
-          # Append all certificate files from the ConfigMap
-          for cert in /crucible-ca/*; do
-            if [ -f "$cert" ]; then
-              cat "$cert" >> /ca-bundle/ca-certificates.crt
-            fi
-          done
-      volumeMounts:
-        - name: ca-bundle
-          mountPath: /ca-bundle
-        - name: crucible-ca
-          mountPath: /crucible-ca
-
-  extraVolumes:
-    - name: crucible-ca
-      configMap:
-        name: crucible-ca-cert
-        # No items specified - mounts ALL keys from ConfigMap
-    - name: ca-bundle
-      emptyDir: {}
-
-  extraVolumeMounts:
-    - name: ca-bundle
-      mountPath: /etc/ssl/certs/combined-ca
-      readOnly: true
-
-loki:
-  singleBinary:
-    extraEnv:
-      - name: SSL_CERT_DIR
-        value: /usr/local/share/ca-certificates
-    extraVolumes:
-      - name: crucible-ca
-        configMap:
-          name: crucible-ca-cert
-          # No items specified - mounts ALL keys from ConfigMap
-    extraVolumeMounts:
-      - name: crucible-ca
-        mountPath: /usr/local/share/ca-certificates
-        readOnly: true
-
-grafana-alloy:
-  controller:
-    volumes:
-      extra:
-        - name: crucible-ca
-          configMap:
-            name: crucible-ca-cert
-            # No items specified - mounts ALL keys from ConfigMap
-  alloy:
-    extraEnv:
-      - name: SSL_CERT_DIR
-        value: /usr/local/share/ca-certificates
-    mounts:
-      extra:
-        - name: crucible-ca
-          mountPath: /usr/local/share/ca-certificates
-          readOnly: true
-```
-
-### Enable Grafana Alloy
-
-```yaml
-grafana-alloy:
-  enabled: true
-```
-
-### Custom Storage Sizes
-
-```yaml
-loki:
-  singleBinary:
-    persistence:
-      size: 50Gi
-
-tempo:
-  persistence:
-    size: 100Gi
-```
-
-### Disable Components
-
-```yaml
-# Only deploy Prometheus and Grafana
-loki:
-  enabled: false
-
-tempo:
-  enabled: false
-
-grafana-alloy:
-  enabled: false
-```
-
-### Production Configuration
-
-```yaml
-global:
-  domain: crucible.example.com
-  tlsSecretName: crucible-tls  # Use cert-manager or pre-created secret
-
-# Enable if behind corporate proxy or using internal CA
-caCerts:
-  enabled: false  # Set to true if needed
-  configMapName: crucible-ca-cert
-
-grafana:
-
-  env:
-    # Use a strong, unique client secret
-    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "your-secure-secret-here"
-
-loki:
-  singleBinary:
-    replicas: 1
-    persistence:
-      enabled: true
-      size: 100Gi
-      storageClass: "fast-ssd"
-
-tempo:
-  replicas: 1
-  persistence:
-    enabled: true
-    size: 50Gi
-    storageClass: "fast-ssd"
-
-prometheus:
-  server:
-    persistentVolume:
-      enabled: true
-      size: 50Gi
-      storageClass: "fast-ssd"
-```
 
 ## Accessing Services
 
@@ -344,35 +178,10 @@ After deployment:
 
 ## Integrating Applications
 
-### Sending Metrics
-
-Applications can expose Prometheus metrics and will be automatically scraped if Grafana Alloy is enabled. Alternatively, use remote-write:
+Grafana Alloy serves at the Open Telemetry Collector in this deployment. Applications should be configured to send OTLP to Alloy via the Kubernetes service address.
 
 ```yaml
-# Example: Prometheus remote-write configuration
-remote_write:
-  - url: http://crucible-monitoring-prometheus-server/api/v1/write
-```
-
-### Sending Logs
-
-Applications can send logs to Loki:
-
-```yaml
-# Example: Loki endpoint
-url: http://crucible-monitoring-loki:3100/loki/api/v1/push
-```
-
-### Sending Traces
-
-Applications can send OpenTelemetry traces:
-
-```yaml
-# Via Grafana Alloy (if enabled)
 OTEL_EXPORTER_OTLP_ENDPOINT: http://crucible-grafana-alloy:4317
-
-# Or directly to Tempo
-OTEL_EXPORTER_OTLP_ENDPOINT: http://crucible-monitoring-tempo:4317
 ```
 
 ## Troubleshooting
@@ -415,7 +224,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT: http://crucible-monitoring-tempo:4317
 
 2. Check datasource configuration in Grafana
 
-3. If using Grafana Alloy, check its logs:
+3. If using Grafana Alloy, check the logs:
    ```bash
    kubectl logs -l app.kubernetes.io/name=alloy
    ```
@@ -432,7 +241,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT: http://crucible-monitoring-tempo:4317
    kubectl logs -l app.kubernetes.io/name=loki
    ```
 
-3. If using Grafana Alloy, verify it's collecting logs:
+3. If using Grafana Alloy, verify it is collecting logs:
    ```bash
    kubectl logs -l app.kubernetes.io/name=alloy | grep loki
    ```
@@ -450,24 +259,6 @@ If PVCs remain in "Pending" status:
    ```bash
    kubectl describe pvc -l app.kubernetes.io/instance=crucible-monitoring
    ```
-
-## Upgrading
-
-To upgrade the chart:
-
-```bash
-helm upgrade crucible-monitoring ./crucible-monitoring -f my-values.yaml
-```
-
-## Uninstallation
-
-To remove the chart:
-
-```bash
-helm uninstall crucible-monitoring
-```
-
-**Warning**: This will delete all collected metrics, logs, and traces if persistent volumes are not configured to retain data.
 
 ## References
 
