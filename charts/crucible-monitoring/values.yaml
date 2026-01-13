@@ -34,6 +34,8 @@ prometheus:
 # Grafana - Dashboards and Visualization
 # https://artifacthub.io/packages/helm/grafana/grafana
 # https://grafana.com/docs/grafana/latest/
+#
+# TODO: Create and import custom dashboards: https://github.com/grafana/helm-charts/tree/main/charts/grafana#import-dashboards
 grafana:
   enabled: true
 

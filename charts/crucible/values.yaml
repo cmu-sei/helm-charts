@@ -1,8 +1,6 @@
 # Crucible Application Chart Values
-# This chart deploys Keycloak and all Crucible applications
-
-# IMPORTANT: This chart assumes crucible-infra is already deployed
-# The infra chart provides: PostgreSQL, Ingress Controller, NFS Storage, pgAdmin
+# This chart deploys the Crucible stack:
+# Keycloak, Alloy, Blueprint, Caster, CITE, Gallery, Gameboard, Player, Steamfitter, TopoMojo, and Moodle
 
 global:
   # Domain name for the Crucible deployment
@@ -139,7 +137,7 @@ alloy:
       # OAuth2 Identity Client /w Password
       ResourceOwnerAuthorization__Authority: ""
       ResourceOwnerAuthorization__ClientId: alloy.admin
-      ResourceOwnerAuthorization__UserName: "admin@{{ .Values.global.domain }}.dev"
+      ResourceOwnerAuthorization__UserName: ""
       ResourceOwnerAuthorization__Scope: "openid alloy player player-vm caster steamfitter"
       # Crucible Application URLs
       ClientSettings__urls__playerApi: "https://{{ .Values.global.domain }}/player"
@@ -1067,7 +1065,7 @@ moodle:
       url: ""
       realm: ""
       clientId: "moodle-client"
-      existingSecret: "crucible-moodle"
+      existingSecret: ""
       existingSecretKey: "client-secret"
       name: "Crucible Keycloak"
       icon: ""
@@ -1121,4 +1119,4 @@ moodle:
     tls:
       - hosts:
           - "{{ .Values.global.domain }}"
-        secretName: crucible-cert
+        secretName: "{{ .Values.global.tlsSecretName }}"

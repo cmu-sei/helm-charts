@@ -25,7 +25,7 @@ dependencies:
 
   - name: caster
     repository: https://helm.cmusei.dev/charts
-    version: 1.6.7
+    version: 1.6.9
     condition: caster.enabled
 
   - name: cite
@@ -45,7 +45,7 @@ dependencies:
 
   - name: player
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.0
+    version: 1.8.1
     condition: player.enabled
 
   - name: steamfitter
