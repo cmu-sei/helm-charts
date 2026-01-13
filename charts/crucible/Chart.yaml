@@ -16,8 +16,7 @@ dependencies:
   - name: alloy
     repository: https://helm.cmusei.dev/charts
     version: 1.6.9
-    condition: crucible-alloy.enabled
-    alias: crucible-alloy
+    condition: alloy.enabled
 
   - name: blueprint
     repository: https://helm.cmusei.dev/charts
