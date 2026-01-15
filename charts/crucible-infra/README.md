@@ -102,7 +102,7 @@ The NFS server provisioner creates a StorageClass named `nfs` that can be used b
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `postgresql.enabled` | Enable PostgreSQL database | `true` |
-| `postgresql.image.tag` | PostgreSQL image version | `17` |
+| `postgresql.image.tag` | PostgreSQL image version | `18.1` |
 | `postgresql.env.vars.POSTGRES_USER` | PostgreSQL superuser name | `postgres` |
 | `postgresql.env.vars.POSTGRES_DB` | Default database name | `postgres` |
 | `postgresql.persistence.enabled` | Enable persistent storage | `true` |
@@ -427,7 +427,7 @@ If applications cannot connect to PostgreSQL:
 
 4. Test database connection from within the cluster:
    ```bash
-   kubectl run -it --rm debug --image=postgres:17 --restart=Never -- psql \
+   kubectl run -it --rm debug --image=postgres:18 --restart=Never -- psql \
      -h {release-name}-postgresql -U postgres -d postgres
    ```
 
