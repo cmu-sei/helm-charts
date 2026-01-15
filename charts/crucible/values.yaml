@@ -10,11 +10,6 @@ global:
     # required for using Bitnami Legacy Keycloak subchart
     allowInsecureImages: true
 
-  # TLS secret name (accessible to subcharts via global values)
-  # You must create this secret before deploying the chart
-  # Example: kubectl create secret tls my-tls-secret --cert=tls.crt --key=tls.key
-  tlsSecretName: ""
-
 # Deploy Keycloak IdP
 # https://artifacthub.io/packages/helm/bitnami/keycloak
 keycloak:
@@ -47,7 +42,7 @@ keycloak:
     extraTls:
       - hosts:
           - "{{ .Values.global.domain }}"
-        secretName: "{{ .Values.global.tlsSecretName }}"
+        secretName: ""
 
   # Realm import configuration (optional)
   # Uncomment the sections below to enable automatic realm import on startup
@@ -96,7 +91,7 @@ alloy:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # Database configuration
     # PostgreSQL connection details for the Alloy database
     database:
@@ -155,7 +150,7 @@ alloy:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /alloy
     settings: '{
@@ -196,7 +191,7 @@ blueprint:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains the postgres connection string
     # Database configuration
     # PostgreSQL connection details for the Blueprint database
@@ -255,7 +250,7 @@ blueprint:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /blueprint
     settingsYaml:
@@ -298,7 +293,7 @@ caster:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     storage:
       existing: "{{ .Release.Name }}-caster-api-nfs"
     # This secret contains the postgres connection string
@@ -352,7 +347,7 @@ caster:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /caster
     settingsYaml:
@@ -388,7 +383,7 @@ cite:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains the postgres connection string
     # Database configuration
     # PostgreSQL connection details for the Cite database
@@ -435,7 +430,7 @@ cite:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: "/cite"
     settingsYaml:
@@ -474,7 +469,7 @@ gallery:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains the postgres connection string
     # Database configuration
     # PostgreSQL connection details for the Gallery database
@@ -521,7 +516,7 @@ gallery:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /gallery
     settingsYaml:
@@ -565,7 +560,7 @@ gameboard:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     storage:
       existing: "{{ .Release.Name }}-gameboard-api-nfs"
     # Database configuration
@@ -624,7 +619,7 @@ gameboard:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     basehref: /gameboard
     settingsYaml:
       appname: Gameboard
@@ -667,7 +662,7 @@ player:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains the postgres connection string
     # Database configuration
     # PostgreSQL connection details for the Player database
@@ -727,7 +722,7 @@ player:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /player
     settingsYaml:
@@ -759,7 +754,7 @@ player:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains 2 different postgres connection strings that are required for this application
     # Database configuration
     # PostgreSQL connection details for the Player Vm database
@@ -800,7 +795,7 @@ player:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /vm
     settingsYaml:
@@ -827,7 +822,7 @@ player:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /console
     settingsYaml:
@@ -861,7 +856,7 @@ steamfitter:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     # This secret contains the postgres connection string
     # Database configuration
     # PostgreSQL connection details for the Steamfitter database
@@ -919,7 +914,7 @@ steamfitter:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     env:
       APP_BASEHREF: /steamfitter
     settingsYaml:
@@ -960,7 +955,7 @@ topomojo:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     storage:
       existing: "{{ .Release.Name }}-topomojo-api-nfs"
     # Database configuration
@@ -1014,7 +1009,7 @@ topomojo:
       tls:
         - hosts:
             - "{{ .Values.global.domain }}"
-          secretName: "{{ .Values.global.tlsSecretName }}"
+          secretName: ""
     basehref: /topomojo
     settingsYaml:
       appname: TopoMojo
@@ -1119,4 +1114,4 @@ moodle:
     tls:
       - hosts:
           - "{{ .Values.global.domain }}"
-        secretName: "{{ .Values.global.tlsSecretName }}"
+        secretName: ""

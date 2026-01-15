@@ -176,7 +176,6 @@ Follow the [Security Prerequisites](#security-prerequisites) section to create:
 ```yaml
 global:
   domain: crucible.example.com
-  tlsSecretName: crucible-tls
   postgresql:
     serviceName: "crucible-infra-postgresql"
     secretName: "crucible-infra-postgresql"
@@ -239,7 +238,6 @@ Follow the [Security Prerequisites](#security-prerequisites) section to create:
 ```yaml
 global:
   domain: crucible.example.com
-  tlsSecretName: crucible-tls
   postgresql:
     # AWS RDS example
     serviceName: "my-db.abc123.us-east-1.rds.amazonaws.com"
@@ -282,7 +280,6 @@ helm install crucible sei/crucible -f my-values.yaml
 | `global.namespace` | Kubernetes namespace | `default` | No |
 | `global.version` | Version tag for Crucible components | `0.0.0` | No |
 | `global.security.allowInsecureImages` | Allow unsigned container images (dev only) | `false` | No |
-| `global.tlsSecretName` | TLS secret for all ingresses | `""` | **Yes** |
 
 ### Keycloak Configuration
 
