@@ -22,16 +22,16 @@ When deploying from a local chart copy, you can place TLS certificate files here
 ```yaml
 tls:
   create: true
-  certFile: "files/tls.crt"
-  keyFile: "files/tls.key"
+  certFile: "certs/tls.crt"
+  keyFile: "certs/tls.key"
   secretName: "crucible-cert"
 ```
 
 **Example:**
 ```bash
 # Copy your certificates to this directory
-cp /path/to/your/tls.crt /path/to/chart/files/
-cp /path/to/your/tls.key /path/to/chart/files/
+cp /path/to/your/tls.crt /path/to/chart/certs/
+cp /path/to/your/tls.key /path/to/chart/certs/
 
 # Deploy from local chart
 helm install crucible-infra ./crucible-infra -f values.yaml
@@ -46,15 +46,15 @@ caCerts:
   create: true
   configMapName: "crucible-ca-cert"
   files:
-    corporate-ca.crt: "files/corporate-ca.crt"
-    internal-ca.crt: "files/internal-ca.crt"
+    corporate-ca.crt: "certs/corporate-ca.crt"
+    internal-ca.crt: "certs/internal-ca.crt"
 ```
 
 **Example:**
 ```bash
 # Copy CA certificates to this directory
-cp /path/to/corporate-ca.crt /path/to/chart/files/
-cp /path/to/internal-ca.crt /path/to/chart/files/
+cp /path/to/corporate-ca.crt /path/to/chart/certs/
+cp /path/to/internal-ca.crt /path/to/chart/certs/
 
 # Deploy from local chart
 helm install crucible-infra ./crucible-infra -f values.yaml

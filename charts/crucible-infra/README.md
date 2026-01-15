@@ -162,8 +162,8 @@ The chart provides flexible TLS certificate management for ingress resources. **
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `tls.create` | Create TLS secret from certificate files | `false` |
-| `tls.certFile` | Path to certificate file (e.g., `files/tls.crt`) | `""` |
-| `tls.keyFile` | Path to key file (e.g., `files/tls.key`) | `""` |
+| `tls.certFile` | Path to certificate file (e.g., `certs/tls.crt`) | `""` |
+| `tls.keyFile` | Path to key file (e.g., `certs/tls.key`) | `""` |
 | `tls.secretName` | Name of TLS secret to create/reference | `crucible-cert` |
 
 #### Option 1: Use cert-manager
@@ -247,9 +247,9 @@ If deploying from a local chart directory, you can have the chart create the sec
 
 **Add certificate files to the chart:**
 ```bash
-# Copy your certificates to the chart's files/ directory
-cp /path/to/tls.crt charts/crucible-infra/files/
-cp /path/to/tls.key charts/crucible-infra/files/
+# Copy your certificates to the chart's certs/ directory
+cp /path/to/tls.crt charts/crucible-infra/certs/
+cp /path/to/tls.key charts/crucible-infra/certs/
 ```
 
 **Configure values:**
@@ -257,8 +257,8 @@ cp /path/to/tls.key charts/crucible-infra/files/
 # values.yaml
 tls:
   create: true  # Chart will create the secret
-  certFile: "files/tls.crt"
-  keyFile: "files/tls.key"
+  certFile: "certs/tls.crt"
+  keyFile: "certs/tls.key"
   secretName: crucible-cert
 ```
 
@@ -267,7 +267,7 @@ tls:
 helm install crucible-infra ./charts/crucible-infra -f values.yaml
 ```
 
-**Note:** Certificate files are **not** included in the chart by default. See [files/README.md](files/README.md) for detailed instructions.
+**Note:** Certificate files are **not** included in the chart by default. See [certs/README.md](certs/README.md) for detailed instructions.
 
 **⚠️ Important:** This option requires deploying from a local chart directory and cannot be used when installing from a Helm repository.
 
@@ -313,9 +313,9 @@ If deploying from a local chart directory, you can have the chart create the Con
 
 **Add CA certificate files to the chart:**
 ```bash
-# Copy CA certificates to the chart's files/ directory
-cp /path/to/corporate-ca.crt charts/crucible-infra/files/
-cp /path/to/internal-ca.crt charts/crucible-infra/files/
+# Copy CA certificates to the chart's certs/ directory
+cp /path/to/corporate-ca.crt charts/crucible-infra/certs/
+cp /path/to/internal-ca.crt charts/crucible-infra/certs/
 ```
 
 **Configure values:**
@@ -325,8 +325,8 @@ caCerts:
   create: true  # Chart will create the ConfigMap
   configMapName: crucible-ca-cert
   files:
-    corporate-ca.crt: "files/corporate-ca.crt"
-    internal-ca.crt: "files/internal-ca.crt"
+    corporate-ca.crt: "certs/corporate-ca.crt"
+    internal-ca.crt: "certs/internal-ca.crt"
 ```
 
 **Deploy from local chart:**
@@ -334,7 +334,7 @@ caCerts:
 helm install crucible-infra ./charts/crucible-infra -f values.yaml
 ```
 
-**Note:** Certificate files are **not** included in the chart by default. See [files/README.md](files/README.md) for details.
+**Note:** Certificate files are **not** included in the chart by default. See [certs/README.md](certs/README.md) for details.
 
 **⚠️ Important:** This option requires deploying from a local chart directory and cannot be used when installing from a Helm repository.
 

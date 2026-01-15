@@ -20,10 +20,10 @@ tls:
   # If create=false, ingresses will reference this existing secret
   secretName: "crucible-cert"
 
-  # Path to certificate file relative to chart root (e.g., "files/tls.crt")
+  # Path to certificate file relative to chart root (e.g., "certs/tls.crt")
   certFile: ""
 
-  # Path to key file relative to chart root (e.g., "files/tls.key")
+  # Path to key file relative to chart root (e.g., "certs/tls.key")
   keyFile: ""
 
 # Custom CA Certificates
@@ -38,8 +38,8 @@ caCerts:
   # Map of certificate names to file paths
   # Example:
   # files:
-  #   my-ca.crt: "files/my-ca.crt"
-  #   corporate-proxy.crt: "files/corporate-proxy.crt"
+  #   my-ca.crt: "certs/my-ca.crt"
+  #   corporate-proxy.crt: "certs/corporate-proxy.crt"
   files: {}
 
 # NFS Server Provisioner
