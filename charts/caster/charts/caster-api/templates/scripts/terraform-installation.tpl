@@ -6,7 +6,8 @@ mkdir -p "$Terraform__RootWorkingDirectory"
 mkdir -p "$Terraform__PluginDirectory"
 mkdir -p "$Terraform__PluginCache"
 
-if [ "${SKIP_TERRAFORM_INSTALLATION,,}" == "true" ]; then
+if [[ "${SKIP_TERRAFORM_INSTALLATION,,}" == "true" || \
+      "${Terraform__KubernetesJobs__Enabled,,}" == "true" ]]; then
     exit 0
 fi
 

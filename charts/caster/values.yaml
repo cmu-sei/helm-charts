@@ -52,7 +52,7 @@ caster-api:
   # the configMap name here
   certificateMap: ""
 
-  # Gets placed in /root/.git-credentials to allow immediate Gitlab access via access token
+  # Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
   gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
 
@@ -79,6 +79,7 @@ caster-api:
     # plugins to run Caster properly.  Internet access is required for this script to run properly.
     # It's recommended that this should remain false.  Please see the file "terraform-installation.tpl"
     # for more information on the installation process.
+    # Installation will always be skipped if Kubernetes Jobs are enabled.
     SKIP_TERRAFORM_INSTALLATION: false
 
     # VSphere settings:
