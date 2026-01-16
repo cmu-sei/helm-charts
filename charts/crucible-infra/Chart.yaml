@@ -1,0 +1,31 @@
+apiVersion: v2
+name: crucible-infra
+description: Crucible platform infrastructure deployment (ingress, database, storage)
+type: application
+version: 0.0.1
+
+dependencies:
+  # NFS storage provisioner for shared storage
+  - name: nfs-server-provisioner
+    repository: https://kvaps.github.io/charts
+    version: 1.8.0
+    condition: nfs-server-provisioner.enabled
+
+  # Ingress controller for routing traffic to services
+  - name: ingress-nginx
+    repository: https://kubernetes.github.io/ingress-nginx
+    version: 4.14.1
+    condition: ingress-nginx.enabled
+
+  # pgAdmin for database management
+  - name: pgadmin4
+    repository: https://helm.runix.net
+    version: 1.56.1
+    condition: pgadmin4.enabled
+
+  # PostgreSQL database
+  - name: postgres
+    alias: postgresql
+    repository: https://self-hosters-by-night.github.io/helm-charts
+    version: 0.13.0
+    condition: postgresql.enabled

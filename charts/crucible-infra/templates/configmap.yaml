@@ -1,0 +1,25 @@
+{{- /* CA Certificate ConfigMap - only created if caCerts.create is enabled and cert files are provided */ -}}
+{{- if .Values.caCerts.create }}
+{{- $hasCerts := false -}}
+{{- $certs := dict -}}
+{{- range $name, $path := .Values.caCerts.files }}
+{{-   $content := $.Files.Get $path -}}
+{{-   if $content }}
+{{-     $_ := set $certs $name $content -}}
+{{-     $hasCerts = true -}}
+{{-   end }}
+{{- end }}
+{{- if $hasCerts }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.caCerts.configMapName | default "crucible-ca-cert" }}
+  labels:
+    {{- include "crucible-infra.labels" $ | nindent 4 }}
+data:
+{{- range $name, $content := $certs }}
+  {{ $name }}: |
+{{ $content | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
