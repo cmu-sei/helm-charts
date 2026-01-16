@@ -251,6 +251,7 @@ topomojo-api:
     # Pod__Sddc__CertificatePassword: ""
     # Logging__Console__DisableColors: false
     # Logging__LogLevel__Default: Information
+    # Ui__Branding__BackgroundImageUrl = theme/demo.png
 
   ## Create a seed data file based on the contents of an existing secret
   ## or by values that support templating via the tpl function.
@@ -367,6 +368,8 @@ topomojo-ui:
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
     # appname: TopoMojo
+    # docsUrl: https://cmu-sei.github.io/crucible/topomojo
+    # disableExternalLinks: true
     # oidc:
     #   client_id: clientid
     #   authority: https://your.identity.authority
