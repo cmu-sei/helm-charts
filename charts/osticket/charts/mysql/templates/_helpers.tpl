@@ -27,17 +27,10 @@ Return the proper metrics image name
 {{- end -}}
 
 {{/*
-Return the proper image name (for the init container volume-permissions image)
-*/}}
-{{- define "mysql.volumePermissions.image" -}}
-{{- include "common.images.image" (dict "imageRoot" .Values.volumePermissions.image "global" .Values.global) }}
-{{- end -}}
-
-{{/*
 Return the proper Docker Image Registry Secret Names
 */}}
 {{- define "mysql.imagePullSecrets" -}}
-{{- include "common.images.pullSecrets" (dict "images" (list .Values.image .Values.metrics.image .Values.volumePermissions.image) "global" .Values.global) }}
+{{- include "common.images.pullSecrets" (dict "images" (list .Values.image .Values.metrics.image) "global" .Values.global) }}
 {{- end -}}
 
 {{/*
@@ -144,7 +137,6 @@ otherwise it generates a random value.
 {{- define "mysql.checkRollingTags" -}}
 {{- include "common.warnings.rollingTag" .Values.image }}
 {{- include "common.warnings.rollingTag" .Values.metrics.image }}
-{{- include "common.warnings.rollingTag" .Values.volumePermissions.image }}
 {{- end -}}
 
 {{/*
@@ -159,3 +151,11 @@ Compile all warnings into a single message, and call fail.
 {{- printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Subpath prefix value to use for pvc mount points
+*/}}
+{{- define "mysql.subpathPrefix" -}}
+{{- $path := default (include "mysql.primary.fullname" .) .Values.primary.persistence.overrideSubpathPrefix -}}
+{{- ternary ($path | printf "%s/" ) "" .Values.primary.persistence.existingSubpathPrefix -}}
+{{- end }}
