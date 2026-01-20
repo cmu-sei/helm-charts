@@ -23,12 +23,10 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  {}
+podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  {}
+securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -43,8 +41,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -62,8 +59,7 @@ ingress:
 # the configMap name here
 certificateMap: ""
 
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -84,10 +80,12 @@ tolerations: []
 affinity: {}
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
+# If using Kubernetes execution mode, this must be a storage that supports ReadWriteMany to enable jobs running on different k8s nodes
 storage:
   existing: ""
   size: ""
-  mode: ReadWriteOnce
+  mode: ReadWriteOnce # Used when KubernetesJobs is disabled; set to ReadWriteMany if enabled
+
   class: default
 
 gitcredentials: ""
@@ -210,6 +208,29 @@ env:
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
   Terraform__StateRetryIntervalSeconds: 5
+  Terraform__EnvironmentVariables__InheritAll: "true"
+  # Terraform__EnvironmentVariables__Inherit__0: "^SEI"
+  # Terraform__EnvironmentVariables__Inherit__Direct__0__Name: "SSL_CERT_DIR"
+  # Terraform__EnvironmentVariables__Inherit__Direct__0__Value: "/usr/local/share/ca-certificates/:/etc/ssl/certs/"
+
+  # Enable to execute Runs as k8s jobs
+  Terraform__KubernetesJobs__Enabled: "false"
+  Terraform__KubernetesJobs__Namespace: "default"
+  Terraform__KubernetesJobs__Context: ""
+  Terraform__KubernetesJobs__RootWorkingDirectory: "/terraform/root"
+  Terraform__KubernetesJobs__ImageRegistry: "https://registry-1.docker.io/"
+  Terraform__KubernetesJobs__ImageName: "hashicorp/terraform"
+  # Terraform__KubernetesJobs__ImageTags__0: "1.14"
+  Terraform__KubernetesJobs__QueryImageTags: "true"
+  Terraform__KubernetesJobs__QueryImageTagsRegex: "^([0-9]\\d*\\.\\d+\\.\\d+)$"
+  Terraform__KubernetesJobs__QueryImageTagsMinutes: "720"
+
+  # Set by chart, can override if necessary
+  # Terraform__KubernetesJobs__PersistentVolumeClaimName: "caster-terraform-data-pvc"
+  # Terraform__KubernetesJobs__VolumeMountPath: "/terraform"
+  # Terraform__KubernetesJobs__VolumeMountSubPath: ""
+  # Terraform__KubernetesJobs__ConfigMaps__0__Name: "caster-certs"
+  # Terraform__KubernetesJobs__ConfigMaps__0__MountPath: "/usr/local/share/ca-certificates/"
 
   FileVersions__DaysToSaveAllUntaggedVersions: 7
   FileVersions__DaysToSaveDailyUntaggedVersions: 31
