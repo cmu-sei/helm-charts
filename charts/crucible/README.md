@@ -199,7 +199,28 @@ global:
 crucible-alloy:
   alloy-api:
     resourceOwnerAuthorization:
+      # authority is auto-populated from global.domain
       clientSecret: "your-alloy-client-secret"
+      userName: "admin"
+      password: "your-service-account-password"
+
+blueprint:
+  blueprint-api:
+    resourceOwnerAuthorization:
+      clientSecret: "your-blueprint-client-secret"
+      userName: "admin"
+      password: "your-service-account-password"
+
+caster:
+  caster-api:
+    client:
+      userName: "admin"
+      password: "your-service-account-password"
+
+steamfitter:
+  steamfitter-api:
+    resourceOwnerAuthorization:
+      clientSecret: "your-steamfitter-client-secret"
       userName: "admin"
       password: "your-service-account-password"
 
@@ -249,7 +270,28 @@ global:
 crucible-alloy:
   alloy-api:
     resourceOwnerAuthorization:
+      # authority is auto-populated from global.domain
       clientSecret: "your-alloy-client-secret"
+      userName: "admin"
+      password: "your-service-account-password"
+
+blueprint:
+  blueprint-api:
+    resourceOwnerAuthorization:
+      clientSecret: "your-blueprint-client-secret"
+      userName: "admin"
+      password: "your-service-account-password"
+
+caster:
+  caster-api:
+    client:
+      userName: "admin"
+      password: "your-service-account-password"
+
+steamfitter:
+  steamfitter-api:
+    resourceOwnerAuthorization:
+      clientSecret: "your-steamfitter-client-secret"
       userName: "admin"
       password: "your-service-account-password"
 
@@ -385,17 +427,66 @@ kubectl get secret <release-name>-keycloak-auth -o jsonpath='{.data.admin-passwo
 
 ### Application-Specific Secrets
 
-Several applications require OAuth client secrets to be configured:
+Several applications require OAuth client secrets and service account credentials to be configured for inter-service communication.
+
+**Note**: Authority URLs, authorization URLs, and token URLs are automatically populated with smart defaults based on `global.domain`. These defaults assume:
+- Keycloak is accessible at `https://{{ .Values.global.domain }}/keycloak/`
+- The realm name is `crucible`
+
+If you use custom Keycloak paths or realm names, you can override these values in each application's configuration.
 
 #### Alloy Service Account
 
+Alloy requires a service account to communicate with other Crucible services (Player, Caster, Steamfitter).
+
 ```yaml
-crucible-alloy:
+alloy:
   alloy-api:
     resourceOwnerAuthorization:
-      # Authority URL is automatically constructed from global.keycloak settings
-      authority: "https://{{ .Values.global.domain }}{{ .Values.global.keycloak.basePath }}/realms/{{ .Values.global.keycloak.realm }}"
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
       clientId: "alloy.admin"
+      clientSecret: ""  # Required: OAuth client secret from Keycloak
+      userName: ""      # Required: Service account username
+      password: ""      # Required: Service account password
+```
+
+#### Blueprint Service Account
+
+Blueprint requires a service account to communicate with CITE, Gallery, Player, and Steamfitter.
+
+```yaml
+blueprint:
+  blueprint-api:
+    resourceOwnerAuthorization:
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
+      clientId: "blueprint.admin"
+      clientSecret: ""  # Required: OAuth client secret from Keycloak
+      userName: ""      # Required: Service account username
+      password: ""      # Required: Service account password
+```
+
+#### Caster Service Account
+
+Caster requires a service account (client credentials) to communicate with Player and Player VM API.
+
+```yaml
+caster:
+  caster-api:
+    client:
+      userName: ""  # Required: Service account username
+      password: ""  # Required: Service account password
+```
+
+#### Steamfitter Service Account
+
+Steamfitter requires a service account to communicate with Player and VM API.
+
+```yaml
+steamfitter:
+  steamfitter-api:
+    resourceOwnerAuthorization:
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
+      clientId: "steamfitter.admin"
       clientSecret: ""  # Required: OAuth client secret from Keycloak
       userName: ""      # Required: Service account username
       password: ""      # Required: Service account password
@@ -403,12 +494,42 @@ crucible-alloy:
 
 #### Gameboard Game Engine
 
-This allows Gameboard to interact with TopoMojo for deploying challenges.
+Gameboard requires a client secret to interact with TopoMojo for deploying challenges.
 
 ```yaml
 gameboard:
   gameboard-api:
-    gameEngineClientSecret: ""  # Required: TopoMojo client secret
+    gameEngineClientSecret: ""  # Required: TopoMojo client secret from Keycloak
+```
+
+### VM API Hypervisor Configuration
+
+The VM API supports multiple virtualization providers. Uncomment and configure the appropriate section for your hypervisor.
+
+#### VMware/vSphere Configuration
+
+```yaml
+player:
+  vm-api:
+    env:
+      VirtualizationProvider__Type: "VMware"
+      VirtualizationProvider__VMware__Host: "vcenter.example.com"
+      VirtualizationProvider__VMware__Username: "administrator@vsphere.local"
+      VirtualizationProvider__VMware__Password: "your-password"
+      VirtualizationProvider__VMware__Datacenter: "Datacenter1"
+```
+
+#### Proxmox Configuration
+
+```yaml
+player:
+  vm-api:
+    env:
+      VirtualizationProvider__Type: "Proxmox"
+      VirtualizationProvider__Proxmox__Host: "proxmox.example.com"
+      VirtualizationProvider__Proxmox__Username: "root@pam"
+      VirtualizationProvider__Proxmox__Password: "your-password"
+      VirtualizationProvider__Proxmox__Node: "pve"
 ```
 
 ## Troubleshooting
