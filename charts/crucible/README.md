@@ -502,35 +502,162 @@ gameboard:
     gameEngineClientSecret: ""  # Required: TopoMojo client secret from Keycloak
 ```
 
-### VM API Hypervisor Configuration
+### Hypervisor Configuration
 
-The VM API supports multiple virtualization providers. Uncomment and configure the appropriate section for your hypervisor.
+Crucible services (Player VM API, Caster, TopoMojo) require configuration to connect to your virtualization infrastructure. Each service has different configuration requirements based on its role.
 
-#### VMware/vSphere Configuration
+#### Player VM API - vSphere Configuration
 
-```yaml
-player:
-  vm-api:
-    env:
-      VirtualizationProvider__Type: "VMware"
-      VirtualizationProvider__VMware__Host: "vcenter.example.com"
-      VirtualizationProvider__VMware__Username: "administrator@vsphere.local"
-      VirtualizationProvider__VMware__Password: "your-password"
-      VirtualizationProvider__VMware__Datacenter: "Datacenter1"
-```
-
-#### Proxmox Configuration
+The Player VM API manages virtual machines and requires a privileged vCenter user with read/write permissions. A dedicated datastore is required for storing Player files.
 
 ```yaml
 player:
   vm-api:
     env:
-      VirtualizationProvider__Type: "Proxmox"
-      VirtualizationProvider__Proxmox__Host: "proxmox.example.com"
-      VirtualizationProvider__Proxmox__Username: "root@pam"
-      VirtualizationProvider__Proxmox__Password: "your-password"
-      VirtualizationProvider__Proxmox__Node: "pve"
+      # VMware vSphere configuration
+      Vsphere__Host: "vcenter.example.com"
+      Vsphere__Username: "player-account@vsphere.local"
+      Vsphere__Password: "your-password"
+      Vsphere__DsName: "datastore1"              # DataStore name
+      Vsphere__BaseFolder: "player"              # Folder inside DataStore
+      # Optional: Console connection rewrite settings
+      RewriteHost__RewriteHost: false
+      RewriteHost__RewriteHostUrl: "connect.example.com"
+      RewriteHost__RewriteHostQueryParam: "vmhost"
 ```
+
+**Requirements:**
+- Privileged vCenter account
+- Dedicated datastore formatted as `<DATASTORE>/player/`
+- Network access from Kubernetes cluster to vCenter
+
+#### Player VM API - Proxmox Configuration
+
+The Player VM API also supports Proxmox VE. Configure using an API token for authentication.
+
+```yaml
+player:
+  vm-api:
+    env:
+      # Proxmox configuration
+      Proxmox__Enabled: true
+      Proxmox__Host: "proxmox.example.com"
+      Proxmox__Port: 8006  # Default Proxmox port, use 443 if behind reverse proxy
+      Proxmox__Token: "PVEAPIToken=player@pve!tokenid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      Proxmox__StateRefreshIntervalSeconds: 60
+```
+
+**Requirements:**
+- Proxmox VE API token with appropriate permissions
+- Network access from Kubernetes cluster to Proxmox host
+- Token format: `PVEAPIToken=USER@REALM!TOKENID=UUID`
+
+**Note:** Player VM API can be configured for either vSphere OR Proxmox, not both simultaneously.
+
+#### Caster - vSphere Configuration
+
+Caster uses Terraform with the vSphere provider to manage infrastructure-as-code deployments.
+
+```yaml
+caster:
+  caster-api:
+    env:
+      # VMware vSphere configuration for Terraform
+      VSPHERE_SERVER: "vcenter.example.com"
+      VSPHERE_USER: "caster-account@vsphere.local"
+      VSPHERE_PASSWORD: "your-password"
+      VSPHERE_ALLOW_UNVERIFIED_SSL: true
+```
+
+**Requirements:**
+- vCenter account with appropriate Terraform provider permissions
+- See [Caster documentation](https://github.com/cmu-sei/caster) for required vSphere roles
+
+#### TopoMojo - Hypervisor Pod Configuration
+
+TopoMojo uses "Pod" terminology to refer to hypervisor connections. The Pod configuration supports **both vSphere and Proxmox** hypervisors. Specify which hypervisor type you're using with `Pod__HypervisorType`.
+
+##### vSphere Configuration
+
+```yaml
+topomojo:
+  topomojo-api:
+    env:
+      # Hypervisor type selection
+      Pod__HypervisorType: "Vsphere"  # Options: "Vsphere" or "Proxmox"
+      # VMware vSphere Pod configuration
+      Pod__Url: "https://vcenter.example.com"
+      Pod__User: "topomojo-account@vsphere.local"
+      Pod__Password: "your-password"
+      Pod__ConsoleUrl: "https://{{ .Values.global.domain }}/console"
+      Pod__PoolPath: "/Datacenter/host/Cluster/Resources"
+      Pod__Uplink: "vSwitch0"
+      Pod__VmStore: "datastore1"
+      Pod__IsoStore: "datastore1"
+      Pod__DiskStore: "datastore1"
+      Pod__TicketUrlHandler: "querystring"
+      Pod__Vlan__Range: "1-4094"
+      Pod__KeepAliveMinutes: 10
+      Pod__DebugVerbose: false
+```
+
+##### Proxmox Configuration
+
+```yaml
+topomojo:
+  topomojo-api:
+    env:
+      # Hypervisor type selection
+      Pod__HypervisorType: "Proxmox"
+      # Proxmox Pod configuration
+      Pod__Url: "https://proxmox.example.com:8006"
+      Pod__User: "topomojo@pve"
+      Pod__Password: "your-password"
+      Pod__ConsoleUrl: "https://{{ .Values.global.domain }}/console"
+      Pod__PoolPath: ""  # Optional: Proxmox pool path
+      Pod__VmStore: "local-lvm"
+      Pod__IsoStore: "local"
+      Pod__DiskStore: "local-lvm"
+      Pod__TicketUrlHandler: "querystring"
+      Pod__Vlan__Range: "1-4094"
+      Pod__KeepAliveMinutes: 10
+      Pod__DebugVerbose: false
+```
+
+**Proxmox Requirements:**
+- Proxmox VE user account with appropriate permissions
+- Storage pools for VMs, ISOs, and disks
+- Network configuration (VLAN support if using VLANs)
+- API access from Kubernetes cluster
+
+##### NSX-T / VMware Cloud (VMC) Configuration
+
+For advanced networking with NSX-T or VMware Cloud on AWS:
+
+```yaml
+topomojo:
+  topomojo-api:
+    env:
+      # Standard Pod configuration (as above)...
+      # Plus NSX/SDDC settings:
+      Pod__IsNsxNetwork: true
+      Pod__Sddc__ApiUrl: "https://nsx-manager.example.com"
+      Pod__Sddc__MetadataUrl: "https://metadata.example.com"
+      Pod__Sddc__SegmentApiPath: "policy/api/v1/infra/tier-1s/cgw/segments"
+      Pod__Sddc__ApiKey: "your-api-key"
+      Pod__Sddc__AuthUrl: "https://console.cloud.vmware.com"
+      Pod__Sddc__CertificatePath: "/path/to/cert.pfx"
+      Pod__Sddc__CertificatePassword: "cert-password"
+```
+
+**vSphere Requirements:**
+- vCenter account with VM management permissions
+- Storage datastores for VMs, ISOs, and disks
+- Network configuration (VLAN range, uplink)
+
+**NSX-T/VMC Additional Requirements:**
+- NSX-T Manager API access with appropriate permissions
+- SDDC segment management capabilities
 
 ## Troubleshooting
 

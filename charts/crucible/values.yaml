@@ -342,6 +342,13 @@ caster:
       # Crucible Player URLs
       Player__VmApiUrl: https://{{ .Values.global.domain }}/vm
       Player__VmConsoleUrl: https://{{ .Values.global.domain }}/console/vm/{id}/console
+      # VMware vSphere Configuration (optional)
+      # Caster uses Terraform with the vSphere provider to manage infrastructure
+      # Uncomment and configure if using VMware vSphere
+      # VSPHERE_SERVER: "vcenter.example.com"
+      # VSPHERE_USER: "caster-account@vsphere.local"
+      # VSPHERE_PASSWORD: ""
+      # VSPHERE_ALLOW_UNVERIFIED_SSL: true
       # Optional: Trust a custom CA certificate
       # Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
       # Uncomment and adjust paths to match your certificateMap configuration
@@ -795,20 +802,29 @@ player:
       Authorization__ClientId: player.vm.api
       ClientSettings__urls__playerApi: https://{{ .Values.global.domain }}/player
       CorsPolicy__Origins__0: https://{{ .Values.global.domain }}
-      # VMware/vSphere Configuration (optional)
-      # Uncomment and configure if using VMware as your hypervisor
-      # VirtualizationProvider__Type: "VMware"
-      # VirtualizationProvider__VMware__Host: ""
-      # VirtualizationProvider__VMware__Username: ""
-      # VirtualizationProvider__VMware__Password: ""
-      # VirtualizationProvider__VMware__Datacenter: ""
+      # VMware vSphere Configuration (optional)
+      # A privileged vCenter user is required to read and write files
+      # A datastore needs to be created for Player to store files in the format: <DATASTORE>/player/
+      # - DsName denotes the DataStore name
+      # - BaseFolder is the folder inside the DataStore to use
+      # Uncomment and configure if using VMware vSphere as your hypervisor
+      # Vsphere__Host: "vcenter.example.com"
+      # Vsphere__Username: "player-account@vsphere.local"
+      # Vsphere__Password: ""
+      # Vsphere__DsName: ""
+      # Vsphere__BaseFolder: "player"
+      # Rewrite Host settings for console connections
+      # See Player chart documentation for usage with console ingress
+      # RewriteHost__RewriteHost: false
+      # RewriteHost__RewriteHostUrl: "connect.example.com"
+      # RewriteHost__RewriteHostQueryParam: "vmhost"
       # Proxmox Configuration (optional)
       # Uncomment and configure if using Proxmox as your hypervisor
-      # VirtualizationProvider__Type: "Proxmox"
-      # VirtualizationProvider__Proxmox__Host: ""
-      # VirtualizationProvider__Proxmox__Username: ""
-      # VirtualizationProvider__Proxmox__Password: ""
-      # VirtualizationProvider__Proxmox__Node: ""
+      # Proxmox__Enabled: true
+      # Proxmox__Host: "proxmox.example.com"
+      # Proxmox__Port: 8006  # Default Proxmox port. Change to 443 if using reverse proxy
+      # Proxmox__Token: ""  # API token in format: PVEAPIToken=USER@REALM!TOKENID=UUID
+      # Proxmox__StateRefreshIntervalSeconds: 60
   vm-ui:
     ingress:
       className: nginx
@@ -1026,7 +1042,36 @@ topomojo:
       Headers__Cors__Origins__0: https://{{ .Values.global.domain }}
       Headers__Forwarding__TargetHeaders: All
       # Core__ConsoleHost: "{{ .Values.global.domain }}/console"
+      # Core__AllowUnprivilegedVmReconfigure: false
+      # Hypervisor "Pod" Configuration (optional)
+      # TopoMojo uses "Pod" terminology to refer to hypervisor connections
+      # Supports both vSphere and Proxmox - specify type with Pod__HypervisorType
+      # Uncomment and configure for your hypervisor
+      # Pod__HypervisorType: "Vsphere"  # Options: "Vsphere" or "Proxmox"
+      # Pod__Url: ""  # vSphere: https://vcenter.example.com or Proxmox: https://proxmox.example.com:8006
+      # Pod__User: ""
+      # Pod__Password: ""
       # Pod__ConsoleUrl: "{{ .Values.global.domain }}/console"
+      # Pod__PoolPath: ""
+      # Pod__Uplink: "vSwitch0"
+      # Pod__VmStore: ""
+      # Pod__IsoStore: ""
+      # Pod__DiskStore: ""
+      # Pod__TicketUrlHandler: "querystring"
+      # Pod__Vlan__Range: ""
+      # Pod__KeepAliveMinutes: 10
+      # Pod__DebugVerbose: false
+      # VMware NSX/SDDC Configuration (optional)
+      # Advanced networking configuration for VMware NSX environments
+      # Uncomment and configure if using NSX-T or VMware Cloud on AWS (VMC)
+      # Pod__IsNsxNetwork: false
+      # Pod__Sddc__ApiUrl: ""
+      # Pod__Sddc__MetadataUrl: ""
+      # Pod__Sddc__SegmentApiPath: "policy/api/v1/infra/tier-1s/cgw/segments"
+      # Pod__Sddc__ApiKey: ""
+      # Pod__Sddc__AuthUrl: ""
+      # Pod__Sddc__CertificatePath: ""
+      # Pod__Sddc__CertificatePassword: ""
   topomojo-ui:
     ingress:
       enabled: true
