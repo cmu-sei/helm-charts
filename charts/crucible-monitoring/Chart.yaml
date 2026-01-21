@@ -1,0 +1,36 @@
+apiVersion: v2
+name: crucible-monitoring
+description: Crucible platform monitoring and observability stack (Prometheus, Grafana, Loki, Tempo, Alloy)
+type: application
+version: 0.0.1
+
+dependencies:
+  # Metrics collection and storage
+  - name: prometheus
+    repository: https://prometheus-community.github.io/helm-charts
+    version: 28.3.0
+    condition: prometheus.enabled
+
+  # Visualization and dashboards
+  - name: grafana
+    repository: https://grafana.github.io/helm-charts
+    version: 10.5.5
+    condition: grafana.enabled
+
+  # Log aggregation
+  - name: loki
+    repository: https://grafana.github.io/helm-charts
+    version: 6.49.0
+    condition: loki.enabled
+
+  # Distributed tracing
+  - name: tempo
+    repository: https://grafana.github.io/helm-charts
+    version: 1.24.3
+    condition: tempo.enabled
+
+  # OpenTelemetry collector and log/metric/trace routing
+  - name: alloy
+    repository: https://grafana.github.io/helm-charts
+    version: 1.5.2
+    condition: alloy.enabled

@@ -1,0 +1,151 @@
+# Crucible Infrastructure Chart Values
+# This chart deploys the foundational infrastructure for Crucible platform
+
+global:
+  # Domain name for the Crucible deployment
+  domain: ""
+
+  # Kubernetes namespace (use Release.Namespace in most cases)
+  namespace: default
+
+# TLS Certificate Configuration
+# Configure TLS certificates for ingress resources
+tls:
+  # Create a TLS secret from certificate files
+  # Set to false if using cert-manager or providing your own secret
+  create: false
+
+  # Name of the TLS secret to create or reference
+  # If create=true, this secret will be created
+  # If create=false, ingresses will reference this existing secret
+  secretName: "crucible-cert"
+
+  # Path to certificate file relative to chart root (e.g., "certs/tls.crt")
+  certFile: ""
+
+  # Path to key file relative to chart root (e.g., "certs/tls.key")
+  keyFile: ""
+
+# Custom CA Certificates
+# Load custom CA certificates to trust in applications
+caCerts:
+  # Create a ConfigMap with CA certificates
+  create: false
+
+  # Name of the ConfigMap to create
+  configMapName: "crucible-ca-cert"
+
+  # Map of certificate names to file paths
+  # Example:
+  # files:
+  #   my-ca.crt: "certs/my-ca.crt"
+  #   corporate-proxy.crt: "certs/corporate-proxy.crt"
+  files: {}
+
+# NFS Server Provisioner
+# Provides dynamic provisioning of NFS-backed persistent volumes
+# https://artifacthub.io/packages/helm/kvaps/nfs-server-provisioner
+nfs-server-provisioner:
+  enabled: true
+  persistence:
+    enabled: true
+
+# Ingress NGINX Controller
+# Routes external traffic to services within the cluster
+# https://kubernetes.github.io/ingress-nginx/
+ingress-nginx:
+  enabled: true
+  controller:
+    config:
+      hsts: "false"
+      annotations-risk-level: critical
+    allowSnippetAnnotations: true
+
+# PostgreSQL Database
+# Primary database for Crucible applications
+# https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres
+postgresql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: "18.1"
+
+  # Environment variables for PostgreSQL
+  env:
+    vars:
+      # Default postgres superuser name
+      POSTGRES_USER: "postgres"
+      # Default postgres database
+      POSTGRES_DB: "postgres"
+      # Use a subdirectory so postgres owns the data dir without chmod on the mount root
+      PGDATA: "/var/lib/postgresql/18/docker/pgdata"
+
+    # Password is managed via secret (see templates/secret.yaml)
+    fromSecret:
+      POSTGRES_PASSWORD:
+        from: "{{ .Release.Name }}-postgresql"
+        key: postgres-password
+
+  # Persistent storage for database
+  persistence:
+    enabled: true
+    annotations: {}
+    storageClass: null
+    accessModes:
+      - ReadWriteOnce
+    size: "1Gi"
+    selector: null
+
+# pgAdmin4
+# Web-based PostgreSQL administration tool
+# https://artifacthub.io/packages/helm/runix/pgadmin4
+pgadmin4:
+  enabled: true
+  # Secret containing pgAdmin password
+  existingSecret: crucible-infra-pgadmin
+
+  env:
+    # Email address for the default admin user
+    email: admin@crucible.local
+
+    # pgAdmin served at /pgadmin
+    contextPath: /pgadmin
+
+    variables:
+      # Disable upgrade check
+      - name: PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED
+        value: "False"
+
+      # Ignore SSL verification errors (for self-signed certs)
+      - name: PGADMIN_CONFIG_SSL_VERIFY
+        value: "False"
+
+      # Allow use of the .local domain in an email address
+      - name: PGADMIN_CONFIG_ALLOW_SPECIAL_EMAIL_DOMAINS
+        value: "['local']"
+
+  # Configure PostgreSQL server connection
+  serverDefinitions:
+    servers:
+      crucible-postgres:
+        Name: "Crucible PostgreSQL"
+        Group: "Servers"
+        Host: "{{ .Release.Name }}-postgresql"
+        Port: "5432"
+        Username: "postgres"
+        SSLMode: "prefer"
+        MaintenanceDB: "postgres"
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - host: "{{ .Values.global.domain }}"
+        paths:
+          - path: /pgadmin
+            pathType: Prefix
+    tls:
+      - hosts:
+          - "{{ .Values.global.domain }}"
+        secretName: crucible-cert

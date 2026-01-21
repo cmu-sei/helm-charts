@@ -1,0 +1,14 @@
+# Ignore all certificate and key files
+*.crt
+*.key
+*.pem
+
+# Ignore realm configuration files (may contain sensitive data)
+*realm*.json
+
+# Ignore environment-specific files
+*.env
+*.local
+
+# Allow this README to be committed
+!README.md

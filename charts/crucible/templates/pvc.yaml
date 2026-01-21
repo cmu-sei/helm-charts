@@ -1,0 +1,85 @@
+{{- $nfs := .Values.nfs | default dict -}}
+{{- $nfsEnabled := default true (index $nfs "enabled") -}}
+{{- if $nfsEnabled }}
+# Shared NFS storage for Crucible applications
+# These PVCs are used by applications for persistent file storage
+
+# General shared NFS PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "crucible.fullname" . }}-nfs
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  {{- if index $nfs "storageClassName" }}
+  storageClassName: {{ index $nfs "storageClassName" }}
+  {{- else }}
+  storageClassName: nfs
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ default "10Gi" (index $nfs "size") }}
+
+---
+# TopoMojo API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "crucible.fullname" . }}-topomojo-api-nfs
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  {{- if index $nfs "storageClassName" }}
+  storageClassName: {{ index $nfs "storageClassName" }}
+  {{- else }}
+  storageClassName: nfs
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ default "10Gi" (index $nfs "topomojoSize") }}
+
+---
+# Gameboard API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "crucible.fullname" . }}-gameboard-api-nfs
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  {{- if index $nfs "storageClassName" }}
+  storageClassName: {{ index $nfs "storageClassName" }}
+  {{- else }}
+  storageClassName: nfs
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ default "5Gi" (index $nfs "gameboardSize") }}
+
+---
+# Caster API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "crucible.fullname" . }}-caster-api-nfs
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  {{- if index $nfs "storageClassName" }}
+  storageClassName: {{ index $nfs "storageClassName" }}
+  {{- else }}
+  storageClassName: nfs
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ default "5Gi" (index $nfs "casterSize") }}
+{{- end }}
