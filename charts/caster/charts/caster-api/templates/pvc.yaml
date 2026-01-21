@@ -1,4 +1,4 @@
-{{- if and (.Values.storage.size) (eq .Values.kind "Deployment") }}
+{{- if .Values.storage.size }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,7 +7,11 @@ metadata:
     {{- include "caster-api.labels" . | nindent 4 }}
 spec:
   accessModes:
+  {{- if eq .Values.env.Terraform__KubernetesJobs__Enabled "true" }}
+  - "ReadWriteMany"
+  {{- else }}
   - {{ .Values.storage.mode | quote }}
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.storage.size | quote }}
