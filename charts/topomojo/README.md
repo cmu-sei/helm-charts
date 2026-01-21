@@ -275,6 +275,13 @@ topomojo-api:
         ...
         -----END CERTIFICATE-----
 ```
+#### UI Branding
+Configure this variable in the API environment settings area and specify the location and name of the file which is already mounted in the volume.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `UI__Branding__BackgroundImageUrl` | Set the location and name of the file. | `theme/background.png` |
+
 
 ## TopoMojo UI Configuration
 
@@ -283,6 +290,8 @@ Use `settingsYaml` to configure settings for the Angular UI application. Example
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `appname` | The display name of the application shown in the UI and browser title. | `TopoMojo` |
+| `docsUrl` | Overrides the documentation link shown on the UI "About" page. Defaults to the Crucible TopoMojo docs if not set. | `https://cmu-sei.github.io/crucible/topomojo` |
+| `disableExternalLinks` | Set to `true` in air-gapped/restricted environments to remove external linking from the UI. | `true` |
 | `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `topomojo-ui` |
 | `oidc.authority` | The base URL of the identity provider (OIDC authority) that issues tokens. | `https://identity.example.com` |
 | `oidc.redirect_uri` | The URL where users are redirected after a successful login via OIDC. | `https://topomojo.example.com/oidc` |
