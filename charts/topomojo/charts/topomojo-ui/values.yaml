@@ -91,6 +91,8 @@ settings: ""
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml: {}
   # appname: TopoMojo
+  # docsUrl: https://cmu-sei.github.io/crucible/topomojo
+  # disableExternalLinks: true
   # oidc:
   #   client_id: clientid
   #   authority: https://your.identity.authority

@@ -35,11 +35,19 @@ spec:
       {{- end }}
         - name: {{ .Chart.Name}}-vol-permissions
           image: bash
-          command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh /docs"]
+          command:
+            - bash
+            - -c
+            - |
+              /mnt/scripts/vol-permissions.sh /docs
+              /mnt/scripts/vol-permissions.sh /theme
           volumeMounts:
             - mountPath: /docs
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}/_docs
+            - mountPath: /theme
+              name: {{ include "topomojo-api.name" . }}-vol
+              subPath: {{ include "topomojo-api.fullname" . }}/_theme
             - mountPath: /mnt/scripts/vol-permissions.sh
               name: {{ include "topomojo-api.name" . }}-scripts
               subPath: vol-permissions.sh
@@ -94,6 +102,9 @@ spec:
             - mountPath: /home/app/wwwroot/docs
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}/_docs
+            - mountPath: /home/app/wwwroot/theme
+              name: {{ include "topomojo-api.name" . }}-vol
+              subPath: {{ include "topomojo-api.fullname" . }}/_theme
             - mountPath: /mnt/tm
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}

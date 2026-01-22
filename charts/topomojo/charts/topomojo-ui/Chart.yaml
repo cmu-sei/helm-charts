@@ -1,5 +1,5 @@
 apiVersion: v2
 name: topomojo-ui
 type: application
-version: 0.5.11
-appVersion: 2.5.3
+version: 0.6.0
+appVersion: 2.5.4
