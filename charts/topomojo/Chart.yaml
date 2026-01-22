@@ -2,8 +2,8 @@ apiVersion: v2
 name: topomojo
 type: application
 description: TopoMojo is a simple lab builder and player.
-version: 0.5.14
+version: 0.6.0
 home: https://cmu-sei.github.io/crucible/topomojo
 sources:
-  - https://github.com/cmu-sei/TopoMojo
-  - https://github.com/cmu-sei/TopoMojo-ui
+- https://github.com/cmu-sei/TopoMojo
+- https://github.com/cmu-sei/TopoMojo-ui
