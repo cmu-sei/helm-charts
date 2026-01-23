@@ -64,6 +64,8 @@ topomojo-api:
             pathType: ImplementationSpecific
           - path: /docs
             pathType: ImplementationSpecific
+          - path: /theme
+            pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
