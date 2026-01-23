@@ -86,11 +86,11 @@ Collect and merge ConfigMaps - user env vars override chart defaults by Name
 {{- end }}
 {{- if .Values.gitcredentials }}
   {{- $name := printf "%s-gitcredentials" (include "caster-api.fullname" .) }}
-  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app" "subPath" ".git-credentials") }}
+  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app/.git-credentials" "subPath" ".git-credentials") }}
 {{- end }}
 {{- if .Values.terraformrc.enabled }}
   {{- $name := printf "%s-terraformrc" (include "caster-api.fullname" .) }}
-  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app" "subPath" ".terraformrc") }}
+  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app/.terraformrc" "subPath" ".terraformrc") }}
 {{- end }}
 
 {{- /* Add/override with user values */ -}}
