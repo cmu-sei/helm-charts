@@ -234,6 +234,8 @@ Configure the ingress to allow connections to the application (typically uses an
             pathType: ImplementationSpecific
           - path: /tm/docs
             pathType: ImplementationSpecific
+          - path: /tm/theme
+            pathType: ImplementationSpecific
     tls:
       - secretName: tls-secret-name # this tls secret should already exist
         hosts:
