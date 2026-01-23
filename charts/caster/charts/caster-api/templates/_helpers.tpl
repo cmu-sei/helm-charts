@@ -82,15 +82,15 @@ Collect and merge ConfigMaps - user env vars override chart defaults by Name
 
 {{- /* Add chart defaults */ -}}
 {{- if .Values.certificateMap }}
-  {{- $_ := set $configMapsByName .Values.certificateMap "/usr/local/share/ca-certificates" }}
+  {{- $_ := set $configMapsByName .Values.certificateMap (dict "mountPath" "/usr/local/share/ca-certificates") }}
 {{- end }}
 {{- if .Values.gitcredentials }}
   {{- $name := printf "%s-gitcredentials" (include "caster-api.fullname" .) }}
-  {{- $_ := set $configMapsByName $name "/app/.git-credentials" }}
+  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app" "subPath" ".git-credentials") }}
 {{- end }}
 {{- if .Values.terraformrc.enabled }}
   {{- $name := printf "%s-terraformrc" (include "caster-api.fullname" .) }}
-  {{- $_ := set $configMapsByName $name "/app/.terraformrc" }}
+  {{- $_ := set $configMapsByName $name (dict "mountPath" "/app" "subPath" ".terraformrc") }}
 {{- end }}
 
 {{- /* Add/override with user values */ -}}
@@ -98,17 +98,26 @@ Collect and merge ConfigMaps - user env vars override chart defaults by Name
   {{- if hasPrefix "Terraform__KubernetesJobs__ConfigMaps__" $key }}
     {{- if hasSuffix "__Name" $key }}
       {{- $mountKey := regexReplaceAll "__Name$" $key "__MountPath" }}
+      {{- $subPathKey := regexReplaceAll "__Name$" $key "__SubPath" }}
       {{- $mountPath := index $.Values.env $mountKey | default "" }}
-      {{- $_ := set $configMapsByName $val $mountPath }}
+      {{- $subPath := index $.Values.env $subPathKey | default "" }}
+      {{- $config := dict "mountPath" $mountPath }}
+      {{- if $subPath }}
+        {{- $_ := set $config "subPath" $subPath }}
+      {{- end }}
+      {{- $_ := set $configMapsByName $val $config }}
     {{- end }}
   {{- end }}
 {{- end }}
 
 {{- /* Output with sequential indexing */ -}}
 {{- $index := 0 }}
-{{- range $name, $mountPath := $configMapsByName }}
+{{- range $name, $config := $configMapsByName }}
 {{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__Name" $index }}: {{ $name | quote }}
-{{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__MountPath" $index }}: {{ $mountPath | quote }}
+{{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__MountPath" $index }}: {{ $config.mountPath | quote }}
+{{- if $config.subPath }}
+{{ printf "Terraform__KubernetesJobs__ConfigMaps__%d__SubPath" $index }}: {{ $config.subPath | quote }}
+{{- end }}
   {{- $index = add1 $index }}
 {{- end }}
 {{- end }}
