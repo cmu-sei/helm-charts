@@ -80,11 +80,10 @@ tolerations: []
 affinity: {}
 
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
-# If using Kubernetes execution mode, this must be a storage that supports ReadWriteMany to enable jobs running on different k8s nodes
 storage:
   existing: ""
   size: ""
-  mode: ReadWriteOnce # Used when KubernetesJobs is disabled; set to ReadWriteMany if enabled
+  mode: ReadWriteOnce # If using Kubernetes execution mode, this should be a storage that supports ReadWriteMany to enable jobs running on different k8s nodes
 
   class: default
 
