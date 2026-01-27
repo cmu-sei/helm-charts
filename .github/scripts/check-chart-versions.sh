@@ -1,15 +1,13 @@
 #!/bin/bash
 # This script checks that chart versions are incremented when chart files are modified.
 # It compares the current branch against the base branch and fails if any chart has
-# changes to values.yaml or Chart.yaml without a corresponding version bump.
 #
 # When a sub-chart is modified (e.g., charts/alloy/charts/alloy-api),
 # the parent chart (charts/alloy) must also have its version incremented.
 
 set -euo pipefail
 
-CHART_FILES_PATTERN='^charts/.*/(values\.yaml|Chart\.yaml)$'
-SUBCHART_PATTERN='^charts/([^/]+)/charts/([^/]+)$'
+SUBCHART_PATTERN='^charts/([^/]+)/charts/([^/]+)'
 
 # Extract version from a Chart.yaml file
 extract_version() {
@@ -30,13 +28,38 @@ array_has_key() {
     [[ -v arr["$key"] ]]
 }
 
-local base_ref="${1:-origin/main}"
+# Find the chart directory for a given file path
+# Walks up the directory tree to find the nearest Chart.yaml
+find_chart_dir() {
+    local file_path="$1"
+    local current_dir
+
+    # If it's a file, start from its directory; if it's a directory, start from there
+    if [[ -f "$file_path" ]]; then
+        current_dir=$(dirname "$file_path")
+    else
+        current_dir="$file_path"
+    fi
+
+    # Walk up the directory tree looking for Chart.yaml
+    while [[ "$current_dir" != "." && "$current_dir" != "/" ]]; do
+        if [[ -f "$current_dir/Chart.yaml" ]]; then
+            echo "$current_dir"
+            return 0
+        fi
+        current_dir=$(dirname "$current_dir")
+    done
+
+    # No Chart.yaml found
+    return 1
+}
+
+base_ref="${1:-origin/main}"
 
 echo "Checking chart versions against base: $base_ref"
 echo "=============================================="
 
 # Get list of changed files compared to base
-local changed_files
 changed_files=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null || git diff --name-only "$base_ref" HEAD)
 
 if [[ -z "$changed_files" ]]; then
@@ -44,105 +67,85 @@ if [[ -z "$changed_files" ]]; then
     exit 0
 fi
 
-# Find all chart directories that have modified chart files
+# Find all chart directories that have modified files
 declare -A modified_charts
+has_charts=false
 
 while IFS= read -r file; do
-    if [[ "$file" =~ $CHART_FILES_PATTERN ]]; then
-        local chart_dir
-        chart_dir=$(dirname "$file")
-
-        # Include if Chart.yaml exists or this file IS the Chart.yaml
-        if [[ -f "$chart_dir/Chart.yaml" || "$file" == */Chart.yaml ]]; then
+    # Only process files under charts/ directory
+    if [[ "$file" =~ ^charts/ ]]; then
+        if chart_dir=$(find_chart_dir "$file"); then
             modified_charts["$chart_dir"]=1
+            has_charts=true
         fi
     fi
 done <<< "$changed_files"
 
-if [[ ${#modified_charts[@]} -eq 0 ]]; then
-    echo "No chart files (values.yaml or Chart.yaml) were modified."
+# Check if any charts were modified
+if [[ "$has_charts" == "false" ]]; then
+    echo "No chart files were modified."
     exit 0
 fi
 
 # Identify parent charts that need version bumps due to sub-chart changes
 # Structure: charts/<parent>/charts/<sub-chart> -> parent is charts/<parent>
 declare -A parent_charts
+has_parents=false
 
 for chart_dir in "${!modified_charts[@]}"; do
     if [[ "$chart_dir" =~ $SUBCHART_PATTERN ]]; then
-        local parent_dir="charts/${BASH_REMATCH[1]}"
+        parent_dir="charts/${BASH_REMATCH[1]}"
 
         if [[ -f "$parent_dir/Chart.yaml" ]]; then
             parent_charts["$parent_dir"]="$chart_dir"
+            has_parents=true
         fi
     fi
 done
 
 # Add parent charts to the list of charts requiring version check
-for parent_dir in "${!parent_charts[@]}"; do
-    if ! array_has_key "$parent_dir" modified_charts; then
-        modified_charts["$parent_dir"]="parent"
-    fi
-done
-
-# Print summary of charts to check
-echo "Found ${#modified_charts[@]} chart(s) requiring version check:"
-printf '  - %s\n' "${!modified_charts[@]}"
-
-if [[ ${#parent_charts[@]} -gt 0 ]]; then
-    echo ""
-    echo "Parent charts requiring update due to sub-chart changes:"
+if [[ "$has_parents" == "true" ]]; then
     for parent_dir in "${!parent_charts[@]}"; do
-        echo "  - $parent_dir (sub-chart: ${parent_charts[$parent_dir]})"
+        if ! array_has_key "$parent_dir" modified_charts; then
+            modified_charts["$parent_dir"]="parent"
+        fi
     done
 fi
-echo ""
 
 # Check each chart for version bump
-local failed_charts=()
+failed_charts=()
 
 for chart_dir in "${!modified_charts[@]}"; do
-    local chart_yaml="$chart_dir/Chart.yaml"
-
-    echo "Checking: $chart_dir"
+    chart_yaml="$chart_dir/Chart.yaml"
 
     if [[ ! -f "$chart_yaml" ]]; then
-        echo "  Warning: Chart.yaml not found, skipping..."
         continue
     fi
 
-    local current_version
     current_version=$(extract_version "$chart_yaml")
 
     if [[ -z "$current_version" ]]; then
-        echo "  Error: Could not parse version from Chart.yaml"
+        echo "Error: Could not parse version from $chart_yaml"
         failed_charts+=("$chart_dir (could not parse version)")
         continue
     fi
 
-    local base_version
     base_version=$(extract_version "$base_ref:$chart_yaml")
 
     if [[ -z "$base_version" ]]; then
-        echo "  New chart (not in base branch)"
-        echo "  Current version: $current_version"
+        echo "New chart (not in base branch)"
+        echo "Current version: $current_version"
         echo ""
         continue
     fi
 
-    echo "  Base version:    $base_version"
-    echo "  Current version: $current_version"
-
     if [[ "$base_version" == "$current_version" ]]; then
-        echo "  FAILED: Version was not incremented!"
 
-        if array_has_key "$chart_dir" parent_charts; then
+        if [[ "$has_parents" == "true" ]] && array_has_key "$chart_dir" parent_charts; then
             failed_charts+=("$chart_dir ($base_version -> $current_version) [parent of ${parent_charts[$chart_dir]}]")
         else
             failed_charts+=("$chart_dir ($base_version -> $current_version)")
         fi
-    else
-        echo "  OK: Version was updated"
     fi
     echo ""
 done

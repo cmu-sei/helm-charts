@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "charts/**/values.yaml"
-      - "charts/**/Chart.yaml"
+      - "charts/**"
 
 jobs:
   check-versions:
