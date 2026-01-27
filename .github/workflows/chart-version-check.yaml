@@ -1,0 +1,21 @@
+name: Chart Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check chart versions
+        run: |
+          .github/scripts/check-chart-versions.sh "origin/${{ github.base_ref }}"
