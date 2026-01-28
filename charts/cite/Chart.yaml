@@ -3,4 +3,4 @@ name: cite
 description: CITE enables participants from different organizations to evaluate, score,
   and comment on cyber incidents.
 type: application
-version: 1.6.10
+version: 1.7.0
