@@ -1,9 +1,10 @@
 apiVersion: v2
 name: blueprint
-description: Blueprint enables collaborative creation and visualization of a Master Scenario Event List (MSEL) for an exercise.
+description: Blueprint enables collaborative creation and visualization of a Master
+  Scenario Event List (MSEL) for an exercise.
 type: application
-version: 1.6.6
+version: 1.7.0
 home: https://cmu-sei.github.io/crucible/blueprint/
 sources:
-  - https://github.com/cmu-sei/Blueprint.Api
-  - https://github.com/cmu-sei/Blueprint.Ui
+- https://github.com/cmu-sei/Blueprint.Api
+- https://github.com/cmu-sei/Blueprint.Ui
