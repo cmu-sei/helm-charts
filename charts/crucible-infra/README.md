@@ -16,6 +16,7 @@ Chart components are enabled by default, but can be disabled via the values file
 - **PostgreSQL**: Primary database for all Crucible applications
 - **pgAdmin**: Web-based PostgreSQL management interface
 - **NFS Server Provisioner**: Provides dynamic NFS-backed persistent volumes for shared storage
+- **NFS PVCs**: Pre-created persistent volume claims for Crucible applications (TopoMojo, Gameboard, Caster) when the nfs provisioner is enabled
 
 ## Prerequisites
 
@@ -87,6 +88,27 @@ helm install crucible-infra ./crucible-infra -f my-values.yaml
 | `nfs-server-provisioner.persistence.size` | Size of NFS server storage | `10Gi` |
 
 The NFS server provisioner creates a StorageClass named `nfs` that can be used by applications requiring `ReadWriteMany` access mode.
+
+### NFS Persistent Volume Claims
+
+When the NFS server provisioner is enabled, the chart automatically creates pre-configured PVCs for Crucible applications. These PVCs use the `nfs` StorageClass and are conditionally created only when `nfs-server-provisioner.enabled` is `true`.
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `nfs.namePrefix` | Prefix for PVC names (typically matches crucible release name) | `crucible` |
+| `nfs.storageClassName` | Storage class for NFS volumes | `nfs` |
+| `nfs.size` | Size of general shared NFS storage | `10Gi` |
+| `nfs.topomojoSize` | Size of TopoMojo API storage (ISO files, VM disks) | `10Gi` |
+| `nfs.gameboardSize` | Size of Gameboard API storage (challenge files, uploads) | `5Gi` |
+| `nfs.casterSize` | Size of Caster API storage (workspace files, exports) | `5Gi` |
+
+**PVCs Created:**
+- `{namePrefix}-nfs` - General shared storage
+- `{namePrefix}-topomojo-api-nfs` - TopoMojo application storage
+- `{namePrefix}-gameboard-api-nfs` - Gameboard application storage
+- `{namePrefix}-caster-api-nfs` - Caster application storage
+
+**Note:** If you disable the NFS server provisioner (`nfs-server-provisioner.enabled: false`), these PVCs will not be created and you must provide your own storage solution.
 
 ### Ingress NGINX
 
@@ -367,17 +389,20 @@ ingress-nginx:
     replicaCount: 3
 ```
 
-### External PostgreSQL
+### Disabling PostgreSQL
 
-If you have an existing PostgreSQL instance:
+If you want to use an external PostgreSQL instance (RDS, Cloud SQL, etc.) instead of the bundled PostgreSQL:
 
 ```yaml
 postgresql:
-  enabled: false
+  enabled: false  # Disables the PostgreSQL pod and secret
 
-# Applications will need to be configured to use external PostgreSQL
-# See the crucible chart documentation for connection string configuration
+# Optionally disable pgAdmin as well since it depends on PostgreSQL
+pgadmin4:
+  enabled: false
 ```
+
+**Important**: When disabling PostgreSQL in crucible-infra, you must configure the crucible chart to connect to your external PostgreSQL. See the [crucible chart documentation](../crucible/README.md#option-b-using-external-postgresql-rds-cloud-sql-etc) for external database configuration.
 
 ## Accessing Services
 
