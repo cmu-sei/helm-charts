@@ -50,6 +50,31 @@ nfs-server-provisioner:
   persistence:
     enabled: true
 
+# NFS Persistent Volume Claims
+# Pre-created PVCs for Crucible applications using NFS storage
+# These PVCs are only created when nfs-server-provisioner is enabled
+nfs:
+  # Name prefix for PVC resources (typically matches the crucible release name)
+  # Default: "crucible"
+  namePrefix: "crucible"
+
+  # Storage class name for NFS volumes
+  # Default: "nfs" (matches the default storage class created by nfs-server-provisioner)
+  storageClassName: "nfs"
+
+  # PVC sizes for different applications
+  # General shared NFS storage (used by various applications)
+  size: "10Gi"
+
+  # TopoMojo API storage (ISO files, VM disks, etc.)
+  topomojoSize: "5Gi"
+
+  # Gameboard API storage (challenge files, uploads, etc.)
+  gameboardSize: "5Gi"
+
+  # Caster API storage (workspace files, exports, etc.)
+  casterSize: "5Gi"
+
 # Ingress NGINX Controller
 # Routes external traffic to services within the cluster
 # https://kubernetes.github.io/ingress-nginx/

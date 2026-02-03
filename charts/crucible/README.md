@@ -5,7 +5,7 @@ This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) plat
 ## Overview
 
 The crucible chart can be deployed with:
-- **crucible-infra chart** (provides PostgreSQL, ingress controller, NFS storage)
+- **crucible-infra chart** (provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs)
 - **External PostgreSQL** (RDS, Cloud SQL, Azure Database, or any PostgreSQL service)
 - **Custom infrastructure** (bring your own PostgreSQL, ingress, and storage)
 
@@ -31,7 +31,7 @@ Chart components are enabled by default, but can be disabled via the values file
 2. **Helm 3.0+**
 3. **PostgreSQL database** (crucible-infra chart, external PostgreSQL, or cloud database)
 4. **Ingress controller** (crucible-infra chart provides nginx, or use your own)
-5. **Persistent storage** (crucible-infra chart provides NFS, or use your StorageClass)
+5. **Persistent storage** (crucible-infra chart provides NFS provisioner and pre-created PVCs, or use your StorageClass)
 6. **TLS certificate** created as a Kubernetes secret
 7. **Keycloak realm configuration** (optional - can be configured via UI after deployment)
 8. **OAuth client secrets** generated and configured
@@ -416,6 +416,9 @@ kubectl create secret generic postgres-credentials \
 | `keycloak.enabled` | Enable Keycloak deployment | `true` |
 | `keycloak.auth.adminUser` | Keycloak admin username | `keycloak-admin` |
 | `keycloak.httpRelativePath` | URL path for Keycloak | `/keycloak/` |
+| `keycloak.postgresql.enabled` | Enable Keycloak's bundled PostgreSQL (always disabled) | `false` |
+
+**Note**: The Keycloak subchart's bundled PostgreSQL is disabled by default. Keycloak uses the external PostgreSQL database (either from crucible-infra or your own external database) via the `keycloak.externalDatabase` configuration.
 
 **Password Management**: The Keycloak admin password is automatically generated on first install and persisted. To retrieve it:
 

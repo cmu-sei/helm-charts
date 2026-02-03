@@ -1,0 +1,75 @@
+{{- if index .Values "nfs-server-provisioner" "enabled" -}}
+# Shared NFS storage for Crucible applications
+# These PVCs are only created when the NFS server provisioner is enabled
+# They provide persistent file storage for various Crucible services
+
+# General shared NFS PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.nfs.namePrefix }}-nfs
+  labels:
+    {{- include "crucible-infra.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Values.nfs.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.nfs.size }}
+
+---
+# TopoMojo API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.nfs.namePrefix }}-topomojo-api-nfs
+  labels:
+    {{- include "crucible-infra.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: topomojo
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Values.nfs.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.nfs.topomojoSize }}
+
+---
+# Gameboard API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.nfs.namePrefix }}-gameboard-api-nfs
+  labels:
+    {{- include "crucible-infra.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: gameboard
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Values.nfs.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.nfs.gameboardSize }}
+
+---
+# Caster API NFS storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.nfs.namePrefix }}-caster-api-nfs
+  labels:
+    {{- include "crucible-infra.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: caster
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Values.nfs.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.nfs.casterSize }}
+{{- end }}
