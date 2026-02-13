@@ -77,6 +77,13 @@ steamfitter-api:
     VmTaskProcessing__ApiBaseUrl: "https://stackstorm.example.com"
     VmTaskProcessing__ApiParameters__clusters: ""
 
+    # Open Telemetry
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
 steamfitter-ui:
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
