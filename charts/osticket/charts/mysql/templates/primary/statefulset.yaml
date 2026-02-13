@@ -73,15 +73,8 @@ spec:
       initContainers:
         {{- if and .Values.primary.podSecurityContext.enabled .Values.volumePermissions.enabled .Values.primary.persistence.enabled }}
         - name: volume-permissions
-          image: {{ include "mysql.volumePermissions.image" . }}
-          imagePullPolicy: {{ .Values.volumePermissions.image.pullPolicy | quote }}
-          command:
-            - /bin/bash
-            - -ec
-            - |
-              mkdir -p "/bitnami/mysql"
-              chown "{{ .Values.primary.containerSecurityContext.runAsUser }}:{{ .Values.primary.podSecurityContext.fsGroup }}" "/bitnami/mysql"
-              find "/bitnami/mysql" -mindepth 1 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | xargs -r chown -R "{{ .Values.primary.containerSecurityContext.runAsUser }}:{{ .Values.primary.podSecurityContext.fsGroup }}"
+          image: bash
+          command: ["bash", "-c", "/mnt/scripts/vol-permissions.sh /bitnami/mysql" ]
           securityContext:
             runAsUser: 0
           {{- if .Values.volumePermissions.resources }}
@@ -90,6 +83,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /bitnami/mysql
+              {{- if include "mysql.subpathPrefix" . }}
+              subPath: {{ include "mysql.subpathPrefix" . | trimSuffix "/" }}
+              {{- end }}
+            - name: volume-permissions-scripts
+              mountPath: /mnt/scripts/vol-permissions.sh
+              subPath: vol-permissions.sh
         {{- end }}
         {{- if .Values.primary.initContainers }}
         {{- include "common.tplvalues.render" (dict "value" .Values.primary.initContainers "context" $) | nindent 8 }}
@@ -233,6 +232,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /bitnami/mysql
+              {{- if include "mysql.subpathPrefix" . }}
+              subPath: {{ include "mysql.subpathPrefix" . | trimSuffix "/" }}
+              {{- end }}
             {{- if or .Values.initdbScriptsConfigMap .Values.initdbScripts }}
             - name: custom-init-scripts
               mountPath: /docker-entrypoint-initdb.d
@@ -332,6 +334,10 @@ spec:
                 path: mysql-replication-password
               {{- end }}
         {{- end }}
+        - name: volume-permissions-scripts
+          configMap:
+            name:  {{ include "common.names.fullname" . }}-scripts
+            defaultMode: 0755
         {{- if .Values.primary.extraVolumes }}
         {{- include "common.tplvalues.render" (dict "value" .Values.primary.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
