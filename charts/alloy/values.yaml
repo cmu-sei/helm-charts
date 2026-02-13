@@ -76,6 +76,13 @@ alloy-api:
     ClientSettings__urls__casterApi: https://caster.example.com/
     ClientSettings__urls__steamfitterApi: https://steamfitter.example.com/
 
+    # Open Telemetry
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
 alloy-ui:
   # Docker image release version. Defaults to appVersion of alloy-ui child chart
   image:
