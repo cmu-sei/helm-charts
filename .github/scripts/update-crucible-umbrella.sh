@@ -4,7 +4,8 @@
 # Updates the Chart.yaml with the latest versions from https://helm.cmusei.dev/charts
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CHART_FILE="$SCRIPT_DIR/Chart.yaml"
+CHART_DIR="$SCRIPT_DIR/../../charts/crucible"
+CHART_FILE="$CHART_DIR/Chart.yaml"
 CEMUSEI_REPO="https://helm.cmusei.dev/charts"
 REPO_NAME="cemusei"
 
@@ -154,7 +155,7 @@ if [ $UPDATED -gt 0 ]; then
         # Run helm dependency update
         echo ""
         echo -e "${YELLOW}Running helm dependency update...${NC}"
-        if helm dependency update "$SCRIPT_DIR"; then
+        if helm dependency update "$CHART_DIR"; then
             echo -e "${GREEN}Successfully updated chart dependencies${NC}"
         else
             echo -e "${RED}Failed to update chart dependencies${NC}"
