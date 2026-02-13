@@ -45,6 +45,13 @@ gallery-api:
     Authorization__ClientId: gallery.swagger
     Authorization__ClientName: Gallery API Swagger
 
+    # Open Telemetry
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
 gallery-ui:
   # Docker image release version. Defaults to appVersion of gallery-ui child chart
   image:
