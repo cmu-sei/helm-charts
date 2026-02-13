@@ -44,6 +44,13 @@ blueprint-api:
     Authorization__ClientId: blueprint.swagger
     Authorization__ClientName: Blueprint API Swagger
 
+    # Open Telemetry
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
 blueprint-ui:
   # Docker image release version. Defaults to appVersion of blueprint-ui child chart
   image:
