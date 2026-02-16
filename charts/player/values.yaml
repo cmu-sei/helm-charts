@@ -121,6 +121,21 @@ player-api:
     # SeedData__Users__0__Name: "Seed User"
     # SeedData__Users__0__Role: "Demo Role"
 
+    # Open Telemetry
+    # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+    # These settings toggle ServiceDefaults configurations for Otel
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: player-api
+
 player-ui:
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
@@ -320,6 +335,21 @@ vm-api:
     RewriteHost__RewriteHost: false
     RewriteHost__RewriteHostUrl: "connect.example.com"
     RewriteHost__RewriteHostQueryParam: "vmhost"
+
+    # Open Telemetry
+    # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+    # These settings toggle ServiceDefaults configurations for Otel
+    OpenTelemetry__AddAlwaysOnTracingSampler: false
+    OpenTelemetry__AddConsoleExporter: false
+    OpenTelemetry__AddPrometheusExporter: false
+    OpenTelemetry__IncludeDefaultActivitySources: true
+    OpenTelemetry__IncludeDefaultMeters: true
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: vm-api
 
 vm-ui:
   # Ingress configuration example for NGINX
