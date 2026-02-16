@@ -1,10 +1,11 @@
 apiVersion: v2
 name: steamfitter
-description: Steamfitter enables the organization and execution of scenario tasks
+description:
+  Steamfitter enables the organization and execution of scenario tasks
   on virtual machines by integrating with StackStorm automation.
 type: application
-version: 1.6.10
+version: 1.6.11
 home: https://cmu-sei.github.io/crucible/steamfitter
 sources:
-- https://github.com/cmu-sei/steamfitter.api
-- https://github.com/cmu-sei/steamfitter.ui
+  - https://github.com/cmu-sei/steamfitter.api
+  - https://github.com/cmu-sei/steamfitter.ui

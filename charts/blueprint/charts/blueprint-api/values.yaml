@@ -129,8 +129,17 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
+  # Open Telemetry
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+  # These settings toggle ServiceDefaults configurations for Otel
   OpenTelemetry__AddAlwaysOnTracingSampler: false
   OpenTelemetry__AddConsoleExporter: false
   OpenTelemetry__AddPrometheusExporter: false
   OpenTelemetry__IncludeDefaultActivitySources: true
   OpenTelemetry__IncludeDefaultMeters: true
+
+  # Optional: force HTTP instead of the default gRPC protocol
+  # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  # Optional: override the service name reported to collectors
+  # OTEL_SERVICE_NAME: blueprint-api
