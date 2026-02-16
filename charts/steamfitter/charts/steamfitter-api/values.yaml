@@ -150,7 +150,7 @@ env:
   Files__LocalDirectory: "/tmp/"
 
   # Open Telemetry
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
   # These settings toggle ServiceDefaults configurations for Otel
   OpenTelemetry__AddAlwaysOnTracingSampler: false
