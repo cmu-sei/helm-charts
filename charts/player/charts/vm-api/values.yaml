@@ -194,4 +194,4 @@ env:
   # Optional: force HTTP instead of the default gRPC protocol
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
-  # OTEL_SERVICE_NAME: alloy-api
+  # OTEL_SERVICE_NAME: vm-api
