@@ -30,12 +30,10 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  {}
+podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  {}
+securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -50,8 +48,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
@@ -68,8 +65,7 @@ ingress:
   consoleIngress:
     deployConsoleProxy: false
     name: ""
-    annotations:
-      {}
+    annotations: {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
@@ -85,8 +81,7 @@ ingress:
 # the configMap name here
 certificateMap: ""
 
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -185,3 +180,18 @@ env:
   IdentityClient__Password: ""
   IdentityClient__MaxRetryDelaySeconds: 120
   IdentityClient__TokenRefreshSeconds: 600
+
+  # Open Telemetry
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+  # These settings toggle ServiceDefaults configurations for Otel
+  OpenTelemetry__AddAlwaysOnTracingSampler: false
+  OpenTelemetry__AddConsoleExporter: false
+  OpenTelemetry__AddPrometheusExporter: false
+  OpenTelemetry__IncludeDefaultActivitySources: true
+  OpenTelemetry__IncludeDefaultMeters: true
+
+  # Optional: force HTTP instead of the default gRPC protocol
+  # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  # Optional: override the service name reported to collectors
+  # OTEL_SERVICE_NAME: vm-api
