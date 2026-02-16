@@ -132,6 +132,39 @@ alloy-api:
 
 Certificates are mounted to `/usr/local/share/ca-certificates`.
 
+
+### OpenTelemetry
+
+Alloy.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Alloy to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
+
+```yaml
+alloy-api:
+  env:
+    # This can be a kubernetes service address if the collector is running in the cluster
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: alloy-api
+
+    # These settings toggle ServiceDefaults configurations for Otel
+    # The values listed here are the defaults
+    # OpenTelemetry__AddAlwaysOnTracingSampler: false
+    # OpenTelemetry__AddConsoleExporter: false
+    # OpenTelemetry__AddPrometheusExporter: false
+    # OpenTelemetry__IncludeDefaultActivitySources: true
+    # OpenTelemetry__IncludeDefaultMeters: true
+```
+
+#### Custom metrics from Alloy
+- Gauges: `alloy_active_events`, `alloy_ended_events`, `alloy_failed_events`
+
+#### Default metrics from ServiceDefaults
+- Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
+- Built-in meters: `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Server.Kestrel`, `System.Net.Http`, `System.Net.NameResolution`, `Microsoft.EntityFrameworkCore`, plus runtime/process meters.
+- Resource attribute `service_name` defaults to `alloy-api` (or your `OTEL_SERVICE_NAME` override).
+
 ## Alloy UI Configuration
 
 | Setting | Description | Example |

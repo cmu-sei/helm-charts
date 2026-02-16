@@ -1,6 +1,7 @@
 apiVersion: v2
 name: cite
-description: CITE enables participants from different organizations to evaluate, score,
+description:
+  CITE enables participants from different organizations to evaluate, score,
   and comment on cyber incidents.
 type: application
-version: 1.7.1
+version: 1.7.2
