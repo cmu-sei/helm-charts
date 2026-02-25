@@ -2,4 +2,4 @@ apiVersion: v2
 name: gallery-ui
 type: application
 version: 1.7.2
-appVersion: 1.9.3
+appVersion: 1.9.3-rc1
