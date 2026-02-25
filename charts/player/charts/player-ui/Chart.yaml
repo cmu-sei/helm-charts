@@ -2,4 +2,4 @@ apiVersion: v2
 name: player-ui
 type: application
 version: 1.7.7
-appVersion: 3.3.3
+appVersion: 3.3.3-rc1
