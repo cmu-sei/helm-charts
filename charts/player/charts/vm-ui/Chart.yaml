@@ -2,4 +2,4 @@ apiVersion: v2
 name: vm-ui
 type: application
 version: 1.7.7
-appVersion: 3.5.3
+appVersion: 3.5.3-rc1
