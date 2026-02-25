@@ -2,4 +2,4 @@ apiVersion: v2
 name: cite-ui
 type: application
 version: 1.7.2
-appVersion: 1.10.2
+appVersion: 1.10.2-rc1
