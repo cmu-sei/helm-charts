@@ -24,55 +24,57 @@ The following settings configure the Moodle application via environment variable
 
 ### Administrator Account
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `moodle.admin.username` | Initial admin username | `admin` |
-| `moodle.admin.email` | Admin email address | `admin@example.com` |
-| `moodle.admin.password` | Admin password (leave empty to auto-generate) | `""` (auto-generated) |
-| `moodle.admin.existingSecret` | Use existing secret for admin password | `crucible-moodle-secret` |
-| `moodle.admin.existingSecretKey` | Key in existing secret containing the password | `admin-password` |
+| Setting                          | Description                                    | Default                  |
+| -------------------------------- | ---------------------------------------------- | ------------------------ |
+| `moodle.admin.username`          | Initial admin username                         | `admin`                  |
+| `moodle.admin.email`             | Admin email address                            | `admin@example.com`      |
+| `moodle.admin.password`          | Admin password (leave empty to auto-generate)  | `""` (auto-generated)    |
+| `moodle.admin.existingSecret`    | Use existing secret for admin password         | `crucible-moodle-secret` |
+| `moodle.admin.existingSecretKey` | Key in existing secret containing the password | `admin-password`         |
 
 **Important:**
+
 - If `moodle.admin.password` is empty (default) and no `existingSecret` is provided, a random password will be automatically generated
 - The default configuration uses `crucible-moodle-secret` with key `admin-password`
 - For production, create the secret manually before deployment or leave the default configuration to auto-generate credentials
 
 ### Site Configuration
 
-| Setting | Description | Example |
-|---------|-------------|---------|
-| `moodle.site.url` | Full URL where Moodle will be accessed | `https://moodle.example.com` |
-| `moodle.site.name` | Site name displayed in Moodle | `Moodle` (default) |
-| `moodle.site.language` | Default site language | `en` (default) |
+| Setting                | Description                            | Example                      |
+| ---------------------- | -------------------------------------- | ---------------------------- |
+| `moodle.site.url`      | Full URL where Moodle will be accessed | `https://moodle.example.com` |
+| `moodle.site.name`     | Site name displayed in Moodle          | `Moodle` (default)           |
+| `moodle.site.language` | Default site language                  | `en` (default)               |
 
 **Important:**
+
 - `moodle.site.url` must match your actual domain or ingress hostname. Moodle uses this for generating links and redirects.
 
 ### Proxy Configuration
 
 Configure proxy settings when Moodle is behind a reverse proxy or load balancer.
 
-| Setting | Description | Example |
-|---------|-------------|---------|
+| Setting                     | Description                  | Example           |
+| --------------------------- | ---------------------------- | ----------------- |
 | `moodle.proxy.reverseProxy` | Enable reverse proxy support | `false` (default) |
-| `moodle.proxy.sslProxy` | Trust SSL headers from proxy | `true` (default) |
+| `moodle.proxy.sslProxy`     | Trust SSL headers from proxy | `true` (default)  |
 
 **Note:** Enable `sslProxy` if SSL/TLS is terminated at the load balancer or ingress controller.
 
 ### Database Configuration
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `moodle.database.type` | Database type (`pgsql`, `mysqli`, or `mariadb`) | `pgsql` |
-| `moodle.database.host` | Database hostname | `pg-postgresql` |
-| `moodle.database.port` | Database port | `5432` |
-| `moodle.database.name` | Database name | `moodledb` |
-| `moodle.database.user` | Database username | `moodle` |
-| `moodle.database.prefix` | Table prefix (do not use numeric values) | `mdl_` |
-| `moodle.database.password` | Database password (leave empty if using existingSecret) | `""` |
-| `moodle.database.existingSecret` | Secret containing database password | `crucible-moodle-secret` |
-| `moodle.database.existingSecretKey` | Key in secret containing password | `database-password` |
-| `moodle.database.create_database` | Automatically create database if it doesn't exist (runs as a Kubernetes Job) | `true` |
+| Setting                             | Description                                                                  | Default                  |
+| ----------------------------------- | ---------------------------------------------------------------------------- | ------------------------ |
+| `moodle.database.type`              | Database type (`pgsql`, `mysqli`, or `mariadb`)                              | `pgsql`                  |
+| `moodle.database.host`              | Database hostname                                                            | `pg-postgresql`          |
+| `moodle.database.port`              | Database port                                                                | `5432`                   |
+| `moodle.database.name`              | Database name                                                                | `moodledb`               |
+| `moodle.database.user`              | Database username                                                            | `moodle`                 |
+| `moodle.database.prefix`            | Table prefix (do not use numeric values)                                     | `mdl_`                   |
+| `moodle.database.password`          | Database password (leave empty if using existingSecret)                      | `""`                     |
+| `moodle.database.existingSecret`    | Secret containing database password                                          | `crucible-moodle-secret` |
+| `moodle.database.existingSecretKey` | Key in secret containing password                                            | `database-password`      |
+| `moodle.database.create_database`   | Automatically create database if it doesn't exist (runs as a Kubernetes Job) | `true`                   |
 
 **Important:**
 
@@ -96,12 +98,12 @@ GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodle;
 
 ### PHP and Upload Configuration
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `moodle.php.postMaxSize` | Maximum POST data size | `50M` |
-| `moodle.php.uploadMaxFilesize` | Maximum file upload size | `50M` |
-| `moodle.php.clientMaxBodySize` | Nginx client body size limit | `50M` |
-| `moodle.php.maxInputVars` | Maximum input variables | `5000` |
+| Setting                        | Description                  | Default |
+| ------------------------------ | ---------------------------- | ------- |
+| `moodle.php.postMaxSize`       | Maximum POST data size       | `50M`   |
+| `moodle.php.uploadMaxFilesize` | Maximum file upload size     | `50M`   |
+| `moodle.php.clientMaxBodySize` | Nginx client body size limit | `50M`   |
+| `moodle.php.maxInputVars`      | Maximum input variables      | `5000`  |
 
 **Note:** Increase these values if users need to upload large course files or assignments. The defaults are suitable for most standard Moodle deployments.
 
@@ -109,19 +111,20 @@ GRANT ALL PRIVILEGES ON DATABASE moodledb TO moodle;
 
 Configure email sending via SMTP. **All SMTP settings must be configured together** - if you set any SMTP variable, you must set all of them (host, port, user, password/existingSecret).
 
-| Setting | Description | Default | Recommended Value |
-|---------|-------------|---------|-------------------|
-| `moodle.smtp.host` | SMTP server hostname | `""` (not configured) | e.g., `smtp.gmail.com` |
-| `moodle.smtp.port` | SMTP port | `""` (not configured) | `587` (TLS standard) |
-| `moodle.smtp.user` | SMTP username | `""` (not configured) | Your SMTP username |
-| `moodle.smtp.password` | SMTP password (leave empty if using existingSecret) | `""` | - |
-| `moodle.smtp.existingSecret` | Secret containing SMTP password | `""` (not configured) | `crucible-moodle-secret` |
-| `moodle.smtp.existingSecretKey` | Key in secret | `smtp-password` | - |
-| `moodle.smtp.protocol` | SMTP protocol (`tls` or `ssl`) | `""` (not configured) | `tls` |
-| `moodle.mail.noreplyAddress` | No-reply email address | `""` (not configured) | e.g., `noreply@example.com` |
-| `moodle.mail.prefix` | Email subject prefix | `[Crucible Moodle]` | - |
+| Setting                         | Description                                         | Default               | Recommended Value           |
+| ------------------------------- | --------------------------------------------------- | --------------------- | --------------------------- |
+| `moodle.smtp.host`              | SMTP server hostname                                | `""` (not configured) | e.g., `smtp.gmail.com`      |
+| `moodle.smtp.port`              | SMTP port                                           | `""` (not configured) | `587` (TLS standard)        |
+| `moodle.smtp.user`              | SMTP username                                       | `""` (not configured) | Your SMTP username          |
+| `moodle.smtp.password`          | SMTP password (leave empty if using existingSecret) | `""`                  | -                           |
+| `moodle.smtp.existingSecret`    | Secret containing SMTP password                     | `""` (not configured) | `crucible-moodle-secret`    |
+| `moodle.smtp.existingSecretKey` | Key in secret                                       | `smtp-password`       | -                           |
+| `moodle.smtp.protocol`          | SMTP protocol (`tls` or `ssl`)                      | `""` (not configured) | `tls`                       |
+| `moodle.mail.noreplyAddress`    | No-reply email address                              | `""` (not configured) | e.g., `noreply@example.com` |
+| `moodle.mail.prefix`            | Email subject prefix                                | `[Crucible Moodle]`   | -                           |
 
 **Important Notes:**
+
 - SMTP is **disabled by default**. Email functionality will only work if ALL required SMTP settings are configured
 - When configuring SMTP, you must set: `host`, `port`, `user`, and either `password` or `existingSecret`
 - Recommended: Use `existingSecret` for the SMTP password in production instead of `password`
@@ -131,104 +134,97 @@ Configure email sending via SMTP. **All SMTP settings must be configured togethe
 
 Configure Redis for session storage. Required for multi-replica deployments.
 
-| Setting | Description | Default | Recommended Value |
-|---------|-------------|---------|-------------------|
+| Setting             | Description           | Default               | Recommended Value           |
+| ------------------- | --------------------- | --------------------- | --------------------------- |
 | `moodle.redis.host` | Redis server hostname | `""` (not configured) | Your Redis service hostname |
-| `moodle.redis.port` | Redis port | `""` (not configured) | `6379` (standard) |
+| `moodle.redis.port` | Redis port            | `""` (not configured) | `6379` (standard)           |
 
 **Important:**
+
 - Redis is **disabled by default** and only required for multi-replica deployments to share sessions across pods
 - If `moodle.redis.host` is not configured, Redis session storage will be disabled
 - Standard Redis port is 6379
 
-### Keycloak OAuth2 Configuration (Optional)
+### OAuth2/OIDC Configuration (Optional)
 
-Configure Moodle to use Keycloak as an OAuth2 provider. These settings control how long the Keycloak setup script waits for the realm metadata endpoint to become available before failing, and how to trust custom CA certificates.
+Configure Moodle to use an OIDC-compliant identity provider (IdP) for OAuth2 authentication. Token and userinfo endpoints are automatically discovered from the provider's `.well-known/openid-configuration` document.
+
+#### Settings
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `moodle.keycloak.waitTimeout` | Total time to wait for Keycloak metadata (seconds) | `300` |
-| `moodle.keycloak.waitInterval` | Delay between readiness checks (seconds) | `5` |
-| `moodle.keycloak.caCert.existingSecret` | Secret containing the CA certificate | `""` |
-| `moodle.keycloak.caCert.existingConfigMap` | ConfigMap containing the CA certificate | `""` |
-| `moodle.keycloak.caCert.key` | Key in the secret/configmap for the CA certificate | `ca.crt` |
-| `moodle.keycloak.caCert.path` | File path inside the container for the CA certificate | `""` (defaults to `/opt/sei/certs/keycloak-ca.crt` when a secret/configmap is set) |
+| `moodle.oidc.enabled` | Enable OAuth2/OIDC authentication | `false` |
+| `moodle.oidc.discoveryUrl` | OIDC discovery document URL (`.well-known/openid-configuration`) | `""` |
+| `moodle.oidc.clientId` | OAuth2 client ID registered with the provider | `""` |
+| `moodle.oidc.clientSecret` | Client secret (use `existingSecret` in production) | `""` |
+| `moodle.oidc.existingSecret` | Kubernetes secret containing the client secret | `""` |
+| `moodle.oidc.existingSecretKey` | Key in the secret | `client-secret` |
+| `moodle.oidc.name` | Provider display name on the Moodle login page | `""` |
+| `moodle.oidc.loginScopes` | OAuth2 scopes requested during login | `openid profile email` |
+| `moodle.oidc.loginScopesOffline` | OAuth2 scopes requested for offline/refresh tokens | `openid profile email offline_access` |
+| `moodle.oidc.requireConfirmation` | Require email confirmation before linking new OIDC accounts | `false` |
+| `moodle.oidc.showOnLoginPage` | Show provider button on the login page | `true` |
+| `moodle.oidc.userFieldMappings` | Map OAuth2 claims to Moodle user fields (`"external:internal"`) | `["sub:idnumber"]` |
+| `moodle.oidc.disableCurlSecurityBlockedHosts` | Disable Moodle CURL security for internal provider communication | `true` |
+| `moodle.oidc.waitTimeout` | Total time to wait for discovery endpoint (seconds) | `300` |
+| `moodle.oidc.waitInterval` | Delay between readiness checks (seconds) | `5` |
+| `moodle.oidc.caCert.existingSecret` | Secret containing a custom CA certificate | `""` |
+| `moodle.oidc.caCert.existingConfigMap` | ConfigMap containing a custom CA certificate | `""` |
+| `moodle.oidc.caCert.key` | Key in the secret/configmap for the CA certificate | `ca.crt` |
+| `moodle.oidc.caCert.path` | Mount path inside the container for the CA certificate | `/opt/sei/certs/oidc-ca.crt` |
 
-#### Configuring the Keycloak Client
-
-To enable Moodle OAuth2 authentication with Keycloak, you must configure a client in your Keycloak realm. Follow these steps:
-
-##### 1. Create the Moodle Client in Keycloak
-
-Log into your Keycloak admin console and navigate to your realm. Create a new client with the following configuration:
-
-**Basic Settings:**
-- **Client ID**: `moodle-client` (or your preferred ID - must match `moodle.keycloak.clientId` in values.yaml)
-- **Client type**: `openid-connect`
-- **Name**: `Moodle` (or your preferred display name)
-- **Enabled**: `true`
-
-**Capability config:**
-- **Client authentication**: `On` (enables confidential client with secret)
-- **Authorization**: `Off` (not required for Moodle)
-- **Standard flow**: `On` (enables authorization code flow)
-- **Implicit flow**: `Off` (not recommended)
-- **Direct access grants**: `On` (enables direct grant/password flow if needed)
-- **Service accounts**: `On` (enables service account for Moodle's internal operations)
-
-**Access settings:**
-- **Root URL**: `https://your-domain.com` (your Moodle site domain)
-- **Valid redirect URIs**:
-  - `https://your-domain.com/admin/oauth2callback.php`
-- **Valid post logout redirect URIs**: `https://your-domain.com`
-- **Web origins**: `https://your-domain.com`
-
-##### 2. Configure Client Scopes
-
-The Moodle client should have access to the following scopes in its **Default Client Scopes**:
-
-**Required scopes:**
-- `openid` - OpenID Connect authentication
-- `profile` - User profile information (name, username, etc.)
-- `email` - Email address
-- `roles` - User roles from Keycloak
-
-**Optional scopes** (add if needed):
-- `offline_access` - For persistent refresh tokens
-- Any custom scopes your realm provides
-
-To configure these:
-1. Go to the client's **Client scopes** tab
-2. Ensure `openid`, `profile`, `email`, and `roles` are in the **Assigned default client scopes** list
-3. Add any additional scopes as needed
-
-##### 3. Retrieve the Client Secret
-
-After creating the client:
-1. Navigate to the **Credentials** tab
-2. Copy the **Client Secret** value
-3. Store this secret in a Kubernetes secret (recommended) or set it directly in values.yaml
-
-**Example Kubernetes secret:**
-
-```bash
-kubectl create secret generic moodle-keycloak-secret \
-  --from-literal=client-secret='your-client-secret-here'
-```
-
-Then reference it in your Moodle Helm values:
+#### Example: Keycloak
 
 ```yaml
 moodle:
-  keycloak:
+  oidc:
     enabled: true
-    existingSecret: "moodle-keycloak-secret"
+    discoveryUrl: "https://keycloak.example.com/realms/my-realm/.well-known/openid-configuration"
+    clientId: "moodle-client"
+    existingSecret: "moodle-oidc-secret"
+    name: "Keycloak"
+```
+
+#### Storing the Client Secret
+
+```bash
+kubectl create secret generic moodle-oidc-secret \
+  --from-literal=client-secret='your-client-secret-here'
+```
+
+Then reference it in values:
+
+```yaml
+moodle:
+  oidc:
+    existingSecret: "moodle-oidc-secret"
     existingSecretKey: "client-secret"
 ```
 
-##### Example Keycloak Client Configuration
+#### Configuring a Keycloak Client
 
-Below is an example client configuration from the Crucible realm export showing a properly configured Moodle client:
+If using Keycloak as the provider, create a client in your Keycloak realm with the following settings:
+
+**Basic Settings:**
+
+- **Client ID**: must match `moodle.oidc.clientId`
+- **Client type**: `openid-connect`
+- **Enabled**: `true`
+
+**Capability config:**
+
+- **Client authentication**: `On` (confidential client)
+- **Standard flow**: `On` (authorization code flow)
+- **Service accounts**: `On`
+
+**Access settings:**
+
+- **Valid redirect URIs**: `https://your-moodle-domain.com/admin/oauth2callback.php`
+- **Web origins**: `https://your-moodle-domain.com`
+
+**Required Default Client Scopes:** `openid`, `profile`, `email`, `roles`
+
+**Example Keycloak client export:**
 
 ```json
 {
@@ -237,24 +233,14 @@ Below is an example client configuration from the Crucible realm export showing 
   "enabled": true,
   "clientAuthenticatorType": "client-secret",
   "secret": "super-safe-secret",
-  "redirectUris": [
-    "https://crucible/admin/oauth2callback.php"
-  ],
-  "webOrigins": [
-    "https://crucible"
-  ],
+  "redirectUris": ["https://crucible/admin/oauth2callback.php"],
+  "webOrigins": ["https://crucible"],
   "standardFlowEnabled": true,
   "directAccessGrantsEnabled": true,
   "serviceAccountsEnabled": true,
   "publicClient": false,
   "protocol": "openid-connect",
-  "defaultClientScopes": [
-    "web-origins",
-    "acr",
-    "profile",
-    "roles",
-    "email"
-  ],
+  "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
   "optionalClientScopes": [
     "address",
     "phone",
@@ -264,31 +250,31 @@ Below is an example client configuration from the Crucible realm export showing 
 }
 ```
 
-##### Verify Configuration
+#### Verify Configuration
 
-After configuring both Keycloak and deploying Moodle with Keycloak integration enabled:
+After deploying with OIDC integration enabled:
 
 1. Navigate to your Moodle login page
-2. You should see a "Log in with Keycloak" button
+2. You should see a "Log in with \<provider name\>" button
 3. Click the button to test OAuth2 authentication
-4. You should be redirected to Keycloak, then back to Moodle after successful authentication
+4. You should be redirected to the provider, then back to Moodle after successful authentication
 
 **Troubleshooting:**
 
-- If the OAuth2 button doesn't appear, check that `moodle.keycloak.showOnLoginPage` is `true`
+- If the OAuth2 button doesn't appear, check that `moodle.oidc.showOnLoginPage` is `true`
 - If authentication fails, verify:
-  - The redirect URI matches exactly (including trailing slashes)
+  - The discovery URL is reachable from Moodle pods (check `waitTimeout` if it times out)
+  - The redirect URI matches exactly what is registered with the provider
   - The client secret is correct
-  - The realm name in Moodle configuration matches Keycloak
-  - The Keycloak domain is accessible from both the Moodle pods and user browsers
-  - Moodle trusts the TLS certificate used by Keycloak
+  - The provider domain is accessible from both Moodle pods and user browsers
+  - Moodle trusts the TLS certificate used by the provider (use `caCert` for custom CAs)
 
 ### Advanced Settings
 
-| Setting | Description | Example |
-|---------|-------------|---------|
+| Setting                   | Description                            | Example           |
+| ------------------------- | -------------------------------------- | ----------------- |
 | `moodle.autoUpdateMoodle` | Automatically update Moodle at startup | `false` (default) |
-| `moodle.debug` | Enable debug mode | `false` (default) |
+| `moodle.debug`            | Enable debug mode                      | `false` (default) |
 
 ## Helm Deployment Configuration
 
@@ -301,6 +287,7 @@ Configure storage for Moodle data directory (user uploads, course files, etc.).
 #### Using EmptyDir (Testing Only)
 
 **Default Configuration:**
+
 ```yaml
 persistence:
   moodledata:
@@ -318,11 +305,11 @@ persistence:
   moodledata:
     enabled: true
     type: persistentVolumeClaim
-    existingClaim: ""           # Leave empty or omit to create new PVC
-    accessMode: ReadWriteMany   # Required for multi-replica
+    existingClaim: "" # Leave empty or omit to create new PVC
+    accessMode: ReadWriteMany # Required for multi-replica
     size: 20Gi
-    storageClass: "efs-sc"      # EFS, NFS, Azure Files, etc.
-    retain: true                # Keep PVC on helm uninstall
+    storageClass: "efs-sc" # EFS, NFS, Azure Files, etc.
+    retain: true # Keep PVC on helm uninstall
 ```
 
 **Note:** Multi-replica deployments require `ReadWriteMany` access mode (EFS, NFS, Azure Files, etc.). You can either leave `existingClaim` as an empty string or omit it entirely to create a new PVC dynamically.
@@ -341,12 +328,12 @@ persistence:
 
 Enable read-only Moodle code directory for security and multi-replica support.
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `readOnlyDirroot.enabled` | Enable read-only application directory | `false` |
-| `readOnlyDirroot.volume` | Kubernetes volume configuration (emptyDir, PVC, etc.) | `emptyDir` with 1Gi size limit |
-| `readOnlyDirroot.secret.name` | Secret containing config.php (leave empty to auto-generate) | `""` (auto-generated) |
-| `readOnlyDirroot.secret.key` | Key in secret containing config.php | `config.php` |
+| Setting                       | Description                                                 | Default                        |
+| ----------------------------- | ----------------------------------------------------------- | ------------------------------ |
+| `readOnlyDirroot.enabled`     | Enable read-only application directory                      | `false`                        |
+| `readOnlyDirroot.volume`      | Kubernetes volume configuration (emptyDir, PVC, etc.)       | `emptyDir` with 1Gi size limit |
+| `readOnlyDirroot.secret.name` | Secret containing config.php (leave empty to auto-generate) | `""` (auto-generated)          |
+| `readOnlyDirroot.secret.key`  | Key in secret containing config.php                         | `config.php`                   |
 
 **Why Enable Read-Only Dirroot:**
 
@@ -364,6 +351,7 @@ When enabled, an init container seeds the Moodle code directory on pod startup f
 When using `database.existingSecret` that is created in the same Helm release (e.g., from a PostgreSQL subchart), **readOnlyDirroot must be disabled on first deploy**. This is because the auto-generated config.php uses Helm's `lookup` function to read the database password, but the secret doesn't exist yet during template rendering, resulting in an empty password.
 
 **Workarounds:**
+
 1. **Recommended**: Leave `readOnlyDirroot.enabled: false` (default) - the alpine-moodle image generates config.php at runtime from environment variables
 2. Create the database secret manually before deploying Moodle
 3. Provide your own config secret via `readOnlyDirroot.secret.name`
@@ -372,12 +360,12 @@ When using `database.existingSecret` that is created in the same Helm release (e
 
 ```yaml
 readOnlyDirroot:
-  enabled: true  # Only enable if database secret exists before deployment
+  enabled: true # Only enable if database secret exists before deployment
   volume:
     emptyDir:
       sizeLimit: "1Gi"
   secret:
-    name: ""  # Auto-generate config.php
+    name: "" # Auto-generate config.php
 ```
 
 **Example with PVC:**
@@ -401,7 +389,7 @@ ingress:
   className: "nginx"
   hostname: "moodle.example.com"
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "512m"  # Default - match or exceed clientMaxBodySize
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m" # Default - match or exceed clientMaxBodySize
     # Optional: Add cert-manager annotation if using TLS with cert-manager
     # cert-manager.io/cluster-issuer: "letsencrypt-prod"
   tls:
@@ -411,6 +399,7 @@ ingress:
 ```
 
 **Important:**
+
 - Set `proxy-body-size` to match or exceed `moodle.php.clientMaxBodySize` for large file uploads (default: 512m)
   - **Automatic Validation**: The chart will fail installation if `proxy-body-size` is smaller than `clientMaxBodySize`, preventing upload failures
 - TLS/SSL configuration is optional - add cert-manager annotations only if you're using cert-manager for TLS certificates
@@ -422,6 +411,7 @@ Configure resource requests and limits using presets or custom values.
 **Default Configuration:**
 
 The chart uses the `small` preset by default, which allocates:
+
 - CPU Request: 250m, Limit: 500m
 - Memory Request: 256Mi, Limit: 512Mi
 
@@ -430,18 +420,18 @@ This is suitable for development and small production deployments. Adjust based 
 **Using Presets:**
 
 ```yaml
-resourcesPreset: "small"  # Default - Options: nano, micro, small, medium, large, xlarge, 2xlarge
+resourcesPreset: "small" # Default - Options: nano, micro, small, medium, large, xlarge, 2xlarge
 ```
 
-| Preset | CPU Request | Memory Request | CPU Limit | Memory Limit |
-|--------|-------------|----------------|-----------|--------------|
-| `nano` | 50m | 64Mi | 100m | 128Mi |
-| `micro` | 100m | 128Mi | 200m | 256Mi |
-| `small` | 250m | 256Mi | 500m | 512Mi |
-| `medium` | 500m | 512Mi | 1000m | 1Gi |
-| `large` | 1000m | 1Gi | 2000m | 2Gi |
-| `xlarge` | 2000m | 2Gi | 4000m | 4Gi |
-| `2xlarge` | 4000m | 4Gi | 8000m | 8Gi |
+| Preset    | CPU Request | Memory Request | CPU Limit | Memory Limit |
+| --------- | ----------- | -------------- | --------- | ------------ |
+| `nano`    | 50m         | 64Mi           | 100m      | 128Mi        |
+| `micro`   | 100m        | 128Mi          | 200m      | 256Mi        |
+| `small`   | 250m        | 256Mi          | 500m      | 512Mi        |
+| `medium`  | 500m        | 512Mi          | 1000m     | 1Gi          |
+| `large`   | 1000m       | 1Gi            | 2000m     | 2Gi          |
+| `xlarge`  | 2000m       | 2Gi            | 4000m     | 4Gi          |
+| `2xlarge` | 4000m       | 4Gi            | 8000m     | 8Gi          |
 
 **Custom Resources:**
 
@@ -459,14 +449,14 @@ resources:
 
 Health check probes are enabled by default with sensible values.
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `startupProbe.enabled` | `true` | Enable startup probe |
-| `startupProbe.failureThreshold` | `30` | Number of failures before restart |
-| `livenessProbe.enabled` | `true` | Enable liveness probe |
-| `livenessProbe.initialDelaySeconds` | `120` | Delay before first check |
-| `readinessProbe.enabled` | `true` | Enable readiness probe |
-| `readinessProbe.initialDelaySeconds` | `30` | Delay before first check |
+| Setting                              | Default | Description                       |
+| ------------------------------------ | ------- | --------------------------------- |
+| `startupProbe.enabled`               | `true`  | Enable startup probe              |
+| `startupProbe.failureThreshold`      | `30`    | Number of failures before restart |
+| `livenessProbe.enabled`              | `true`  | Enable liveness probe             |
+| `livenessProbe.initialDelaySeconds`  | `120`   | Delay before first check          |
+| `readinessProbe.enabled`             | `true`  | Enable readiness probe            |
+| `readinessProbe.initialDelaySeconds` | `30`    | Delay before first check          |
 
 All probes use `/login/index.php` as the health check endpoint.
 
@@ -478,7 +468,7 @@ Autoscaling is **disabled by default** since the default deployment uses a singl
 
 ```yaml
 autoscaling:
-  enabled: false   # Default - set to true to enable
+  enabled: false # Default - set to true to enable
   minReplicas: 1
   maxReplicas: 10
   targetCPU: 80
@@ -497,7 +487,7 @@ Pod Disruption Budget is **disabled by default** since single-replica deployment
 
 ```yaml
 pdb:
-  create: false    # Default - set to true for multi-replica deployments
+  create: false # Default - set to true for multi-replica deployments
   minAvailable: 1
 ```
 
@@ -515,24 +505,24 @@ podSecurityContext:
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
-  fsGroup: 65534                     # nobody/nogroup
-  runAsUser: 65534                   # nobody user
-  runAsGroup: 65534                  # nogroup
-  runAsNonRoot: true                 # runs as non-root user
+  fsGroup: 65534 # nobody/nogroup
+  runAsUser: 65534 # nobody user
+  runAsGroup: 65534 # nogroup
+  runAsNonRoot: true # runs as non-root user
 
 containerSecurityContext:
   enabled: true
   seLinuxOptions: {}
-  runAsUser: 65534                   # nobody user
-  runAsGroup: 65534                  # nogroup
-  runAsNonRoot: true                 # runs as non-root user
-  privileged: false                  # no privileged mode
-  readOnlyRootFilesystem: false      # writable filesystem needed for Moodle
-  allowPrivilegeEscalation: false    # prevents privilege escalation
+  runAsUser: 65534 # nobody user
+  runAsGroup: 65534 # nogroup
+  runAsNonRoot: true # runs as non-root user
+  privileged: false # no privileged mode
+  readOnlyRootFilesystem: false # writable filesystem needed for Moodle
+  allowPrivilegeEscalation: false # prevents privilege escalation
   capabilities:
-    drop: ["ALL"]                    # drops all Linux capabilities
+    drop: ["ALL"] # drops all Linux capabilities
   seccompProfile:
-    type: RuntimeDefault             # uses runtime default seccomp profile
+    type: RuntimeDefault # uses runtime default seccomp profile
 ```
 
 **Security Best Practices:**
@@ -553,13 +543,13 @@ Network policies provide network-level security by controlling pod-to-pod and ex
 
 ```yaml
 networkPolicy:
-  enabled: false               # Disabled by default
+  enabled: false # Disabled by default
   policyTypes:
     - Ingress
     - Egress
-  allowExternal: true          # Allow external ingress traffic
-  allowExternalEgress: true    # Allow all egress traffic
-  databaseSelector: {}         # No database pod selector
+  allowExternal: true # Allow external ingress traffic
+  allowExternalEgress: true # Allow all egress traffic
+  databaseSelector: {} # No database pod selector
 ```
 
 **Enabling Network Policies:**
@@ -567,12 +557,12 @@ networkPolicy:
 ```yaml
 networkPolicy:
   enabled: true
-  allowExternal: false         # Restrict ingress to specific namespaces
-  allowExternalEgress: false   # Restrict egress to specific services
+  allowExternal: false # Restrict ingress to specific namespaces
+  allowExternalEgress: false # Restrict egress to specific services
   databaseSelector:
-    app: postgres              # Allow egress to database pods
+    app: postgres # Allow egress to database pods
   ingressNSMatchLabels:
-    name: ingress-nginx        # Allow ingress from nginx namespace
+    name: ingress-nginx # Allow ingress from nginx namespace
 ```
 
 **Note:** Network policies require a CNI plugin that supports NetworkPolicy (e.g., Calico, Cilium, Weave Net). The default configuration allows all traffic, making it suitable for testing and development environments. For production, enable and configure policies based on your security requirements.
