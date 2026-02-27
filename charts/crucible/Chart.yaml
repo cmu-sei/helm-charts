@@ -2,7 +2,7 @@ apiVersion: v2
 name: crucible
 description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.0.5
+version: 0.0.6
 home: https://cmu-sei.github.io/crucible/
 
 dependencies:
