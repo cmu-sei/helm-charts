@@ -19,12 +19,12 @@ data:
 
 ---
 {{- $moodle := .Values.moodle | default dict }}
-{{- $keycloak := $moodle.keycloak | default dict }}
-{{- if $keycloak.enabled }}
+{{- $oidc := $moodle.oidc | default dict }}
+{{- if $oidc.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "moodle.fullname" . }}-keycloak
+  name: {{ include "moodle.fullname" . }}-oidc
   labels:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- with .Values.commonAnnotations }}
@@ -32,6 +32,6 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 data:
-  configure_keycloak.sh: {{ .Files.Get "files/configure_keycloak.sh" | quote }}
+  configure_oidc.sh: {{ .Files.Get "files/configure_oidc.sh" | quote }}
   setup_environment.php: {{ .Files.Get "files/setup_environment.php" | quote }}
 {{- end }}

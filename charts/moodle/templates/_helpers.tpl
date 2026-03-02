@@ -87,40 +87,15 @@ Database secret name
 {{- end }}
 
 {{/*
-Keycloak secret name
+OIDC client secret name
 */}}
-{{- define "moodle.keycloak.secretName" -}}
-{{- printf "%s-keycloak" (include "moodle.fullname" .) }}
+{{- define "moodle.oidc.secretName" -}}
+{{- printf "%s-oidc" (include "moodle.fullname" .) }}
 {{- end }}
 
 {{/*
-Normalize Keycloak domain; add https:// if no scheme is provided.
+(Placeholder — reserved for future OIDC helpers)
 */}}
-{{- define "moodle.keycloak.url" -}}
-{{- $moodle := .Values.moodle | default dict -}}
-{{- $keycloak := $moodle.keycloak | default dict -}}
-{{- $domain := $keycloak.url | default "" -}}
-{{- if and $domain (not (regexMatch "^https?://" $domain)) -}}
-  {{- $domain = printf "https://%s" $domain -}}
-{{- end -}}
-{{- $domain | trimSuffix "/" -}}
-{{- end }}
-
-{{/*
-Normalize Keycloak logo URL; add https:// if no scheme is provided.
-*/}}
-{{- define "moodle.keycloak.logo" -}}
-{{- $moodle := .Values.moodle | default dict -}}
-{{- $keycloak := $moodle.keycloak | default dict -}}
-{{- $logo := $keycloak.logo | default "" -}}
-{{- if $logo -}}
-  {{- if regexMatch "^https?://" $logo -}}
-    {{- $logo -}}
-  {{- else -}}
-    {{- printf "https://%s" $logo -}}
-  {{- end -}}
-{{- end -}}
-{{- end }}
 
 {{/*
 Return the proper Moodle image name with digest support
@@ -457,30 +432,20 @@ Validate required values for Moodle deployment
   {{- end }}
 {{- end }}
 
-{{/* Validate Keycloak configuration */}}
-{{- $keycloak := $moodle.keycloak | default dict }}
-{{- if $keycloak.enabled }}
-  {{- $domain := $keycloak.url | default "" }}
-  {{- if not $domain }}
-    {{- fail "ERROR: moodle.keycloak.url is required when keycloak.enabled=true.\n  Set moodle.keycloak.url (e.g., 'https://keycloak.example.com' or 'https://example.com/keycloak)" }}
+{{/* Validate OIDC configuration */}}
+{{- $oidc := $moodle.oidc | default dict }}
+{{- if $oidc.enabled }}
+  {{- if not ($oidc.discoveryUrl | default "") }}
+    {{- fail "ERROR: moodle.oidc.discoveryUrl is required when moodle.oidc.enabled=true.\n  Set this to your provider's .well-known/openid-configuration URL.\n  e.g., 'https://keycloak.example.com/realms/my-realm/.well-known/openid-configuration'" }}
   {{- end }}
-  {{- if not $keycloak.realm }}
-    {{- fail "ERROR: moodle.keycloak.realm is required when keycloak.enabled=true" }}
+  {{- if not $oidc.clientId }}
+    {{- fail "ERROR: moodle.oidc.clientId is required when moodle.oidc.enabled=true" }}
   {{- end }}
-  {{- if not $keycloak.clientId }}
-    {{- fail "ERROR: moodle.keycloak.clientId is required when keycloak.enabled=true" }}
+  {{- if and (not $oidc.existingSecret) (not $oidc.clientSecret) }}
+    {{- fail "ERROR: OIDC client secret must be configured.\n  Either:\n  1. Set moodle.oidc.clientSecret (for dev/testing)\n  2. Set moodle.oidc.existingSecret (recommended for production)" }}
   {{- end }}
-  {{- if and (not $keycloak.existingSecret) (not $keycloak.clientSecret) }}
-    {{- fail "ERROR: Keycloak client secret must be configured.\n  Either:\n  1. Set moodle.keycloak.clientSecret (for dev/testing)\n  2. Set moodle.keycloak.existingSecret (recommended for production)\n  Note: This secret must match the client secret configured in your Keycloak client settings." }}
-  {{- end }}
-  {{- if not $keycloak.loginScopes }}
-    {{- fail "ERROR: moodle.keycloak.loginScopes is required when keycloak.enabled=true" }}
-  {{- end }}
-  {{- if not $keycloak.loginScopesOffline }}
-    {{- fail "ERROR: moodle.keycloak.loginScopesOffline is required when keycloak.enabled=true" }}
-  {{- end }}
-  {{- if not $keycloak.userFieldMappings }}
-    {{- fail "ERROR: moodle.keycloak.userFieldMappings is required when keycloak.enabled=true.\n  At minimum, set: userFieldMappings: [\"sub:idnumber\"]" }}
+  {{- if not $oidc.userFieldMappings }}
+    {{- fail "ERROR: moodle.oidc.userFieldMappings is required when moodle.oidc.enabled=true.\n  At minimum, set: userFieldMappings: [\"sub:idnumber\"]" }}
   {{- end }}
 {{- end }}
 

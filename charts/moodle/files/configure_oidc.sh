@@ -2,44 +2,44 @@
 # Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 # Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
+# Generic OIDC/OAuth2 configuration script for Moodle.
+# Supports any OIDC-compliant provider (e.g. Keycloak, Okta, Azure AD, Auth0).
+# Token and userinfo endpoints are automatically discovered via the OIDC discovery document.
+
 # Global Variables
-STATUS_FILE="/tmp/keycloak_script_status.log"
-LOG_FILE="/tmp/keycloak_script.log"
+STATUS_FILE="/tmp/oidc_script_status.log"
+LOG_FILE="/tmp/oidc_script.log"
 MOODLE_DIR="/var/www/html"
 OAUTH2_ISSUER_ID=""
 
-if [ -z "$KEYCLOAK_URL" ] && [ -n "$KEYCLOAK_DOMAIN" ]; then
-  KEYCLOAK_URL="$KEYCLOAK_DOMAIN"
-fi
-
 PHP_CA_FLAGS=""
-if [ -n "$KEYCLOAK_CA_CERT_PATH" ]; then
-  PHP_CA_FLAGS="-d curl.cainfo=${KEYCLOAK_CA_CERT_PATH} -d openssl.cafile=${KEYCLOAK_CA_CERT_PATH}"
-  export CURL_CA_BUNDLE="$KEYCLOAK_CA_CERT_PATH"
-  export SSL_CERT_FILE="$KEYCLOAK_CA_CERT_PATH"
+if [ -n "$OIDC_CA_CERT_PATH" ]; then
+  PHP_CA_FLAGS="-d curl.cainfo=${OIDC_CA_CERT_PATH} -d openssl.cafile=${OIDC_CA_CERT_PATH}"
+  export CURL_CA_BUNDLE="$OIDC_CA_CERT_PATH"
+  export SSL_CERT_FILE="$OIDC_CA_CERT_PATH"
 fi
 
 php_exec() {
   php $PHP_CA_FLAGS "$@"
 }
 
-wait_for_keycloak() {
+wait_for_oidc() {
   local url="$1"
-  local timeout="${KEYCLOAK_WAIT_TIMEOUT:-300}"
-  local interval="${KEYCLOAK_WAIT_INTERVAL:-5}"
+  local timeout="${OIDC_WAIT_TIMEOUT:-300}"
+  local interval="${OIDC_WAIT_INTERVAL:-5}"
   local start
   start=$(date +%s)
   local attempt=0
 
   while true; do
     attempt=$((attempt + 1))
-    log "Waiting for Keycloak discovery endpoint (attempt ${attempt}): ${url}"
+    log "Waiting for OIDC discovery endpoint (attempt ${attempt}): ${url}"
 
     local output
-    output=$(KEYCLOAK_DISCOVERY_URL="$url" KEYCLOAK_DISCOVERY_TIMEOUT="$interval" \
+    output=$(OIDC_CHECK_URL="$url" OIDC_CHECK_TIMEOUT="$interval" \
       php_exec -r '
-        $url = getenv("KEYCLOAK_DISCOVERY_URL");
-        $timeout = (int)getenv("KEYCLOAK_DISCOVERY_TIMEOUT");
+        $url = getenv("OIDC_CHECK_URL");
+        $timeout = (int)getenv("OIDC_CHECK_TIMEOUT");
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_NOBODY, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -62,21 +62,45 @@ wait_for_keycloak() {
     local rc=$?
 
     if [ $rc -eq 0 ]; then
-      log "Keycloak discovery endpoint is ready (status: ${output})"
+      log "OIDC discovery endpoint is ready (status: ${output})"
       return 0
     fi
 
-    log "Keycloak discovery not ready yet: ${output}"
+    log "OIDC discovery not ready yet: ${output}"
 
     local now
     now=$(date +%s)
     if [ $now -ge $((start + timeout)) ]; then
-      log "Keycloak discovery endpoint did not become ready within ${timeout}s"
+      log "OIDC discovery endpoint did not become ready within ${timeout}s"
       return 1
     fi
 
     sleep "$interval"
   done
+}
+
+fetch_discovery_document() {
+  local url="$1"
+  OIDC_DOC_URL="$url" php_exec -r '
+    $url = getenv("OIDC_DOC_URL");
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    $body = curl_exec($ch);
+    $err = curl_error($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($err) {
+      fwrite(STDERR, $err);
+      exit(1);
+    }
+    if ($code < 200 || $code >= 400) {
+      fwrite(STDERR, "HTTP " . $code);
+      exit(1);
+    }
+    echo $body;
+  '
 }
 
 user_field_mapping_exists() {
@@ -136,7 +160,6 @@ error() {
 record_status() {
     section="$1"
     status="$2"
-    # Delete existing line for this section
     sed -i "/^$section =/d" "$STATUS_FILE" 2>/dev/null || true
     echo "$section = $status" >> "$STATUS_FILE"
 }
@@ -165,8 +188,8 @@ configure_oauth2() {
   section="OAuth2 Configuration"
   log "Configuring OAuth2 settings..."
 
-  # Verify required keys
-  REQUIRED_KEYS="KEYCLOAK_URL KEYCLOAK_REALM KEYCLOAK_CLIENTID KEYCLOAK_CLIENTSECRET KEYCLOAK_LOGINSCOPES KEYCLOAK_LOGINSCOPESOFFLINE KEYCLOAK_NAME"
+  # Verify required environment variables
+  REQUIRED_KEYS="OIDC_DISCOVERY_URL OIDC_CLIENT_ID OIDC_CLIENT_SECRET OIDC_NAME"
   for key in $REQUIRED_KEYS; do
     eval val=\$$key
     if [ -z "$val" ]; then
@@ -174,33 +197,65 @@ configure_oauth2() {
     fi
   done
 
-  # Build URLs from environment variables
-  if printf '%s' "$KEYCLOAK_URL" | grep -qE '^https?://'; then
-    KEYCLOAK_BASE="$KEYCLOAK_URL"
+  if ! wait_for_oidc "$OIDC_DISCOVERY_URL"; then
+    error "$section" "OIDC discovery endpoint not ready at ${OIDC_DISCOVERY_URL}"
+  fi
+
+  # Fetch and parse the discovery document to obtain endpoints
+  log "Fetching OIDC endpoints from discovery document..."
+  DISCOVERY_JSON=$(fetch_discovery_document "$OIDC_DISCOVERY_URL")
+  local fetch_rc=$?
+  if [ $fetch_rc -ne 0 ] || [ -z "$DISCOVERY_JSON" ]; then
+    error "$section" "Failed to fetch OIDC discovery document from ${OIDC_DISCOVERY_URL}"
+  fi
+
+  OIDC_ISSUER=$(printf '%s' "$DISCOVERY_JSON" | php -r '
+    $data = json_decode(stream_get_contents(STDIN), true);
+    echo isset($data["issuer"]) ? rtrim($data["issuer"], "/") . "/" : "";
+  ')
+  OIDC_TOKEN_ENDPOINT=$(printf '%s' "$DISCOVERY_JSON" | php -r '
+    $data = json_decode(stream_get_contents(STDIN), true);
+    echo $data["token_endpoint"] ?? "";
+  ')
+  OIDC_USERINFO_ENDPOINT=$(printf '%s' "$DISCOVERY_JSON" | php -r '
+    $data = json_decode(stream_get_contents(STDIN), true);
+    echo $data["userinfo_endpoint"] ?? "";
+  ')
+
+  if [ -z "$OIDC_TOKEN_ENDPOINT" ]; then
+    error "$section" "Could not determine token_endpoint from OIDC discovery document"
+  fi
+  if [ -z "$OIDC_USERINFO_ENDPOINT" ]; then
+    error "$section" "Could not determine userinfo_endpoint from OIDC discovery document"
+  fi
+
+  # Determine the base URL (issuer) to register in Moodle OAuth2
+  if [ -n "$OIDC_ISSUER" ]; then
+    PROVIDER_BASEURL="$OIDC_ISSUER"
   else
-    KEYCLOAK_BASE="https://${KEYCLOAK_URL}"
-  fi
-  KEYCLOAK_REALM_URL="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/"
-  KEYCLOAK_WELLKNOWN_URL="${KEYCLOAK_REALM_URL}.well-known/openid-configuration"
-  KEYCLOAK_TOKEN_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token"
-  KEYCLOAK_USERINFO_ENDPOINT="${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo"
-  if [ -z "$KEYCLOAK_IMAGE" ]; then
-    KEYCLOAK_IMAGE="${KEYCLOAK_BASE}/favicon.svg"
+    PROVIDER_BASEURL=$(printf '%s' "$OIDC_DISCOVERY_URL" | sed 's|/\.well-known/.*$||')
+    PROVIDER_BASEURL="${PROVIDER_BASEURL%/}/"
   fi
 
-  log "Keycloak base URL: ${KEYCLOAK_BASE}"
-  log "Keycloak realm URL: ${KEYCLOAK_REALM_URL}"
-  log "Keycloak discovery URL: ${KEYCLOAK_WELLKNOWN_URL}"
-  log "Keycloak token endpoint: ${KEYCLOAK_TOKEN_ENDPOINT}"
-  log "Keycloak userinfo endpoint: ${KEYCLOAK_USERINFO_ENDPOINT}"
-  log "Keycloak CA cert path: ${KEYCLOAK_CA_CERT_PATH:-<not set>}"
+  # Derive provider icon URL from discovery URL host
+  OIDC_ORIGIN=$(printf '%s' "$OIDC_DISCOVERY_URL" | php -r '
+    $url = stream_get_contents(STDIN);
+    $parsed = parse_url(trim($url));
+    $scheme = $parsed["scheme"] ?? "https";
+    $host = $parsed["host"] ?? "";
+    $port = isset($parsed["port"]) ? ":" . $parsed["port"] : "";
+    echo $scheme . "://" . $host . $port;
+  ')
+  OIDC_ICON_URL="${OIDC_ORIGIN}/favicon.svg"
 
-  if ! wait_for_keycloak "$KEYCLOAK_WELLKNOWN_URL"; then
-    error "$section" "Keycloak discovery endpoint not ready at ${KEYCLOAK_WELLKNOWN_URL}"
-  fi
+  log "OIDC issuer: ${OIDC_ISSUER}"
+  log "OIDC provider base URL: ${PROVIDER_BASEURL}"
+  log "OIDC token endpoint: ${OIDC_TOKEN_ENDPOINT}"
+  log "OIDC userinfo endpoint: ${OIDC_USERINFO_ENDPOINT}"
+  log "CA cert path: ${OIDC_CA_CERT_PATH:-<not set>}"
 
   # Check if issuer already exists
-  log "Checking for existing OAuth2 provider named '$KEYCLOAK_NAME'..."
+  log "Checking for existing OAuth2 provider named '$OIDC_NAME'..."
 
   EXISTING_JSON=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
       --step=manage_oauth \
@@ -208,7 +263,7 @@ configure_oauth2() {
       --json=1 2>/dev/null)
 
   EXISTING_ID=$(printf '%s\n' "$EXISTING_JSON" | php -r '
-    $name = "'"$KEYCLOAK_NAME"'";
+    $name = "'"$OIDC_NAME"'";
     $data = json_decode(stream_get_contents(STDIN), true);
     if (!empty($data["data"])) {
         foreach ($data["data"] as $issuer) {
@@ -229,20 +284,19 @@ configure_oauth2() {
 
   log "No existing provider found. Creating a new one..."
 
-  log "Creating a new OAuth2 provider..."
   PROVIDER_OUTPUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
     --step=manage_oauth \
-    --baseurl="$KEYCLOAK_REALM_URL" \
-    --clientid="$KEYCLOAK_CLIENTID" \
-    --clientsecret="$KEYCLOAK_CLIENTSECRET" \
-    --loginscopes="$KEYCLOAK_LOGINSCOPES" \
-    --loginscopesoffline="$KEYCLOAK_LOGINSCOPESOFFLINE" \
-    --name="$KEYCLOAK_NAME" \
-    --tokenendpoint="$KEYCLOAK_TOKEN_ENDPOINT" \
-    --userinfoendpoint="$KEYCLOAK_USERINFO_ENDPOINT" \
-    --image="$KEYCLOAK_IMAGE" \
-    --requireconfirmation="$KEYCLOAK_REQUIRECONFIRMATION" \
-    --showonloginpage="$KEYCLOAK_SHOWONLOGINPAGE" \
+    --baseurl="$PROVIDER_BASEURL" \
+    --clientid="$OIDC_CLIENT_ID" \
+    --clientsecret="$OIDC_CLIENT_SECRET" \
+    --loginscopes="${OIDC_LOGIN_SCOPES:-openid profile email}" \
+    --loginscopesoffline="${OIDC_LOGIN_SCOPES_OFFLINE:-openid profile email offline_access}" \
+    --name="$OIDC_NAME" \
+    --tokenendpoint="$OIDC_TOKEN_ENDPOINT" \
+    --userinfoendpoint="$OIDC_USERINFO_ENDPOINT" \
+    --image="$OIDC_ICON_URL" \
+    --requireconfirmation="${OIDC_REQUIRE_CONFIRMATION:-0}" \
+    --showonloginpage="$OIDC_SHOW_ON_LOGIN_PAGE" \
     2>&1)
   rc=$?
   log "Provider creation output: $PROVIDER_OUTPUT"
@@ -259,9 +313,9 @@ configure_oauth2() {
   OAUTH2_ISSUER_ID="$NEW_ISSUER_ID"
 
   # ---- User field mappings ----
-  log "Processing user field mappings: $KEYCLOAK_USERFIELDMAPPINGS"
+  log "Processing user field mappings: $OIDC_USER_FIELD_MAPPINGS"
 
-  for m in $KEYCLOAK_USERFIELDMAPPINGS; do
+  for m in $OIDC_USER_FIELD_MAPPINGS; do
     external=$(printf '%s' "$m" | cut -d':' -f1)
     internal=$(printf '%s' "$m" | cut -d':' -f2)
     json=$(printf '{"externalfieldname":"%s","internalfieldname":"%s"}' "$external" "$internal")
@@ -272,8 +326,8 @@ configure_oauth2() {
     fi
 
     local_attempt=1
-    max_attempts="${KEYCLOAK_USERFIELD_RETRY_MAX:-5}"
-    interval="${KEYCLOAK_USERFIELD_RETRY_INTERVAL:-5}"
+    max_attempts="${OIDC_USERFIELD_RETRY_MAX:-5}"
+    interval="${OIDC_USERFIELD_RETRY_INTERVAL:-5}"
 
     while true; do
       log "Creating user field mapping ($external -> $internal) for provider ID: $NEW_ISSUER_ID (attempt ${local_attempt}/${max_attempts})..."
@@ -332,43 +386,48 @@ enable_oauth2_plugin() {
 
 configure_site() {
   section="Site Configuration"
-  log "Configuring Site for Keycloak communication..."
+  log "Configuring Site for OIDC provider communication..."
 
-  if [ "$KEYCLOAK_DISABLE_CURL_SECURITY" = "true" ]; then
-    log "Disabling CURL security restrictions for internal Keycloak communication..."
+  # Extract the provider host from the discovery URL for CURL security
+  OIDC_HOST=""
+  if [ -n "$OIDC_DISCOVERY_URL" ]; then
+    OIDC_HOST=$(echo "$OIDC_DISCOVERY_URL" | sed -e 's#^https\?://##' -e 's#/.*##')
+  fi
 
-    # Allow all hosts by setting an empty blocklist and empty allowlist
+  if [ "$OIDC_DISABLE_CURL_SECURITY" = "true" ]; then
+    log "Disabling CURL security restrictions for internal OIDC provider communication..."
+
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set='' || error "$section" "Failed to set curlsecurityallowedhosts"
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
 
     log "CURL security restrictions disabled."
   else
-    log "Adding Keycloak domain to allowed hosts..."
+    if [ -z "$OIDC_HOST" ]; then
+      log "No OIDC provider host configured, skipping CURL security configuration."
+      return 0
+    fi
 
-    # Extract base host from KEYCLOAK_URL (remove scheme/path if present)
-    KEYCLOAK_HOST=$(echo "$KEYCLOAK_URL" | sed -e 's#^https\\?://##' -e 's#/.*##')
+    log "Adding OIDC provider domain to allowed hosts..."
 
-    # Get current allowed hosts and add Keycloak host
     CURRENT_ALLOWED=$(php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts 2>/dev/null | grep -v "^$" | tail -1 || echo "")
     if [ -z "$CURRENT_ALLOWED" ] || [ "$CURRENT_ALLOWED" = "curlsecurityallowedhosts" ]; then
-      NEW_ALLOWED="$KEYCLOAK_HOST"
+      NEW_ALLOWED="$OIDC_HOST"
     else
-      # Append if not already present
-      if echo "$CURRENT_ALLOWED" | grep -q "$KEYCLOAK_HOST"; then
+      if echo "$CURRENT_ALLOWED" | grep -q "$OIDC_HOST"; then
         NEW_ALLOWED="$CURRENT_ALLOWED"
       else
-        NEW_ALLOWED=$(printf '%s\n%s' "$CURRENT_ALLOWED" "$KEYCLOAK_HOST")
+        NEW_ALLOWED=$(printf '%s\n%s' "$CURRENT_ALLOWED" "$OIDC_HOST")
       fi
     fi
 
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set="$NEW_ALLOWED" || error "$section" "Failed to set curlsecurityallowedhosts"
-    log "Keycloak domain ($KEYCLOAK_HOST) added to allowed hosts."
+    log "OIDC provider domain ($OIDC_HOST) added to allowed hosts."
   fi
 }
 
 # Main execution
-log "Starting Keycloak OAuth2 configuration script..."
+log "Starting OIDC OAuth2 configuration script..."
 
 # Create STATUS_FILE if it doesn't exist
 touch "$STATUS_FILE"
@@ -394,4 +453,4 @@ if [ -n "$ADMINUSERID" ]; then
     php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins --set="2,$ADMINUSERID"
 fi
 
-log "Keycloak OAuth2 configuration script completed successfully!"
+log "OIDC OAuth2 configuration script completed successfully!"

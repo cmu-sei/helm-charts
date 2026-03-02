@@ -59,37 +59,39 @@ moodle:
     ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
     create_database: true
 
-  ## Keycloak OAuth2 Configuration
-  keycloak:
+  ## OAuth2/OIDC Configuration (Optional)
+  ## Supports any OIDC-compliant provider (e.g. Keycloak, Okta, Azure AD, Auth0).
+  ## Token and userinfo endpoints are automatically discovered via the OIDC discovery document.
+  oidc:
     enabled: false
-    url: "" ## Keycloak base URL (e.g., https://keycloak.example.com or https://example.com/keycloak)
-    realm: "" ## Keycloak realm name
-    clientId: "" ## OAuth2 client ID configured in Keycloak
+    ## OIDC Discovery URL (.well-known/openid-configuration)
+    ## Token and userinfo endpoints are fetched from this document automatically.
+    ## Example (Keycloak): https://keycloak.example.com/realms/my-realm/.well-known/openid-configuration
+    discoveryUrl: ""
+    clientId: "" ## OAuth2 client ID registered with the provider
     clientSecret: "" ## Client secret (used only if existingSecret is empty)
-    existingSecret: "" ## Name of secret containing containing client secret (recommended)
+    existingSecret: "" ## Name of secret containing the client secret (recommended)
     existingSecretKey: "client-secret"
-    name: "Keycloak" ## OAuth2 provider display name
-    icon: "" ## OAuth2 provider icon URL (required)
-    loginScopes: "openid profile email" ## OAuth2 scopes for standard login
-    loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes for offline access
-    requireConfirmation: false ## Require email confirmation for new accounts
-    showOnLoginPage: true ## Show OAuth2 provider on login page
+    name: "" ## OAuth2 provider display name shown on the Moodle login page
+    loginScopes: "openid profile email" ## OAuth2 scopes requested during login
+    loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes requested for offline/refresh tokens
+    requireConfirmation: false ## Require email confirmation before linking new OIDC accounts
+    showOnLoginPage: true ## Show OAuth2 provider button on the login page
     ## User field mappings (maps OAuth2 claims to Moodle user fields)
     ## Format: "external:internal"
     userFieldMappings:
       - "sub:idnumber"
-    ## Site configuration for internal Keycloak communication
+    ## Disable Moodle CURL security restrictions for internal OIDC provider communication
     disableCurlSecurityBlockedHosts: true
-    disableCurlSecurityAllowedPorts: true
-    ## Keycloak readiness wait configuration (seconds)
+    ## OIDC provider readiness wait configuration (seconds)
     waitTimeout: 300
     waitInterval: 5
-    ## Custom CA certificate for Keycloak HTTPS (optional)
+    ## Custom CA certificate for OIDC provider HTTPS (optional)
     caCert:
       existingSecret: "" ## Secret containing the CA certificate
       existingConfigMap: "" ## ConfigMap containing the CA certificate
       key: "ca.crt"
-      path: "/opt/sei/certs/keycloak-ca.crt" ## File path in the container; defaults to /opt/sei/certs/keycloak-ca.crt when a secret/configmap is set
+      path: "/opt/sei/certs/oidc-ca.crt" ## File path in the container
 
   ## PHP/Upload Limits Configuration
   php:

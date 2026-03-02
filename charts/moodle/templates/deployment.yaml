@@ -5,18 +5,15 @@
 {{- $containerPorts := .Values.containerPorts | default dict }}
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
 {{- $moodle := .Values.moodle | default dict }}
-{{- $keycloak := $moodle.keycloak | default dict }}
-{{- $keycloakUrl := tpl ($keycloak.url | default "") . }}
-{{- $keycloakRealm := tpl ($keycloak.realm | default "") . }}
-{{- $keycloakClientId := tpl ($keycloak.clientId | default "") . }}
-{{- $keycloakName := tpl ($keycloak.name | default "") . }}
-{{- $keycloakIcon := tpl ($keycloak.icon | default "") . }}
-{{- $keycloakCaCert := $keycloak.caCert | default dict }}
-{{- $keycloakCaCertMount := or $keycloakCaCert.existingSecret $keycloakCaCert.existingConfigMap }}
-{{- $keycloakCaCertEnabled := or $keycloakCaCertMount $keycloakCaCert.path }}
-{{- $keycloakCaCertPath := $keycloakCaCert.path | default "/opt/sei/certs/keycloak-ca.crt" }}
-{{- $keycloakCaCertKey := $keycloakCaCert.key | default "ca.crt" }}
-{{- $keycloakExistingSecretKey := tpl ($keycloak.existingSecretKey | default "client-secret") $ }}
+{{- $oidc := $moodle.oidc | default dict }}
+{{- $oidcClientId := tpl ($oidc.clientId | default "") . }}
+{{- $oidcName := tpl ($oidc.name | default "") . }}
+{{- $oidcCaCert := $oidc.caCert | default dict }}
+{{- $oidcCaCertMount := or $oidcCaCert.existingSecret $oidcCaCert.existingConfigMap }}
+{{- $oidcCaCertEnabled := or $oidcCaCertMount $oidcCaCert.path }}
+{{- $oidcCaCertPath := $oidcCaCert.path | default "/opt/sei/certs/oidc-ca.crt" }}
+{{- $oidcCaCertKey := $oidcCaCert.key | default "ca.crt" }}
+{{- $oidcExistingSecretKey := tpl ($oidc.existingSecretKey | default "client-secret") $ }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -470,61 +467,55 @@ spec:
                 {{- end }}
                 {{- end }}
             {{- end }}
-            {{- if or $keycloak.enabled $moodle.postConfigureCommands }}
+            {{- if or $oidc.enabled $moodle.postConfigureCommands }}
             - name: POST_CONFIGURE_COMMANDS
               value: |
-                {{- if $keycloak.enabled }}
-                # System: Configure Keycloak OAuth2
-                /opt/sei/custom-scripts/configure_keycloak.sh
+                {{- if $oidc.enabled }}
+                # System: Configure OIDC OAuth2
+                /opt/sei/custom-scripts/configure_oidc.sh
                 {{- end }}
                 {{- if $moodle.postConfigureCommands }}
                 # User: Custom post-configure commands
                 {{ $moodle.postConfigureCommands | nindent 16 }}
                 {{- end }}
             {{- end }}
-            {{- if $keycloak.enabled }}
-            - name: KEYCLOAK_ENABLED
-              value: "true"
-            - name: KEYCLOAK_URL
-              value: {{ $keycloakUrl | quote }}
-            - name: KEYCLOAK_REALM
-              value: {{ $keycloakRealm | quote }}
-            - name: KEYCLOAK_CLIENTID
-              value: {{ $keycloakClientId | quote }}
-            - name: KEYCLOAK_CLIENTSECRET
+            {{- if $oidc.enabled }}
+            - name: OIDC_DISCOVERY_URL
+              value: {{ tpl $oidc.discoveryUrl $ | quote }}
+            - name: OIDC_CLIENT_ID
+              value: {{ $oidcClientId | quote }}
+            - name: OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  {{- if $keycloak.existingSecret }}
-                  name: {{ tpl $keycloak.existingSecret $ }}
-                  key: {{ $keycloakExistingSecretKey }}
+                  {{- if $oidc.existingSecret }}
+                  name: {{ tpl $oidc.existingSecret $ }}
+                  key: {{ $oidcExistingSecretKey }}
                   {{- else }}
-                  name: {{ include "moodle.keycloak.secretName" $ }}
-                  key: {{ $keycloakExistingSecretKey }}
+                  name: {{ include "moodle.oidc.secretName" $ }}
+                  key: {{ $oidcExistingSecretKey }}
                   {{- end }}
-            - name: KEYCLOAK_NAME
-              value: {{ $keycloakName | quote }}
-            - name: KEYCLOAK_IMAGE
-              value: {{ $keycloakIcon | quote }}
-            - name: KEYCLOAK_LOGINSCOPES
-              value: {{ $keycloak.loginScopes | quote }}
-            - name: KEYCLOAK_LOGINSCOPESOFFLINE
-              value: {{ $keycloak.loginScopesOffline | quote }}
-            - name: KEYCLOAK_REQUIRECONFIRMATION
-              value: {{ ternary "1" "0" $keycloak.requireConfirmation | quote }}
-            - name: KEYCLOAK_SHOWONLOGINPAGE
-              value: {{ ternary "1" "0" $keycloak.showOnLoginPage | quote }}
-            - name: KEYCLOAK_USERFIELDMAPPINGS
-              value: {{ join " " $keycloak.userFieldMappings | quote }}
-            - name: KEYCLOAK_DISABLE_CURL_SECURITY
-              value: {{ $keycloak.disableCurlSecurityBlockedHosts | quote }}
-            {{- if $keycloakCaCertEnabled }}
-            - name: KEYCLOAK_CA_CERT_PATH
-              value: {{ tpl $keycloakCaCertPath $ | quote }}
+            - name: OIDC_NAME
+              value: {{ $oidcName | quote }}
+            - name: OIDC_LOGIN_SCOPES
+              value: {{ $oidc.loginScopes | quote }}
+            - name: OIDC_LOGIN_SCOPES_OFFLINE
+              value: {{ $oidc.loginScopesOffline | quote }}
+            - name: OIDC_REQUIRE_CONFIRMATION
+              value: {{ ternary "1" "0" $oidc.requireConfirmation | quote }}
+            - name: OIDC_SHOW_ON_LOGIN_PAGE
+              value: {{ ternary "1" "0" $oidc.showOnLoginPage | quote }}
+            - name: OIDC_USER_FIELD_MAPPINGS
+              value: {{ join " " $oidc.userFieldMappings | quote }}
+            - name: OIDC_DISABLE_CURL_SECURITY
+              value: {{ $oidc.disableCurlSecurityBlockedHosts | quote }}
+            {{- if $oidcCaCertEnabled }}
+            - name: OIDC_CA_CERT_PATH
+              value: {{ tpl $oidcCaCertPath $ | quote }}
             {{- end }}
-            - name: KEYCLOAK_WAIT_TIMEOUT
-              value: {{ $keycloak.waitTimeout | quote }}
-            - name: KEYCLOAK_WAIT_INTERVAL
-              value: {{ $keycloak.waitInterval | quote }}
+            - name: OIDC_WAIT_TIMEOUT
+              value: {{ $oidc.waitTimeout | quote }}
+            - name: OIDC_WAIT_INTERVAL
+              value: {{ $oidc.waitInterval | quote }}
             {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- toYaml .Values.extraEnvVars | nindent 12 }}
@@ -607,7 +598,7 @@ spec:
           {{- end }}
           {{- $persistence := .Values.persistence | default dict }}
           {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-          {{- if or $persistence $readOnlyDirroot.enabled $keycloak.enabled }}
+          {{- if or $persistence $readOnlyDirroot.enabled $oidc.enabled }}
           volumeMounts:
             {{- if $readOnlyDirroot.enabled }}
             - name: dirroot
@@ -640,15 +631,15 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
-            {{- if $keycloak.enabled }}
-            - name: keycloak-scripts
+            {{- if $oidc.enabled }}
+            - name: oidc-scripts
               mountPath: /opt/sei/custom-scripts
               readOnly: true
             {{- end }}
-            {{- if and $keycloak.enabled $keycloakCaCertMount }}
-            - name: keycloak-ca-cert
-              mountPath: {{ tpl $keycloakCaCertPath $ | quote }}
-              subPath: {{ tpl $keycloakCaCertKey $ | quote }}
+            {{- if and $oidc.enabled $oidcCaCertMount }}
+            - name: oidc-ca-cert
+              mountPath: {{ tpl $oidcCaCertPath $ | quote }}
+              subPath: {{ tpl $oidcCaCertKey $ | quote }}
               readOnly: true
             {{- end }}
             {{- if $.Values.extraVolumeMounts }}
@@ -659,7 +650,7 @@ spec:
         {{- toYaml .Values.sidecars | nindent 8 }}
         {{- end }}
       {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
-      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled $keycloak.enabled }}
+      {{- if or $persistence .Values.extraVolumes $readOnlyDirroot.enabled $oidc.enabled }}
       volumes:
         {{- if $readOnlyDirroot.enabled }}
         - name: dirroot
@@ -710,26 +701,26 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
-        {{- if $keycloak.enabled }}
-        - name: keycloak-scripts
+        {{- if $oidc.enabled }}
+        - name: oidc-scripts
           configMap:
-            name: {{ include "moodle.fullname" $ }}-keycloak
+            name: {{ include "moodle.fullname" $ }}-oidc
             defaultMode: 0755
         {{- end }}
-        {{- if and $keycloak.enabled $keycloakCaCertMount }}
-        - name: keycloak-ca-cert
-          {{- if $keycloakCaCert.existingSecret }}
+        {{- if and $oidc.enabled $oidcCaCertMount }}
+        - name: oidc-ca-cert
+          {{- if $oidcCaCert.existingSecret }}
           secret:
-            secretName: {{ tpl $keycloakCaCert.existingSecret $ }}
+            secretName: {{ tpl $oidcCaCert.existingSecret $ }}
             items:
-              - key: {{ tpl $keycloakCaCertKey $ }}
-                path: {{ tpl $keycloakCaCertKey $ }}
-          {{- else if $keycloakCaCert.existingConfigMap }}
+              - key: {{ tpl $oidcCaCertKey $ }}
+                path: {{ tpl $oidcCaCertKey $ }}
+          {{- else if $oidcCaCert.existingConfigMap }}
           configMap:
-            name: {{ tpl $keycloakCaCert.existingConfigMap $ }}
+            name: {{ tpl $oidcCaCert.existingConfigMap $ }}
             items:
-              - key: {{ tpl $keycloakCaCertKey $ }}
-                path: {{ tpl $keycloakCaCertKey $ }}
+              - key: {{ tpl $oidcCaCertKey $ }}
+                path: {{ tpl $oidcCaCertKey $ }}
           {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
