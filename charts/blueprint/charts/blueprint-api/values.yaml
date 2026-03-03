@@ -38,7 +38,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   enabled: false
@@ -79,7 +79,7 @@ affinity: {}
 # the configMap name here
 certificateMap: ""
 
-command: ["bash", "-c", "update-ca-certificates && dotnet Blueprint.Api.dll"]
+command: ["./Blueprint.Api"]
 
 ## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.

@@ -30,39 +30,26 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          {{- if .Values.existingSecret }}
-          envFrom:
-            - secretRef:
-                name: {{ include "blueprint-api.fullname" . }}
-            - secretRef:
-                name: {{ (tpl .Values.existingSecret .) }}
-          {{- else }}
-          envFrom:
-            - secretRef:
-                name: {{ include "blueprint-api.fullname" . }}
+          {{- include "blueprint-api.env" . | nindent 10 }}
+          command: {{- toYaml .Values.command | nindent 10 }}
+          {{- if .Values.certificateMap }}
+          env:
+            - name: SSL_CERT_DIR
+              value: /usr/local/share/ca-certificates/
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: {{- toYaml .Values.command | nindent 10 }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ default 8080 .Values.service.targetPort }}
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{ if .Values.certificateMap }}
+          {{- if .Values.certificateMap }}
           volumeMounts:
             - mountPath: /usr/local/share/ca-certificates
               name: certificates
           {{- end }}
-      {{ if .Values.certificateMap }}
+      {{- if .Values.certificateMap }}
       volumes:
         - name: certificates
           configMap:
