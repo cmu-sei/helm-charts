@@ -1,6 +1,11 @@
 apiVersion: v2
 name: cite
-description: CITE enables participants from different organizations to evaluate, score,
+description:
+  CITE enables participants from different organizations to evaluate, score,
   and comment on cyber incidents.
 type: application
-version: 1.7.4
+version: 1.8.0
+home: https://cmu-sei.github.io/crucible/cite/
+sources:
+  - https://github.com/cmu-sei/cite.Api
+  - https://github.com/cmu-sei/cite.Ui
