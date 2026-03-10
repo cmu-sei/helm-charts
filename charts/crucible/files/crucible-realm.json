@@ -1156,7 +1156,6 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "__GAMEBOARD_API_SECRET__",
       "redirectUris": [
-        "https://crucible/gameboard/api/oauth2-redirect.html",
         "https://crucible/gameboard/api/oauth2-redirect.html"
       ],
       "webOrigins": [
@@ -1216,7 +1215,6 @@
         "https://crucible/gameboard/oidc"
       ],
       "webOrigins": [
-        "",
         "https://crucible/gameboard"
       ],
       "notBefore": 0,
@@ -1321,12 +1319,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/player/auth-callback*",
-        "https://host.docker.internal:4301/auth-callback*"
+        "https://crucible/player/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/player",
-        "https://host.docker.internal:4301"
+        "https://crucible/player"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1498,7 +1494,6 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "",
         "https://crucible/console/auth-callback*"
       ],
       "webOrigins": [
@@ -1561,13 +1556,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://host.docker.internal:4303/auth-callback-silent",
-        "https://crucible/vm/auth-callback*",
-        "https://host.docker.internal:4303/auth-callback*"
+        "https://crucible/vm/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/vm",
-        "https://host.docker.internal:4303"
+        "https://crucible/vm"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1830,13 +1822,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/topomojo/api/oauth2-redirect.html",
-        "https://crucible/topomojo/api/oauth2-redirect.html",
         "https://crucible/topomojo/api/oauth2-redirect.html"
       ],
       "webOrigins": [
         "https://crucible/topomojo",
-        "https://crucible/topomojo/api",
         "https://crucible/topomojo/api",
         "https://crucible"
       ],
@@ -1889,16 +1878,12 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://crucible/topomojo/topo/assets/oidc-silent.html",
-        "https://crucible/topomojo/topo/assets/oidc-silent.html",
         "https://crucible/topomojo/topo/oidc",
         "https://crucible/topomojo/oidc",
         "https://crucible/topomojo/assets/oidc-silent.html",
-        "https://crucible/topomojo/topo/oidc",
-        "https://crucible/topomojo/oidc",
         "https://crucible/topomojo/oidc-silent.html"
       ],
       "webOrigins": [
-        "https://crucible/topomojo",
         "https://crucible/topomojo",
         "https://crucible"
       ],
@@ -3798,88 +3783,7 @@
         }
       }
     ],
-    "org.keycloak.keys.KeyProvider": [
-      {
-        "id": "a77193fa-0c90-4942-9f25-dee4a22887d9",
-        "name": "rsa-enc-generated",
-        "providerId": "rsa-enc-generated",
-        "subComponents": {},
-        "config": {
-          "privateKey": [
-            "MIIEpQIBAAKCAQEAu4+F+guhmMR46OIlH6mWrKLTTZZ3z4EAKx28ulfWh2FNNz8eOwNYrGKmqSGVk6oXaZMYrDjk7QU4cvtUxJFJVMxFgNKqYZ/O57af7Jya5a20r8t2O+xDP++e6poTGalVhIbf+zvUEnIM1pLx4RvDawyyp3Tigq7ibCcJvC48aT/5KvMcmwHAqKGK0LfSxoK+3NusTk+B1LVs6AnegjL3ARS27czrrCNeAHkfQuyjwnt4PzxGoW/cYQ0FKqfl561wXHSx5j5hiscQqS/T1IWanq1jFM8ETCgldpT9+og0wwGRE6w0m2Z1pKek/W+q5Z7Fg0mjpzOH9vpBHwiyJ3PAlQIDAQABAoIBAAS4UamPed9XkGhh6oe/s45AIbup3fV/nFK5cpqo47nv8arCgJ8BEE30RJfsg7Bd3y11uXD6FI6/ayJ/nyw8MMF8y4H4qzd+N01++8rPTRmbE7k50E2lPjMBc3kZbAIhEAkgAMp4gLd/HcIXnBUrZvFOdj9/EkUyI/oPSHAvJK+MVMpNizq3x/bOYOPoPq7mIWyhaCRFosYS5ds7P455Cwp0gh3Q/rYo1dUOdh9vdNAzwu7kR3FtfFTVOStJ1W8d/e1m4vcW/gm1IklxEGB34XfjQ+MKM2b32bIub/SN13L4V01al+pcaum2j08qc1mCD3U4zBD2VvjOrPctqTTadfkCgYEA6dyPLj/hpMbBwH09u6YD2UN+1/WAf5+lbMiZ3IjuW5Sdmf5kaoL/t9lmOAb69YituqRcSDJpJrA74J0mMXQvInD5fH1sTZ+88F1y7Zo+gjSmvBn1GnXn5VfMyzrwf5YLGsf9RETg/4cOzeIg4E1pHue95mzob8xky2PKGOu8/u0CgYEAzVDmUAcSMDPu+LtgitKaZgsqpodVCSjjxeT67PIS0Uk45YxSCCQgRjQRIRIFloeizPyrta4You/eEJDrza6u67g1ksd5T0xgPIjXRsVRFAa5qIYIc0KEma2umqvBdkMnPLeAVJRnOmmVHIiVJLUYR8MMkUxkLEiYrVzFss3Ka0kCgYEA0XUUYK4ioXzLSGZkBk+5Hr0PPMnMH4KTnY1GEXorUqcXSTfKJIPUGYyDuya1W3jhcUuIw7ky6M3rs0/NR3nyRXy+V7vWZuftR7PLHfiKiAA0XkE5gEueOZGcAWJ2yS9QHtqEgsLWasdCgTBJldx/jIivU1S0En4UwP5NomhxzDkCgYEAoPe9KZ7xlpMQ1zdosE3/OOOmU5skgyLouL0WMXB0alrC3c0Of017dC7cAxZzBRpf++BY6v6MWCpA6rID/WTnxOzOK75yEEar6KnMRbLrJw1Cv6ods+fBuA6gJqlj6skpWQPw+97Bs90VR6KZc4b7ez+jecLvgnyEHt7uLIoFGekCgYEA0/Op9ts9VxYDQKcQ90Dqpayck16vAfNQ31FgTv/LubdZ1S9JBRnCgz7HQI38oaBRfB8in0NLIT/F/IG8lSKvQDmmvjTJIGJngsj6xQ6KcxcPDrrSOVWOx3seXtvvcuSof+C+d1kNU8K3n+ArctHFT5BZxQo84kuR6HaWUhAED6s="
-          ],
-          "keyUse": [
-            "ENC"
-          ],
-          "certificate": [
-            "MIICnzCCAYcCBgGJ4F1P2DANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhjcnVjaWJsZTAeFw0yMzA4MTAxNjUwNTlaFw0zMzA4MTAxNjUyMzlaMBMxETAPBgNVBAMMCGNydWNpYmxlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu4+F+guhmMR46OIlH6mWrKLTTZZ3z4EAKx28ulfWh2FNNz8eOwNYrGKmqSGVk6oXaZMYrDjk7QU4cvtUxJFJVMxFgNKqYZ/O57af7Jya5a20r8t2O+xDP++e6poTGalVhIbf+zvUEnIM1pLx4RvDawyyp3Tigq7ibCcJvC48aT/5KvMcmwHAqKGK0LfSxoK+3NusTk+B1LVs6AnegjL3ARS27czrrCNeAHkfQuyjwnt4PzxGoW/cYQ0FKqfl561wXHSx5j5hiscQqS/T1IWanq1jFM8ETCgldpT9+og0wwGRE6w0m2Z1pKek/W+q5Z7Fg0mjpzOH9vpBHwiyJ3PAlQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCKuDB2NHDzQkjc1nJw4b48fwYW24fMiDknfx+4L82hNytmAOmvUAJ3pfzxY5JybVckRbi1Z0MWDwx9/qybGQSUC2d/6HXlVFZT7iXnM+5rH4QL/LGaFdSHA/PYn12WUywt9urzE8Vx4Dm4iJB//7KwnAQGfWaVhzKMORpZwUCrrJxna5LAZg+Sa1Bt4T5zBOsw2h+ycGa75pKqJ2mm718jzK4evZVSlC1i6Es9FE2+aKLcwH9XC5U/DkV4mfEIVCm4JJ7xceOz+LafyS/yb6a/h28Pk303eK6ORdk8hRwLeOpjyusxvNCMn2z4dBAKFFcJz0QGj7rif2aRI1f2H0xf"
-          ],
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "RSA-OAEP"
-          ]
-        }
-      },
-      {
-        "id": "ae1da0ff-540e-4417-a857-20c0669a1cb4",
-        "name": "rsa-generated",
-        "providerId": "rsa-generated",
-        "subComponents": {},
-        "config": {
-          "privateKey": [
-            "MIIEpAIBAAKCAQEA0v2rexBsiISp9Nou1PYTgESRU9wqmeOV2gb+Eg71jrOX2IcJO0VN232x21IVtWOxV4pKz12QtJUf37+M0m2pzVPM2hfx6dNu89znpOP5cOMLfuVxZzAapkQwrKzitMbLwTA5QxAsm6BFe586kVFbvd5E+DItFJOoWFL9eaRZEVUB7sO3KN//UJYd29zXEfK53UGWqOHhaLZD/oIh/8y5Sc5T7wPZaZKhtVMB62S8XpVbmTsM5fchIWe01rsdrm4W0+LqNgBB2TCCcmoTtbAbu+Ms16dGZkRLi5hXSQOG/uC/nsGHzGXwboyI6YoiTYYPxCTD0JilfflOMIFzQOls8wIDAQABAoIBADvkC8gcCmLaHZBGWqLS0whG7mW6ilEye/fuojIoEuYV7pVlB2bOrmIOlOznqQfbK5zowYGJUqkf53NQ4T1eKaQCFJUX1PCFtun8G7j/iW/U0w+LO5yJ2Ba4JoTtclDUWUQWVzrFHZRzcyW7NhnH2V3U+Qjm3UsI+vFPZWohD7NORRI7F6tk9ijKxQ+cqEu6AWXKTErjup2PBzYMgTtaITAvoZp6WGDKfvKIMinx506CUhGGi8+AIf3WFCK5LgNgajSL0PY2rSLJxQN2jtsuGutiwxuo8HvS36CN7nTatU4bzqHk0fRtVippvKSesrN39RvOZkwOk3R5189dVs9Ba8kCgYEA6rdEP2RqN/hx093sMUMAKFemzRuYjeCYnVo/d8IGOZNg8dH8bd3TEcCRsT4tCWQRaKIdw6yfCOlpPHSKjLMSGY/GcGejASIwFnR/VljBO2Oc1NzARleNW9xrFTRzFdJ1tUIbsZFPUbZzphJA8CUlLDN1KS7zds9ESY1e2iMvIoUCgYEA5h+lwMAPwlavHT+8fnIt0pLxhe06t/wSoaGp18BrYN6Ot0CoUXrylCqn5wCVBjbrJnnEy/f+LAkKLnJ+DzS10IdjuXOLkXka36bXgsj8m9IpjGQJlIfSeuMMhSDBIIkHk/Nhyiiod47iOcsPrvEzX2RTmFc9dPzhaGrA3Q+T9xcCgYBKrSI+lQEia54zjTDff3SmYTTFnxkLUsDbl2IIBSgb22MFrQyGHARSapUv8hs8GKVdR+72WY6DtFdyD5YhK7v/e/nju2VmL+1ix4/X9gcMkSXNp6pY9vQXnOpI5dYTxFEE6VKMTTISSl1DIh2dCgRoqrqE7tYxH8KXMC5UcstFTQKBgQDCVDFV3xqvwyHnsj4MDYGSlBIvRZDTc6OMKIfTsSM8T1T3fTtma0vUQV0+Xqh58gCLokLE9+wE5bFaXccEMj/jE6HsJp3SwBEokqzlPbLMJyJ88rGAY14j9f5JocpVHkJu9xU6cTEqnVd+9HKPChKW2JMbT3iPhUkYMyYgx5ntCwKBgQC37H1HbnTAzlTt6YppWak7dxRgaluB6iniT1cYDSsGNpZn2mlfbc3QQqRqU2eMU03RkcOFn0gTaRxvuMNKPEJpqnC5dTHPn6c2b9I+7cUug3BxpQdI5mWQGJFl8AjbyLVCJ/Q5X8saAdu3p4XTmvfvzIayPnF9iTw1D8UufudeBA=="
-          ],
-          "keyUse": [
-            "SIG"
-          ],
-          "certificate": [
-            "MIICnzCCAYcCBgGJ4F1PTzANBgkqhkiG9w0BAQsFADATMREwDwYDVQQDDAhjcnVjaWJsZTAeFw0yMzA4MTAxNjUwNThaFw0zMzA4MTAxNjUyMzhaMBMxETAPBgNVBAMMCGNydWNpYmxlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0v2rexBsiISp9Nou1PYTgESRU9wqmeOV2gb+Eg71jrOX2IcJO0VN232x21IVtWOxV4pKz12QtJUf37+M0m2pzVPM2hfx6dNu89znpOP5cOMLfuVxZzAapkQwrKzitMbLwTA5QxAsm6BFe586kVFbvd5E+DItFJOoWFL9eaRZEVUB7sO3KN//UJYd29zXEfK53UGWqOHhaLZD/oIh/8y5Sc5T7wPZaZKhtVMB62S8XpVbmTsM5fchIWe01rsdrm4W0+LqNgBB2TCCcmoTtbAbu+Ms16dGZkRLi5hXSQOG/uC/nsGHzGXwboyI6YoiTYYPxCTD0JilfflOMIFzQOls8wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQAaCb8NDHYcHsRc0lec3Tme3sbIqtM09Ht13TOh2+KZ1utt0XZk+gEPALH3vdCgUVErYMmgYImDzJ8b+tU+x4WnSc/QxV99381ljJ/+RAm7gyrqSidTyarBfcY5cH57QYiW8/iZNcDT99dDO5hZIuuyG8VESVEGLAUPYVQSN8KIWvEZLVcRTL9KdakaQSXDiBYnhtumRVYD2rLMwt0jh1Woi+anTRH3VmE3As6HZ8xiX8FXchdO9Pszu61zjxe9hvNJVs8U2VC2120Q31RGCvFXBnfnfj4wa3Z37nEIhqlW8xSnzuVE/E3TLWRgEn80Q2z0u3tXOYOaBnr5f397hwMe"
-          ],
-          "priority": [
-            "100"
-          ]
-        }
-      },
-      {
-        "id": "e27742bd-5055-4ac3-b418-4e46d672b50e",
-        "name": "aes-generated",
-        "providerId": "aes-generated",
-        "subComponents": {},
-        "config": {
-          "kid": [
-            "9629dd0b-deb7-4100-b1cb-edc386c8c8aa"
-          ],
-          "secret": [
-            "CXJ2dbXimkxrm0kCMharwA"
-          ],
-          "priority": [
-            "100"
-          ]
-        }
-      },
-      {
-        "id": "f0b8e4e9-d19c-42fe-9984-8f4b276f3565",
-        "name": "hmac-generated",
-        "providerId": "hmac-generated",
-        "subComponents": {},
-        "config": {
-          "kid": [
-            "2fc08b5a-5806-4354-8266-bd36550fd82e"
-          ],
-          "secret": [
-            "UEXn-42kJ86OwlSQKxCv0iwt0n3aAw8DaEvYZSyiikCAMxa2HiRqYSGTSkkn5WjiGrzHQUkHLYV19RH3hjDhJA"
-          ],
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "HS256"
-          ]
-        }
-      }
-    ]
+    "org.keycloak.keys.KeyProvider": []
   },
   "internationalizationEnabled": false,
   "supportedLocales": [],
