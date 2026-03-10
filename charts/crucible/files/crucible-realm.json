@@ -665,8 +665,8 @@
       "clientId": "grafana",
       "name": "Grafana",
       "description": "",
-      "rootUrl": "https://crucible/grafana/",
-      "adminUrl": "https://crucible/grafana/",
+      "rootUrl": "https://__DOMAIN__/grafana/",
+      "adminUrl": "https://__DOMAIN__/grafana/",
       "baseUrl": "/grafana/",
       "surrogateAuthRequired": false,
       "enabled": true,
@@ -674,11 +674,11 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "__GRAFANA_SECRET__",
       "redirectUris": [
-        "https://crucible/grafana/login/generic_oauth"
+        "https://__DOMAIN__/grafana/login/generic_oauth"
       ],
       "webOrigins": [
-        "https://crucible",
-        "https://crucible/grafana"
+        "https://__DOMAIN__",
+        "https://__DOMAIN__/grafana"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -691,7 +691,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "post.logout.redirect.uris": "https://crucible/grafana/",
+        "post.logout.redirect.uris": "https://__DOMAIN__/grafana/",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -778,18 +778,18 @@
       "clientId": "alloy.api",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/alloy/api",
-      "adminUrl": "https://crucible/alloy/api",
+      "rootUrl": "https://__DOMAIN__/alloy/api",
+      "adminUrl": "https://__DOMAIN__/alloy/api",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/alloy/*"
+        "https://__DOMAIN__/alloy/*"
       ],
       "webOrigins": [
-        "https://crucible/alloy"
+        "https://__DOMAIN__/alloy"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -843,10 +843,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/alloy/*"
+        "https://__DOMAIN__/alloy/*"
       ],
       "webOrigins": [
-        "https://crucible/alloy"
+        "https://__DOMAIN__/alloy"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -985,18 +985,18 @@
       "clientId": "caster.api",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/caster/api",
-      "adminUrl": "https://crucible/caster/api",
+      "rootUrl": "https://__DOMAIN__/caster/api",
+      "adminUrl": "https://__DOMAIN__/caster/api",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/caster/*"
+        "https://__DOMAIN__/caster/*"
       ],
       "webOrigins": [
-        "https://crucible/caster"
+        "https://__DOMAIN__/caster"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1038,18 +1038,18 @@
       "clientId": "caster.ui",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/caster",
-      "adminUrl": "https://crucible/caster",
+      "rootUrl": "https://__DOMAIN__/caster",
+      "adminUrl": "https://__DOMAIN__/caster",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/caster/auth-callback*"
+        "https://__DOMAIN__/caster/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/caster"
+        "https://__DOMAIN__/caster"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1064,7 +1064,7 @@
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "https://crucible/caster/",
+        "post.logout.redirect.uris": "https://__DOMAIN__/caster/",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -1156,11 +1156,11 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "__GAMEBOARD_API_SECRET__",
       "redirectUris": [
-        "https://crucible/gameboard/api/oauth2-redirect.html"
+        "https://__DOMAIN__/gameboard/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/gameboard",
-        "https://crucible/topomojo"
+        "https://__DOMAIN__/gameboard",
+        "https://__DOMAIN__/topomojo"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1211,11 +1211,11 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/gameboard/assets/oidc-silent.html",
-        "https://crucible/gameboard/oidc"
+        "https://__DOMAIN__/gameboard/assets/oidc-silent.html",
+        "https://__DOMAIN__/gameboard/oidc"
       ],
       "webOrigins": [
-        "https://crucible/gameboard"
+        "https://__DOMAIN__/gameboard"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1258,18 +1258,18 @@
       "clientId": "player.api",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/player/api",
-      "adminUrl": "https://crucible/player/api",
+      "rootUrl": "https://__DOMAIN__/player/api",
+      "adminUrl": "https://__DOMAIN__/player/api",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/player/*"
+        "https://__DOMAIN__/player/*"
       ],
       "webOrigins": [
-        "https://crucible/player"
+        "https://__DOMAIN__/player"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1311,18 +1311,18 @@
       "clientId": "player.ui",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/player",
-      "adminUrl": "https://crucible/player",
+      "rootUrl": "https://__DOMAIN__/player",
+      "adminUrl": "https://__DOMAIN__/player",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/player/auth-callback*"
+        "https://__DOMAIN__/player/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/player"
+        "https://__DOMAIN__/player"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1335,7 +1335,7 @@
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
-        "post.logout.redirect.uris": "https://crucible/alloy/player",
+        "post.logout.redirect.uris": "https://__DOMAIN__/alloy/player",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "use.refresh.tokens": "true",
@@ -1425,19 +1425,19 @@
       "clientId": "player.vm.api",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/vm/api",
-      "adminUrl": "https://crucible/vm/api",
+      "rootUrl": "https://__DOMAIN__/vm/api",
+      "adminUrl": "https://__DOMAIN__/vm/api",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/vm/*"
+        "https://__DOMAIN__/vm/*"
       ],
       "webOrigins": [
-        "https://crucible/vm",
-        "https://crucible/vm/healthcheck-ui"
+        "https://__DOMAIN__/vm",
+        "https://__DOMAIN__/vm/healthcheck-ui"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1486,18 +1486,18 @@
       "clientId": "player.vm.console.ui",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/console",
-      "adminUrl": "https://crucible/console",
+      "rootUrl": "https://__DOMAIN__/console",
+      "adminUrl": "https://__DOMAIN__/console",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/console/auth-callback*"
+        "https://__DOMAIN__/console/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/console"
+        "https://__DOMAIN__/console"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1511,7 +1511,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "120",
-        "post.logout.redirect.uris": "https://crucible/console",
+        "post.logout.redirect.uris": "https://__DOMAIN__/console",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "use.refresh.tokens": "true",
@@ -1548,18 +1548,18 @@
       "clientId": "player.vm.ui",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/vm",
-      "adminUrl": "https://crucible/vm",
+      "rootUrl": "https://__DOMAIN__/vm",
+      "adminUrl": "https://__DOMAIN__/vm",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/vm/auth-callback*"
+        "https://__DOMAIN__/vm/auth-callback*"
       ],
       "webOrigins": [
-        "https://crucible/vm"
+        "https://__DOMAIN__/vm"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1573,7 +1573,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "120",
-        "post.logout.redirect.uris": "https://crucible/vm",
+        "post.logout.redirect.uris": "https://__DOMAIN__/vm",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "use.refresh.tokens": "true",
@@ -1814,20 +1814,20 @@
       "clientId": "topomojo.api",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/topomojo/api",
-      "adminUrl": "https://crucible/topomojo/api",
+      "rootUrl": "https://__DOMAIN__/topomojo/api",
+      "adminUrl": "https://__DOMAIN__/topomojo/api",
       "baseUrl": "/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/topomojo/api/oauth2-redirect.html"
+        "https://__DOMAIN__/topomojo/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/topomojo",
-        "https://crucible/topomojo/api",
-        "https://crucible"
+        "https://__DOMAIN__/topomojo",
+        "https://__DOMAIN__/topomojo/api",
+        "https://__DOMAIN__"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1869,23 +1869,23 @@
       "clientId": "topomojo.ui",
       "name": "",
       "description": "",
-      "rootUrl": "https://crucible/topomojo",
-      "adminUrl": "https://crucible/topomojo",
+      "rootUrl": "https://__DOMAIN__/topomojo",
+      "adminUrl": "https://__DOMAIN__/topomojo",
       "baseUrl": "/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/topomojo/topo/assets/oidc-silent.html",
-        "https://crucible/topomojo/topo/oidc",
-        "https://crucible/topomojo/oidc",
-        "https://crucible/topomojo/assets/oidc-silent.html",
-        "https://crucible/topomojo/oidc-silent.html"
+        "https://__DOMAIN__/topomojo/topo/assets/oidc-silent.html",
+        "https://__DOMAIN__/topomojo/topo/oidc",
+        "https://__DOMAIN__/topomojo/oidc",
+        "https://__DOMAIN__/topomojo/assets/oidc-silent.html",
+        "https://__DOMAIN__/topomojo/oidc-silent.html"
       ],
       "webOrigins": [
-        "https://crucible/topomojo",
-        "https://crucible"
+        "https://__DOMAIN__/topomojo",
+        "https://__DOMAIN__"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1901,7 +1901,7 @@
         "oidc.ciba.grant.enabled": "false",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
-        "post.logout.redirect.uris": "https://crucible/topomojo",
+        "post.logout.redirect.uris": "https://__DOMAIN__/topomojo",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
@@ -1936,10 +1936,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/xview2/api/*"
+        "https://__DOMAIN__/xview2/api/*"
       ],
       "webOrigins": [
-        "https://crucible/xview2/api"
+        "https://__DOMAIN__/xview2/api"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1988,11 +1988,11 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/xview2/auth-callback-silent.html",
-        "https://crucible/xview2/auth-callback"
+        "https://__DOMAIN__/xview2/auth-callback-silent.html",
+        "https://__DOMAIN__/xview2/auth-callback"
       ],
       "webOrigins": [
-        "https://crucible/xview2"
+        "https://__DOMAIN__/xview2"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2033,18 +2033,18 @@
       "clientId": "blueprint.admin",
       "name": "blueprint.admin",
       "description": "",
-      "rootUrl": "https://crucible/blueprint/api",
-      "adminUrl": "https://crucible/blueprint/api",
-      "baseUrl": "https://crucible/blueprint/api",
+      "rootUrl": "https://__DOMAIN__/blueprint/api",
+      "adminUrl": "https://__DOMAIN__/blueprint/api",
+      "baseUrl": "https://__DOMAIN__/blueprint/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/blueprint/api/oauth2-redirect.html"
+        "https://__DOMAIN__/blueprint/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/blueprint/api"
+        "https://__DOMAIN__/blueprint/api"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2059,7 +2059,7 @@
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "https://crucible/blueprint/api",
+        "post.logout.redirect.uris": "https://__DOMAIN__/blueprint/api",
         "oauth2.device.authorization.grant.enabled": "true",
         "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2092,15 +2092,15 @@
       "clientId": "blueprint.api",
       "name": "blueprint.api",
       "description": "",
-      "rootUrl": "https://crucible/blueprint/api",
-      "adminUrl": "https://crucible/blueprint/api",
-      "baseUrl": "https://crucible/blueprint/api",
+      "rootUrl": "https://__DOMAIN__/blueprint/api",
+      "adminUrl": "https://__DOMAIN__/blueprint/api",
+      "baseUrl": "https://__DOMAIN__/blueprint/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/blueprint/api/*"
+        "https://__DOMAIN__/blueprint/api/*"
       ],
       "webOrigins": [
         "*"
@@ -2150,19 +2150,19 @@
       "clientId": "blueprint.ui",
       "name": "blueprint.ui",
       "description": "",
-      "rootUrl": "https://crucible/blueprint",
-      "adminUrl": "https://crucible/blueprint",
-      "baseUrl": "https://crucible/blueprint",
+      "rootUrl": "https://__DOMAIN__/blueprint",
+      "adminUrl": "https://__DOMAIN__/blueprint",
+      "baseUrl": "https://__DOMAIN__/blueprint",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/blueprint/auth-callback",
-        "https://crucible/blueprint/auth-callback-silent"
+        "https://__DOMAIN__/blueprint/auth-callback",
+        "https://__DOMAIN__/blueprint/auth-callback-silent"
       ],
       "webOrigins": [
-        "https://crucible/blueprint"
+        "https://__DOMAIN__/blueprint"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2178,7 +2178,7 @@
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "login_theme": "keycloak",
-        "post.logout.redirect.uris": "https://crucible/blueprint",
+        "post.logout.redirect.uris": "https://__DOMAIN__/blueprint",
         "oauth2.device.authorization.grant.enabled": "true",
         "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2242,18 +2242,18 @@
       "clientId": "cite.admin",
       "name": "cite.admin",
       "description": "",
-      "rootUrl": "https://crucible/cite/api",
-      "adminUrl": "https://crucible/cite/api",
-      "baseUrl": "https://crucible/cite/api",
+      "rootUrl": "https://__DOMAIN__/cite/api",
+      "adminUrl": "https://__DOMAIN__/cite/api",
+      "baseUrl": "https://__DOMAIN__/cite/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/cite/api/oauth2-redirect.html"
+        "https://__DOMAIN__/cite/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/cite/api"
+        "https://__DOMAIN__/cite/api"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2268,7 +2268,7 @@
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "https://crucible/cite/api",
+        "post.logout.redirect.uris": "https://__DOMAIN__/cite/api",
         "oauth2.device.authorization.grant.enabled": "true",
         "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2297,15 +2297,15 @@
       "clientId": "cite.api",
       "name": "cite.api",
       "description": "",
-      "rootUrl": "https://crucible/cite/api",
-      "adminUrl": "https://crucible/cite/api",
-      "baseUrl": "https://crucible/cite/api",
+      "rootUrl": "https://__DOMAIN__/cite/api",
+      "adminUrl": "https://__DOMAIN__/cite/api",
+      "baseUrl": "https://__DOMAIN__/cite/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/cite/api/*"
+        "https://__DOMAIN__/cite/api/*"
       ],
       "webOrigins": [
         "*"
@@ -2351,19 +2351,19 @@
       "clientId": "cite.ui",
       "name": "cite.ui",
       "description": "",
-      "rootUrl": "https://crucible/cite",
-      "adminUrl": "https://crucible/cite",
-      "baseUrl": "https://crucible/cite",
+      "rootUrl": "https://__DOMAIN__/cite",
+      "adminUrl": "https://__DOMAIN__/cite",
+      "baseUrl": "https://__DOMAIN__/cite",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/cite/auth-callback",
-        "https://crucible/cite/auth-callback-silent"
+        "https://__DOMAIN__/cite/auth-callback",
+        "https://__DOMAIN__/cite/auth-callback-silent"
       ],
       "webOrigins": [
-        "https://crucible/cite"
+        "https://__DOMAIN__/cite"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2377,7 +2377,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "https://crucible/cite",
+        "post.logout.redirect.uris": "https://__DOMAIN__/cite",
         "oauth2.device.authorization.grant.enabled": "true",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2406,18 +2406,18 @@
       "clientId": "gallery.admin",
       "name": "gallery.admin",
       "description": "",
-      "rootUrl": "https://crucible/gallery/api",
-      "adminUrl": "https://crucible/gallery/api",
-      "baseUrl": "https://crucible/gallery/api",
+      "rootUrl": "https://__DOMAIN__/gallery/api",
+      "adminUrl": "https://__DOMAIN__/gallery/api",
+      "baseUrl": "https://__DOMAIN__/gallery/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/gallery/api/oauth2-redirect.html"
+        "https://__DOMAIN__/gallery/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/gallery/api"
+        "https://__DOMAIN__/gallery/api"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2431,7 +2431,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "https://crucible/gallery/api",
+        "post.logout.redirect.uris": "https://__DOMAIN__/gallery/api",
         "oauth2.device.authorization.grant.enabled": "true",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2461,15 +2461,15 @@
       "clientId": "gallery.api",
       "name": "gallery.api",
       "description": "",
-      "rootUrl": "https://crucible/gallery/api",
-      "adminUrl": "https://crucible/gallery/api",
-      "baseUrl": "https://crucible/gallery/api",
+      "rootUrl": "https://__DOMAIN__/gallery/api",
+      "adminUrl": "https://__DOMAIN__/gallery/api",
+      "baseUrl": "https://__DOMAIN__/gallery/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/gallery/api/*"
+        "https://__DOMAIN__/gallery/api/*"
       ],
       "webOrigins": [
         "*"
@@ -2513,19 +2513,19 @@
       "clientId": "gallery.ui",
       "name": "gallery.ui",
       "description": "",
-      "rootUrl": "https://crucible/gallery",
-      "adminUrl": "https://crucible/gallery",
-      "baseUrl": "https://crucible/gallery",
+      "rootUrl": "https://__DOMAIN__/gallery",
+      "adminUrl": "https://__DOMAIN__/gallery",
+      "baseUrl": "https://__DOMAIN__/gallery",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/gallery/auth-callback-silent",
-        "https://crucible/gallery/auth-callback"
+        "https://__DOMAIN__/gallery/auth-callback-silent",
+        "https://__DOMAIN__/gallery/auth-callback"
       ],
       "webOrigins": [
-        "https://crucible/gallery"
+        "https://__DOMAIN__/gallery"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2539,7 +2539,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "https://crucible/gallery",
+        "post.logout.redirect.uris": "https://__DOMAIN__/gallery",
         "oauth2.device.authorization.grant.enabled": "true",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2568,18 +2568,18 @@
       "clientId": "steamfitter.admin",
       "name": "steamfitter.admin",
       "description": "",
-      "rootUrl": "https://crucible/steamfitter/api",
-      "adminUrl": "https://crucible/steamfitter/api",
-      "baseUrl": "https://crucible/steamfitter/api",
+      "rootUrl": "https://__DOMAIN__/steamfitter/api",
+      "adminUrl": "https://__DOMAIN__/steamfitter/api",
+      "baseUrl": "https://__DOMAIN__/steamfitter/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/steamfitter/api/oauth2-redirect.html"
+        "https://__DOMAIN__/steamfitter/api/oauth2-redirect.html"
       ],
       "webOrigins": [
-        "https://crucible/steamfitter/api"
+        "https://__DOMAIN__/steamfitter/api"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2593,7 +2593,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "post.logout.redirect.uris": "https://crucible/steamfitter/api",
+        "post.logout.redirect.uris": "https://__DOMAIN__/steamfitter/api",
         "oauth2.device.authorization.grant.enabled": "true",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2626,15 +2626,15 @@
       "clientId": "steamfitter.api",
       "name": "steamfitter.api",
       "description": "",
-      "rootUrl": "https://crucible/steamfitter/api",
-      "adminUrl": "https://crucible/steamfitter/api",
-      "baseUrl": "https://crucible/steamfitter/api",
+      "rootUrl": "https://__DOMAIN__/steamfitter/api",
+      "adminUrl": "https://__DOMAIN__/steamfitter/api",
+      "baseUrl": "https://__DOMAIN__/steamfitter/api",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/steamfitter/api/*"
+        "https://__DOMAIN__/steamfitter/api/*"
       ],
       "webOrigins": [
         "*"
@@ -2682,19 +2682,19 @@
       "clientId": "steamfitter.ui",
       "name": "steamfitter.ui",
       "description": "",
-      "rootUrl": "https://crucible/steamfitter",
-      "adminUrl": "https://crucible/steamfitter",
-      "baseUrl": "https://crucible/steamfitter",
+      "rootUrl": "https://__DOMAIN__/steamfitter",
+      "adminUrl": "https://__DOMAIN__/steamfitter",
+      "baseUrl": "https://__DOMAIN__/steamfitter",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://crucible/steamfitter/auth-callback-silent",
-        "https://crucible/steamfitter/auth-callback"
+        "https://__DOMAIN__/steamfitter/auth-callback-silent",
+        "https://__DOMAIN__/steamfitter/auth-callback"
       ],
       "webOrigins": [
-        "https://crucible/steamfitter"
+        "https://__DOMAIN__/steamfitter"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -2709,7 +2709,7 @@
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "https://crucible/steamfitter",
+        "post.logout.redirect.uris": "https://__DOMAIN__/steamfitter",
         "oauth2.device.authorization.grant.enabled": "true",
         "display.on.consent.screen": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -2739,19 +2739,19 @@
       "clientId": "moodle-client",
       "name": "moodle",
       "description": "",
-      "rootUrl": "https://crucible",
-      "adminUrl": "https://crucible",
-      "baseUrl": "https://crucible",
+      "rootUrl": "https://__DOMAIN__",
+      "adminUrl": "https://__DOMAIN__",
+      "baseUrl": "https://__DOMAIN__",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "__MOODLE_CLIENT_SECRET__",
       "redirectUris": [
-        "https://crucible/admin/oauth2callback.php"
+        "https://__DOMAIN__/admin/oauth2callback.php"
       ],
       "webOrigins": [
-        "https://crucible"
+        "https://__DOMAIN__"
       ],
       "notBefore": 0,
       "bearerOnly": false,
