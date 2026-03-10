@@ -31,8 +31,7 @@ keycloak:
     # Configure the ingress path for Keycloak
     # Example: /keycloak/
     path: "/keycloak/"
-    annotations:
-      {}
+    annotations: {}
       # Example for redirecting root path to admin console in the crucible realm:
       # nginx.ingress.kubernetes.io/server-snippet: |
       #   location ~ ^/keycloak/?$ {
@@ -49,6 +48,11 @@ keycloak:
   # and configures Keycloak to import it on startup.
   # Mutually exclusive with importRealmConfigMap.
   createRealm: false
+
+  # Password for the "admin" user in the crucible realm (only used when createRealm is true).
+  # If empty, a random 16-character password is generated and persisted across upgrades.
+  # Useful for development when you want a known password
+  realmAdminPassword: ""
 
   # Import a realm from an existing ConfigMap (must contain a "realm.json" key).
   # Set to the ConfigMap name. Mutually exclusive with createRealm.
