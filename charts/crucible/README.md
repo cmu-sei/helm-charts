@@ -5,6 +5,7 @@ This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) plat
 ## Overview
 
 The crucible chart can be deployed with:
+
 - **crucible-infra chart** (provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs)
 - **External PostgreSQL** (RDS, Cloud SQL, Azure Database, or any PostgreSQL service)
 - **Custom infrastructure** (bring your own PostgreSQL, ingress, and storage)
@@ -68,69 +69,73 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 kubectl create secret tls crucible-tls --cert=tls.crt --key=tls.key
 ```
 
-### 2. Keycloak Realm Configuration (Optional)
+### 2. Keycloak Realm Configuration
 
-You have two options for configuring the Keycloak realm:
+The chart supports three mutually exclusive modes for realm configuration:
 
-**Option A: Automatic Import (Recommended for Repeatable Deployments)**
+**Option A: Auto-Generated Realm (Recommended for Dev/Eval)**
 
-Prepare a realm configuration file and create it as a ConfigMap for automatic import on deployment:
+Set `keycloak.createRealm: true` in your values. The chart will:
 
-```bash
-# Create or customize your realm.json file
-# IMPORTANT: Generate unique OAuth client secrets for production
-# Do not use example secrets from development configurations
-
-kubectl create configmap crucible-realm-config \
-  --from-file=realm.json=path/to/your-realm.json
-```
-
-Then in your `values.yaml`, uncomment the Keycloak realm import configuration:
+- Generate unique OIDC client secrets for each confidential client
+- Persist secrets in a `crucible-oidc-client-secrets` Kubernetes Secret (survives upgrades)
+- Create a realm ConfigMap with the generated secrets injected
+- Inject the generated secrets into each service's Secret automatically
 
 ```yaml
 keycloak:
+  createRealm: true
   extraEnvVars:
     - name: KEYCLOAK_EXTRA_ARGS
       value: "--import-realm"
   extraVolumes:
     - name: realm-import
       configMap:
-        name: crucible-realm-config  # Your ConfigMap name
+        name: '{{ include "crucible.fullname" . }}-config-cli'
   extraVolumeMounts:
     - name: realm-import
       mountPath: /opt/bitnami/keycloak/data/import
       readOnly: true
 ```
 
-**Option B: Manual Configuration (UI-Based)**
-
-Skip the ConfigMap creation and configure Keycloak manually after deployment:
-- Leave the `keycloak.extraEnvVars`, `extraVolumes`, and `extraVolumeMounts` commented out (default)
-- After deployment, access the Keycloak admin UI at `https://<domain>/keycloak/admin`
-- Create and configure the realm manually through the UI
-
-**Security Considerations for Realm Configuration:**
-
-- Generate unique, strong OAuth client secrets for each client
-- Remove or disable any test/demo user accounts
-- Configure appropriate password policies
-- Enable brute force protection
-- Set `sslRequired: "all"` for production environments
-- Configure appropriate session timeouts
-- Review and restrict client redirect URIs (no wildcards)
-
-Example command to generate a secure client secret:
+To retrieve generated secrets after deployment:
 
 ```bash
-openssl rand -hex 32
+kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.grafana}' | base64 --decode
 ```
+
+**Option B: Import User-Provided Realm**
+
+Set `keycloak.importRealmConfigMap` to a pre-existing ConfigMap name containing a `realm.json` key:
+
+```yaml
+keycloak:
+  importRealmConfigMap: "my-custom-realm"
+  extraEnvVars:
+    - name: KEYCLOAK_EXTRA_ARGS
+      value: "--import-realm"
+  extraVolumes:
+    - name: realm-import
+      configMap:
+        name: my-custom-realm
+  extraVolumeMounts:
+    - name: realm-import
+      mountPath: /opt/bitnami/keycloak/data/import
+      readOnly: true
+```
+
+**Option C: Manual Configuration (UI-Based, Chart Default)**
+
+Leave both `createRealm` and `importRealmConfigMap` unset. Configure Keycloak manually via the admin UI at `https://<domain>/keycloak/admin` after deployment.
 
 ### 3. OAuth Client Secrets
 
-Configure OAuth client secrets in your `values.yaml`. These secrets must match the secrets in your Keycloak realm configuration:
+When `keycloak.createRealm` is true, OIDC client secrets are automatically generated and injected into service Secrets. No manual configuration is needed.
+
+When using `importRealmConfigMap` or manual configuration, you must configure OAuth client secrets in your values file (or via K8s secrets) to match the secrets in your Keycloak realm:
 
 ```yaml
-crucible-alloy:
+alloy:
   alloy-api:
     resourceOwnerAuthorization:
       clientSecret: "your-generated-secret-here"
@@ -167,6 +172,7 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql --ti
 #### 2. Prepare Security Prerequisites
 
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
+
 - TLS certificate secret
 - Keycloak realm ConfigMap (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
@@ -250,6 +256,7 @@ kubectl create secret generic postgres-credentials \
 #### 2. Prepare Other Prerequisites
 
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
+
 - TLS certificate secret
 - Keycloak realm ConfigMap (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
@@ -309,6 +316,7 @@ helm install crucible sei/crucible -f my-values.yaml
 ```
 
 **Note**: When using external PostgreSQL, you must also provide:
+
 - An ingress controller (nginx, traefik, etc.)
 - Persistent storage (StorageClass for PVCs)
 
@@ -316,68 +324,48 @@ helm install crucible sei/crucible -f my-values.yaml
 
 ### Global Settings
 
-| Parameter | Description | Default | Required |
-|-----------|-------------|---------|----------|
-| `global.domain` | Domain name for Crucible deployment | `""` | **Yes** |
-| `global.namespace` | Kubernetes namespace | `default` | No |
-| `global.version` | Version tag for Crucible components | `0.0.0` | No |
-| `global.security.allowInsecureImages` | Allow unsigned container images (dev only) | `false` | No |
+| Parameter                             | Description                                | Default   | Required |
+| ------------------------------------- | ------------------------------------------ | --------- | -------- |
+| `global.domain`                       | Domain name for Crucible deployment        | `""`      | **Yes**  |
+| `global.namespace`                    | Kubernetes namespace                       | `default` | No       |
+| `global.version`                      | Version tag for Crucible components        | `0.0.0`   | No       |
+| `global.security.allowInsecureImages` | Allow unsigned container images (dev only) | `false`   | No       |
 
 ### Keycloak Configuration
 
 Configure Keycloak identity provider settings used by all Crucible applications:
 
-| Parameter | Description | Default | Required |
-|-----------|-------------|---------|----------|
-| `global.keycloak.basePath` | Base path for Keycloak (relative to domain) | `/keycloak` | No |
-| `global.keycloak.realm` | Keycloak realm name | `crucible` | No |
+| Parameter                  | Description                                 | Default     | Required |
+| -------------------------- | ------------------------------------------- | ----------- | -------- |
+| `global.keycloak.basePath` | Base path for Keycloak (relative to domain) | `/keycloak` | No       |
+| `global.keycloak.realm`    | Keycloak realm name                         | `crucible`  | No       |
 
 These settings are used to construct Keycloak URLs for OIDC authentication across all applications. Changing these values will update the authority, authorization, and token URLs for all integrated services.
 
-**Realm Import Configuration:**
+#### Realm Import Configuration
 
-By default, Keycloak deploys without automatically importing a realm. To enable automatic realm import:
+| Parameter                       | Description                                                                    | Default |
+| ------------------------------- | ------------------------------------------------------------------------------ | ------- |
+| `keycloak.createRealm`          | Auto-generate OIDC secrets and `admin` user password to create realm ConfigMap | `false` |
+| `keycloak.importRealmConfigMap` | Import realm from an existing ConfigMap name                                   | `""`    |
 
-1. Create a ConfigMap with your realm configuration (see [Security Prerequisites](#security-prerequisites))
-2. Uncomment the `keycloak.extraEnvVars`, `keycloak.extraVolumes`, and `keycloak.extraVolumeMounts` sections in values.yaml
-3. Set the ConfigMap name in `keycloak.extraVolumes[0].configMap.name`
+These two options are mutually exclusive. See [Security Prerequisites](#security-prerequisites) for details on each mode.
 
-If you don't configure realm import, you can configure Keycloak manually via the admin UI after deployment.
+When `createRealm` is true, the chart generates a `crucible-oidc-client-secrets` Secret (with `helm.sh/resource-policy: keep`) and a realm ConfigMap. You must also set the `extraEnvVars`, `extraVolumes`, and `extraVolumeMounts` to enable Keycloak's `--import-realm` flag.
 
-**Example custom configuration:**
-
-```yaml
-global:
-  keycloak:
-    basePath: "/auth"  # Custom Keycloak path
-    realm: "production"  # Custom realm name
-
-# Optional: Enable realm import
-keycloak:
-  extraEnvVars:
-    - name: KEYCLOAK_EXTRA_ARGS
-      value: "--import-realm"
-  extraVolumes:
-    - name: realm-import
-      configMap:
-        name: production-realm-config
-  extraVolumeMounts:
-    - name: realm-import
-      mountPath: /opt/bitnami/keycloak/data/import
-      readOnly: true
-```
+**All OIDC client secrets and the default admin password are randomly generated when using `createRealm`.**
 
 ### PostgreSQL Connection Settings
 
 Configure connection to your PostgreSQL database.
 
-| Parameter | Description | Default | Required |
-|-----------|-------------|---------|----------|
-| `global.postgresql.serviceName` | PostgreSQL service name or hostname | `""` | **Yes** |
-| `global.postgresql.port` | PostgreSQL port | `5432` | No |
-| `global.postgresql.secretName` | Secret containing credentials | `""` | **Yes** |
-| `global.postgresql.usernameKey` | Key in secret containing username | `username` | No |
-| `global.postgresql.passwordKey` | Key in secret containing password | `password` | No |
+| Parameter                       | Description                         | Default    | Required |
+| ------------------------------- | ----------------------------------- | ---------- | -------- |
+| `global.postgresql.serviceName` | PostgreSQL service name or hostname | `""`       | **Yes**  |
+| `global.postgresql.port`        | PostgreSQL port                     | `5432`     | No       |
+| `global.postgresql.secretName`  | Secret containing credentials       | `""`       | **Yes**  |
+| `global.postgresql.usernameKey` | Key in secret containing username   | `username` | No       |
+| `global.postgresql.passwordKey` | Key in secret containing password   | `password` | No       |
 
 **Examples:**
 
@@ -411,12 +399,12 @@ kubectl create secret generic postgres-credentials \
 
 ### Keycloak Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `keycloak.enabled` | Enable Keycloak deployment | `true` |
-| `keycloak.auth.adminUser` | Keycloak admin username | `keycloak-admin` |
-| `keycloak.httpRelativePath` | URL path for Keycloak | `/keycloak/` |
-| `keycloak.postgresql.enabled` | Enable Keycloak's bundled PostgreSQL (always disabled) | `false` |
+| Parameter                     | Description                                            | Default          |
+| ----------------------------- | ------------------------------------------------------ | ---------------- |
+| `keycloak.enabled`            | Enable Keycloak deployment                             | `true`           |
+| `keycloak.auth.adminUser`     | Keycloak admin username                                | `keycloak-admin` |
+| `keycloak.httpRelativePath`   | URL path for Keycloak                                  | `/keycloak/`     |
+| `keycloak.postgresql.enabled` | Enable Keycloak's bundled PostgreSQL (always disabled) | `false`          |
 
 **Note**: The Keycloak subchart's bundled PostgreSQL is disabled by default. Keycloak uses the external PostgreSQL database (either from crucible-infra or your own external database) via the `keycloak.externalDatabase` configuration.
 
@@ -430,9 +418,10 @@ kubectl get secret <release-name>-keycloak-auth -o jsonpath='{.data.admin-passwo
 
 ### Application-Specific Secrets
 
-Several applications require OAuth client secrets and service account credentials to be configured for inter-service communication.
+Several applications require OAuth client secrets and service account credentials for inter-service communication. When `keycloak.createRealm` is true, these are auto-generated and injected — no manual configuration required.
 
 **Note**: Authority URLs, authorization URLs, and token URLs are automatically populated with smart defaults based on `global.domain`. These defaults assume:
+
 - Keycloak is accessible at `https://{{ .Values.global.domain }}/keycloak/`
 - The realm name is `crucible`
 
@@ -446,11 +435,11 @@ Alloy requires a service account to communicate with other Crucible services (Pl
 alloy:
   alloy-api:
     resourceOwnerAuthorization:
-      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible" # Auto-populated
       clientId: "alloy.admin"
-      clientSecret: ""  # Required: OAuth client secret from Keycloak
-      userName: ""      # Required: Service account username
-      password: ""      # Required: Service account password
+      clientSecret: "" # Required: OAuth client secret from Keycloak
+      userName: "" # Required: Service account username
+      password: "" # Required: Service account password
 ```
 
 #### Blueprint Service Account
@@ -461,11 +450,11 @@ Blueprint requires a service account to communicate with CITE, Gallery, Player, 
 blueprint:
   blueprint-api:
     resourceOwnerAuthorization:
-      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible" # Auto-populated
       clientId: "blueprint.admin"
-      clientSecret: ""  # Required: OAuth client secret from Keycloak
-      userName: ""      # Required: Service account username
-      password: ""      # Required: Service account password
+      clientSecret: "" # Required: OAuth client secret from Keycloak
+      userName: "" # Required: Service account username
+      password: "" # Required: Service account password
 ```
 
 #### Caster Service Account
@@ -476,8 +465,8 @@ Caster requires a service account (client credentials) to communicate with Playe
 caster:
   caster-api:
     client:
-      userName: ""  # Required: Service account username
-      password: ""  # Required: Service account password
+      userName: "" # Required: Service account username
+      password: "" # Required: Service account password
 ```
 
 #### Steamfitter Service Account
@@ -488,11 +477,11 @@ Steamfitter requires a service account to communicate with Player and VM API.
 steamfitter:
   steamfitter-api:
     resourceOwnerAuthorization:
-      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"  # Auto-populated
+      authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible" # Auto-populated
       clientId: "steamfitter.admin"
-      clientSecret: ""  # Required: OAuth client secret from Keycloak
-      userName: ""      # Required: Service account username
-      password: ""      # Required: Service account password
+      clientSecret: "" # Required: OAuth client secret from Keycloak
+      userName: "" # Required: Service account username
+      password: "" # Required: Service account password
 ```
 
 #### Gameboard Game Engine
@@ -502,7 +491,7 @@ Gameboard requires a client secret to interact with TopoMojo for deploying chall
 ```yaml
 gameboard:
   gameboard-api:
-    gameEngineClientSecret: ""  # Required: TopoMojo client secret from Keycloak
+    gameEngineClientSecret: "" # Required: TopoMojo client secret from Keycloak
 ```
 
 ### Hypervisor Configuration
@@ -521,8 +510,8 @@ player:
       Vsphere__Host: "vcenter.example.com"
       Vsphere__Username: "player-account@vsphere.local"
       Vsphere__Password: "your-password"
-      Vsphere__DsName: "datastore1"              # DataStore name
-      Vsphere__BaseFolder: "player"              # Folder inside DataStore
+      Vsphere__DsName: "datastore1" # DataStore name
+      Vsphere__BaseFolder: "player" # Folder inside DataStore
       # Optional: Console connection rewrite settings
       RewriteHost__RewriteHost: false
       RewriteHost__RewriteHostUrl: "connect.example.com"
@@ -530,6 +519,7 @@ player:
 ```
 
 **Requirements:**
+
 - Privileged vCenter account
 - Dedicated datastore formatted as `<DATASTORE>/player/`
 - Network access from Kubernetes cluster to vCenter
@@ -545,12 +535,13 @@ player:
       # Proxmox configuration
       Proxmox__Enabled: true
       Proxmox__Host: "proxmox.example.com"
-      Proxmox__Port: 8006  # Default Proxmox port, use 443 if behind reverse proxy
+      Proxmox__Port: 8006 # Default Proxmox port, use 443 if behind reverse proxy
       Proxmox__Token: "PVEAPIToken=player@pve!tokenid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
       Proxmox__StateRefreshIntervalSeconds: 60
 ```
 
 **Requirements:**
+
 - Proxmox VE API token with appropriate permissions
 - Network access from Kubernetes cluster to Proxmox host
 - Token format: `PVEAPIToken=USER@REALM!TOKENID=UUID`
@@ -573,6 +564,7 @@ caster:
 ```
 
 **Requirements:**
+
 - vCenter account with appropriate Terraform provider permissions
 - See [Caster documentation](https://github.com/cmu-sei/caster) for required vSphere roles
 
@@ -587,7 +579,7 @@ topomojo:
   topomojo-api:
     env:
       # Hypervisor type selection
-      Pod__HypervisorType: "Vsphere"  # Options: "Vsphere" or "Proxmox"
+      Pod__HypervisorType: "Vsphere" # Options: "Vsphere" or "Proxmox"
       # VMware vSphere Pod configuration
       Pod__Url: "https://vcenter.example.com"
       Pod__User: "topomojo-account@vsphere.local"
@@ -617,7 +609,7 @@ topomojo:
       Pod__User: "topomojo@pve"
       Pod__Password: "your-password"
       Pod__ConsoleUrl: "https://{{ .Values.global.domain }}/console"
-      Pod__PoolPath: ""  # Optional: Proxmox pool path
+      Pod__PoolPath: "" # Optional: Proxmox pool path
       Pod__VmStore: "local-lvm"
       Pod__IsoStore: "local"
       Pod__DiskStore: "local-lvm"
@@ -628,6 +620,7 @@ topomojo:
 ```
 
 **Proxmox Requirements:**
+
 - Proxmox VE user account with appropriate permissions
 - Storage pools for VMs, ISOs, and disks
 - Network configuration (VLAN support if using VLANs)
@@ -654,30 +647,44 @@ topomojo:
 ```
 
 **vSphere Requirements:**
+
 - vCenter account with VM management permissions
 - Storage datastores for VMs, ISOs, and disks
 - Network configuration (VLAN range, uplink)
 
 **NSX-T/VMC Additional Requirements:**
+
 - NSX-T Manager API access with appropriate permissions
 - SDDC segment management capabilities
 
 ## Troubleshooting
+
+### OIDC Client Secrets
+
+When `keycloak.createRealm` is true, the chart creates a `crucible-oidc-client-secrets` Secret with `helm.sh/resource-policy: keep`. This Secret persists across `helm upgrade` and `helm uninstall`. To remove it manually:
+
+```bash
+kubectl delete secret crucible-oidc-client-secrets
+```
+
+To retrieve a generated secret:
+
+```bash
+kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.<key>}' | base64 --decode
+# Keys: alloy-admin, gameboard-api, player-vm-webhooks, grafana, moodle-client
+```
 
 ### Realm ConfigMap Not Found
 
 If you see an error about the realm ConfigMap not being found:
 
 ```bash
-# Verify the ConfigMap exists
-kubectl get configmap crucible-realm-config
+# When using createRealm, the ConfigMap is auto-generated
+kubectl get configmap <release-name>-config-cli
 
-# Check the ConfigMap has the realm.json key
-kubectl describe configmap crucible-realm-config
-
-# Recreate if needed
-kubectl create configmap crucible-realm-config \
-  --from-file=realm.json=path/to/realm.json
+# When using importRealmConfigMap, verify it exists
+kubectl get configmap <your-configmap-name>
+kubectl describe configmap <your-configmap-name>
 ```
 
 ### TLS Certificate Issues
@@ -702,16 +709,19 @@ kubectl get secret crucible-tls -o jsonpath='{.data.tls\.crt}' | \
 If applications cannot connect to the database:
 
 1. Verify crucible-infra is deployed and PostgreSQL is running:
+
    ```bash
    kubectl get pods -l app.kubernetes.io/name=postgresql
    ```
 
 2. Check that the service name matches:
+
    ```bash
    kubectl get svc | grep postgresql
    ```
 
 3. Verify the password secret exists:
+
    ```bash
    kubectl get secret crucible-infra-postgresql
    ```
@@ -735,11 +745,13 @@ If applications cannot authenticate with Keycloak:
 ### Applications Not Accessible via Ingress
 
 1. Verify the ingress controller is running:
+
    ```bash
    kubectl get pods -l app.kubernetes.io/name=ingress-nginx
    ```
 
 2. Check ingress resources:
+
    ```bash
    kubectl get ingress
    ```

@@ -44,10 +44,20 @@ keycloak:
           - "{{ .Values.global.domain }}"
         secretName: ""
 
+  # Automatically create and import a realm with dynamically generated client secrets.
+  # When true, the chart generates unique OIDC client secrets, creates a realm ConfigMap,
+  # and configures Keycloak to import it on startup.
+  # Mutually exclusive with importRealmConfigMap.
+  createRealm: false
+
+  # Import a realm from an existing ConfigMap (must contain a "realm.json" key).
+  # Set to the ConfigMap name. Mutually exclusive with createRealm.
+  # When set, you must also configure extraEnvVars/extraVolumes/extraVolumeMounts below.
+  importRealmConfigMap: ""
+
   # Realm import configuration (optional)
-  # Uncomment the sections below to enable automatic realm import on startup
-  # If you don't configure realm import, you can configure Keycloak manually via the admin UI
-  # The ConfigMap must exist before deploying and must contain a key named "realm.json"
+  # These are auto-configured when createRealm is true.
+  # When using importRealmConfigMap, uncomment and set the ConfigMap name below.
   extraEnvVars: []
   #   - name: KEYCLOAK_EXTRA_ARGS
   #     value: "--import-realm"
