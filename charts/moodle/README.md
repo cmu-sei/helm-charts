@@ -4,6 +4,10 @@
 
 This Helm chart deploys Moodle using the lightweight [Alpine Linux based Moodle image](https://github.com/erseco/alpine-moodle).
 
+## Migrating from Bitnami Moodle
+
+If you are currently using the Bitnami Moodle Helm chart and want to migrate to this chart, see [migrate.md](migrate.md) for a step-by-step guide. The migration reuses your existing database and moodledata storage with minimal downtime.
+
 ## Prerequisites
 
 - Kubernetes 1.19+
