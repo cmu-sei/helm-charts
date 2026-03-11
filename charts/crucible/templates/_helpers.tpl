@@ -51,6 +51,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Validate that createRealm and importRealmSecret are not both set.
+*/}}
+{{- define "crucible.validateRealmConfig" -}}
+{{- if and .Values.keycloak.createRealm .Values.keycloak.importRealmSecret -}}
+{{- fail "keycloak.createRealm and keycloak.importRealmSecret are mutually exclusive. Set only one." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the name of the TLS certificate secret.
 */}}
 {{- define "crucible.tlsSecretName" -}}

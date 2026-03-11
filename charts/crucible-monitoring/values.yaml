@@ -110,9 +110,9 @@ grafana:
             serviceMap:
               datasourceUid: prometheus
 
-  # Env var can optionally be used for OAuth client secret for integration
-  env:
-    GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ""
+  # Env var for OAuth client secret - set via envValueFrom in deployment values
+  # env:
+  #   GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ""
 
   # NOTE: To enable custom CA certificates for Grafana, set caCerts.enabled: true
   # Use the following configuration when deploying with custom certs:

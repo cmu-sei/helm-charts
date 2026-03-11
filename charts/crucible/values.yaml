@@ -31,8 +31,7 @@ keycloak:
     # Configure the ingress path for Keycloak
     # Example: /keycloak/
     path: "/keycloak/"
-    annotations:
-      {}
+    annotations: {}
       # Example for redirecting root path to admin console in the crucible realm:
       # nginx.ingress.kubernetes.io/server-snippet: |
       #   location ~ ^/keycloak/?$ {
@@ -44,17 +43,32 @@ keycloak:
           - "{{ .Values.global.domain }}"
         secretName: ""
 
+  # Automatically create and import a realm with dynamically generated client secrets.
+  # When true, the chart generates unique OIDC client secrets, creates a realm Secret,
+  # and configures Keycloak to import it on startup.
+  # Mutually exclusive with importRealmSecret.
+  createRealm: false
+
+  # Password for the "admin" user in the crucible realm (only used when createRealm is true).
+  # If empty, a random 16-character password is generated and persisted across upgrades.
+  # Useful for development when you want a known password.
+  realmAdminPassword: ""
+
+  # Import a realm from an existing Secret (must contain a "realm.json" key).
+  # Set to the Secret name. Mutually exclusive with createRealm.
+  # When set, you must also configure extraEnvVars/extraVolumes/extraVolumeMounts below.
+  importRealmSecret: ""
+
   # Realm import configuration (optional)
-  # Uncomment the sections below to enable automatic realm import on startup
-  # If you don't configure realm import, you can configure Keycloak manually via the admin UI
-  # The ConfigMap must exist before deploying and must contain a key named "realm.json"
+  # These are auto-configured when createRealm is true.
+  # When using importRealmSecret, uncomment and set the Secret name below.
   extraEnvVars: []
   #   - name: KEYCLOAK_EXTRA_ARGS
   #     value: "--import-realm"
   extraVolumes: []
   #   - name: realm-import
-  #     configMap:
-  #       name: crucible-realm-config
+  #     secret:
+  #       secretName: my-realm-secret
   extraVolumeMounts: []
   #   - name: realm-import
   #     mountPath: /opt/bitnami/keycloak/data/import
