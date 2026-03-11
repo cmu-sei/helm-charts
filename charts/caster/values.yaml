@@ -54,7 +54,9 @@ caster-api:
 
   # Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token
   # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
-  gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
+  # Example:
+  # gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
+  gitcredentials: ""
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -174,11 +176,16 @@ caster-api:
     # Terraform Information
     # - DefaultVersion - The default version to be used.
     # - GitlabApiUrl - URL to the deployed Gitlab instance
-    # - TODO - Add link to Installation Documentation on how to get GItlabTaken and GitlabGroupId
+    # - TODO - Add link to Installation Documentation on how to get GitlabToken and GitlabGroupId
+    # Example:
+    # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
+    # Terraform__GitlabToken: "your-gitlab-token"
+    # Terraform__GitlabGroupId: 6
     Terraform__DefaultVersion: "0.14.0"
-    Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
-    Terraform__GitlabToken: "TuyAi5abFvbSLpoDc9C2"
-    Terraform__GitlabGroupId: 6
+    Terraform__GitlabApiUrl: ""
+    Terraform__GitlabToken: ""
+    Terraform__GitlabGroupId:
+
 
     # Configurable save lengths for Caster untagged versions
     FileVersions__DaysToSaveAllUntaggedVersions: 7
