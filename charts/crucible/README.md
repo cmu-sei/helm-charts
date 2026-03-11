@@ -79,7 +79,7 @@ Set `keycloak.createRealm: true` in your values. The chart will:
 
 - Generate unique OIDC client secrets for each confidential client
 - Persist secrets in a `crucible-oidc-client-secrets` Kubernetes Secret (survives upgrades)
-- Create a realm ConfigMap with the generated secrets injected
+- Create a realm Secret with the generated secrets injected
 - Inject the generated secrets into each service's Secret automatically
 
 ```yaml
@@ -90,8 +90,8 @@ keycloak:
       value: "--import-realm"
   extraVolumes:
     - name: realm-import
-      configMap:
-        name: '{{ include "crucible.fullname" . }}-config-cli'
+      secret:
+        secretName: '{{ include "crucible.fullname" . }}-realm'
   extraVolumeMounts:
     - name: realm-import
       mountPath: /opt/bitnami/keycloak/data/import
@@ -106,18 +106,18 @@ kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.grafana}' | 
 
 **Option B: Import User-Provided Realm**
 
-Set `keycloak.importRealmConfigMap` to a pre-existing ConfigMap name containing a `realm.json` key:
+Set `keycloak.importRealmSecret` to a pre-existing Secret name containing a `realm.json` key:
 
 ```yaml
 keycloak:
-  importRealmConfigMap: "my-custom-realm"
+  importRealmSecret: "my-custom-realm"
   extraEnvVars:
     - name: KEYCLOAK_EXTRA_ARGS
       value: "--import-realm"
   extraVolumes:
     - name: realm-import
-      configMap:
-        name: my-custom-realm
+      secret:
+        secretName: my-custom-realm
   extraVolumeMounts:
     - name: realm-import
       mountPath: /opt/bitnami/keycloak/data/import
@@ -126,13 +126,13 @@ keycloak:
 
 **Option C: Manual Configuration (UI-Based, Chart Default)**
 
-Leave both `createRealm` and `importRealmConfigMap` unset. Configure Keycloak manually via the admin UI at `https://<domain>/keycloak/admin` after deployment.
+Leave both `createRealm` and `importRealmSecret` unset. Configure Keycloak manually via the admin UI at `https://<domain>/keycloak/admin` after deployment.
 
 ### 3. OAuth Client Secrets
 
 When `keycloak.createRealm` is true, OIDC client secrets are automatically generated and injected into service Secrets. No manual configuration is needed.
 
-When using `importRealmConfigMap` or manual configuration, you must configure OAuth client secrets in your values file (or via K8s secrets) to match the secrets in your Keycloak realm:
+When using `importRealmSecret` or manual configuration, you must configure OAuth client secrets in your values file (or via K8s secrets) to match the secrets in your Keycloak realm:
 
 ```yaml
 alloy:
@@ -174,7 +174,7 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql --ti
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
 
 - TLS certificate secret
-- Keycloak realm ConfigMap (optional - can configure via UI after deployment)
+- Keycloak realm Secret (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
 
 #### 3. Create Your Values File
@@ -195,8 +195,8 @@ global:
 #       value: "--import-realm"
 #   extraVolumes:
 #     - name: realm-import
-#       configMap:
-#         name: crucible-realm-config
+#       secret:
+#         secretName: my-realm-secret
 #   extraVolumeMounts:
 #     - name: realm-import
 #       mountPath: /opt/bitnami/keycloak/data/import
@@ -258,7 +258,7 @@ kubectl create secret generic postgres-credentials \
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
 
 - TLS certificate secret
-- Keycloak realm ConfigMap (optional - can configure via UI after deployment)
+- Keycloak realm Secret (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
 
 #### 3. Create Your Values File
@@ -346,12 +346,13 @@ These settings are used to construct Keycloak URLs for OIDC authentication acros
 
 | Parameter                       | Description                                                                    | Default |
 | ------------------------------- | ------------------------------------------------------------------------------ | ------- |
-| `keycloak.createRealm`          | Auto-generate OIDC secrets and `admin` user password to create realm ConfigMap | `false` |
-| `keycloak.importRealmConfigMap` | Import realm from an existing ConfigMap name                                   | `""`    |
+| `keycloak.createRealm`          | Auto-generate OIDC secrets and `admin` user password to create realm Secret | `false` |
+| `keycloak.realmAdminPassword`   | Password for realm `admin` user (random if empty, only with `createRealm`)  | `""`    |
+| `keycloak.importRealmSecret`    | Import realm from an existing Secret name                                   | `""`    |
 
 These two options are mutually exclusive. See [Security Prerequisites](#security-prerequisites) for details on each mode.
 
-When `createRealm` is true, the chart generates a `crucible-oidc-client-secrets` Secret (with `helm.sh/resource-policy: keep`) and a realm ConfigMap. You must also set the `extraEnvVars`, `extraVolumes`, and `extraVolumeMounts` to enable Keycloak's `--import-realm` flag.
+When `createRealm` is true, the chart generates a `crucible-oidc-client-secrets` Secret (with `helm.sh/resource-policy: keep`) and a realm Secret. You must also set the `extraEnvVars`, `extraVolumes`, and `extraVolumeMounts` to enable Keycloak's `--import-realm` flag.
 
 **All OIDC client secrets and the default admin password are randomly generated when using `createRealm`.**
 
@@ -674,17 +675,17 @@ kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.<key>}' | ba
 # Keys: alloy-admin, gameboard-api, player-vm-webhooks, grafana, moodle-client
 ```
 
-### Realm ConfigMap Not Found
+### Realm Secret Not Found
 
-If you see an error about the realm ConfigMap not being found:
+If you see an error about the realm Secret not being found:
 
 ```bash
-# When using createRealm, the ConfigMap is auto-generated
-kubectl get configmap <release-name>-config-cli
+# When using createRealm, the Secret is auto-generated
+kubectl get secret <release-name>-realm
 
-# When using importRealmConfigMap, verify it exists
-kubectl get configmap <your-configmap-name>
-kubectl describe configmap <your-configmap-name>
+# When using importRealmSecret, verify it exists
+kubectl get secret <your-secret-name>
+kubectl describe secret <your-secret-name>
 ```
 
 ### TLS Certificate Issues

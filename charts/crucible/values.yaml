@@ -44,31 +44,31 @@ keycloak:
         secretName: ""
 
   # Automatically create and import a realm with dynamically generated client secrets.
-  # When true, the chart generates unique OIDC client secrets, creates a realm ConfigMap,
+  # When true, the chart generates unique OIDC client secrets, creates a realm Secret,
   # and configures Keycloak to import it on startup.
-  # Mutually exclusive with importRealmConfigMap.
+  # Mutually exclusive with importRealmSecret.
   createRealm: false
 
   # Password for the "admin" user in the crucible realm (only used when createRealm is true).
   # If empty, a random 16-character password is generated and persisted across upgrades.
-  # Useful for development when you want a known password
+  # Useful for development when you want a known password.
   realmAdminPassword: ""
 
-  # Import a realm from an existing ConfigMap (must contain a "realm.json" key).
-  # Set to the ConfigMap name. Mutually exclusive with createRealm.
+  # Import a realm from an existing Secret (must contain a "realm.json" key).
+  # Set to the Secret name. Mutually exclusive with createRealm.
   # When set, you must also configure extraEnvVars/extraVolumes/extraVolumeMounts below.
-  importRealmConfigMap: ""
+  importRealmSecret: ""
 
   # Realm import configuration (optional)
   # These are auto-configured when createRealm is true.
-  # When using importRealmConfigMap, uncomment and set the ConfigMap name below.
+  # When using importRealmSecret, uncomment and set the Secret name below.
   extraEnvVars: []
   #   - name: KEYCLOAK_EXTRA_ARGS
   #     value: "--import-realm"
   extraVolumes: []
   #   - name: realm-import
-  #     configMap:
-  #       name: crucible-realm-config
+  #     secret:
+  #       secretName: my-realm-secret
   extraVolumeMounts: []
   #   - name: realm-import
   #     mountPath: /opt/bitnami/keycloak/data/import
