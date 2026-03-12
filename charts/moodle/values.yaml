@@ -43,7 +43,8 @@ moodle:
     reverseProxy: false
     sslProxy: true
 
-  ## Database Configuration
+  ## External database Configuration
+  ### Requires an external databsae to exist already (this chart will not deploy a database server)
   database:
     type: "pgsql"
     host: "pg-postgresql"
@@ -56,7 +57,7 @@ moodle:
     existingSecretUserKey: "" # Key in the secret containing the username (optional, uses 'user' field if empty)
     existingSecretPasswordKey: "postgres-password" # Key in the secret containing the password
     ## Create Database
-    ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
+    ## If enabled, a pre-install/pre-upgrade hook job will create the database on the server if it doesn't already exist
     create_database: true
 
   ## OAuth2/OIDC Configuration (Optional)
