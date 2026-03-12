@@ -514,7 +514,7 @@ spec:
             {{- end }}
             {{- if $oidc.iconUrl }}
             - name: OIDC_ICON_URL
-              value: {{ $oidc.iconUrl | quote }}
+              value: {{ tpl $oidc.iconUrl $ | quote }}
             {{- end }}
             - name: OIDC_WAIT_TIMEOUT
               value: {{ $oidc.waitTimeout | quote }}
