@@ -512,6 +512,10 @@ spec:
             - name: OIDC_CA_CERT_PATH
               value: {{ tpl $oidcCaCertPath $ | quote }}
             {{- end }}
+            {{- if $oidc.iconUrl }}
+            - name: OIDC_ICON_URL
+              value: {{ $oidc.iconUrl | quote }}
+            {{- end }}
             - name: OIDC_WAIT_TIMEOUT
               value: {{ $oidc.waitTimeout | quote }}
             - name: OIDC_WAIT_INTERVAL

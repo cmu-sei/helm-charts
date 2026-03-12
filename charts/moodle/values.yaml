@@ -43,20 +43,21 @@ moodle:
     reverseProxy: false
     sslProxy: true
 
-  ## Database Configuration
+  ## External database Configuration
+  ### Requires an external databsae to exist already (this chart will not deploy a database server)
   database:
     type: "pgsql"
     host: "pg-postgresql"
     port: "5432"
     name: "moodledb"
-    user: "moodle"  # Used only if existingSecret is empty or existingSecretUserKey is not set
+    user: "moodle" # Used only if existingSecret is empty or existingSecretUserKey is not set
     prefix: "mdl_"
-    password: ""  # Used only if existingSecret is empty
-    existingSecret: "pg-postgresql"  # Name of secret containing db credentials (recommended)
-    existingSecretUserKey: ""  # Key in the secret containing the username (optional, uses 'user' field if empty)
-    existingSecretPasswordKey: "postgres-password"  # Key in the secret containing the password
+    password: "" # Used only if existingSecret is empty
+    existingSecret: "pg-postgresql" # Name of secret containing db credentials (recommended)
+    existingSecretUserKey: "" # Key in the secret containing the username (optional, uses 'user' field if empty)
+    existingSecretPasswordKey: "postgres-password" # Key in the secret containing the password
     ## Create Database
-    ## If enabled, a pre-install/pre-upgrade hook job will create the database if it doesn't exist
+    ## If enabled, a pre-install/pre-upgrade hook job will create the database on the server if it doesn't already exist
     create_database: true
 
   ## OAuth2/OIDC Configuration (Optional)
@@ -77,6 +78,7 @@ moodle:
     loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes requested for offline/refresh tokens
     requireConfirmation: false ## Require email confirmation before linking new OIDC accounts
     showOnLoginPage: true ## Show OAuth2 provider button on the login page
+    iconUrl: "" ## URL for the OIDC provider logo shown on the login page (defaults to <provider-origin>/favicon.svg)
     ## User field mappings (maps OAuth2 claims to Moodle user fields)
     ## Format: "external:internal"
     userFieldMappings:
@@ -356,7 +358,6 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-body-size: "512m"
   hostname: moodle.example.com
   path: /
