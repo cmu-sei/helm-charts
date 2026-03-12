@@ -10,7 +10,7 @@ dependencies:
   version: 1.8.0
 - name: caster
   repository: https://helm.cmusei.dev/charts
-  version: 1.7.0
+  version: 1.7.1
 - name: cite
   repository: https://helm.cmusei.dev/charts
   version: 1.8.0
@@ -22,7 +22,7 @@ dependencies:
   version: 0.5.12
 - name: player
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.12
+  version: 1.8.13
 - name: steamfitter
   repository: https://helm.cmusei.dev/charts
   version: 1.6.11
@@ -31,6 +31,6 @@ dependencies:
   version: 0.6.4
 - name: moodle
   repository: https://helm.cmusei.dev/charts
-  version: 0.2.4
-digest: sha256:4d61c07bd31eda6a4808c7427782e968aaf07e2a172ce75551b1ba100c282120
-generated: "2026-03-09T16:26:53.716088716Z"
+  version: 0.2.5
+digest: sha256:cafd91bf7a7926369dd825963a6acdb88e0cea735db17fbd611112dd3002f1e7
+generated: "2026-03-12T13:51:55.086900774Z"
