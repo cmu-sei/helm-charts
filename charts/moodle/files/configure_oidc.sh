@@ -237,16 +237,18 @@ configure_oauth2() {
     PROVIDER_BASEURL="${PROVIDER_BASEURL%/}/"
   fi
 
-  # Derive provider icon URL from discovery URL host
-  OIDC_ORIGIN=$(printf '%s' "$OIDC_DISCOVERY_URL" | php -r '
-    $url = stream_get_contents(STDIN);
-    $parsed = parse_url(trim($url));
-    $scheme = $parsed["scheme"] ?? "https";
-    $host = $parsed["host"] ?? "";
-    $port = isset($parsed["port"]) ? ":" . $parsed["port"] : "";
-    echo $scheme . "://" . $host . $port;
-  ')
-  OIDC_ICON_URL="${OIDC_ORIGIN}/favicon.svg"
+  # Derive provider icon URL from discovery URL host (unless overridden)
+  if [ -z "${OIDC_ICON_URL:-}" ]; then
+    OIDC_ORIGIN=$(printf '%s' "$OIDC_DISCOVERY_URL" | php -r '
+      $url = stream_get_contents(STDIN);
+      $parsed = parse_url(trim($url));
+      $scheme = $parsed["scheme"] ?? "https";
+      $host = $parsed["host"] ?? "";
+      $port = isset($parsed["port"]) ? ":" . $parsed["port"] : "";
+      echo $scheme . "://" . $host . $port;
+    ')
+    OIDC_ICON_URL="${OIDC_ORIGIN}/favicon.svg"
+  fi
 
   log "OIDC issuer: ${OIDC_ISSUER}"
   log "OIDC provider base URL: ${PROVIDER_BASEURL}"

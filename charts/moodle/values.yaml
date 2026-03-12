@@ -77,6 +77,7 @@ moodle:
     loginScopesOffline: "openid profile email offline_access" ## OAuth2 scopes requested for offline/refresh tokens
     requireConfirmation: false ## Require email confirmation before linking new OIDC accounts
     showOnLoginPage: true ## Show OAuth2 provider button on the login page
+    iconUrl: "" ## URL for the OIDC provider logo shown on the login page (defaults to <provider-origin>/favicon.svg)
     ## User field mappings (maps OAuth2 claims to Moodle user fields)
     ## Format: "external:internal"
     userFieldMappings:

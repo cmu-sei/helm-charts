@@ -168,6 +168,7 @@ Configure Moodle to use an OIDC-compliant identity provider (IdP) for OAuth2 aut
 | `moodle.oidc.loginScopesOffline` | OAuth2 scopes requested for offline/refresh tokens | `openid profile email offline_access` |
 | `moodle.oidc.requireConfirmation` | Require email confirmation before linking new OIDC accounts | `false` |
 | `moodle.oidc.showOnLoginPage` | Show provider button on the login page | `true` |
+| `moodle.oidc.iconUrl` | URL for the provider logo shown on the login page (defaults to `<provider-origin>/favicon.svg`) | `""` |
 | `moodle.oidc.userFieldMappings` | Map OAuth2 claims to Moodle user fields (`"external:internal"`) | `["sub:idnumber"]` |
 | `moodle.oidc.disableCurlSecurityBlockedHosts` | Disable Moodle CURL security for internal provider communication | `true` |
 | `moodle.oidc.waitTimeout` | Total time to wait for discovery endpoint (seconds) | `300` |
