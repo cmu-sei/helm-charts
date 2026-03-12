@@ -281,6 +281,29 @@ configure_oauth2() {
   if [ -n "$EXISTING_ID" ]; then
       log "OAuth2 provider already exists with ID: $EXISTING_ID"
       OAUTH2_ISSUER_ID="$EXISTING_ID"
+
+      # Update the provider image if it differs from the desired icon URL
+      EXISTING_IMAGE=$(printf '%s\n' "$EXISTING_JSON" | php -r '
+        $name = "'"$OIDC_NAME"'";
+        $data = json_decode(stream_get_contents(STDIN), true);
+        if (!empty($data["data"])) {
+            foreach ($data["data"] as $issuer) {
+                if (isset($issuer["name"]) && $issuer["name"] === $name) {
+                    echo $issuer["image"] ?? "";
+                    exit(0);
+                }
+            }
+        }
+      ')
+
+      if [ "$EXISTING_IMAGE" != "$OIDC_ICON_URL" ]; then
+          log "Updating provider image from '$EXISTING_IMAGE' to '$OIDC_ICON_URL'..."
+          php_exec /opt/sei/custom-scripts/setup_environment.php \
+            --step=manage_oauth \
+            --id="$EXISTING_ID" \
+            --image="$OIDC_ICON_URL" 2>&1
+      fi
+
       return 0
   fi
 

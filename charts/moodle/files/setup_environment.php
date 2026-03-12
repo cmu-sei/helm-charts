@@ -163,18 +163,20 @@ function manage_oauth($options) {
         }
     }
 
-    if (empty($data->baseurl) || empty($data->clientid) || empty($data->clientsecret) || empty($data->name)) {
-        cli_error("Missing required fields: baseurl, clientid, clientsecret, name.");
-    }
+    if (empty($data->id)) {
+        if (empty($data->baseurl) || empty($data->clientid) || empty($data->clientsecret) || empty($data->name)) {
+            cli_error("Missing required fields: baseurl, clientid, clientsecret, name.");
+        }
 
-    $discoveryurl = rtrim($data->baseurl, '/') . '/.well-known/openid-configuration';
-    cli_writeln("OAuth2 baseurl: {$data->baseurl}");
-    cli_writeln("OAuth2 discovery URL: {$discoveryurl}");
-    if (!empty($options['tokenendpoint'])) {
-        cli_writeln("OAuth2 token endpoint: {$options['tokenendpoint']}");
-    }
-    if (!empty($options['userinfoendpoint'])) {
-        cli_writeln("OAuth2 userinfo endpoint: {$options['userinfoendpoint']}");
+        $discoveryurl = rtrim($data->baseurl, '/') . '/.well-known/openid-configuration';
+        cli_writeln("OAuth2 baseurl: {$data->baseurl}");
+        cli_writeln("OAuth2 discovery URL: {$discoveryurl}");
+        if (!empty($options['tokenendpoint'])) {
+            cli_writeln("OAuth2 token endpoint: {$options['tokenendpoint']}");
+        }
+        if (!empty($options['userinfoendpoint'])) {
+            cli_writeln("OAuth2 userinfo endpoint: {$options['userinfoendpoint']}");
+        }
     }
 
     if (empty($data->id)) {
