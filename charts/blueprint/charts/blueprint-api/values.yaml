@@ -129,6 +129,9 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
+  # Email Options
+  EmailOptions__Enabled: true
+
   # Open Telemetry
   # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
