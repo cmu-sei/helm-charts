@@ -257,6 +257,10 @@ blueprint:
       ClientSettings__PlayerUiUrl: https://{{ .Values.global.domain }}/player
       ClientSettings__SteamfitterUiUrl: https://{{ .Values.global.domain }}/steamfitter
       ClientSettings__BlueprintUiUrl: https://{{ .Values.global.domain }}/blueprint
+      # Concurrent request limits for integration operations
+      ClientSettings__CiteMaxConcurrentRequests: 5
+      ClientSettings__GalleryMaxConcurrentRequests: 5
+      ClientSettings__PlayerMaxConcurrentRequests: 3
       # Database settings
       Database__AutoMigrate: true
       Database__DevModeRecreate: false
