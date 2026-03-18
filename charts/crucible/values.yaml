@@ -252,6 +252,11 @@ blueprint:
       ClientSettings__GalleryApiUrl: https://{{ .Values.global.domain }}/gallery
       ClientSettings__PlayerApiUrl: https://{{ .Values.global.domain }}/player
       ClientSettings__SteamfitterApiUrl: https://{{ .Values.global.domain }}/steamfitter
+      ClientSettings__CiteUiUrl: https://{{ .Values.global.domain }}/cite
+      ClientSettings__GalleryUiUrl: https://{{ .Values.global.domain }}/gallery
+      ClientSettings__PlayerUiUrl: https://{{ .Values.global.domain }}/player
+      ClientSettings__SteamfitterUiUrl: https://{{ .Values.global.domain }}/steamfitter
+      ClientSettings__BlueprintUiUrl: https://{{ .Values.global.domain }}/blueprint
       # Database settings
       Database__AutoMigrate: true
       Database__DevModeRecreate: false
