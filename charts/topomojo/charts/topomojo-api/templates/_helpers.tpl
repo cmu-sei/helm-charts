@@ -73,6 +73,7 @@ Create the name of the service account to use
 envFrom:
   - secretRef:
       name: {{ include "topomojo-api.fullname" . }}
+{{- with .Values.extraEnvFrom }}{{ toYaml . | nindent 2 }}{{- end }}
 {{- end }}
 
 {{/*
