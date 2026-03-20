@@ -198,6 +198,15 @@ customStart: {}
 ## existingSecret references a secret already in k8s. The values are saved as files in `/home/app/conf`.
 existingSecret: ""
 
+## extraEnvFrom injects additional envFrom sources (secrets or configmaps) into the API container.
+## Useful for mounting externally managed secrets.
+## Each entry follows the Kubernetes envFrom spec (secretRef or configMapRef).
+extraEnvFrom: []
+# - secretRef:
+#     name: my-secret
+# - configMapRef:
+#     name: my-configmap
+
 # Config app settings with environment vars.
 # Those most likely needing values are listed. For others,
 # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf

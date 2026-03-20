@@ -257,6 +257,21 @@ topomojo-api:
     class: "nfs-client"
 ```
 
+#### Extra Environment Sources
+
+Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
+
+```yaml
+topomojo-api:
+  extraEnvFrom:
+    - secretRef:
+        name: my-secret
+    - configMapRef:
+        name: my-configmap
+```
+
+Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
+
 #### Custom Start Script
 
 For custom initialization (e.g., trusting CA certificates):
