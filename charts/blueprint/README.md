@@ -45,6 +45,36 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__ClientId` | OAuth client ID used by the API and interactive clients | `blueprint-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Blueprint` |
 
+### Integration API Settings
+
+Blueprint integrates with other Crucible services (CITE, Gallery, Player, Steamfitter). Configure the API URLs and performance settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ClientSettings__CiteApiUrl` | CITE API endpoint | |
+| `ClientSettings__GalleryApiUrl` | Gallery API endpoint | |
+| `ClientSettings__PlayerApiUrl` | Player API endpoint | |
+| `ClientSettings__SteamfitterApiUrl` | Steamfitter API endpoint | |
+| `ClientSettings__HttpClientTimeoutSeconds` | HTTP client timeout for integration API calls (seconds) | `300` (5 minutes) |
+| `ClientSettings__CiteMaxConcurrentRequests` | Max concurrent requests during CITE push | `5` |
+| `ClientSettings__GalleryMaxConcurrentRequests` | Max concurrent requests during Gallery push | `5` |
+| `ClientSettings__PlayerMaxConcurrentRequests` | Max concurrent requests during Player push | `3` |
+
+**Performance Tuning:**
+- Increase `HttpClientTimeoutSeconds` for large MSEL push operations that may exceed 5 minutes (e.g., CITE with thousands of submissions)
+- Adjust concurrent request limits based on target service database connection pool sizes
+
+Example:
+```yaml
+blueprint-api:
+  env:
+    ClientSettings__CiteApiUrl: "https://cite.example.com"
+    ClientSettings__GalleryApiUrl: "https://gallery.example.com"
+    ClientSettings__PlayerApiUrl: "https://player.example.com"
+    ClientSettings__SteamfitterApiUrl: "https://steamfitter.example.com"
+    ClientSettings__HttpClientTimeoutSeconds: 600  # 10 minutes for large operations
+```
+
 ### Certificate Trust
 
 Trust custom certificate authorities by referencing a Kubernetes ConfigMap that contains the CA bundle.

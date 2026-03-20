@@ -143,3 +143,26 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: blueprint-api
+
+  # ClientSettings - Integration API endpoints and configuration
+  ClientSettings__CiteApiUrl: ""
+  ClientSettings__GalleryApiUrl: ""
+  ClientSettings__PlayerApiUrl: ""
+  ClientSettings__SteamfitterApiUrl: ""
+  ClientSettings__CiteUiUrl: ""
+  ClientSettings__GalleryUiUrl: ""
+  ClientSettings__PlayerUiUrl: ""
+  ClientSettings__SteamfitterUiUrl: ""
+  ClientSettings__BlueprintUiUrl: ""
+
+  # Maximum concurrent requests for MSEL push operations
+  # Higher values = faster but more database connections
+  # Lower values = slower but safer for limited connection pools
+  ClientSettings__CiteMaxConcurrentRequests: 5
+  ClientSettings__GalleryMaxConcurrentRequests: 5
+  ClientSettings__PlayerMaxConcurrentRequests: 3
+
+  # HTTP client timeout in seconds for integration API calls
+  # Default 300 seconds (5 minutes) - increase for large MSEL push operations
+  # that may take longer (e.g., CITE with thousands of submissions)
+  ClientSettings__HttpClientTimeoutSeconds: 300
