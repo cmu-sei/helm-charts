@@ -27,6 +27,15 @@ cite-api:
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
+  ## extraEnvFrom injects additional envFrom sources (secrets or configmaps) into the API container.
+  ## Useful for mounting externally managed secrets.
+  ## Each entry follows the Kubernetes envFrom spec (secretRef or configMapRef).
+  extraEnvFrom: []
+  # - secretRef:
+  #     name: my-secret
+  # - configMapRef:
+  #     name: my-configmap
+
   # If this deployment needs to trust non-public certificates,
   # create a configMap with the needed certifcates and specify
   # the configMap name here
