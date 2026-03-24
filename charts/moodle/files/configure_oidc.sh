@@ -237,17 +237,12 @@ configure_oauth2() {
     PROVIDER_BASEURL="${PROVIDER_BASEURL%/}/"
   fi
 
-  # Derive provider icon URL from discovery URL host (unless overridden)
+  # Derive provider icon URL (unless overridden via OIDC_ICON_URL env var).
+  # Default to a Moodle-local copy of the Keycloak logo so we never depend on
+  # Keycloak's favicon path, which changes across versions.
   if [ -z "${OIDC_ICON_URL:-}" ]; then
-    OIDC_ORIGIN=$(printf '%s' "$OIDC_DISCOVERY_URL" | php -r '
-      $url = stream_get_contents(STDIN);
-      $parsed = parse_url(trim($url));
-      $scheme = $parsed["scheme"] ?? "https";
-      $host = $parsed["host"] ?? "";
-      $port = isset($parsed["port"]) ? ":" . $parsed["port"] : "";
-      echo $scheme . "://" . $host . $port;
-    ')
-    OIDC_ICON_URL="${OIDC_ORIGIN}/favicon.svg"
+    MOODLE_ORIGIN="${SITE_URL:-http://localhost:8080}"
+    OIDC_ICON_URL="${MOODLE_ORIGIN}/pix/key.svg"
   fi
 
   log "OIDC issuer: ${OIDC_ISSUER}"
