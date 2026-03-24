@@ -70,6 +70,21 @@ steamfitter-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### Extra Environment Sources
+
+Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
+
+```yaml
+steamfitter-api:
+  extraEnvFrom:
+    - secretRef:
+        name: my-secret
+    - configMapRef:
+        name: my-configmap
+```
+
+Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
+
 ### Crucible Integration (Player and VM API)
 
 Steamfitter needs to integrate with Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api)

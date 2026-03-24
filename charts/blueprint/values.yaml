@@ -27,6 +27,15 @@ blueprint-api:
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
+  ## extraEnvFrom injects additional envFrom sources (secrets or configmaps) into the API container.
+  ## Useful for mounting externally managed secrets.
+  ## Each entry follows the Kubernetes envFrom spec (secretRef or configMapRef).
+  extraEnvFrom: []
+  # - secretRef:
+  #     name: my-secret
+  # - configMapRef:
+  #     name: my-configmap
+
   env:
     # CORS policy settings.
     # The first entry should be the URL to Blueprint

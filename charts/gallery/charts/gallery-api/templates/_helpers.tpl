@@ -72,4 +72,5 @@ envFrom:
   - secretRef:
       name: {{ (tpl .Values.existingSecret .) }}
 {{- end }}
+{{- with .Values.extraEnvFrom }}{{ toYaml . | nindent 2 }}{{- end }}
 {{- end }}
