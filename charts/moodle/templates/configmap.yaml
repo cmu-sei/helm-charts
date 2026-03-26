@@ -34,4 +34,5 @@ metadata:
 data:
   configure_oidc.sh: {{ .Files.Get "files/configure_oidc.sh" | quote }}
   setup_environment.php: {{ .Files.Get "files/setup_environment.php" | quote }}
+  key.svg: {{ .Files.Get "files/key.svg" | quote }}
 {{- end }}

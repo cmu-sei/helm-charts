@@ -50,6 +50,9 @@ spec:
             - secretRef:
                 name: {{ include "gameboard-api.fullname" . }}
           {{- end }}
+          {{- with .Values.extraEnvFrom }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 80

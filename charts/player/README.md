@@ -61,6 +61,21 @@ player-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### Extra Environment Sources
+
+Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
+
+```yaml
+player-api:
+  extraEnvFrom:
+    - secretRef:
+        name: my-secret
+    - configMapRef:
+        name: my-configmap
+```
+
+Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
+
 ### CORS
 
 Add CORS origins to allow bidirectional communication between Player and the integrated apps.
@@ -231,6 +246,21 @@ Trust custom certificate authorities by referencing a Kubernetes ConfigMap that 
 vm-api:
   certificateMap: "custom-ca-certs"
 ```
+
+### Extra Environment Sources
+
+Inject additional environment variables into the VM API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
+
+```yaml
+vm-api:
+  extraEnvFrom:
+    - secretRef:
+        name: my-secret
+    - configMapRef:
+        name: my-configmap
+```
+
+Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
 
 ### Player API Integration
 

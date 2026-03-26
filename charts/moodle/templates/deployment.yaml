@@ -639,6 +639,10 @@ spec:
             - name: oidc-scripts
               mountPath: /opt/sei/custom-scripts
               readOnly: true
+            - name: oidc-scripts
+              mountPath: /var/www/html/pix/key.svg
+              subPath: key.svg
+              readOnly: true
             {{- end }}
             {{- if and $oidc.enabled $oidcCaCertMount }}
             - name: oidc-ca-cert

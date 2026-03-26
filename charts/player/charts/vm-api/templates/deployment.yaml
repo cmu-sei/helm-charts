@@ -37,6 +37,9 @@ spec:
             - secretRef:
                 name: {{ (tpl .Values.existingSecret .) }}
           {{- end }}
+          {{- with .Values.extraEnvFrom }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.certificateMap }}
           env:
             - name: SSL_CERT_DIR

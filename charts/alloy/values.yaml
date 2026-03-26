@@ -32,6 +32,15 @@ alloy-api:
   ## The key/value pairs in the secret are added as environment variables.
   existingSecret: ""
 
+  ## extraEnvFrom injects additional envFrom sources (secrets or configmaps) into the API container.
+  ## Useful for mounting externally managed secrets.
+  ## Each entry follows the Kubernetes envFrom spec (secretRef or configMapRef).
+  extraEnvFrom: []
+  # - secretRef:
+  #     name: my-secret
+  # - configMapRef:
+  #     name: my-configmap
+
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/alloy.api/Alloy.Api/appsettings.json

@@ -108,6 +108,21 @@ alloy-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### Extra Environment Sources
+
+Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
+
+```yaml
+alloy-api:
+  extraEnvFrom:
+    - secretRef:
+        name: my-secret
+    - configMapRef:
+        name: my-configmap
+```
+
+Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
+
 ### Helm Deployment Configuration
 
 The following are configurations for the Alloy API Helm Chart and application configurations that are configured outside of the `alloy-api.env` section.

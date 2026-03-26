@@ -86,20 +86,20 @@
       }
     ],
     "client": {
-      "alloy.api": [],
+      "alloy.swagger": [],
       "alloy.ui": [],
       "security-admin-console": [],
       "player.vm.webhooks": [],
       "topomojo.ui": [],
       "blueprint.ui": [],
       "account-console": [],
-      "blueprint.api": [],
+      "blueprint.swagger": [],
       "player.vm.console.ui": [],
       "alloy.admin": [],
-      "player.api": [],
+      "player.swagger": [],
       "admin-cli": [],
-      "caster.api": [],
-      "steamfitter.api": [],
+      "caster.swagger": [],
+      "steamfitter.swagger": [],
       "realm-management": [
         {
           "name": "create-client",
@@ -277,7 +277,7 @@
       "crucible.provider": [],
       "xview2.ui": [],
       "gameboard.ui": [],
-      "player.vm.api": [],
+      "player.vm.swagger": [],
       "player.ui": [],
       "broker": [
         {
@@ -290,16 +290,16 @@
       ],
       "steamfitter.ui": [],
       "caster.admin": [],
-      "xview2.api": [],
-      "gameboard.api": [],
+      "xview2.swagger": [],
+      "gameboard.swagger": [],
       "player.vm.ui": [],
-      "topomojo.api": [],
+      "topomojo.swagger": [],
       "player.vm.admin": [],
       "cite.ui": [],
-      "cite.api": [],
+      "cite.swagger": [],
       "cite.admin": [],
       "gallery.ui": [],
-      "gallery.api": [],
+      "gallery.swagger": [],
       "gallery.admin": [],
       "blueprint.admin": [],
       "steamfitter.admin": [],
@@ -700,7 +700,7 @@
       ]
     },
     {
-      "clientId": "alloy.api",
+      "clientId": "alloy.swagger",
       "name": "",
       "description": "",
       "rootUrl": "https://__DOMAIN__/alloy/api",
@@ -903,7 +903,7 @@
       "secret": "__CASTER_ADMIN_SECRET__"
     },
     {
-      "clientId": "caster.api",
+      "clientId": "caster.swagger",
       "name": "",
       "description": "",
       "rootUrl": "https://__DOMAIN__/caster/api",
@@ -1062,7 +1062,7 @@
       "secret": "__CRUCIBLE_PROVIDER_SECRET__"
     },
     {
-      "clientId": "gameboard.api",
+      "clientId": "gameboard.swagger",
       "name": "",
       "description": "",
       "rootUrl": "",
@@ -1072,7 +1072,6 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "__GAMEBOARD_API_SECRET__",
       "redirectUris": [
         "https://__DOMAIN__/gameboard/api/oauth2-redirect.html"
       ],
@@ -1087,7 +1086,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
-      "publicClient": false,
+      "publicClient": true,
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
@@ -1171,7 +1170,7 @@
       ]
     },
     {
-      "clientId": "player.api",
+      "clientId": "player.swagger",
       "name": "",
       "description": "",
       "rootUrl": "https://__DOMAIN__/player/api",
@@ -1335,7 +1334,7 @@
       "secret": "__PLAYER_VM_ADMIN_SECRET__"
     },
     {
-      "clientId": "player.vm.api",
+      "clientId": "player.vm.swagger",
       "name": "",
       "description": "",
       "rootUrl": "https://__DOMAIN__/vm/api",
@@ -1714,7 +1713,7 @@
       ]
     },
     {
-      "clientId": "topomojo.api",
+      "clientId": "topomojo.swagger",
       "name": "",
       "description": "",
       "rootUrl": "https://__DOMAIN__/topomojo/api",
@@ -1826,7 +1825,7 @@
       ]
     },
     {
-      "clientId": "xview2.api",
+      "clientId": "xview2.swagger",
       "name": "",
       "description": "",
       "rootUrl": "",
@@ -1987,8 +1986,8 @@
       "secret": "__BLUEPRINT_ADMIN_SECRET__"
     },
     {
-      "clientId": "blueprint.api",
-      "name": "blueprint.api",
+      "clientId": "blueprint.swagger",
+      "name": "blueprint.swagger",
       "description": "",
       "rootUrl": "https://__DOMAIN__/blueprint/api",
       "adminUrl": "https://__DOMAIN__/blueprint/api",
@@ -2187,8 +2186,8 @@
       "secret": "__CITE_ADMIN_SECRET__"
     },
     {
-      "clientId": "cite.api",
-      "name": "cite.api",
+      "clientId": "cite.swagger",
+      "name": "cite.swagger",
       "description": "",
       "rootUrl": "https://__DOMAIN__/cite/api",
       "adminUrl": "https://__DOMAIN__/cite/api",
@@ -2348,8 +2347,8 @@
       "secret": "__GALLERY_ADMIN_SECRET__"
     },
     {
-      "clientId": "gallery.api",
-      "name": "gallery.api",
+      "clientId": "gallery.swagger",
+      "name": "gallery.swagger",
       "description": "",
       "rootUrl": "https://__DOMAIN__/gallery/api",
       "adminUrl": "https://__DOMAIN__/gallery/api",
@@ -2510,8 +2509,8 @@
       "secret": "__STEAMFITTER_ADMIN_SECRET__"
     },
     {
-      "clientId": "steamfitter.api",
-      "name": "steamfitter.api",
+      "clientId": "steamfitter.swagger",
+      "name": "steamfitter.swagger",
       "description": "",
       "rootUrl": "https://__DOMAIN__/steamfitter/api",
       "adminUrl": "https://__DOMAIN__/steamfitter/api",
