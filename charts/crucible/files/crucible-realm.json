@@ -386,7 +386,11 @@
       "realmRoles": [
         "Administrator"
       ],
-      "clientRoles": {},
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin"
+        ]
+      },
       "subGroups": []
     }
   ],
@@ -4260,7 +4264,9 @@
         }
       ],
       "notBefore": 0,
-      "groups": []
+      "groups": [
+        "/Administrators"
+      ]
     },
     {
       "createdTimestamp": 1728496735256,
