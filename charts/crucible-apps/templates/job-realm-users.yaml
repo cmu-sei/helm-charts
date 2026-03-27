@@ -17,7 +17,7 @@ spec:
       serviceAccountName: {{ include "crucible.fullname" . }}-realm-setup
       containers:
         - name: setup
-          image: rancher/kubectl:latest
+          image: bitnami/kubectl:latest
           command:
             - /bin/sh
             - -c
