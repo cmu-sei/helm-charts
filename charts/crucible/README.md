@@ -6,36 +6,44 @@ This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) plat
 
 The crucible chart can be deployed with:
 
-- **crucible-infra chart** (provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs)
-- **External PostgreSQL** (RDS, Cloud SQL, Azure Database, or any PostgreSQL service)
-- **Custom infrastructure** (bring your own PostgreSQL, ingress, and storage)
+- **crucible-infra chart** - provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs
+- **External PostgreSQL** - RDS, Cloud SQL, Azure Database, or any PostgreSQL service
+- **Custom infrastructure** - bring your own PostgreSQL, ingress, and storage
 
 ### Components
 
 Chart components are enabled by default, but can be disabled via the values file.
 
-- **Keycloak**: Identity and access management for all Crucible applications
-- **Player**: Exercise player interface and VM management
-- **Caster**: Infrastructure-as-Code orchestration
+#### Crucible Framework
+
 - **Alloy**: Exercise event orchestration
 - **Blueprint**: Exercise design and templating
+- **Caster**: Infrastructure-as-Code orchestration
 - **CITE**: Collaborative incident threat evaluator
 - **Gallery**: Content library and exhibit management
 - **Gameboard**: Competitive cyber exercise platform
+- **Player**: Exercise player interface and VM management
 - **Steamfitter**: Scenario automation and simulation
 - **TopoMojo**: Virtual machine lab management
+
+#### Third Party Apps
+
+- **Keycloak**: Identity and access management for all Crucible applications (deployed via the Keycloak Operator)
 - **Moodle**: Learning management system integration
 
 ## Prerequisites
 
 1. **Kubernetes 1.19+**
 2. **Helm 3.0+**
-3. **PostgreSQL database** (crucible-infra chart, external PostgreSQL, or cloud database)
-4. **Ingress controller** (crucible-infra chart provides nginx, or use your own)
-5. **Persistent storage** (crucible-infra chart provides NFS provisioner and pre-created PVCs, or use your StorageClass)
-6. **TLS certificate** created as a Kubernetes secret
-7. **Keycloak realm configuration** (optional - can be configured via UI after deployment)
-8. **OAuth client secrets** generated and configured
+3. **[Keycloak Operator](https://www.keycloak.org/operator/installation)** installed in the cluster (provides the `Keycloak` and `KeycloakRealmImport` CRDs)
+4. **PostgreSQL database** provided by the crucible-infra chart, cloud database, or another cluster-accessible PostgreSQL source
+5. **Ingress controller** provided by the crucible-infra chart (nginx) or use your own
+6. **Persistent storage** provided by the crucible-infra chart (NFS provisioner and pre-created PVCs) or use your StorageClass
+7. **TLS certificate** created as a Kubernetes secret
+8. **Keycloak realm configuration** (optional - can be configured via UI after deployment)
+9. **OAuth client secrets** generated and configured
+
+The [crucible-operators chart](../crucible-operators) can be used to install the Keycloak Operator (and PostgreSQL Operator) before deploying this chart.
 
 ## Security Prerequisites
 
@@ -79,23 +87,14 @@ Set `keycloak.createRealm: true` in your values. The chart will:
 
 - Generate unique OIDC client secrets for each confidential client
 - Persist secrets in a `crucible-oidc-client-secrets` Kubernetes Secret (survives upgrades)
-- Create a realm Secret with the generated secrets injected
-- Inject the generated secrets into each service's Secret automatically
+- Create a `KeycloakRealmImport` custom resource with the generated secrets injected
 
 ```yaml
 keycloak:
   createRealm: true
-  extraEnvVars:
-    - name: KEYCLOAK_EXTRA_ARGS
-      value: "--import-realm"
-  extraVolumes:
-    - name: realm-import
-      secret:
-        secretName: '{{ include "crucible.fullname" . }}-realm'
-  extraVolumeMounts:
-    - name: realm-import
-      mountPath: /opt/bitnami/keycloak/data/import
-      readOnly: true
+  realmAdminUsername: "admin"        # optional, defaults to "admin"
+  realmAdminEmail: "admin@crucible.dev"  # optional
+  realmAdminPassword: ""             # optional, random if empty
 ```
 
 To retrieve generated secrets after deployment:
@@ -106,22 +105,11 @@ kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.grafana}' | 
 
 **Option B: Import User-Provided Realm**
 
-Set `keycloak.importRealmSecret` to a pre-existing Secret name containing a `realm.json` key:
+Set `keycloak.importRealmSecret` to a pre-existing Secret name containing a `realm.json` key. The chart mounts this Secret into the Keycloak pod at `/opt/keycloak/data/import`:
 
 ```yaml
 keycloak:
   importRealmSecret: "my-custom-realm"
-  extraEnvVars:
-    - name: KEYCLOAK_EXTRA_ARGS
-      value: "--import-realm"
-  extraVolumes:
-    - name: realm-import
-      secret:
-        secretName: my-custom-realm
-  extraVolumeMounts:
-    - name: realm-import
-      mountPath: /opt/bitnami/keycloak/data/import
-      readOnly: true
 ```
 
 **Option C: Manual Configuration (UI-Based, Chart Default)**
@@ -159,7 +147,17 @@ gameboard:
 
 If you're deploying the full Crucible infrastructure:
 
-#### 1. Install crucible-infra First
+#### 1. Install crucible-operators First
+
+```bash
+# Install the operators chart (provides Keycloak Operator and PostgreSQL Operator)
+helm install crucible-operators oci://registry.example.com/crucible-operators
+
+# Wait for operators to be ready
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keycloak-operator --timeout=300s
+```
+
+#### 2. Install crucible-infra
 
 ```bash
 # Install the infrastructure chart (provides PostgreSQL, Ingress, NFS storage)
@@ -169,7 +167,7 @@ helm install crucible-infra oci://registry.example.com/crucible-infra
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql --timeout=300s
 ```
 
-#### 2. Prepare Security Prerequisites
+#### 3. Prepare Security Prerequisites
 
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
 
@@ -177,35 +175,33 @@ Follow the [Security Prerequisites](#security-prerequisites) section to create:
 - Keycloak realm Secret (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
 
-#### 3. Create Your Values File
+#### 4. Create Your Values File
 
 ```yaml
 global:
   domain: crucible.example.com
+  ingress:
+    className: nginx
   postgresql:
     serviceName: "crucible-infra-postgresql"
     secretName: "crucible-infra-postgresql"
     usernameKey: "username"
-    passwordKey: "postgres-password"
+    passwordKey: "password"
 
-# Optional: Enable Keycloak realm import
+keycloak:
+  externalDatabase:
+    host: "crucible-infra-postgresql"
+    existingSecret: "crucible-infra-postgresql"
+    existingSecretUserKey: "username"
+    existingSecretPasswordKey: "password"
+
+# Optional: Auto-generate realm with OIDC secrets
 # keycloak:
-#   extraEnvVars:
-#     - name: KEYCLOAK_EXTRA_ARGS
-#       value: "--import-realm"
-#   extraVolumes:
-#     - name: realm-import
-#       secret:
-#         secretName: my-realm-secret
-#   extraVolumeMounts:
-#     - name: realm-import
-#       mountPath: /opt/bitnami/keycloak/data/import
-#       readOnly: true
+#   createRealm: true
 
 crucible-alloy:
   alloy-api:
     resourceOwnerAuthorization:
-      # authority is auto-populated from global.domain
       clientSecret: "your-alloy-client-secret"
       userName: "admin"
       password: "your-service-account-password"
@@ -235,17 +231,24 @@ gameboard:
     gameEngineClientSecret: "your-gameboard-client-secret"
 ```
 
-#### 4. Install the Crucible Chart
+#### 5. Install the Crucible Chart
 
 ```bash
-helm install crucible oci://registry.example.com/crucible -f my-values.yaml
+helm install crucible sei/crucible -f my-values.yaml
 ```
 
 ### Option B: Using External PostgreSQL (RDS, Cloud SQL, etc.)
 
 If you're using an external PostgreSQL service:
 
-#### 1. Create PostgreSQL Credentials Secret
+#### 1. Install crucible-operators
+
+```bash
+helm install crucible-operators sei/crucible-operators
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=keycloak-operator --timeout=300s
+```
+
+#### 2. Create PostgreSQL Credentials Secret
 
 ```bash
 kubectl create secret generic postgres-credentials \
@@ -253,7 +256,7 @@ kubectl create secret generic postgres-credentials \
   --from-literal=password='your-postgres-password'
 ```
 
-#### 2. Prepare Other Prerequisites
+#### 3. Prepare Other Prerequisites
 
 Follow the [Security Prerequisites](#security-prerequisites) section to create:
 
@@ -261,11 +264,13 @@ Follow the [Security Prerequisites](#security-prerequisites) section to create:
 - Keycloak realm Secret (optional - can configure via UI after deployment)
 - OAuth client secrets configuration
 
-#### 3. Create Your Values File
+#### 4. Create Your Values File
 
 ```yaml
 global:
   domain: crucible.example.com
+  ingress:
+    className: nginx
   postgresql:
     # AWS RDS example
     serviceName: "my-db.abc123.us-east-1.rds.amazonaws.com"
@@ -274,10 +279,16 @@ global:
     usernameKey: "username"
     passwordKey: "password"
 
+keycloak:
+  externalDatabase:
+    host: "my-db.abc123.us-east-1.rds.amazonaws.com"
+    existingSecret: "postgres-credentials"
+    existingSecretUserKey: "username"
+    existingSecretPasswordKey: "password"
+
 crucible-alloy:
   alloy-api:
     resourceOwnerAuthorization:
-      # authority is auto-populated from global.domain
       clientSecret: "your-alloy-client-secret"
       userName: "admin"
       password: "your-service-account-password"
@@ -309,7 +320,7 @@ gameboard:
 # Note: You'll need to provide your own ingress controller and storage
 ```
 
-#### 4. Install the Crucible Chart
+#### 5. Install the Crucible Chart
 
 ```bash
 helm install crucible sei/crucible -f my-values.yaml
@@ -324,12 +335,13 @@ helm install crucible sei/crucible -f my-values.yaml
 
 ### Global Settings
 
-| Parameter                             | Description                                | Default   | Required |
-| ------------------------------------- | ------------------------------------------ | --------- | -------- |
-| `global.domain`                       | Domain name for Crucible deployment        | `""`      | **Yes**  |
-| `global.namespace`                    | Kubernetes namespace                       | `default` | No       |
-| `global.version`                      | Version tag for Crucible components        | `0.0.0`   | No       |
-| `global.security.allowInsecureImages` | Allow unsigned container images (dev only) | `false`   | No       |
+| Parameter                    | Description                         | Default   | Required |
+| ---------------------------- | ----------------------------------- | --------- | -------- |
+| `global.domain`              | Domain name for Crucible deployment | `""`      | **Yes**  |
+| `global.namespace`           | Kubernetes namespace                | `default` | No       |
+| `global.version`             | Version tag for Crucible components | `0.0.0`   | No       |
+| `global.ingress.className`   | Ingress controller class name       | `""`      | **Yes**  |
+| `global.ingress.annotations` | Common annotations for all ingress  | `{}`      | No       |
 
 ### Keycloak Configuration
 
@@ -344,17 +356,55 @@ These settings are used to construct Keycloak URLs for OIDC authentication acros
 
 #### Realm Import Configuration
 
-| Parameter                       | Description                                                                    | Default |
-| ------------------------------- | ------------------------------------------------------------------------------ | ------- |
-| `keycloak.createRealm`          | Auto-generate OIDC secrets and `admin` user password to create realm Secret | `false` |
-| `keycloak.realmAdminPassword`   | Password for realm `admin` user (random if empty, only with `createRealm`)  | `""`    |
-| `keycloak.importRealmSecret`    | Import realm from an existing Secret name                                   | `""`    |
+| Parameter                       | Description                                                                       | Default            |
+| ------------------------------- | --------------------------------------------------------------------------------- | ------------------ |
+| `keycloak.createRealm`          | Auto-generate OIDC secrets and `admin` user password to create a `KeycloakRealmImport` CR | `false`  |
+| `keycloak.realmAdminPassword`   | Password for realm `admin` user (random if empty, only with `createRealm`)        | `""`               |
+| `keycloak.realmAdminUsername`   | Username for the default admin user in the realm (only with `createRealm`)        | `admin`            |
+| `keycloak.realmAdminEmail`      | Email for the default admin user in the realm (only with `createRealm`)           | `admin@crucible.dev` |
+| `keycloak.importRealmSecret`    | Import realm from an existing Secret name (must contain a `realm.json` key)       | `""`               |
 
 These two options are mutually exclusive. See [Security Prerequisites](#security-prerequisites) for details on each mode.
 
-When `createRealm` is true, the chart generates a `crucible-oidc-client-secrets` Secret (with `helm.sh/resource-policy: keep`) and a realm Secret. You must also set the `extraEnvVars`, `extraVolumes`, and `extraVolumeMounts` to enable Keycloak's `--import-realm` flag.
+When `createRealm` is true, the chart generates a `crucible-oidc-client-secrets` Secret (with `helm.sh/resource-policy: keep`) and a `KeycloakRealmImport` custom resource. The Keycloak Operator handles the actual realm import — no extra `extraEnvVars`, `extraVolumes`, or `extraVolumeMounts` configuration is needed.
 
 **All OIDC client secrets and the default admin password are randomly generated when using `createRealm`.**
+
+#### Operator & Instance Configuration
+
+| Parameter            | Description                                   | Default |
+| -------------------- | --------------------------------------------- | ------- |
+| `keycloak.enabled`   | Enable Keycloak deployment                    | `true`  |
+| `keycloak.instances` | Number of Keycloak replicas                   | `1`     |
+
+**Password Management**: The Keycloak Operator automatically creates an initial admin secret named `<release-name>-keycloak-initial-admin`. To retrieve the admin credentials:
+
+```bash
+kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.username}' | base64 --decode
+kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.password}' | base64 --decode
+```
+
+**Realm Import**: When `createRealm` is true, a `KeycloakRealmImport` CR is created. The Operator imports the realm on first startup. If the realm already exists, it will **not** be overwritten.
+
+#### Keycloak Ingress Configuration
+
+| Parameter                           | Description                              | Default |
+| ----------------------------------- | ---------------------------------------- | ------- |
+| `keycloak.ingress.enabled`          | Enable ingress for Keycloak              | `true`  |
+| `keycloak.ingress.ingressClassName` | Ingress class (defaults to `global.ingress.className`) | `""` |
+| `keycloak.ingress.tlsSecretName`    | TLS secret name (defaults to `crucible-cert`) | `""` |
+| `keycloak.ingress.annotations`      | Additional ingress annotations           | `{}`    |
+
+#### Keycloak Database Configuration
+
+| Parameter                                          | Description                              | Default    |
+| -------------------------------------------------- | ---------------------------------------- | ---------- |
+| `keycloak.externalDatabase.host`                   | PostgreSQL hostname or service name      | `""`       |
+| `keycloak.externalDatabase.port`                   | PostgreSQL port                          | `5432`     |
+| `keycloak.externalDatabase.database`               | Database name for Keycloak               | `keycloak` |
+| `keycloak.externalDatabase.existingSecret`         | Secret name containing DB credentials   | `""`       |
+| `keycloak.externalDatabase.existingSecretUserKey`  | Key in secret for username               | `username` |
+| `keycloak.externalDatabase.existingSecretPasswordKey` | Key in secret for password            | `password` |
 
 ### PostgreSQL Connection Settings
 
@@ -377,7 +427,7 @@ global:
     serviceName: "crucible-infra-postgresql"
     secretName: "crucible-infra-postgresql"
     usernameKey: "username"
-    passwordKey: "postgres-password"
+    passwordKey: "password"
 
 # Using external PostgreSQL
 global:
@@ -397,25 +447,6 @@ kubectl create secret generic postgres-credentials \
   --from-literal=username='postgres' \
   --from-literal=password='your-secure-password'
 ```
-
-### Keycloak Configuration
-
-| Parameter                     | Description                                            | Default          |
-| ----------------------------- | ------------------------------------------------------ | ---------------- |
-| `keycloak.enabled`            | Enable Keycloak deployment                             | `true`           |
-| `keycloak.auth.adminUser`     | Keycloak admin username                                | `keycloak-admin` |
-| `keycloak.httpRelativePath`   | URL path for Keycloak                                  | `/keycloak/`     |
-| `keycloak.postgresql.enabled` | Enable Keycloak's bundled PostgreSQL (always disabled) | `false`          |
-
-**Note**: The Keycloak subchart's bundled PostgreSQL is disabled by default. Keycloak uses the external PostgreSQL database (either from crucible-infra or your own external database) via the `keycloak.externalDatabase` configuration.
-
-**Password Management**: The Keycloak admin password is automatically generated on first install and persisted. To retrieve it:
-
-```bash
-kubectl get secret <release-name>-keycloak-auth -o jsonpath='{.data.admin-password}' | base64 --decode
-```
-
-**Realm Import**: The chart imports the Keycloak realm configuration on first startup. If the realm already exists, it will **not** be overwritten.
 
 ### Application-Specific Secrets
 
@@ -675,15 +706,37 @@ kubectl get secret crucible-oidc-client-secrets -o jsonpath='{.data.<key>}' | ba
 # Keys: alloy-admin, gameboard-api, player-vm-webhooks, grafana, moodle-client
 ```
 
+### Keycloak Operator Not Installed
+
+If you see errors about unknown CRDs (`keycloaks.k8s.keycloak.org`, `keycloakrealmimports.k8s.keycloak.org`), the Keycloak Operator is not installed:
+
+```bash
+# Check if CRDs are present
+kubectl get crd keycloaks.k8s.keycloak.org
+
+# Install via crucible-operators chart or follow the operator installation guide:
+# https://www.keycloak.org/operator/installation
+```
+
+### Keycloak Admin Credentials
+
+The Keycloak Operator creates an initial admin secret automatically:
+
+```bash
+# Retrieve operator-managed admin credentials
+kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.username}' | base64 --decode
+kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.password}' | base64 --decode
+```
+
 ### Realm Secret Not Found
 
 If you see an error about the realm Secret not being found:
 
 ```bash
-# When using createRealm, the Secret is auto-generated
-kubectl get secret <release-name>-realm
+# When using createRealm, a KeycloakRealmImport CR is auto-generated
+kubectl get keycloakrealmimport <release-name>-realm
 
-# When using importRealmSecret, verify it exists
+# When using importRealmSecret, verify the source Secret exists
 kubectl get secret <your-secret-name>
 kubectl describe secret <your-secret-name>
 ```
@@ -740,6 +793,7 @@ If applications cannot authenticate with Keycloak:
 2. Check client redirect URIs in Keycloak match application URLs
 3. Verify the realm was imported correctly:
    ```bash
+   kubectl get keycloakrealmimport <release-name>-realm -o jsonpath='{.status}'
    kubectl logs -l app.kubernetes.io/name=keycloak
    ```
 
@@ -765,6 +819,7 @@ If applications cannot authenticate with Keycloak:
 
 - [Crucible Documentation](https://cmu-sei.github.io/crucible/)
 - [Crucible GitHub Organization](https://github.com/cmu-sei)
+- [Keycloak Operator Documentation](https://www.keycloak.org/operator/installation)
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
 - [External Secrets Operator](https://external-secrets.io/)
 - [cert-manager Documentation](https://cert-manager.io/docs/)

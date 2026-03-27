@@ -6,43 +6,29 @@ global:
   # Domain name for the Crucible deployment
   domain: ""
   namespace: default
-  security:
-    # required for using Bitnami Legacy Keycloak subchart
-    allowInsecureImages: true
+  ingress:
+    # Ingress controller class name used by all services.
+    # Subchart ingress.className values below mirror this setting.
+    # To switch ingress controllers, change this value and all className entries below.
+    className: ""
+    # Common annotations applied to all ingress resources (optional)
+    annotations: {}
 
-# Deploy Keycloak IdP
-# https://artifacthub.io/packages/helm/bitnami/keycloak
+# Deploy Keycloak IdP (via Keycloak Operator)
+# https://www.keycloak.org/operator/installation
 keycloak:
   enabled: true
-  image:
-    # This bitnamilegacy image requires allowing insecure images
-    repository: bitnamilegacy/keycloak
-  auth:
-    # default admin creds come from an existing secret
-    adminUser: "keycloak-admin"
-    existingSecret: "{{ .Release.Name }}-keycloak-auth"
-  proxyHeaders: xforwarded
-  # Configure the base path for Keycloak
-  httpRelativePath: "/keycloak/"
+  instances: 1
   ingress:
     enabled: true
-    ingressClassName: nginx
-    hostname: "{{ .Values.global.domain }}"
-    # Configure the ingress path for Keycloak
-    # Example: /keycloak/
-    path: "/keycloak/"
+    ingressClassName: "{{ .Values.global.ingress.className }}"
+    tlsSecretName: ""
     annotations: {}
-      # Example for redirecting root path to admin console in the crucible realm:
+      # nginx example for redirecting root path to admin console in the crucible realm:
       # nginx.ingress.kubernetes.io/server-snippet: |
       #   location ~ ^/keycloak/?$ {
       #     return 302 $scheme://$host/keycloak/admin/crucible/console/;
       #   }
-    tls: true
-    extraTls:
-      - hosts:
-          - "{{ .Values.global.domain }}"
-        secretName: ""
-
   # Automatically create and import a realm with dynamically generated client secrets.
   # When true, the chart generates unique OIDC client secrets, creates a realm Secret,
   # and configures Keycloak to import it on startup.
@@ -53,36 +39,18 @@ keycloak:
   # If empty, a random 16-character password is generated and persisted across upgrades.
   # Useful for development when you want a known password.
   realmAdminPassword: ""
-
+  # Username for the default admin user in the Keycloak realm (only used when createRealm is true).
+  realmAdminUsername: "admin"
+  # Email address for the default admin user in the Keycloak realm (only used when createRealm is true).
+  realmAdminEmail: "admin@crucible.dev"
   # Import a realm from an existing Secret (must contain a "realm.json" key).
-  # Set to the Secret name. Mutually exclusive with createRealm.
-  # When set, you must also configure extraEnvVars/extraVolumes/extraVolumeMounts below.
   importRealmSecret: ""
-
-  # Realm import configuration (optional)
-  # These are auto-configured when createRealm is true.
-  # When using importRealmSecret, uncomment and set the Secret name below.
-  extraEnvVars: []
-  #   - name: KEYCLOAK_EXTRA_ARGS
-  #     value: "--import-realm"
-  extraVolumes: []
-  #   - name: realm-import
-  #     secret:
-  #       secretName: my-realm-secret
-  extraVolumeMounts: []
-  #   - name: realm-import
-  #     mountPath: /opt/bitnami/keycloak/data/import
-  #     readOnly: true
-
   # Database configuration
-  # Use the external postgres instead of the one provided by the bitnami chart
-  postgresql:
-    enabled: false
   externalDatabase:
     # PostgreSQL hostname or service name
     # Example: crucible-infra-postgresql
     host: ""
-    # Database name for Keycloak
+    port: 5432
     database: keycloak
     # Kubernetes secret containing PostgreSQL credentials
     # The secret must contain keys for username and password
@@ -96,7 +64,7 @@ alloy:
   enabled: true
   alloy-api:
     ingress:
-      className: "nginx"
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -122,7 +90,7 @@ alloy:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     # This secret contains the postgres connection string and OAuth credentials
     existingSecret: "{{ .Release.Name }}-alloy-api-custom"
     # Values placed into the {{ .Release.Name }}-alloy-api-custom secret
@@ -155,7 +123,7 @@ alloy:
 
   alloy-ui:
     ingress:
-      className: "nginx"
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -196,7 +164,7 @@ blueprint:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -223,7 +191,7 @@ blueprint:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-blueprint-api-custom"
     # Values placed into the {{ .Release.Name }}-blueprint-api-custom secret
     resourceOwnerAuthorization:
@@ -262,7 +230,7 @@ blueprint:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   blueprint-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -305,7 +273,7 @@ caster:
     # Git credentials - placeholder for local development
     gitcredentials: ""
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -334,7 +302,7 @@ caster:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-caster-api-custom"
     # Values placed into the {{ .Release.Name }}-caster-api-custom secret
     client:
@@ -370,7 +338,7 @@ caster:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   caster-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -406,7 +374,7 @@ cite:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -433,7 +401,7 @@ cite:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-cite-api-custom"
     env:
       PathBase: /cite
@@ -453,7 +421,7 @@ cite:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   cite-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -492,7 +460,7 @@ gallery:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -519,7 +487,7 @@ gallery:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-gallery-api-custom"
     env:
       PathBase: /gallery
@@ -539,7 +507,7 @@ gallery:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   gallery-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -579,11 +547,7 @@ gameboard:
     # certificateMap: "crucible-ca-cert"
     ingress:
       enabled: true
-      className: nginx
-      annotations:
-        nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-        nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-        nginx.ingress.kubernetes.io/proxy-body-size: 30m
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -611,7 +575,7 @@ gameboard:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-gameboard-api-custom"
     # IMPORTANT: Configure the game engine (TopoMojo) client secret
     # This should come from an external secret store in production
@@ -642,7 +606,7 @@ gameboard:
   gameboard-ui:
     ingress:
       enabled: true
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -685,7 +649,7 @@ player:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -712,7 +676,7 @@ player:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-player-api-custom"
     env:
       PathBase: /player
@@ -745,7 +709,7 @@ player:
       # OTEL_EXPORTER_OTLP_PROTOCOL: grpc
   player-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -777,7 +741,7 @@ player:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -804,7 +768,7 @@ player:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-vm-api-custom"
     env:
       PathBase: /vm
@@ -841,7 +805,7 @@ player:
       # Proxmox__StateRefreshIntervalSeconds: 60
   vm-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -868,7 +832,7 @@ player:
         silent_redirect_uri: https://{{ .Values.global.domain }}/vm/auth-callback-silent.html
   console-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -902,7 +866,7 @@ steamfitter:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -929,7 +893,7 @@ steamfitter:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-steamfitter-api-custom"
     # Values placed into the {{ .Release.Name }}-steamfitter-api-custom secret
     resourceOwnerAuthorization:
@@ -967,7 +931,7 @@ steamfitter:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   steamfitter-ui:
     ingress:
-      className: nginx
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -1006,9 +970,7 @@ topomojo:
     # certificateMap: "crucible-ca-cert"
     ingress:
       enabled: true
-      className: nginx
-      annotations:
-        nginx.ingress.kubernetes.io/proxy-body-size: 6g
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -1036,7 +998,7 @@ topomojo:
       # Key in the secret containing the username
       usernameKey: "username"
       # Key in the secret containing the password
-      passwordKey: "postgres-password"
+      passwordKey: "password"
     existingSecret: "{{ .Release.Name }}-topomojo-api-custom"
     env:
       PathBase: /topomojo
@@ -1089,9 +1051,7 @@ topomojo:
   topomojo-ui:
     ingress:
       enabled: true
-      className: nginx
-      annotations:
-        nginx.ingress.kubernetes.io/proxy-body-size: 6g
+      className: "{{ .Values.global.ingress.className }}"
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -1144,7 +1104,7 @@ moodle:
       user: "postgres" # Fallback if existingSecretUserKey is not set
       existingSecret: ""
       existingSecretUserKey: "username"
-      existingSecretPasswordKey: "postgres-password"
+      existingSecretPasswordKey: "password"
     ## OIDC OAuth2 Configuration
     oidc:
       enabled: true

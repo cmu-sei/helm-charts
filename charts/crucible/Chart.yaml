@@ -2,16 +2,10 @@ apiVersion: v2
 name: crucible
 description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.1.5
+version: 0.2.0
 home: https://cmu-sei.github.io/crucible/
 
 dependencies:
-  # Identity Provider
-  - name: keycloak
-    repository: oci://registry-1.docker.io/bitnamicharts
-    version: 24.6.4
-    condition: keycloak.enabled
-
   # Crucible Applications
   - name: alloy
     repository: https://helm.cmusei.dev/charts
