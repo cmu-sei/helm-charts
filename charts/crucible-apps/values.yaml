@@ -21,7 +21,7 @@ keycloak:
   instances: 1
   ingress:
     enabled: true
-    ingressClassName: "{{ .Values.global.ingress.className }}"
+    ingressClassName: ""
     tlsSecretName: ""
     annotations: {}
       # nginx example for redirecting root path to admin console in the crucible realm:
@@ -58,13 +58,13 @@ keycloak:
     # Key in the secret containing the username
     existingSecretUserKey: "username"
     # Key in the secret containing the password
-    existingSecretPasswordKey: "postgres-password"
+    existingSecretPasswordKey: "password"
 
 alloy:
   enabled: true
   alloy-api:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -123,7 +123,7 @@ alloy:
 
   alloy-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -164,7 +164,7 @@ blueprint:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -230,7 +230,7 @@ blueprint:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   blueprint-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -273,7 +273,7 @@ caster:
     # Git credentials - placeholder for local development
     gitcredentials: ""
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -338,7 +338,7 @@ caster:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   caster-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -374,7 +374,7 @@ cite:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -421,7 +421,7 @@ cite:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   cite-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -460,7 +460,7 @@ gallery:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -507,7 +507,7 @@ gallery:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   gallery-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -547,7 +547,7 @@ gameboard:
     # certificateMap: "crucible-ca-cert"
     ingress:
       enabled: true
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -606,7 +606,7 @@ gameboard:
   gameboard-ui:
     ingress:
       enabled: true
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -649,7 +649,7 @@ player:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -709,7 +709,7 @@ player:
       # OTEL_EXPORTER_OTLP_PROTOCOL: grpc
   player-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -741,7 +741,7 @@ player:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -805,7 +805,7 @@ player:
       # Proxmox__StateRefreshIntervalSeconds: 60
   vm-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -832,7 +832,7 @@ player:
         silent_redirect_uri: https://{{ .Values.global.domain }}/vm/auth-callback-silent.html
   console-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -866,7 +866,7 @@ steamfitter:
     # Uncomment the line below to enable
     # certificateMap: "crucible-ca-cert"
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -931,7 +931,7 @@ steamfitter:
       # SSL_CERT_DIR: /usr/local/share/ca-certificates
   steamfitter-ui:
     ingress:
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -970,7 +970,7 @@ topomojo:
     # certificateMap: "crucible-ca-cert"
     ingress:
       enabled: true
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
@@ -1051,7 +1051,7 @@ topomojo:
   topomojo-ui:
     ingress:
       enabled: true
-      className: "{{ .Values.global.ingress.className }}"
+      className: ""
       hosts:
         - host: "{{ .Values.global.domain }}"
           paths:
