@@ -8,8 +8,5 @@ dependencies:
 - name: pgadmin4
   repository: https://helm.runix.net
   version: 1.56.1
-- name: postgres
-  repository: https://self-hosters-by-night.github.io/helm-charts
-  version: 0.13.0
-digest: sha256:80dee578abd8d138fb026706a725acca9ab904b74e95765813ea7d66343ee4ac
-generated: "2026-01-14T17:41:15.529810626Z"
+digest: sha256:c26e4044b6afd19c433b2cd37063a611c3f8b73b2ab456c02fed7bd5d6242334
+generated: "2026-03-26T19:17:46.776930791Z"

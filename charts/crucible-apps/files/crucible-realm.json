@@ -386,7 +386,11 @@
       "realmRoles": [
         "Administrator"
       ],
-      "clientRoles": {},
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin"
+        ]
+      },
       "subGroups": []
     }
   ],
@@ -664,7 +668,6 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "60",
-        "client.secret.creation.time": "1692380650",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false",
         "use.refresh.tokens": "true",
@@ -1545,7 +1548,6 @@
       "protocol": "openid-connect",
       "attributes": {
         "oidc.ciba.grant.enabled": "false",
-        "client.secret.creation.time": "1728496401",
         "backchannel.logout.session.required": "true",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
@@ -2650,7 +2652,6 @@
       "attributes": {
         "realm_client": "false",
         "oidc.ciba.grant.enabled": "false",
-        "client.secret.creation.time": "1762805282",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
         "frontchannel.logout.session.required": "true",
@@ -4227,19 +4228,13 @@
   },
   "users": [
     {
-      "createdTimestamp": 1691686431553,
-      "username": "admin",
+      "username": "__ADMIN_USERNAME__",
       "enabled": true,
       "totp": false,
       "emailVerified": true,
-      "email": "admin@crucible.dev",
+      "email": "__ADMIN_EMAIL__",
       "firstName": "Admin",
       "lastName": "User",
-      "attributes": {
-        "terms_and_conditions": [
-          "1697642726"
-        ]
-      },
       "credentials": [],
       "disableableCredentialTypes": [],
       "requiredActions": [],
@@ -4247,23 +4242,12 @@
         "Administrator",
         "default-roles-crucible"
       ],
-      "clientConsents": [
-        {
-          "clientId": "player.ui",
-          "grantedClientScopes": [
-            "email",
-            "profile",
-            "roles"
-          ],
-          "createdDate": 1693252224685,
-          "lastUpdatedDate": 1693252224733
-        }
-      ],
       "notBefore": 0,
-      "groups": []
+      "groups": [
+        "/Administrators"
+      ]
     },
     {
-      "createdTimestamp": 1728496735256,
       "username": "service-account-player.vm.webhooks",
       "enabled": true,
       "totp": false,
