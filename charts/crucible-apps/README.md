@@ -1,10 +1,10 @@
-# Crucible Helm Chart
+# Crucible Apps Helm Chart
 
 This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) platform applications, including Keycloak identity provider and all Crucible services (Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle).
 
 ## Overview
 
-The crucible chart can be deployed with:
+The crucible-apps chart can be deployed with:
 
 - **crucible-infra chart** - provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs
 - **External PostgreSQL** - RDS, Cloud SQL, Azure Database, or any PostgreSQL service
@@ -199,7 +199,7 @@ keycloak:
 # keycloak:
 #   createRealm: true
 
-crucible-alloy:
+alloy:
   alloy-api:
     resourceOwnerAuthorization:
       clientSecret: "your-alloy-client-secret"
@@ -231,10 +231,10 @@ gameboard:
     gameEngineClientSecret: "your-gameboard-client-secret"
 ```
 
-#### 5. Install the Crucible Chart
+#### 5. Install the crucible-apps Chart
 
 ```bash
-helm install crucible sei/crucible -f my-values.yaml
+helm install crucible-apps sei/crucible-apps -f my-values.yaml
 ```
 
 ### Option B: Using External PostgreSQL (RDS, Cloud SQL, etc.)
@@ -286,7 +286,7 @@ keycloak:
     existingSecretUserKey: "username"
     existingSecretPasswordKey: "password"
 
-crucible-alloy:
+alloy:
   alloy-api:
     resourceOwnerAuthorization:
       clientSecret: "your-alloy-client-secret"
@@ -320,10 +320,10 @@ gameboard:
 # Note: You'll need to provide your own ingress controller and storage
 ```
 
-#### 5. Install the Crucible Chart
+#### 5. Install the crucible-apps Chart
 
 ```bash
-helm install crucible sei/crucible -f my-values.yaml
+helm install crucible-apps sei/crucible-apps -f my-values.yaml
 ```
 
 **Note**: When using external PostgreSQL, you must also provide:
@@ -528,7 +528,7 @@ gameboard:
 
 ### Hypervisor Configuration
 
-Crucible services (Player VM API, Caster, TopoMojo) require configuration to connect to your virtualization infrastructure. Each service has different configuration requirements based on its role.
+Some Crucible applications (Player VM API, Caster, TopoMojo) require configuration to connect to your virtualization infrastructure. Each service has different configuration requirements based on its role.
 
 #### Player VM API - vSphere Configuration
 
@@ -818,7 +818,7 @@ If applications cannot authenticate with Keycloak:
 ## References
 
 - [Crucible Documentation](https://cmu-sei.github.io/crucible/)
-- [Crucible GitHub Organization](https://github.com/cmu-sei)
+- [CMU SEI GitHub Organization](https://github.com/cmu-sei)
 - [Keycloak Operator Documentation](https://www.keycloak.org/operator/installation)
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
 - [External Secrets Operator](https://external-secrets.io/)
