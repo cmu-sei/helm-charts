@@ -1,6 +1,6 @@
 # Crucible Infrastructure Helm Chart
 
-This Helm chart deploys the foundational infrastructure components for the [Crucible](https://cmu-sei.github.io/crucible/) platform, including ingress controller, PostgreSQL database, NFS storage provisioner, and pgAdmin for database management.
+This Helm chart deploys the foundational infrastructure components for the [Crucible](https://cmu-sei.github.io/crucible/) platform, including ingress controller CloudNativePG (CNPG) PostgreSQL cluster, NFS storage provisioner, and pgAdmin for database management.
 
 ## Overview
 
@@ -12,8 +12,7 @@ The crucible-infra chart provides the core infrastructure services that the Cruc
 
 Chart components are enabled by default, but can be disabled via the values file.
 
-- **Ingress NGINX**: Routes external traffic to services within the cluster
-- **PostgreSQL**: Primary database for all Crucible applications
+- **PostgreSQL (CNPG)**: Primary database for all Crucible applications, deployed as a [CloudNativePG](https://cloudnative-pg.io/) `Cluster` resource. Requires the CNPG operator to be installed in the cluster. Automatically provisions per-database users and secrets.
 - **pgAdmin**: Web-based PostgreSQL management interface
 - **NFS Server Provisioner**: Provides dynamic NFS-backed persistent volumes for shared storage
 - **NFS PVCs**: Pre-created persistent volume claims for Crucible applications (TopoMojo, Gameboard, Caster) when the nfs provisioner is enabled
@@ -22,7 +21,8 @@ Chart components are enabled by default, but can be disabled via the values file
 
 1. Kubernetes 1.19+
 2. Helm 3.0+
-3. Sufficient cluster resources for database and storage
+3. [CloudNativePG operator](https://cloudnative-pg.io/documentation/current/installation_upgrade/) installed in the cluster (if PostgreSQL is enabled)
+4. Sufficient cluster resources for database and storage
 
 ## Quick Start
 
@@ -119,24 +119,45 @@ When the NFS server provisioner is enabled, the chart automatically creates pre-
 | `ingress-nginx.controller.allowSnippetAnnotations` | Allow snippet annotations | `true` |
 
 
-### PostgreSQL
+### PostgreSQL (CloudNativePG)
+
+This chart deploys PostgreSQL using the [CloudNativePG](https://cloudnative-pg.io/) operator. Instead of running PostgreSQL as a Helm subchart, it creates a CNPG `Cluster` custom resource that the operator manages.
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `postgresql.enabled` | Enable PostgreSQL database | `true` |
-| `postgresql.image.tag` | PostgreSQL image version | `18.1` |
-| `postgresql.env.vars.POSTGRES_USER` | PostgreSQL superuser name | `postgres` |
-| `postgresql.env.vars.POSTGRES_DB` | Default database name | `postgres` |
-| `postgresql.persistence.enabled` | Enable persistent storage | `true` |
-| `postgresql.persistence.size` | Size of database storage | `10Gi` |
+| `postgresql.enabled` | Enable PostgreSQL CNPG cluster | `true` |
+| `postgresql.instances` | Number of PostgreSQL instances | `1` |
+| `postgresql.persistence.size` | Size of database storage | `1Gi` |
+| `postgresql.persistence.storageClass` | Storage class for database volumes | `null` |
+| `postgresql.databases` | List of databases and users to create | See [Database Provisioning](#database-provisioning) |
 
-**Password Management**: The PostgreSQL password is automatically generated on first install and persisted using the `helm.sh/resource-policy: keep` annotation. The password will be maintained across chart upgrades. To retrieve the password:
+**Password Management**: The PostgreSQL superuser password is automatically generated on first install and persisted using the `helm.sh/resource-policy: keep` annotation. The password will be maintained across chart upgrades. Additionally, each database user gets its own secret. To retrieve the superuser password:
 
 ```bash
-kubectl get secret crucible-infra-postgresql -o jsonpath='{.data.postgres-password}' | base64 --decode
+kubectl get secret crucible-infra-postgresql -o jsonpath='{.data.password}' | base64 --decode
+```
+
+To retrieve a per-database user password (e.g., for the `alloy` database):
+
+```bash
+kubectl get secret crucible-infra-db-alloy -o jsonpath='{.data.password}' | base64 --decode
 ```
 
 **Postgres password(s) should be properly managed by kubernetes secrets in production deployments.**
+
+#### Database Provisioning
+
+The `postgresql.databases` value defines the databases and users that are automatically created when the CNPG cluster bootstraps. Each entry creates a database and a corresponding user (with the same name) that owns it. You can optionally specify an `owner` to assign ownership to an existing user instead of creating a new one.
+
+```yaml
+postgresql:
+  databases:
+    - name: myapp           # Creates user "myapp" and database "myapp"
+    - name: myapp_logging
+      owner: myapp          # Creates database "myapp_logging" owned by "myapp" (no new user)
+```
+
+Default databases provisioned: `keycloak`, `alloy`, `blueprint`, `caster`, `cite`, `gallery`, `gameboard`, `player`, `player_vm`, `player_vm_logging` (owned by `player_vm`), `steamfitter`, `topomojo`, `moodle`.
 
 ### pgAdmin
 
@@ -375,6 +396,7 @@ global:
     allowInsecureImages: false
 
 postgresql:
+  instances: 3
   persistence:
     size: 100Gi
     storageClass: "fast-ssd"
@@ -395,7 +417,7 @@ If you want to use an external PostgreSQL instance (RDS, Cloud SQL, etc.) instea
 
 ```yaml
 postgresql:
-  enabled: false  # Disables the PostgreSQL pod and secret
+  enabled: false  # Disables the CNPG cluster and associated secrets
 
 # Optionally disable pgAdmin as well since it depends on PostgreSQL
 pgadmin4:
@@ -409,13 +431,14 @@ pgadmin4:
 After deployment, infrastructure services are available:
 
 - **pgAdmin**: `https://{{ .Values.global.domain }}/pgadmin`
-- **PostgreSQL**: `{release-name}-postgresql.{namespace}.svc.cluster.local:5432` (cluster-internal)
+- **PostgreSQL**: `{release-name}-postgresql-rw.{namespace}.svc.cluster.local:5432` (cluster-internal, read-write)
+- **PostgreSQL (read-only)**: `{release-name}-postgresql-ro.{namespace}.svc.cluster.local:5432` (cluster-internal, read replicas)
 - **NFS**: via the `nfs` StorageClass
 
 ## Security Considerations
 
 ### Password Management
-- PostgreSQL and pgAdmin passwords are auto-generated on first install
+- PostgreSQL superuser, per-database user, and pgAdmin passwords are auto-generated on first install
 - Passwords are persisted across upgrades via the `helm.sh/resource-policy: keep` annotation
 - **Production deployments should**:
   - Use Kubernetes Secrets management (e.g., sealed-secrets, external-secrets)
@@ -435,25 +458,36 @@ After deployment, infrastructure services are available:
 
 If applications cannot connect to PostgreSQL:
 
-1. Verify the PostgreSQL pod is running:
+1. Verify the CNPG cluster status:
    ```bash
-   kubectl get pods -l app.kubernetes.io/name=postgres
+   kubectl get cluster {release-name}-postgresql
    ```
 
-2. Check the service exists:
+2. Verify the PostgreSQL pods are running:
    ```bash
-   kubectl get svc | grep postgresql
+   kubectl get pods -l cnpg.io/cluster={release-name}-postgresql
    ```
 
-3. Verify the password secret exists:
+3. Check the CNPG cluster events and logs:
+   ```bash
+   kubectl describe cluster {release-name}-postgresql
+   kubectl logs -l cnpg.io/cluster={release-name}-postgresql
+   ```
+
+4. Verify the read-write service exists:
+   ```bash
+   kubectl get svc {release-name}-postgresql-rw
+   ```
+
+5. Verify the password secret exists:
    ```bash
    kubectl get secret {release-name}-postgresql
    ```
 
-4. Test database connection from within the cluster:
+6. Test database connection from within the cluster:
    ```bash
-   kubectl run -it --rm debug --image=postgres:18 --restart=Never -- psql \
-     -h {release-name}-postgresql -U postgres -d postgres
+   kubectl run -it --rm debug --image=postgres:17 --restart=Never -- psql \
+     -h {release-name}-postgresql-rw -U postgres -d postgres
    ```
 
 ### NFS Provisioner Issues
@@ -525,8 +559,8 @@ kubectl delete pvc -l app.kubernetes.io/instance=crucible-infra
 ## References
 
 - [Crucible Documentation](https://cmu-sei.github.io/crucible/)
+- [CloudNativePG Documentation](https://cloudnative-pg.io/documentation/)
 - [Ingress NGINX Documentation](https://kubernetes.github.io/ingress-nginx/)
-- [PostgreSQL Chart](https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres)
 - [NFS Server Provisioner](https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner)
 
 ## License
