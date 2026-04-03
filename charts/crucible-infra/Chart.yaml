@@ -2,7 +2,7 @@ apiVersion: v2
 name: crucible-infra
 description: Crucible platform infrastructure deployment (ingress, database, storage)
 type: application
-version: 0.0.2
+version: 0.1.0
 
 dependencies:
   # NFS storage provisioner for shared storage
@@ -22,10 +22,3 @@ dependencies:
     repository: https://helm.runix.net
     version: 1.56.1
     condition: pgadmin4.enabled
-
-  # PostgreSQL database
-  - name: postgres
-    alias: postgresql
-    repository: https://self-hosters-by-night.github.io/helm-charts
-    version: 0.13.0
-    condition: postgresql.enabled
