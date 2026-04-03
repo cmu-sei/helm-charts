@@ -1,0 +1,12 @@
+apiVersion: v2
+name: crucible-operators
+description: Kubernetes operator prerequisites for the Crucible platform - installs Keycloak Operator and CloudNative-PG Operator
+type: application
+version: 0.1.0
+home: https://cmu-sei.github.io/crucible/
+
+dependencies:
+  - name: cloudnative-pg
+    repository: https://cloudnative-pg.github.io/charts
+    version: 0.25.0
+    condition: cnpg.enabled
