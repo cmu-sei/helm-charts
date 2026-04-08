@@ -9,51 +9,51 @@ dependencies:
   # Crucible Applications
   - name: alloy
     repository: https://helm.cmusei.dev/charts
-    version: 1.6.14
+    version: 1.6.18
     condition: alloy.enabled
 
   - name: blueprint
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.3
+    version: 1.8.18
     condition: blueprint.enabled
 
   - name: caster
     repository: https://helm.cmusei.dev/charts
-    version: 1.7.2
+    version: 1.7.6
     condition: caster.enabled
 
   - name: cite
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.1
+    version: 1.8.13
     condition: cite.enabled
 
   - name: gallery
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.1
+    version: 1.8.9
     condition: gallery.enabled
 
   - name: gameboard
     repository: https://helm.cmusei.dev/charts
-    version: 0.5.12
+    version: 0.5.14
     condition: gameboard.enabled
 
   - name: player
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.14
+    version: 1.8.18
     condition: player.enabled
 
   - name: steamfitter
     repository: https://helm.cmusei.dev/charts
-    version: 1.6.12
+    version: 1.6.21
     condition: steamfitter.enabled
 
   - name: topomojo
     repository: https://helm.cmusei.dev/charts
-    version: 0.6.4
+    version: 0.6.6
     condition: topomojo.enabled
 
   # Moodle LMS
   - name: moodle
     repository: https://helm.cmusei.dev/charts
-    version: 0.2.6
+    version: 0.2.7
     condition: moodle.enabled

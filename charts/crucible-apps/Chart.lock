@@ -1,33 +1,33 @@
 dependencies:
 - name: alloy
   repository: https://helm.cmusei.dev/charts
-  version: 1.6.14
+  version: 1.6.18
 - name: blueprint
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.3
+  version: 1.8.18
 - name: caster
   repository: https://helm.cmusei.dev/charts
-  version: 1.7.2
+  version: 1.7.6
 - name: cite
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.1
+  version: 1.8.13
 - name: gallery
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.1
+  version: 1.8.9
 - name: gameboard
   repository: https://helm.cmusei.dev/charts
-  version: 0.5.12
+  version: 0.5.14
 - name: player
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.14
+  version: 1.8.18
 - name: steamfitter
   repository: https://helm.cmusei.dev/charts
-  version: 1.6.12
+  version: 1.6.21
 - name: topomojo
   repository: https://helm.cmusei.dev/charts
-  version: 0.6.4
+  version: 0.6.6
 - name: moodle
   repository: https://helm.cmusei.dev/charts
-  version: 0.2.6
-digest: sha256:7904fceb8cb140f3852d7a41d2da6006b55841ca491fa168e55e200d12bbb844
-generated: "2026-03-26T12:34:05.265746407Z"
+  version: 0.2.7
+digest: sha256:08775a1a4f422bfc769b87d66fc06eb38af3e7f709282e12c1b8bd9af6c59572
+generated: "2026-04-08T16:54:24.154308666Z"
