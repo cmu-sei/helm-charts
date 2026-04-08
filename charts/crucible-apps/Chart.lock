@@ -19,7 +19,7 @@ dependencies:
   version: 0.5.14
 - name: player
   repository: https://helm.cmusei.dev/charts
-  version: 1.8.18
+  version: 1.8.19
 - name: steamfitter
   repository: https://helm.cmusei.dev/charts
   version: 1.6.21
@@ -29,5 +29,5 @@ dependencies:
 - name: moodle
   repository: https://helm.cmusei.dev/charts
   version: 0.2.7
-digest: sha256:08775a1a4f422bfc769b87d66fc06eb38af3e7f709282e12c1b8bd9af6c59572
-generated: "2026-04-08T16:54:24.154308666Z"
+digest: sha256:2ed5b948cffc76b633fecf59390acdec9ccde1c8159b8af64c01b39351d78ef4
+generated: "2026-04-08T18:10:12.451863604Z"
