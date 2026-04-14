@@ -218,6 +218,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `NotificationsSettings.url`  | URL for receiving notifications                             | `https://player.example.com/hubs`                  |
 | `NotificationsSettings.number_to_display` | Number of items in the notification area       | `4`                                                |
 
+
 ## VM API Configuration
 
 The following are configured via the `vm-api.env` settings. These VM API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Vm.Api/blob/main/src/Player.Vm.Api/appsettings.json) which may contain more settings than are described here.
@@ -412,6 +413,42 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
 
+
+## Classification Banner
+
+All Player UI applications (player-ui, vm-ui, console-ui) support an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
+
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
+| `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
+| `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
+| `HeaderBarSettings.classification_text_fontsize` | Font size (px) of the classification label | `"14"` |
+| `HeaderBarSettings.message_text` | Secondary message text displayed in the banner | `""` |
+| `HeaderBarSettings.message_text_color` | Color of the secondary message text | `#ffffff` |
+| `HeaderBarSettings.message_text_fontsize` | Font size (px) of the secondary message text | `"14"` |
+
+Configure each UI application's `HeaderBarSettings` individually.
+
+Example:
+
+```yaml
+player-ui:
+  settingsYaml:
+    HeaderBarSettings:
+      enabled: true
+      banner_background_color: "#d40000ff"
+      classification_text: "Example Classification Test"
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: "Example Message"
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+```
+
+![example classification banner with an example message](img/player-classification-banner-example.png)
 
 ## Troubleshooting
 
