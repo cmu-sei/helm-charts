@@ -144,6 +144,38 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
+### Classification Banner
+
+Gallery UI supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
+| `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
+| `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
+| `HeaderBarSettings.classification_text_fontsize` | Font size (px) of the classification label | `"14"` |
+| `HeaderBarSettings.message_text` | Secondary message text displayed in the banner | `""` |
+| `HeaderBarSettings.message_text_color` | Color of the secondary message text | `#ffffff` |
+| `HeaderBarSettings.message_text_fontsize` | Font size (px) of the secondary message text | `"14"` |
+
+Example:
+
+```yaml
+gallery-ui:
+  settingsYaml:
+    HeaderBarSettings:
+      enabled: true
+      banner_background_color: "#d40000ff"
+      classification_text: "Example Classification Test"
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: "Example Message"
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+```
+
+![example classification banner with an example message](img/gallery-classification-banner-example.png)
 
 ## References
 
