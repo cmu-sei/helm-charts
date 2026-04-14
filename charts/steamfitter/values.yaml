@@ -160,3 +160,12 @@ steamfitter-ui:
     #   automaticSilentRenew: true
     #   silent_redirect_uri: https://steamfitter.example.com/auth-callback-silent/
     # UseLocalAuthStorage: true
+    # HeaderBarSettings:
+    #   banner_background_color: "#d40000ff"
+    #   classification_text: ""
+    #   classification_text_color: "#ffffff"
+    #   classification_text_fontsize: "14"
+    #   message_text: ""
+    #   message_text_color: "#ffffff"
+    #   message_text_fontsize: "14"
+    #   enabled: true
