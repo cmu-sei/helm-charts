@@ -205,6 +205,37 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `PlayerUIAddress` | Player UI URL for cross-navigation | `https://player.example.com` |
 | `UseLocalAuthStorage` | Persist auth state in local storage | `true` |
 
+### Classification Banner
+
+Alloy UI 3.4.0+ supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with placeholder values — configure `classification_text` and `message_text` to display content, or set `enabled: false` to hide the banner entirely.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
+| `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
+| `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
+| `HeaderBarSettings.classification_text_fontsize` | Font size (px) of the classification label | `"14"` |
+| `HeaderBarSettings.message_text` | Secondary message text displayed in the banner | `""` |
+| `HeaderBarSettings.message_text_color` | Color of the secondary message text | `#ffffff` |
+| `HeaderBarSettings.message_text_fontsize` | Font size (px) of the secondary message text | `"14"` |
+
+Example:
+
+```yaml
+alloy-ui:
+  settingsYaml:
+    HeaderBarSettings:
+      enabled: true
+      banner_background_color: "#d40000ff"
+      classification_text: "SECRET//NOFORN"
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: "This system contains classified information."
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+```
+
 ## Troubleshooting
 
 ### Database Connection Issues
