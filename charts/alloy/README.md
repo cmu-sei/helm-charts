@@ -207,7 +207,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 ### Classification Banner
 
-Alloy UI 3.4.0+ supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with placeholder values — configure `classification_text` and `message_text` to display content, or set `enabled: false` to hide the banner entirely.
+Alloy UI 3.4.0+ supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
 
 | Setting | Description | Default |
 |---------|-------------|---------|
@@ -228,13 +228,15 @@ alloy-ui:
     HeaderBarSettings:
       enabled: true
       banner_background_color: "#d40000ff"
-      classification_text: "SECRET//NOFORN"
+      classification_text: "Example Classification Test"
       classification_text_color: "#ffffff"
       classification_text_fontsize: "14"
-      message_text: "This system contains classified information."
+      message_text: "Example Message"
       message_text_color: "#ffffff"
       message_text_fontsize: "14"
 ```
+
+![example classification banner with an example message](img/alloy-classification-banner-example.png)
 
 ## Troubleshooting
 
