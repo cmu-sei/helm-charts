@@ -95,8 +95,24 @@ extraVolumes: ""
 
 extraVolumeMounts: ""
 
+## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+## settings.shared.json key. When set, the file is mounted into the Angular
+## app's assets/config/ directory alongside settings.env.json so the app can
+## load shared UI configuration that is common across multiple Crucible services.
+## Per-app values can still be overridden via settingsYaml.
+sharedSettingsConfigMap: ""
+
 ## settings is stringified json that gets included as assets/settings.json
 settings: "{}"
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-settingsYaml: {}
+settingsYaml:
+  HeaderBarSettings:
+    banner_background_color: "#d40000ff"
+    classification_text: ""
+    classification_text_color: "#ffffff"
+    classification_text_fontsize: "14"
+    message_text: ""
+    message_text_color: "#ffffff"
+    message_text_fontsize: "14"
+    enabled: true
