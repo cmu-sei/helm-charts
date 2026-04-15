@@ -145,8 +145,12 @@ alloy-ui:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   # NOTE:  PlayerUIAddress is the URL to the Crucible - Player application
@@ -175,3 +179,6 @@ alloy-ui:
     #   message_text_color: "#ffffff"
     #   message_text_fontsize: "14"
     #   enabled: true
+
+  ## settings is stringified json that gets included as assets/settings.json
+  settings: "{}"
