@@ -144,6 +144,35 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
+### Shared Settings ConfigMap
+
+`sharedSettingsConfigMap` mounts a pre-existing Kubernetes ConfigMap as `settings.shared.json` into the Angular app's `assets/config/` directory alongside `settings.env.json`. This is intended for UI configuration values that are consistent across several Crucible applications, so the values only need to be defined in one place. Any value in the shared file can be overridden per-application using `settingsYaml`.
+
+```yaml
+gallery-ui:
+  sharedSettingsConfigMap: "crucible-shared-ui-settings"
+```
+
+The referenced ConfigMap must contain a key named `settings.shared.json`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucible-shared-ui-settings
+data:
+  settings.shared.json: |
+    {
+      "HeaderBarSettings": {
+        "banner_background_color": "#d40000ff",
+        "classification_text": "EXAMPLE // CLASSIFICATION",
+        "enabled": true
+      }
+    }
+```
+
+When `sharedSettingsConfigMap` is not set (the default), no shared settings file is mounted and the behavior is unchanged.
+
 ### Classification Banner
 
 Gallery UI supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
