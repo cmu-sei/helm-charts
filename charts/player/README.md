@@ -413,6 +413,38 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
 
+## Shared Settings ConfigMap
+
+`sharedSettingsConfigMap` mounts a pre-existing Kubernetes ConfigMap as `settings.shared.json` into the Angular app's `assets/config/` directory alongside `settings.env.json`. This is intended for UI configuration values that are consistent across several Crucible applications, so the values only need to be defined in one place. Any value in the shared file can be overridden per-application using `settingsYaml`. Each Player UI application (player-ui, vm-ui, console-ui) can be configured independently.
+
+```yaml
+player-ui:
+  sharedSettingsConfigMap: "crucible-shared-ui-settings"
+vm-ui:
+  sharedSettingsConfigMap: "crucible-shared-ui-settings"
+console-ui:
+  sharedSettingsConfigMap: "crucible-shared-ui-settings"
+```
+
+The referenced ConfigMap must contain a key named `settings.shared.json`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucible-shared-ui-settings
+data:
+  settings.shared.json: |
+    {
+      "HeaderBarSettings": {
+        "banner_background_color": "#d40000ff",
+        "classification_text": "EXAMPLE // CLASSIFICATION",
+        "enabled": true
+      }
+    }
+```
+
+When `sharedSettingsConfigMap` is not set (the default), no shared settings file is mounted and the behavior is unchanged.
 
 ## Classification Banner
 

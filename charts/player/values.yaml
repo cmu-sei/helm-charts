@@ -182,6 +182,13 @@ player-ui:
 
   extraVolumeMounts: ""
 
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.env.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
+
   env:
     ## basehref is path to the app
     APP_BASEHREF: ""
