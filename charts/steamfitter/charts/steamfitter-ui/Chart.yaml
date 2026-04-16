@@ -2,4 +2,4 @@ apiVersion: v2
 name: steamfitter-ui
 type: application
 version: 1.7.0
-appVersion: 3.9.0
+appVersion: 3.9.1
