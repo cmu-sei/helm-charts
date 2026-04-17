@@ -88,39 +88,31 @@ ingress-nginx:
 
 # PostgreSQL Database
 # Primary database for Crucible applications
-# https://github.com/self-hosters-by-night/helm-charts/tree/main/charts/postgres
+# Assumes a CloudNative Postgres Operator is running
+# This chart creates the CNPG cluster resources
 postgresql:
   enabled: true
-  image:
-    registry: docker.io
-    repository: postgres
-    tag: "18.1"
-
-  # Environment variables for PostgreSQL
-  env:
-    vars:
-      # Default postgres superuser name
-      POSTGRES_USER: "postgres"
-      # Default postgres database
-      POSTGRES_DB: "postgres"
-      # Use a subdirectory so postgres owns the data dir without chmod on the mount root
-      PGDATA: "/var/lib/postgresql/18/docker/pgdata"
-
-    # Password is managed via secret (see templates/secret.yaml)
-    fromSecret:
-      POSTGRES_PASSWORD:
-        from: "{{ .Release.Name }}-postgresql"
-        key: postgres-password
-
-  # Persistent storage for database
+  instances: 1
   persistence:
-    enabled: true
-    annotations: {}
-    storageClass: null
-    accessModes:
-      - ReadWriteOnce
     size: "1Gi"
-    selector: null
+    storageClass: null
+  # Default values create databases / users for all crucible apps
+  # Override this if less apps are being deployed
+  databases:
+    - name: keycloak
+    - name: alloy
+    - name: blueprint
+    - name: caster
+    - name: cite
+    - name: gallery
+    - name: gameboard
+    - name: player
+    - name: player_vm
+    - name: player_vm_logging
+      owner: player_vm
+    - name: steamfitter
+    - name: topomojo
+    - name: moodle
 
 # pgAdmin4
 # Web-based PostgreSQL administration tool
@@ -156,7 +148,7 @@ pgadmin4:
       crucible-postgres:
         Name: "Crucible PostgreSQL"
         Group: "Servers"
-        Host: "{{ .Release.Name }}-postgresql"
+        Host: "{{ .Release.Name }}-postgresql-rw"
         Port: "5432"
         Username: "postgres"
         SSLMode: "prefer"
@@ -164,6 +156,7 @@ pgadmin4:
 
   ingress:
     enabled: true
+    # Assumes use of the bundled ingress-nginx
     ingressClassName: nginx
     hosts:
       - host: "{{ .Values.global.domain }}"
