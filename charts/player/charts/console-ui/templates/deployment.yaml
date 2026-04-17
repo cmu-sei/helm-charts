@@ -52,11 +52,24 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "console-ui.fullname" . }}-settings
+            {{- if .Values.sharedSettingsConfigMap }}
+            - mountPath: /usr/share/nginx/html/assets/config/settings.shared.json
+              subPath: settings.shared.json
+              name: {{ include "console-ui.fullname" . }}-shared-settings
+            {{- end }}
             {{- include "console-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "console-ui.fullname" . }}-settings
           configMap:
             name: {{ include "console-ui.fullname" . }}
+        {{- if .Values.sharedSettingsConfigMap }}
+        - name: {{ include "console-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ .Values.sharedSettingsConfigMap }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- end }}
         {{- include "console-ui.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

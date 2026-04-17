@@ -3,7 +3,7 @@ name: cite
 description: CITE enables participants from different organizations to evaluate, score,
   and comment on cyber incidents.
 type: application
-version: 1.8.12
+version: 1.9.0
 home: https://cmu-sei.github.io/crucible/cite/
 sources:
 - https://github.com/cmu-sei/cite.Api
