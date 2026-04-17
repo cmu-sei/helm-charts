@@ -1,9 +1,10 @@
 apiVersion: v2
 name: gameboard
-description: Gameboard provides a competition-ready user interface for running cybersecurity games and challenges.
+description: Gameboard provides a competition-ready user interface for running cybersecurity
+  games and challenges.
 type: application
-version: 0.5.13
+version: 0.5.14
 home: https://cmu-sei.github.io/crucible/gameboard/
 sources:
-  - https://github.com/cmu-sei/Gameboard/
-  - https://github.com/cmu-sei/Gameboard-Ui/
+- https://github.com/cmu-sei/Gameboard/
+- https://github.com/cmu-sei/Gameboard-Ui/
