@@ -37,13 +37,38 @@ blueprint-api:
   #     name: my-configmap
 
   env:
+    # http_proxy: ""
+    # https_proxy: ""
+    # HTTP_PROXY: ""
+    # HTTPS_PROXY: ""
+    # NO_PROXY: ""
+    # no_proxy: ""
+
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Warning
+    Logging__Debug__LogLevel__Microsoft: Warning
+    Logging__Debug__LogLevel__System: Warning
+    Logging__Console__LogLevel__Default: Warning
+    Logging__Console__LogLevel__Microsoft: Warning
+    Logging__Console__LogLevel__System: Warning
+
     # CORS policy settings.
     # The first entry should be the URL to Blueprint
     CorsPolicy__Origins__0: https://blueprint.example.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=blueprint_api;Username=blueprint_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+    Database__SeedFile: seed-data.json
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -52,6 +77,11 @@ blueprint-api:
     Authorization__AuthorizationScope: blueprint
     Authorization__ClientId: blueprint.swagger
     Authorization__ClientName: Blueprint API Swagger
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
