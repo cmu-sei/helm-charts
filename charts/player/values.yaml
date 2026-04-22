@@ -87,6 +87,16 @@ player-api:
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
+    SKIP_VOL_PERMISSIONS: false
+
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Information
+    Logging__Debug__LogLevel__Microsoft: Error
+    Logging__Debug__LogLevel__System: Error
+    Logging__Console__LogLevel__Default: Information
+    Logging__Console__LogLevel__Microsoft: Error
+    Logging__Console__LogLevel__System: Error
+
     # CORS policy settings.
     # The first entry should be the URL to player
     # The second entry should be the URL to VM App
@@ -98,6 +108,16 @@ player-api:
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -106,6 +126,26 @@ player-api:
     Authorization__AuthorizationScope: "player-api"
     Authorization__ClientId: player-api-dev
     Authorization__ClientName: "Player API"
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
+
+    Notifications__UserIconUrl: "/assets/img/SP_Icon_User.png"
+    Notifications__SystemIconUrl: "/assets/img/SP_Icon_Alert.png"
+    Notifications__HelpDeskApplicationName: "Help Desk"
+
+    FileUpload__basePath: "/fileupload"
+    FileUpload__maxSize: "64000000"
+    FileUpload__allowedExtensions__0: ".pdf"
+    FileUpload__allowedExtensions__1: ".png"
+    FileUpload__allowedExtensions__2: ".jpg"
+    FileUpload__allowedExtensions__3: ".jpeg"
+    FileUpload__allowedExtensions__4: ".doc"
+    FileUpload__allowedExtensions__5: ".docx"
+    FileUpload__allowedExtensions__6: ".gif"
+    FileUpload__allowedExtensions__7: ".txt"
 
     # Basic seed data to jumpstart deployement
     # This is a placeholder and needs to be updated for a new install.
@@ -216,15 +256,15 @@ player-ui:
     # AppTopBarHexColor: "#b00"
     # AppTopBarHexTextColor: "#FFFFFF"
     # UseLocalAuthStorage: true
-    # HeaderBarSettings:
-    #   banner_background_color: "#d40000ff"
-    #   classification_text: ""
-    #   classification_text_color: "#ffffff"
-    #   classification_text_fontsize: "14"
-    #   message_text: ""
-    #   message_text_color: "#ffffff"
-    #   message_text_fontsize: "14"
-    #   enabled: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: true
 
 vm-api:
   # iso - an NFS volume mount for ISO uploads
@@ -321,15 +361,32 @@ vm-api:
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Information
+    Logging__Debug__LogLevel__Microsoft: Error
+    Logging__Debug__LogLevel__System: Error
+    Logging__Console__LogLevel__Default: Information
+    Logging__Console__LogLevel__Microsoft: Error
+    Logging__Console__LogLevel__System: Error
+
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
 
     # CORS policy settings.
     # The first entry should be the URL to VM App
     # The second entry should be the URL to Console App
     CorsPolicy__Origins__0: "https://vm.example.com"
     CorsPolicy__Origins__1: "https://console.example.com"
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -338,6 +395,11 @@ vm-api:
     Authorization__AuthorizationScope: "vm-api player-api"
     Authorization__ClientId: vm-api-dev
     Authorization__ClientName: "VM API"
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    IsoUpload__BasePath: "/app/isos/player"
+    IsoUpload_MaxFileSize: 6000000000
 
     # OAuth2 Identity Client /w Password
     IdentityClient__TokenUrl: https://identity.example.com/connect/token
@@ -345,6 +407,8 @@ vm-api:
     IdentityClient__Scope: "player-api vm-api"
     IdentityClient__Username:
     IdentityClient__Password:
+    IdentityClient__MaxRetryDelaySeconds: 120
+    IdentityClient__TokenRefreshSeconds: 600
 
     # Crucible Player URL
     ClientSettings__urls__playerApi: "https://player.example.com"
@@ -363,6 +427,15 @@ vm-api:
     Vsphere__Password:
     Vsphere__DsName:
     Vsphere__BaseFolder: "player"
+    Vsphere__Timeout: 30
+    Vsphere__ConnectionRetryIntervalSeconds: 60
+    Vsphere__ConnectionRefreshIntervalMinutes: 20
+    Vsphere__LoadCacheAfterMinutes: 5
+    Vsphere__ConnectionTimeoutSeconds: 90
+    Vsphere__LogConsoleAccess: false
+    Vsphere__CheckTaskProgressIntervalMilliseconds: 5000
+    Vsphere__ReCheckTaskProgressIntervalMilliseconds: 1000
+    Vsphere__HealthAllowanceSeconds: 180
 
     # Rewrite Host settings
     # See "consoleIngress" section above for usage
@@ -428,6 +501,8 @@ vm-ui:
   ## load shared UI configuration that is common across multiple Crucible services.
   ## Per-app values can still be overridden via settingsYaml.
   sharedSettingsConfigMap: ""
+
+  additionalVolumes: []
 
   env:
     ## basehref is path to the app
@@ -545,3 +620,14 @@ console-ui:
     #     height: 768
     #   - width: 800
     #     height: 600
+    # PasteSpeeds:
+    #   - name: Fastest
+    #     value: 10
+    #   - name: Fast
+    #     value: 30
+    #   - name: Normal
+    #     value: 60
+    #   - name: Slow
+    #     value: 100
+    #   - name: Slowest
+    #     value: 500
