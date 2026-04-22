@@ -32,9 +32,20 @@ The following are configured via the `steamfitter-api.env` settings. These Steam
 
 ### Database Settings
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
+| `PathBase` | Virtual directory path base | `""` |
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=steamfitter_api;Username=steamfitter;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 **Important:**
 Database requires the `uuid-ossp` extension:
@@ -60,6 +71,32 @@ steamfitter-api:
 | `Authorization__AuthorizationScope` | OAuth scopes for the Steamfitter to request for the user authentication flow | `player-api steamfitter-api vm-api` |
 | `Authorization__ClientId` | OAuth client ID | `steamfitter-api` |
 | `Authorization__ClientName` | OAuth client display name | `Steamfitter API` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### CORS Policy
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+### Claims Transformation
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### File Storage
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Files__LocalDirectory` | Local file directory | `"/tmp/"` |
 
 ### Certificate Trust
 
@@ -105,6 +142,8 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 | `ResourceOwnerAuthorization__UserName` | Service account username | `steamfitter-service` |
 | `ResourceOwnerAuthorization__Password` | Service account password | `password` |
 | `ResourceOwnerAuthorization__Scope` | Service account scopes | `vm-api` |
+| `ResourceOwnerAuthorization__ClientSecret` | Resource owner client secret | `""` |
+| `ResourceOwnerAuthorization__TokenExpirationBufferSeconds` | Token expiration buffer | `900` |
 
 ### StackStorm Integration
 
@@ -115,6 +154,12 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 | `VmTaskProcessing__ApiPassword` | StackStorm password | `password` |
 | `VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | `https://stackstorm.example.com` |
 | `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `cluster1,cluster2` |
+| `VmTaskProcessing__VmListUpdateIntervalMinutes` | VM list update interval | `5` |
+| `VmTaskProcessing__HealthCheckSeconds` | Health check interval | `30` |
+| `VmTaskProcessing__HealthCheckTimeoutSeconds` | Health check timeout | `90` |
+| `VmTaskProcessing__TaskProcessIntervalMilliseconds` | Task processing interval | `5000` |
+| `VmTaskProcessing__TaskProcessMaxWaitSeconds` | Task processing max wait | `120` |
+| `VmTaskProcessing__ExpirationCheckSeconds` | Expiration check interval | `30` |
 
 **StackStorm Setup**
 1. Deploy StackStorm instance
