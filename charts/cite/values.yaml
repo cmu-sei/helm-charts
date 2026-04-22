@@ -56,13 +56,31 @@ cite-api:
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
-    # CORS policy settings.
-    # The first entry should be the URL to CITE
-    CorsPolicy__Origins__0: https://cite.example.com
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Information
+    Logging__Debug__LogLevel__Microsoft: Error
+    Logging__Debug__LogLevel__System: Error
+    Logging__Console__LogLevel__Default: Information
+    Logging__Console__LogLevel__Microsoft: Error
+    Logging__Console__LogLevel__System: Error
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=cite_api;Username=cite_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+    Database__SeedFile: ""
+
+    # CORS policy settings.
+    # The first entry should be the URL to CITE
+    CorsPolicy__Origins__0: https://cite.example.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -71,6 +89,11 @@ cite-api:
     Authorization__AuthorizationScope: "cite-api"
     Authorization__ClientId: cite-api
     Authorization__ClientName: "CITE API"
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -166,12 +189,12 @@ cite-ui:
     # DefaultScoringModelId: ""
     # DefaultEvaluationId: ""
     # DefaultTeamId: ""
-    # HeaderBarSettings:
-    #   banner_background_color: "#d40000ff"
-    #   classification_text: ""
-    #   classification_text_color: "#ffffff"
-    #   classification_text_fontsize: "14"
-    #   message_text: ""
-    #   message_text_color: "#ffffff"
-    #   message_text_fontsize: "14"
-    #   enabled: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: true
