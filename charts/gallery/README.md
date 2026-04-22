@@ -22,11 +22,27 @@ helm install gallery sei/gallery -f values.yaml
 
 The following are configured via the `gallery-api.env` settings. These Gallery API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Gallery.Api/blob/development/Gallery.Api/appsettings.json) which may contain more options than are described here.
 
+### Logging
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `gallery-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `gallery-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Warning` |
+| `gallery-api.env.Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Warning` |
+| `gallery-api.env.Logging__Debug__LogLevel__System` | Debug log level System | `Warning` |
+| `gallery-api.env.Logging__Console__LogLevel__Default` | Console log level default | `Warning` |
+| `gallery-api.env.Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Warning` |
+| `gallery-api.env.Logging__Console__LogLevel__System` | Console log level System | `Warning` |
+
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;` |
+| `gallery-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `gallery-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `gallery-api.env.Database__Provider` | Database provider | `PostgreSQL` |
+| `gallery-api.env.Database__SeedFile` | Seed data file | `seed-data.json` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -44,6 +60,26 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `gallery-api` |
 | `Authorization__ClientId` | OAuth client ID used by Swagger and other interactive clients | `gallery-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Gallery` |
+| `gallery-api.env.Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `gallery-api.env.Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Claims Transformation
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `gallery-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `gallery-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### CORS Policy
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `gallery-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `gallery-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `gallery-api.env.CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `gallery-api.env.CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `gallery-api.env.CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `gallery-api.env.CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Certificate Trust
 
