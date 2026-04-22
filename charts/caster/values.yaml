@@ -92,6 +92,7 @@ caster-api:
     # for more information on the installation process.
     # Installation will always be skipped if Kubernetes Jobs are enabled.
     SKIP_TERRAFORM_INSTALLATION: false
+    SKIP_VOL_PERMISSIONS: false
 
     # VSphere settings:
     # TODO - Document VSphere user role requirements
@@ -156,13 +157,33 @@ caster-api:
     # https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.hostfiltering.hostfilteringoptions.allowedhosts?view=aspnetcore-3.1
     AllowedHosts: "*"
 
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Information
+    Logging__Debug__LogLevel__Microsoft: Error
+    Logging__Debug__LogLevel__System: Error
+    Logging__Console__LogLevel__Default: Information
+    Logging__Console__LogLevel__Microsoft: Error
+    Logging__Console__LogLevel__System: Error
+
     # CORS policy settings.
     # The first entry should be the URL to Caster
     CorsPolicy__Origins__0: "https://caster.example.com"
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -170,17 +191,25 @@ caster-api:
     Authorization__TokenUrl: https://identity.example.com/connect/token
     Authorization__AuthorizationScope: "caster-api"
     Authorization__ClientId: caster-api-dev
+    Authorization__ClientName: "Caster API"
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
 
     # OAuth2 Identity Client /w Password
     Client__TokenUrl: https://identity.example.com/connect/token
     Client__ClientId: caster-admin
+    Client__ClientSecret: ""
     Client__UserName:
     Client__Password:
     Client__Scope: "player-api vm-api"
+    Client__MaxRetryDelaySeconds: 120
+    Client__TokenRefreshSeconds: 600
 
     # Crucible Player URLs
     Player__VmApiUrl: "https://vm.example.com"
     Player__VmConsoleUrl: "https://console.example.com/vm/{id}/console"
+    Player__MaxParallelism: 8
+    Player__RemoveLoopSeconds: 300
 
     # Terraform Information
     # - DefaultVersion - The default version to be used.
@@ -190,11 +219,40 @@ caster-api:
     # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
     # Terraform__GitlabToken: "your-gitlab-token"
     # Terraform__GitlabGroupId: 6
+    Terraform__BinaryPath: "/terraform/binaries"
     Terraform__DefaultVersion: "0.14.0"
+    # Terraform__PluginDirectory: '/terraform/plugins'
+    Terraform__PluginCache: "/terraform/plugin-cache"
+    Terraform__RootWorkingDirectory: "/terraform/root"
     Terraform__GitlabApiUrl: ""
     Terraform__GitlabToken: ""
     Terraform__GitlabGroupId:
+    Terraform__OutputSaveInterval: 5000
+    Terraform__StateRetryCount: 12
+    Terraform__StateRetryIntervalSeconds: 5
+    Terraform__EnvironmentVariables__InheritAll: "true"
+    # Terraform__EnvironmentVariables__Inherit__0: "^SEI"
+    # Terraform__EnvironmentVariables__Inherit__Direct__0__Name: "SSL_CERT_DIR"
+    # Terraform__EnvironmentVariables__Inherit__Direct__0__Value: "/usr/local/share/ca-certificates/:/etc/ssl/certs/"
 
+    # Enable to execute Runs as k8s jobs
+    Terraform__KubernetesJobs__Enabled: "false"
+    Terraform__KubernetesJobs__Namespace: "default"
+    Terraform__KubernetesJobs__Context: ""
+    Terraform__KubernetesJobs__RootWorkingDirectory: "/terraform/root"
+    Terraform__KubernetesJobs__ImageRegistry: "https://registry-1.docker.io/"
+    Terraform__KubernetesJobs__ImageName: "hashicorp/terraform"
+    # Terraform__KubernetesJobs__ImageTags__0: "1.14"
+    Terraform__KubernetesJobs__QueryImageTags: "true"
+    Terraform__KubernetesJobs__QueryImageTagsRegex: "^([0-9]\\d*\\.\\d+\\.\\d+)$"
+    Terraform__KubernetesJobs__QueryImageTagsMinutes: "720"
+
+    # Set by chart, can override if necessary
+    # Terraform__KubernetesJobs__PersistentVolumeClaimName: "caster-terraform-data-pvc"
+    # Terraform__KubernetesJobs__VolumeMountPath: "/terraform"
+    # Terraform__KubernetesJobs__VolumeMountSubPath: ""
+    # Terraform__KubernetesJobs__ConfigMaps__0__Name: "caster-certs"
+    # Terraform__KubernetesJobs__ConfigMaps__0__MountPath: "/usr/local/share/ca-certificates/"
 
     # Configurable save lengths for Caster untagged versions
     FileVersions__DaysToSaveAllUntaggedVersions: 7
@@ -296,12 +354,12 @@ caster-ui:
     #   automaticSilentRenew: true
     #   silent_redirect_uri: https://caster.example.com/auth-callback-silent/
     # UseLocalAuthStorage: true
-    # HeaderBarSettings:
-    #   banner_background_color: "#d40000ff"
-    #   classification_text: ""
-    #   classification_text_color: "#ffffff"
-    #   classification_text_fontsize: "14"
-    #   message_text: ""
-    #   message_text_color: "#ffffff"
-    #   message_text_fontsize: "14"
-    #   enabled: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: false
