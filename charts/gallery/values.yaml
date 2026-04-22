@@ -45,17 +45,6 @@ gallery-api:
     Logging__Console__LogLevel__Microsoft: Warning
     Logging__Console__LogLevel__System: Warning
 
-    # CORS policy settings.
-    # The first entry should be the URL to Gallery
-    CorsPolicy__Origins__0:
-      https://gallery.example.com
-    CorsPolicy__Methods__0: ""
-    CorsPolicy__Headers__0: ""
-    CorsPolicy__AllowAnyOrigin: false
-    CorsPolicy__AllowAnyMethod: true
-    CorsPolicy__AllowAnyHeader: true
-    CorsPolicy__SupportsCredentials: true
-
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=gallery_api;Username=gallery_dbu;Password=;"
@@ -63,6 +52,16 @@ gallery-api:
     Database__DevModeRecreate: false
     Database__Provider: PostgreSQL
     Database__SeedFile: seed-data.json
+
+    # CORS policy settings.
+    # The first entry should be the URL to Gallery
+    CorsPolicy__Origins__0: https://gallery.example.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -171,4 +170,4 @@ gallery-ui:
       message_text: ""
       message_text_color: "#ffffff"
       message_text_fontsize: "14"
-      enabled: true
+      enabled: false
