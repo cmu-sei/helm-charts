@@ -101,10 +101,6 @@ player-api:
     # The first entry should be the URL to player
     # The second entry should be the URL to VM App
     # Subsequent entries can be other integrated apps, such as OSTicket
-    CorsPolicy__Origins__0: "https://player.example.com"
-    CorsPolicy__Origins__1: "https://vm.example.com"
-    CorsPolicy__Origins__2: "https://osticket.example.com"
-
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player_dbu;Password=;"
@@ -112,6 +108,13 @@ player-api:
     Database__DevModeRecreate: false
     Database__Provider: PostgreSQL
 
+    # CORS policy settings.
+    # The first entry should be the URL to player
+    # The second entry should be the URL to VM App
+    # Subsequent entries can be other integrated apps, such as OSTicket
+    CorsPolicy__Origins__0: "https://player.example.com"
+    CorsPolicy__Origins__1: "https://vm.example.com"
+    CorsPolicy__Origins__2: "https://osticket.example.com"
     CorsPolicy__Methods__0: ""
     CorsPolicy__Headers__0: ""
     CorsPolicy__AllowAnyOrigin: false
@@ -264,7 +267,7 @@ player-ui:
       message_text: ""
       message_text_color: "#ffffff"
       message_text_fontsize: "14"
-      enabled: true
+      enabled: false
 
 vm-api:
   # iso - an NFS volume mount for ISO uploads
