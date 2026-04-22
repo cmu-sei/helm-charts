@@ -56,14 +56,31 @@ alloy-api:
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
-    # CORS policy settings.
-    # The first entry should be the URL to Alloy
-    CorsPolicy__Origins__0: https://alloy.example.com
-    CorsPolicy__Origins__1: http://site2.com
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Information
+    Logging__Debug__LogLevel__Microsoft: Error
+    Logging__Debug__LogLevel__System: Error
+    Logging__Console__LogLevel__Default: Information
+    Logging__Console__LogLevel__Microsoft: Error
+    Logging__Console__LogLevel__System: Error
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+
+    # CORS policy settings.
+    # The first entry should be the URL to Alloy
+    CorsPolicy__Origins__0: https://alloy.example.com
+    CorsPolicy__Origins__1: http://site2.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -72,18 +89,41 @@ alloy-api:
     Authorization__AuthorizationScope: "alloy-api player-api caster-api steamfitter-api vm-api"
     Authorization__ClientId: alloy-api-dev
     Authorization__ClientName: "Alloy API"
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
 
     # OAuth2 Identity Client /w Password
     ResourceOwnerAuthorization__Authority: https://identity.example.com
     ResourceOwnerAuthorization__ClientId: alloy-api
+    ResourceOwnerAuthorization__ClientSecret: ""
     ResourceOwnerAuthorization__UserName:
     ResourceOwnerAuthorization__Password:
     ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api vm-api"
+    ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
     # Crucible Application URLs
+    ClientSettings__BackgroundTimerIntervalSeconds: 60
+    ClientSettings__BackgroundTimerHealthSeconds: 180
+    ClientSettings__CasterCheckIntervalSeconds: 30
+    ClientSettings__CasterPlanningMaxWaitMinutes: 15
+    ClientSettings__CasterDeployMaxWaitMinutes: 120
+    ClientSettings__CasterDestroyMaxWaitMinutes: 60
+    ClientSettings__CasterDestroyRetryDelayMinutes: 1
+    ClientSettings__ApiClientRetryIntervalSeconds: 10
+    ClientSettings__ApiClientLaunchFailureMaxRetries: 10
+    ClientSettings__ApiClientEndFailureMaxRetries: 10
     ClientSettings__urls__playerApi: https://player.example.com/
     ClientSettings__urls__casterApi: https://caster.example.com/
     ClientSettings__urls__steamfitterApi: https://steamfitter.example.com/
+
+    SeedData: ""
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
+
+    Files__LocalDirectory: "/tmp/"
+
+    Resource__MaxEventsForBasicUser: 2
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -169,16 +209,17 @@ alloy-ui:
     # AppTopBarText: Alloy
     # AppTopBarHexColor: "#b00"
     # PlayerUIAddress: https://player.example.com
+    # PollingIntervalMS: "3500"
     # UseLocalAuthStorage: true
-    # HeaderBarSettings:
-    #   banner_background_color: "#d40000ff"
-    #   classification_text: ""
-    #   classification_text_color: "#ffffff"
-    #   classification_text_fontsize: "14"
-    #   message_text: ""
-    #   message_text_color: "#ffffff"
-    #   message_text_fontsize: "14"
-    #   enabled: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: true
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
