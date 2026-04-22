@@ -197,4 +197,4 @@ cite-ui:
       message_text: ""
       message_text_color: "#ffffff"
       message_text_fontsize: "14"
-      enabled: true
+      enabled: false
