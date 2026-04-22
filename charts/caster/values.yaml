@@ -165,6 +165,13 @@ caster-api:
     Logging__Console__LogLevel__Microsoft: Error
     Logging__Console__LogLevel__System: Error
 
+    # Connection String to database
+    # database requires the 'uuid-ossp' extension installed
+    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+
     # CORS policy settings.
     # The first entry should be the URL to Caster
     CorsPolicy__Origins__0: "https://caster.example.com"
@@ -175,16 +182,6 @@ caster-api:
     CorsPolicy__AllowAnyHeader: true
     CorsPolicy__SupportsCredentials: true
 
-    ClaimsTransformation__EnableCaching: true
-    ClaimsTransformation__CacheExpirationSeconds: 60
-
-    # Connection String to database
-    # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
-    Database__AutoMigrate: true
-    Database__DevModeRecreate: false
-    Database__Provider: PostgreSQL
-
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
     Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
@@ -194,6 +191,9 @@ caster-api:
     Authorization__ClientName: "Caster API"
     Authorization__ClientSecret: ""
     Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # OAuth2 Identity Client /w Password
     Client__TokenUrl: https://identity.example.com/connect/token
