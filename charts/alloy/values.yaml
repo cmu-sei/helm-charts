@@ -92,6 +92,9 @@ alloy-api:
     Authorization__ClientSecret: ""
     Authorization__RequireHttpsMetaData: false
 
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
+
     # OAuth2 Identity Client /w Password
     ResourceOwnerAuthorization__Authority: https://identity.example.com
     ResourceOwnerAuthorization__ClientId: alloy-api
@@ -117,9 +120,6 @@ alloy-api:
     ClientSettings__urls__steamfitterApi: https://steamfitter.example.com/
 
     SeedData: ""
-
-    ClaimsTransformation__EnableCaching: true
-    ClaimsTransformation__CacheExpirationSeconds: 60
 
     Files__LocalDirectory: "/tmp/"
 
@@ -219,7 +219,7 @@ alloy-ui:
       message_text: ""
       message_text_color: "#ffffff"
       message_text_fontsize: "14"
-      enabled: true
+      enabled: false
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
