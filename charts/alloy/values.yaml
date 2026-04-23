@@ -99,8 +99,8 @@ alloy-api:
     ResourceOwnerAuthorization__Authority: https://identity.example.com
     ResourceOwnerAuthorization__ClientId: alloy-api
     ResourceOwnerAuthorization__ClientSecret: ""
-    ResourceOwnerAuthorization__UserName:
-    ResourceOwnerAuthorization__Password:
+    ResourceOwnerAuthorization__UserName: ""
+    ResourceOwnerAuthorization__Password: ""
     ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api vm-api"
     ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
