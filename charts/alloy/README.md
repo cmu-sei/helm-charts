@@ -46,9 +46,6 @@ The following are configured via the `alloy-api.env` settings. These Alloy API s
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `alloy-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `alloy-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
 | `alloy-api.env.Database__Provider` | Database provider | `PostgreSQL` |
