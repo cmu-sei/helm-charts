@@ -52,9 +52,6 @@ The following settings are applied through `caster-api.env`. These Caster API se
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Caster API | `Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=PASSWORD;` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `caster-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `caster-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
 | `caster-api.env.Database__Provider` | Database provider | `PostgreSQL` |
@@ -85,9 +82,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `caster-api` |
 | `Authorization__ClientId` | OAuth client ID for the API (Swagger or interactive clients) | `caster-api` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `caster-api.env.Authorization__ClientName` | OAuth2 client display name | `"Caster API"` |
 | `caster-api.env.Authorization__ClientSecret` | OAuth2 client secret | `""` |
 | `caster-api.env.Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
@@ -108,9 +102,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Client__UserName` | Service account username | `caster-sa` |
 | `Client__Password` | Service account password | `PASSWORD` |
 | `Client__Scope` | Space-delimited scopes required for downstream APIs | `player-api vm-api` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `caster-api.env.Client__ClientSecret` | Client secret for password flow | `""` |
 | `caster-api.env.Client__MaxRetryDelaySeconds` | Client max retry delay | `120` |
 | `caster-api.env.Client__TokenRefreshSeconds` | Client token refresh interval | `600` |
@@ -127,9 +118,6 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 |---------|-------------|---------|
 | `Player__VmApiUrl` | Base URL to the VM API | `https://vm.example.com` |
 | `Player__VmConsoleUrl` | URL pattern for VM console access | `https://console.example.com/vm/{id}/console` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `caster-api.env.Player__MaxParallelism` | Player max parallelism | `8` |
 | `caster-api.env.Player__RemoveLoopSeconds` | Player remove loop interval | `300` |
 
@@ -142,9 +130,6 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__GitlabToken` | GitLab access token with `api` scope | `glpat-xxxxxxxxxxxxxxxxxxxx` |
 | `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
 | `Terraform__PluginDirectory` | Optional path containing pre-staged providers (set to `""` when using `terraformrc`) | `""` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `caster-api.env.Terraform__BinaryPath` | Terraform binary path | `"/terraform/binaries"` |
 | `caster-api.env.Terraform__PluginCache` | Terraform plugin cache path | `"/terraform/plugin-cache"` |
 | `caster-api.env.Terraform__RootWorkingDirectory` | Terraform root working directory | `"/terraform/root"` |
