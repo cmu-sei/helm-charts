@@ -24,13 +24,13 @@ The following are configured via the `cite-api.env` settings. These CITE API set
 
 ### General Settings
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `cite-api.env.PathBase` | Virtual directory path base | `""` |
 
 ### Logging Settings
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `cite-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `cite-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
@@ -46,7 +46,7 @@ The following are configured via the `cite-api.env` settings. These CITE API set
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;` |
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `cite-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `cite-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
@@ -74,7 +74,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### CORS Policy Settings
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `cite-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `cite-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
@@ -85,7 +85,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Claims Transformation Settings
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `cite-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `cite-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
