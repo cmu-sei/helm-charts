@@ -408,8 +408,8 @@ vm-api:
     IdentityClient__TokenUrl: https://identity.example.com/connect/token
     IdentityClient__ClientId: "player-vm-admin"
     IdentityClient__Scope: "player-api vm-api"
-    IdentityClient__Username:
-    IdentityClient__Password:
+    IdentityClient__Username: ""
+    IdentityClient__Password: ""
     IdentityClient__MaxRetryDelaySeconds: 120
     IdentityClient__TokenRefreshSeconds: 600
 
@@ -427,8 +427,8 @@ vm-api:
     # - BaseFolder is the folder inside the DataStore to use
     Vsphere__Host: "vcenter.example.com"
     Vsphere__Username: "player-account@vsphere.local"
-    Vsphere__Password:
-    Vsphere__DsName:
+    Vsphere__Password: ""
+    Vsphere__DsName: ""
     Vsphere__BaseFolder: "player"
     Vsphere__Timeout: 30
     Vsphere__ConnectionRetryIntervalSeconds: 60
