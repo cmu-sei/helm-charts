@@ -45,9 +45,6 @@ The following are configured via the `cite-api.env` settings. These CITE API set
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;` |
-
-| Setting | Description | Example |
-|-----------|-------------|---------|
 | `cite-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `cite-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
 | `cite-api.env.Database__Provider` | Database provider | `PostgreSQL` |
