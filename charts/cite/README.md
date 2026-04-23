@@ -26,29 +26,29 @@ The following are configured via the `cite-api.env` settings. These CITE API set
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `cite-api.env.PathBase` | Virtual directory path base | `""` |
+| `PathBase` | Virtual directory path base | `""` |
 
 ### Logging Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `cite-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
-| `cite-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
-| `cite-api.env.Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
-| `cite-api.env.Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
-| `cite-api.env.Logging__Console__LogLevel__Default` | Console log level default | `Information` |
-| `cite-api.env.Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
-| `cite-api.env.Logging__Console__LogLevel__System` | Console log level System | `Error` |
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
 
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=cite;Username=cite;Password=PASSWORD;` |
-| `cite-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
-| `cite-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
-| `cite-api.env.Database__Provider` | Database provider | `PostgreSQL` |
-| `cite-api.env.Database__SeedFile` | Seed data file | `""` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
+| `Database__SeedFile` | Seed data file | `""` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -73,19 +73,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `cite-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
-| `cite-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
-| `cite-api.env.CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
-| `cite-api.env.CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
-| `cite-api.env.CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
-| `cite-api.env.CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Claims Transformation Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `cite-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
-| `cite-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### Certificate Trust
 
