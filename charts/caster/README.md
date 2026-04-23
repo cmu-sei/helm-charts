@@ -29,7 +29,7 @@ The following settings are applied through `caster-api.env`. These Caster API se
 
 ### General Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.PathBase` | Virtual directory path base | `""` |
 | `caster-api.env.SKIP_VOL_PERMISSIONS` | Skip volume permissions setup | `false` |
@@ -37,7 +37,7 @@ The following settings are applied through `caster-api.env`. These Caster API se
 
 ### Logging Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `caster-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
@@ -53,7 +53,7 @@ The following settings are applied through `caster-api.env`. These Caster API se
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Caster API | `Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=PASSWORD;` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `caster-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
@@ -67,7 +67,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### CORS Policy
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `caster-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
@@ -86,7 +86,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `caster-api` |
 | `Authorization__ClientId` | OAuth client ID for the API (Swagger or interactive clients) | `caster-api` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Authorization__ClientName` | OAuth2 client display name | `"Caster API"` |
 | `caster-api.env.Authorization__ClientSecret` | OAuth2 client secret | `""` |
@@ -94,7 +94,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Claims Transformation
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `caster-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
@@ -109,7 +109,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Client__Password` | Service account password | `PASSWORD` |
 | `Client__Scope` | Space-delimited scopes required for downstream APIs | `player-api vm-api` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Client__ClientSecret` | Client secret for password flow | `""` |
 | `caster-api.env.Client__MaxRetryDelaySeconds` | Client max retry delay | `120` |
@@ -128,7 +128,7 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Player__VmApiUrl` | Base URL to the VM API | `https://vm.example.com` |
 | `Player__VmConsoleUrl` | URL pattern for VM console access | `https://console.example.com/vm/{id}/console` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Player__MaxParallelism` | Player max parallelism | `8` |
 | `caster-api.env.Player__RemoveLoopSeconds` | Player remove loop interval | `300` |
@@ -143,7 +143,7 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
 | `Terraform__PluginDirectory` | Optional path containing pre-staged providers (set to `""` when using `terraformrc`) | `""` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Terraform__BinaryPath` | Terraform binary path | `"/terraform/binaries"` |
 | `caster-api.env.Terraform__PluginCache` | Terraform plugin cache path | `"/terraform/plugin-cache"` |
@@ -155,7 +155,7 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 
 #### Kubernetes Jobs
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `caster-api.env.Terraform__KubernetesJobs__Enabled` | Enable Kubernetes job execution | `"false"` |
 | `caster-api.env.Terraform__KubernetesJobs__Namespace` | Kubernetes jobs namespace | `"default"` |
