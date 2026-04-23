@@ -1,65 +1,59 @@
 apiVersion: v2
-name: crucible
+name: crucible-apps
 description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.1.5
+version: 0.2.0
 home: https://cmu-sei.github.io/crucible/
 
 dependencies:
-  # Identity Provider
-  - name: keycloak
-    repository: oci://registry-1.docker.io/bitnamicharts
-    version: 24.6.4
-    condition: keycloak.enabled
-
   # Crucible Applications
   - name: alloy
     repository: https://helm.cmusei.dev/charts
-    version: 1.6.14
+    version: 1.7.0
     condition: alloy.enabled
 
   - name: blueprint
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.3
+    version: 1.8.18
     condition: blueprint.enabled
 
   - name: caster
     repository: https://helm.cmusei.dev/charts
-    version: 1.7.2
+    version: 1.8.0
     condition: caster.enabled
 
   - name: cite
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.1
+    version: 1.9.0
     condition: cite.enabled
 
   - name: gallery
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.1
+    version: 1.9.0
     condition: gallery.enabled
 
   - name: gameboard
     repository: https://helm.cmusei.dev/charts
-    version: 0.5.12
+    version: 0.5.14
     condition: gameboard.enabled
 
   - name: player
     repository: https://helm.cmusei.dev/charts
-    version: 1.8.14
+    version: 1.9.1
     condition: player.enabled
 
   - name: steamfitter
     repository: https://helm.cmusei.dev/charts
-    version: 1.6.12
+    version: 1.7.0
     condition: steamfitter.enabled
 
   - name: topomojo
     repository: https://helm.cmusei.dev/charts
-    version: 0.6.4
+    version: 0.7.0
     condition: topomojo.enabled
 
   # Moodle LMS
   - name: moodle
     repository: https://helm.cmusei.dev/charts
-    version: 0.2.6
+    version: 0.2.7
     condition: moodle.enabled

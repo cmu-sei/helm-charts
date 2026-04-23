@@ -1,0 +1,29 @@
+{{- if and .Values.keycloak.enabled .Values.keycloak.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "crucible.fullname" . }}-keycloak
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+  {{- with .Values.keycloak.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.keycloak.ingress.ingressClassName | default .Values.global.ingress.className }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain }}
+      secretName: {{ .Values.keycloak.ingress.tlsSecretName | default "crucible-cert" }}
+  rules:
+    - host: {{ .Values.global.domain }}
+      http:
+        paths:
+          - path: /keycloak
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "crucible.fullname" . }}-keycloak-service
+                port:
+                  number: 8080
+{{- end }}

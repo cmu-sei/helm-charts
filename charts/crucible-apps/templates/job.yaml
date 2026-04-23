@@ -5,7 +5,7 @@
 {{- $keycloakDbHost := tpl ($keycloakExternalDb.host | default "") . -}}
 {{- $keycloakDbPort := $keycloakExternalDb.port | default 5432 -}}
 {{- $keycloakDbSecretName := tpl ($keycloakExternalDb.existingSecret | default "") . -}}
-{{- $keycloakDbSecretKey := $keycloakExternalDb.existingSecretPasswordKey | default "postgres-password" -}}
+{{- $keycloakDbSecretKey := $keycloakExternalDb.existingSecretPasswordKey | default "password" -}}
 {{- if and $keycloakConfig.enabled $keycloakDbHost $keycloakDbSecretName }}
 apiVersion: batch/v1
 kind: Job

@@ -70,3 +70,19 @@ Return the name of the TLS certificate secret.
 {{- "crucible-cert" -}}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the Keycloak Operator service name.
+The operator creates a service named "<cr-name>-service".
+*/}}
+{{- define "crucible.keycloakServiceName" -}}
+{{- printf "%s-keycloak-service" (include "crucible.fullname" .) -}}
+{{- end }}
+
+{{/*
+Return the name of the initial admin secret created by the Keycloak Operator.
+The operator creates a secret named "<cr-name>-initial-admin".
+*/}}
+{{- define "crucible.keycloakAdminSecretName" -}}
+{{- printf "%s-keycloak-initial-admin" (include "crucible.fullname" .) -}}
+{{- end }}
