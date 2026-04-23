@@ -24,7 +24,7 @@ The following are configured via the `gallery-api.env` settings. These Gallery A
 
 ### Logging
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `gallery-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `gallery-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Warning` |
@@ -65,14 +65,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Claims Transformation
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `gallery-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `gallery-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### CORS Policy
 
-| Parameter | Description | Example |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `gallery-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `gallery-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
