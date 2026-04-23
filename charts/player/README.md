@@ -31,14 +31,14 @@ The following are configured via the `player-api.env` settings. These Player API
 
 ### General
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.PathBase` | Virtual directory path base | `""` |
 | `player-api.env.SKIP_VOL_PERMISSIONS` | Skip volume permissions setup | `false` |
 
 ### Database
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;` |
 | `player-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
@@ -54,7 +54,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Authentication (OIDC)
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
 | `player-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
@@ -66,14 +66,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Claims Transformation
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `player-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### Logging
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `player-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
@@ -111,7 +111,7 @@ Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/doc
 
 Add CORS origins to allow bidirectional communication between Player and the integrated apps.
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.CorsPolicy__Origins__0` | Player UI URL | `https://player.example.com` |
 | `player-api.env.CorsPolicy__Origins__1` | VM UI URL | `https://vm.example.com` |
@@ -127,7 +127,7 @@ Add more origins with `__3`, `__4`, etc.
 
 ### Notifications
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.Notifications__UserIconUrl` | User notification icon URL | `"/assets/img/SP_Icon_User.png"` |
 | `player-api.env.Notifications__SystemIconUrl` | System notification icon URL | `"/assets/img/SP_Icon_Alert.png"` |
@@ -135,7 +135,7 @@ Add more origins with `__3`, `__4`, etc.
 
 ### File Upload
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `player-api.env.FileUpload__basePath` | File upload base path | `"/fileupload"` |
 | `player-api.env.FileUpload__maxSize` | File upload max size | `"64000000"` |
@@ -285,13 +285,13 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 
 ### General
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.PathBase` | Virtual directory path base | `""` |
 
 ### Database
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.ConnectionStrings__PostgreSQL` | PostgreSQL connection string for VM API | `Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;` |
 | `vm-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
@@ -300,7 +300,7 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 
 ### Authentication (OIDC)
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
 | `vm-api.env.Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
@@ -312,7 +312,7 @@ The following are configured via the `vm-api.env` settings. These VM API setting
 
 ### Logging
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `vm-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
@@ -350,7 +350,7 @@ Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/doc
 
 VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/vm.Api) application via a Resource Owner OAuth Flow for API-to-API communication using a service account. Use the following settings to configure the Resource Owner flow.
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.ClientSettings__urls__playerApi` | Player API URL | `https://player.example.com/` |
 | `vm-api.env.IdentityClient__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
@@ -366,7 +366,7 @@ VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/
 
 VM API supports connection to multiple vSphere instances. Use the following settings to configure each vSphere host. Replace the `*` with the host index (starting at 0).
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.Vsphere__Hosts__*__Enabled` | Boolean that enables this vSphere host | `true` |
 | `vm-api.env.Vsphere__Hosts__*__Address` | vCenter hostname or IP address | `vcenter.example.com` |
@@ -435,14 +435,14 @@ vm-api:
 
 #### ISO Upload
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.IsoUpload__BasePath` | ISO upload base path | `"/app/isos/player"` |
 | `vm-api.env.IsoUpload_MaxFileSize` | ISO upload max file size | `6000000000` |
 
 #### CORS
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `vm-api.env.CorsPolicy__Origins__0` | VM UI URL | `https://vm.example.com` |
 | `vm-api.env.CorsPolicy__Origins__1` | Console UI URL | `https://console.example.com` |
