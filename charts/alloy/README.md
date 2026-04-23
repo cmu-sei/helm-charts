@@ -27,28 +27,28 @@ The following are configured via the `alloy-api.env` settings. These Alloy API s
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `alloy-api.env.PathBase` | Virtual directory path base | `""` |
+| `PathBase` | Virtual directory path base | `""` |
 
 ### Logging Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `alloy-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
-| `alloy-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
-| `alloy-api.env.Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
-| `alloy-api.env.Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
-| `alloy-api.env.Logging__Console__LogLevel__Default` | Console log level default | `Information` |
-| `alloy-api.env.Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
-| `alloy-api.env.Logging__Console__LogLevel__System` | Console log level System | `Error` |
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
 
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;` |
-| `alloy-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
-| `alloy-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
-| `alloy-api.env.Database__Provider` | Database provider | `PostgreSQL` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 **Important:** The database must include the `uuid-ossp` extension:
 
@@ -89,19 +89,19 @@ Store secrets in a Kubernetes Secret and reference it via `alloy-api.existingSec
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `alloy-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
-| `alloy-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### CORS Policy Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `alloy-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
-| `alloy-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
-| `alloy-api.env.CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
-| `alloy-api.env.CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
-| `alloy-api.env.CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
-| `alloy-api.env.CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Crucible Service Endpoints
 
@@ -134,9 +134,9 @@ Alloy’s background worker coordinates event lifecycles and Caster operations. 
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `alloy-api.env.SeedData` | Seed data | `""` |
-| `alloy-api.env.Files__LocalDirectory` | Local file directory | `"/tmp/"` |
-| `alloy-api.env.Resource__MaxEventsForBasicUser` | Max events for basic user | `2` |
+| `SeedData` | Seed data | `""` |
+| `Files__LocalDirectory` | Local file directory | `"/tmp/"` |
+| `Resource__MaxEventsForBasicUser` | Max events for basic user | `2` |
 
 ### Proxy Settings
 
