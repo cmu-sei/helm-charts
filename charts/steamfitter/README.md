@@ -32,7 +32,7 @@ The following are configured via the `steamfitter-api.env` settings. These Steam
 
 ### Database Settings
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `PathBase` | Virtual directory path base | `""` |
 | `Logging__IncludeScopes` | Include scopes in logging | `false` |
@@ -76,7 +76,7 @@ steamfitter-api:
 
 ### CORS Policy
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
@@ -87,14 +87,14 @@ steamfitter-api:
 
 ### Claims Transformation
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### File Storage
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `Files__LocalDirectory` | Local file directory | `"/tmp/"` |
 
@@ -276,7 +276,7 @@ When `sharedSettingsConfigMap` is not set (the default), no shared settings file
 
 Steamfitter UI supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
 | `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
 | `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
