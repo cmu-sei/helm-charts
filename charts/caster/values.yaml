@@ -98,7 +98,7 @@ caster-api:
     # TODO - Document VSphere user role requirements
     VSPHERE_SERVER: vcenter.example.com
     VSPHERE_USER: caster-account@vsphere.local
-    VSPHERE_PASSWORD:
+    VSPHERE_PASSWORD: ""
     VSPHERE_ALLOW_UNVERIFIED_SSL: true
 
     # === Terraform Crucible Provider Section ===
@@ -199,8 +199,8 @@ caster-api:
     Client__TokenUrl: https://identity.example.com/connect/token
     Client__ClientId: caster-admin
     Client__ClientSecret: ""
-    Client__UserName:
-    Client__Password:
+    Client__UserName: ""
+    Client__Password: ""
     Client__Scope: "player-api vm-api"
     Client__MaxRetryDelaySeconds: 120
     Client__TokenRefreshSeconds: 600
@@ -226,7 +226,7 @@ caster-api:
     Terraform__RootWorkingDirectory: "/terraform/root"
     Terraform__GitlabApiUrl: ""
     Terraform__GitlabToken: ""
-    Terraform__GitlabGroupId:
+    Terraform__GitlabGroupId: ""
     Terraform__OutputSaveInterval: 5000
     Terraform__StateRetryCount: 12
     Terraform__StateRetryIntervalSeconds: 5
@@ -260,16 +260,16 @@ caster-api:
 
     # Basic seed data to jumpstart deployement
     # TODO - Document seed data
-    SeedData__Users__0__id:
-    SeedData__Users__0__name:
+    # SeedData__Users__0__id: ""
+    # SeedData__Users__0__name: ""
 
-    SeedData__Users__1__id:
-    SeedData__Users__1__name:
+    # SeedData__Users__1__id: ""
+    # SeedData__Users__1__name: ""
 
-    SeedData__UserPermissions__0__UserId:
-    SeedData__UserPermissions__0__PermissionId:
-    SeedData__UserPermissions__1__UserId:
-    SeedData__UserPermissions__1__PermissionId:
+    # SeedData__UserPermissions__0__UserId:
+    # SeedData__UserPermissions__0__PermissionId:
+    # SeedData__UserPermissions__1__UserId:
+    # SeedData__UserPermissions__1__PermissionId:
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
