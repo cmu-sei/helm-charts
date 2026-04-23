@@ -25,13 +25,13 @@ The following are configured via the `alloy-api.env` settings. These Alloy API s
 
 ### General Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.PathBase` | Virtual directory path base | `""` |
 
 ### Logging Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.Logging__IncludeScopes` | Include scopes in logging | `false` |
 | `alloy-api.env.Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
@@ -47,7 +47,7 @@ The following are configured via the `alloy-api.env` settings. These Alloy API s
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;` |
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.Database__AutoMigrate` | Automatically apply database migrations | `true` |
 | `alloy-api.env.Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
@@ -90,14 +90,14 @@ Store secrets in a Kubernetes Secret and reference it via `alloy-api.existingSec
 
 ### Claims Transformation
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `alloy-api.env.ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### CORS Policy Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `alloy-api.env.CorsPolicy__Headers__0` | CORS allowed headers | `""` |
@@ -135,7 +135,7 @@ Alloy’s background worker coordinates event lifecycles and Caster operations. 
 
 ### Miscellaneous Settings
 
-| Parameter | Description | Default |
+| Parameter | Description | Example |
 |-----------|-------------|---------|
 | `alloy-api.env.SeedData` | Seed data | `""` |
 | `alloy-api.env.Files__LocalDirectory` | Local file directory | `"/tmp/"` |
