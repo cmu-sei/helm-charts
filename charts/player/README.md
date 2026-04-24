@@ -29,11 +29,21 @@ helm install player sei/player -f values.yaml
 
 The following are configured via the `player-api.env` settings. These Player API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Player.Api/blob/main/Player.Api/appsettings.json) which may contain more settings than are described here.
 
+### General
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `PathBase` | Virtual directory path base | `""` |
+| `SKIP_VOL_PERMISSIONS` | Skip volume permissions setup | `false` |
+
 ### Database
 
 | Setting | Description | Example |
-|---------|-------------|---------|
+|-----------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=player_api;Username=player;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 **Important:**
 Database requires the `uuid-ossp` extension:
@@ -45,12 +55,33 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ### Authentication (OIDC)
 
 | Setting | Description | Example |
-|---------|-------------|---------|
+|-----------|-------------|---------|
 | `Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes | `player-api` |
 | `Authorization__ClientId` | OAuth client ID | `vm-api` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Claims Transformation
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### Logging
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
 
 ### Certificate Trust
 
@@ -81,12 +112,41 @@ Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/doc
 Add CORS origins to allow bidirectional communication between Player and the integrated apps.
 
 | Setting | Description | Example |
-|---------|-------------|---------|
+|-----------|-------------|---------|
 | `CorsPolicy__Origins__0` | Player UI URL | `https://player.example.com` |
 | `CorsPolicy__Origins__1` | VM UI URL | `https://vm.example.com` |
 | `CorsPolicy__Origins__2` | Other integrated apps (e.g., OSTicket) | `https://osticket.example.com` |
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 Add more origins with `__3`, `__4`, etc.
+
+### Notifications
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Notifications__UserIconUrl` | User notification icon URL | `"/assets/img/SP_Icon_User.png"` |
+| `Notifications__SystemIconUrl` | System notification icon URL | `"/assets/img/SP_Icon_Alert.png"` |
+| `Notifications__HelpDeskApplicationName` | Help desk application name | `"Help Desk"` |
+
+### File Upload
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `FileUpload__basePath` | File upload base path | `"/fileupload"` |
+| `FileUpload__maxSize` | File upload max size | `"64000000"` |
+| `FileUpload__allowedExtensions__0` | Allowed file extension | `.pdf` |
+| `FileUpload__allowedExtensions__1` | Allowed file extension | `.png` |
+| `FileUpload__allowedExtensions__2` | Allowed file extension | `.jpg` |
+| `FileUpload__allowedExtensions__3` | Allowed file extension | `.jpeg` |
+| `FileUpload__allowedExtensions__4` | Allowed file extension | `.doc` |
+| `FileUpload__allowedExtensions__5` | Allowed file extension | `.docx` |
+| `FileUpload__allowedExtensions__6` | Allowed file extension | `.gif` |
+| `FileUpload__allowedExtensions__7` | Allowed file extension | `.txt` |
 
 ### Seed Data
 Optionally bootstrap roles, permissions, and users:
@@ -223,21 +283,44 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 The following are configured via the `vm-api.env` settings. These VM API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Vm.Api/blob/main/src/Player.Vm.Api/appsettings.json) which may contain more settings than are described here.
 
+### General
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `PathBase` | Virtual directory path base | `""` |
+
 ### Database
 
 | Setting | Description | Example |
-|---------|-------------|----------|
+|-----------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for VM API | `Server=postgres;Port=5432;Database=vm_api;Username=vm_user;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 ### Authentication (OIDC)
 
 | Setting | Description | Example |
-|---------|-------------|---------|
+|-----------|-------------|---------|
 | `Authorization__Authority` | Identity provider URL | `https://identity.example.com` |
 | `Authorization__AuthorizationUrl` | Authorization endpoint | `https://identity.example.com/connect/authorize` |
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scopes | `vm-api player-api` |
 | `Authorization__ClientId` | OAuth client ID | `vm-api` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Logging
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
 
 ### Certificate Trust
 
@@ -268,13 +351,15 @@ Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/doc
 VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/vm.Api) application via a Resource Owner OAuth Flow for API-to-API communication using a service account. Use the following settings to configure the Resource Owner flow.
 
 | Setting | Description | Example |
-|---------|-------------|----------|
+|-----------|-------------|---------|
 | `ClientSettings__urls__playerApi` | Player API URL | `https://player.example.com/` |
 | `IdentityClient__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `IdentityClient__ClientId` | Service account client ID | `vm-api` |
 | `IdentityClient__Username` | Service account username | `vm-service` |
 | `IdentityClient__Password` | Service account password | `password` |
 | `IdentityClient__Scope` | Service account scopes | `player-api` |
+| `IdentityClient__MaxRetryDelaySeconds` | Identity client max retry delay | `120` |
+| `IdentityClient__TokenRefreshSeconds` | Identity client token refresh | `600` |
 
 
 ### vSphere Configuration
@@ -282,13 +367,22 @@ VM API needs to communicate to the Crucible [VM API](https://github.com/cmu-sei/
 VM API supports connection to multiple vSphere instances. Use the following settings to configure each vSphere host. Replace the `*` with the host index (starting at 0).
 
 | Setting | Description | Example |
-|---------|-------------|---------|
+|-----------|-------------|---------|
 | `Vsphere__Hosts__*__Enabled` | Boolean that enables this vSphere host | `true` |
 | `Vsphere__Hosts__*__Address` | vCenter hostname or IP address | `vcenter.example.com` |
 | `Vsphere__Hosts__*__Username` | vCenter username | `player-account@vsphere.local` |
 | `Vsphere__Hosts__*__Password` | vCenter password | `password` |
 | `Vsphere__Hosts__*__DsName` | Datastore name for file storage | `nfs-player` |
 | `Vsphere__Hosts__*__BaseFolder` | Folder within datastore | `player` |
+| `Vsphere__Timeout` | vSphere timeout | `30` |
+| `Vsphere__ConnectionRetryIntervalSeconds` | vSphere connection retry interval | `60` |
+| `Vsphere__ConnectionRefreshIntervalMinutes` | vSphere connection refresh interval | `20` |
+| `Vsphere__LoadCacheAfterMinutes` | vSphere load cache delay | `5` |
+| `Vsphere__ConnectionTimeoutSeconds` | vSphere connection timeout | `90` |
+| `Vsphere__LogConsoleAccess` | Log console access | `false` |
+| `Vsphere__CheckTaskProgressIntervalMilliseconds` | Task progress check interval | `5000` |
+| `Vsphere__ReCheckTaskProgressIntervalMilliseconds` | Task progress recheck interval | `1000` |
+| `Vsphere__HealthAllowanceSeconds` | Health allowance seconds | `180` |
 
 **Important:**
 - Requires a privileged vCenter user for file operations
@@ -339,12 +433,25 @@ vm-api:
     size: "100Gi"
 ```
 
+#### ISO Upload
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `IsoUpload__BasePath` | ISO upload base path | `"/app/isos/player"` |
+| `IsoUpload_MaxFileSize` | ISO upload max file size | `6000000000` |
+
 #### CORS
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |-----------|-------------|---------|
 | `CorsPolicy__Origins__0` | VM UI URL | `https://vm.example.com` |
 | `CorsPolicy__Origins__1` | Console UI URL | `https://console.example.com` |
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Ingress
 
