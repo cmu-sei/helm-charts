@@ -37,13 +37,38 @@ blueprint-api:
   #     name: my-configmap
 
   env:
-    # CORS policy settings.
-    # The first entry should be the URL to Blueprint
-    CorsPolicy__Origins__0: https://blueprint.example.com
+    # http_proxy: ""
+    # https_proxy: ""
+    # HTTP_PROXY: ""
+    # HTTPS_PROXY: ""
+    # NO_PROXY: ""
+    # no_proxy: ""
+
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Warning
+    Logging__Debug__LogLevel__Microsoft: Warning
+    Logging__Debug__LogLevel__System: Warning
+    Logging__Console__LogLevel__Default: Warning
+    Logging__Console__LogLevel__Microsoft: Warning
+    Logging__Console__LogLevel__System: Warning
 
     # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=blueprint_api;Username=blueprint_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+    Database__SeedFile: seed-data.json
+
+    # CORS policy settings.
+    # The first entry should be the URL to Blueprint
+    CorsPolicy__Origins__0: https://blueprint.example.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -52,6 +77,11 @@ blueprint-api:
     Authorization__AuthorizationScope: blueprint
     Authorization__ClientId: blueprint.swagger
     Authorization__ClientName: Blueprint API Swagger
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -109,9 +139,16 @@ blueprint-ui:
 
   extraVolumeMounts: ""
 
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.env.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
+
   env:
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+    ## basehref is path to the app
+    APP_BASEHREF: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
@@ -131,3 +168,43 @@ blueprint-ui:
     # AppTopBarText: Blueprint  -  Exercise Planning
     # AppTopBarImage: /assets/img/monitor-dashboard-white.png
     # UseLocalAuthStorage: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: false
+
+    ## settings is stringified json that gets included as appsettings.Production.json
+    # settings: '{
+    #   "ApiUrl": "https://blueprint.example.com",
+    #   "OIDCSettings": {
+    #     "authority": "https://identity.example.com/",
+    #     "client_id": "blueprint-ui",
+    #     "redirect_uri": "https://blueprint.example.com/auth-callback",
+    #     "post_logout_redirect_uri": "https://blueprint.example.com",
+    #     "response_type": "code",
+    #     "scope": "openid profile blueprint",
+    #     "automaticSilentRenew": true,
+    #     "silent_redirect_uri": "https://blueprint.example.com/auth-callback-silent"
+    #   },
+    #   "AppTitle": "Blueprint",
+    #   "AppTopBarText": "Blueprint",
+    #   "AppTopBarHexColor": "#2d69b4",
+    #   "PlayerUIAddress": "http://blueprint.example.com",
+    #   "PollingIntervalMS": "3500",
+    #   "UseLocalAuthStorage": true,
+    #   "HeaderBarSettings": {
+    #     "banner_background_color": "#d40000ff",
+    #     "classification_text": "",
+    #     "classification_text_color": "#ffffff",
+    #     "classification_text_fontsize": "14",
+    #     "message_text": "",
+    #     "message_text_color": "#ffffff",
+    #     "message_text_fontsize": "14",
+    #     "enabled": false
+    #   }
+    # }'

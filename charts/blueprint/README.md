@@ -27,6 +27,10 @@ The following are configured via the `blueprint-api.env` settings. These Bluepri
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=blueprint;Username=blueprint;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
+| `Database__SeedFile` | Seed data file | `seed-data.json` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -44,6 +48,38 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `blueprint` |
 | `Authorization__ClientId` | OAuth client ID used by the API and interactive clients | `blueprint-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Blueprint` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Logging
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Warning` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Warning` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Warning` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Warning` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Warning` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Warning` |
+
+### CORS Policy
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+### Claims Transformation
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### Certificate Trust
 
@@ -120,6 +156,15 @@ blueprint-api:
 
 ## Blueprint UI Configuration
 
+### Helm Deployment Configuration
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `blueprint-ui.sharedSettingsConfigMap` | Name of existing ConfigMap with shared UI settings | `""` |
+| `blueprint-ui.env.APP_BASEHREF` | Base href path for the app | `""` |
+
+### Application Settings
+
 Use `settingsYaml` to configure the Angular UI application. Nested keys in the table below (e.g., `OIDCSettings.authority`) use dot notation for readability.
 
 | Setting | Description | Example |
@@ -139,6 +184,14 @@ Use `settingsYaml` to configure the Angular UI application. Nested keys in the t
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
 | `AppTopBarText` | Banner text displayed in the top bar | `Blueprint - Exercise Planning` |
 | `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
+| `HeaderBarSettings.banner_background_color` | Banner background color | `"#d40000ff"` |
+| `HeaderBarSettings.classification_text` | Classification text | `""` |
+| `HeaderBarSettings.classification_text_color` | Classification text color | `"#ffffff"` |
+| `HeaderBarSettings.classification_text_fontsize` | Classification text font size | `"14"` |
+| `HeaderBarSettings.message_text` | Message text | `""` |
+| `HeaderBarSettings.message_text_color` | Message text color | `"#ffffff"` |
+| `HeaderBarSettings.message_text_fontsize` | Message text font size | `"14"` |
+| `HeaderBarSettings.enabled` | Enable header bar | `false` |
 
 
 ## References
