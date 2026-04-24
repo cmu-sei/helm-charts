@@ -23,11 +23,32 @@ helm install alloy sei/alloy -f values.yaml
 
 The following are configured via the `alloy-api.env` settings. These Alloy API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Alloy.Api/blob/development/Alloy.Api/appsettings.json) which may contain more settings than are described here.
 
+### General Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `PathBase` | Virtual directory path base | `""` |
+
+### Logging Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
+
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Alloy API | `Server=postgres;Port=5432;Database=alloy_api;Username=alloy_dbu;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 **Important:** The database must include the `uuid-ossp` extension:
 
@@ -45,6 +66,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | Space-delimited scopes requested by the API | `alloy-api player-api caster-api steamfitter-api vm-api` |
 | `Authorization__ClientId` | OAuth client ID used by Swagger or other interactive clients | `alloy-api` |
 | `Authorization__ClientName` | Optional display name for the client | `Alloy API` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
 
 ### Service Account (Resource Owner Flow)
 
@@ -58,8 +81,27 @@ Alloy uses a service account to call downstream Crucible services via the resour
 | `ResourceOwnerAuthorization__UserName` | Service account username | `alloy-sa` |
 | `ResourceOwnerAuthorization__Password` | Service account password | `PASSWORD` |
 | `ResourceOwnerAuthorization__Scope` | Space-delimited scopes required for downstream APIs | `alloy-api player-api caster-api steamfitter-api vm-api` |
+| `ResourceOwnerAuthorization__TokenExpirationBufferSeconds` | Token expiration buffer | `900` |
 
 Store secrets in a Kubernetes Secret and reference it via `alloy-api.existingSecret`.
+
+### Claims Transformation
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### CORS Policy Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Crucible Service Endpoints
 
@@ -87,6 +129,14 @@ Alloy’s background worker coordinates event lifecycles and Caster operations. 
 | `ClientSettings__ApiClientRetryIntervalSeconds` | Retry interval for dependent API calls | `10` |
 | `ClientSettings__ApiClientLaunchFailureMaxRetries` | Max retries for event launch failures | `10` |
 | `ClientSettings__ApiClientEndFailureMaxRetries` | Max retries for event end failures | `10` |
+
+### Miscellaneous Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `SeedData` | Seed data | `""` |
+| `Files__LocalDirectory` | Local file directory | `"/tmp/"` |
+| `Resource__MaxEventsForBasicUser` | Max events for basic user | `2` |
 
 ### Proxy Settings
 
@@ -204,6 +254,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `AppTopBarHexColor` | Hex color for the header background | `#b00` |
 | `PlayerUIAddress` | Player UI URL for cross-navigation | `https://player.example.com` |
 | `UseLocalAuthStorage` | Persist auth state in local storage | `true` |
+| `PollingIntervalMS` | Polling interval in milliseconds | `"3500"` (commented out) |
 
 ### Shared Settings ConfigMap
 
