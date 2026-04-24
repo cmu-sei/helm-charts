@@ -27,17 +27,51 @@ helm install caster sei/caster -f values.yaml
 
 The following settings are applied through `caster-api.env`. These Caster API settings reflect the application's [appsettings.conf](https://github.com/cmu-sei/Caster.Api/blob/main/src/Caster.Api/appsettings.json) which may contain more settings than are described here.
 
+### General Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `PathBase` | Virtual directory path base | `""` |
+| `SKIP_VOL_PERMISSIONS` | Skip volume permissions setup | `false` |
+| `AllowedHosts` | Allowed hosts | `"*"` |
+
+### Logging Settings
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Information` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Error` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Error` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Information` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Error` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Error` |
+
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string for the Caster API | `Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
 
 **Important:** Ensure the database has the `uuid-ossp` extension installed:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
+
+### CORS Policy
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Authentication (OIDC)
 
@@ -48,6 +82,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__TokenUrl` | Token endpoint | `https://identity.example.com/connect/token` |
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `caster-api` |
 | `Authorization__ClientId` | OAuth client ID for the API (Swagger or interactive clients) | `caster-api` |
+| `Authorization__ClientName` | OAuth2 client display name | `"Caster API"` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Claims Transformation
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
 ### Service Account (Player / VM API Integration)
 
@@ -58,6 +102,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Client__UserName` | Service account username | `caster-sa` |
 | `Client__Password` | Service account password | `PASSWORD` |
 | `Client__Scope` | Space-delimited scopes required for downstream APIs | `player-api vm-api` |
+| `Client__ClientSecret` | Client secret for password flow | `""` |
+| `Client__MaxRetryDelaySeconds` | Client max retry delay | `120` |
+| `Client__TokenRefreshSeconds` | Client token refresh interval | `600` |
 
 **Note:**
 
@@ -71,6 +118,8 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 |---------|-------------|---------|
 | `Player__VmApiUrl` | Base URL to the VM API | `https://vm.example.com` |
 | `Player__VmConsoleUrl` | URL pattern for VM console access | `https://console.example.com/vm/{id}/console` |
+| `Player__MaxParallelism` | Player max parallelism | `8` |
+| `Player__RemoveLoopSeconds` | Player remove loop interval | `300` |
 
 ### Terraform Configuration
 
@@ -81,6 +130,27 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__GitlabToken` | GitLab access token with `api` scope | `glpat-xxxxxxxxxxxxxxxxxxxx` |
 | `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
 | `Terraform__PluginDirectory` | Optional path containing pre-staged providers (set to `""` when using `terraformrc`) | `""` |
+| `Terraform__BinaryPath` | Terraform binary path | `"/terraform/binaries"` |
+| `Terraform__PluginCache` | Terraform plugin cache path | `"/terraform/plugin-cache"` |
+| `Terraform__RootWorkingDirectory` | Terraform root working directory | `"/terraform/root"` |
+| `Terraform__OutputSaveInterval` | Terraform output save interval | `5000` |
+| `Terraform__StateRetryCount` | Terraform state retry count | `12` |
+| `Terraform__StateRetryIntervalSeconds` | Terraform state retry interval | `5` |
+| `Terraform__EnvironmentVariables__InheritAll` | Inherit all environment variables | `"true"` |
+
+#### Kubernetes Jobs
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Terraform__KubernetesJobs__Enabled` | Enable Kubernetes job execution | `"false"` |
+| `Terraform__KubernetesJobs__Namespace` | Kubernetes jobs namespace | `"default"` |
+| `Terraform__KubernetesJobs__Context` | Kubernetes jobs context | `""` |
+| `Terraform__KubernetesJobs__RootWorkingDirectory` | K8s jobs root working directory | `"/terraform/root"` |
+| `Terraform__KubernetesJobs__ImageRegistry` | K8s jobs image registry | `"https://registry-1.docker.io/"` |
+| `Terraform__KubernetesJobs__ImageName` | K8s jobs image name | `"hashicorp/terraform"` |
+| `Terraform__KubernetesJobs__QueryImageTags` | Query image tags | `"true"` |
+| `Terraform__KubernetesJobs__QueryImageTagsRegex` | Image tags regex filter | `"^([0-9]\\d*\\.\\d+\\.\\d+)$"` |
+| `Terraform__KubernetesJobs__QueryImageTagsMinutes` | Image tags query interval | `"720"` |
 
 > **GitLab prerequisites:** create a dedicated group for Caster projects, generate a token with `api` scope, and confirm the token has access to the group.
 
