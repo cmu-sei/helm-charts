@@ -37,14 +37,31 @@ gallery-api:
   #     name: my-configmap
 
   env:
-    # CORS policy settings.
-    # The first entry should be the URL to Gallery
-    CorsPolicy__Origins__0:
-      https://gallery.example.com
+    Logging__IncludeScopes: false
+    Logging__Debug__LogLevel__Default: Warning
+    Logging__Debug__LogLevel__Microsoft: Warning
+    Logging__Debug__LogLevel__System: Warning
+    Logging__Console__LogLevel__Default: Warning
+    Logging__Console__LogLevel__Microsoft: Warning
+    Logging__Console__LogLevel__System: Warning
 
-      # Connection String to database
+    # Connection String to database
     # database requires the 'uuid-ossp' extension installed
     ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=gallery_api;Username=gallery_dbu;Password=;"
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+    Database__SeedFile: seed-data.json
+
+    # CORS policy settings.
+    # The first entry should be the URL to Gallery
+    CorsPolicy__Origins__0: https://gallery.example.com
+    CorsPolicy__Methods__0: ""
+    CorsPolicy__Headers__0: ""
+    CorsPolicy__AllowAnyOrigin: false
+    CorsPolicy__AllowAnyMethod: true
+    CorsPolicy__AllowAnyHeader: true
+    CorsPolicy__SupportsCredentials: true
 
     # OAuth2 Identity Client for Application
     Authorization__Authority: https://identity.example.com
@@ -53,6 +70,11 @@ gallery-api:
     Authorization__AuthorizationScope: gallery
     Authorization__ClientId: gallery.swagger
     Authorization__ClientName: Gallery API Swagger
+    Authorization__ClientSecret: ""
+    Authorization__RequireHttpsMetaData: false
+
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -140,12 +162,12 @@ gallery-ui:
     # AppTopBarText: Gallery  -  Exercise Information Sharing
     # AppTopBarImage: /assets/img/monitor-dashboard-white.png
     # UseLocalAuthStorage: true
-    # HeaderBarSettings:
-    #   banner_background_color: "#d40000ff"
-    #   classification_text: ""
-    #   classification_text_color: "#ffffff"
-    #   classification_text_fontsize: "14"
-    #   message_text: ""
-    #   message_text_color: "#ffffff"
-    #   message_text_fontsize: "14"
-    #   enabled: true
+    HeaderBarSettings:
+      banner_background_color: "#d40000ff"
+      classification_text: ""
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: ""
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+      enabled: false
