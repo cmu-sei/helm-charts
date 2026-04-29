@@ -11,3 +11,4 @@ data:
 {{- else }}
 {{- (tpl .Values.settings .) | indent 4 }}
 {{- end }}
+  settings.shared.json: "{}"
