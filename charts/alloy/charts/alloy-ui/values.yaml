@@ -113,7 +113,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile s3 s3-vm alloy-api caster-api steamfitter-api
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: http://localhost:4403/auth-callback
+  #   silent_redirect_uri: http://localhost:4403/auth-callback-silent.html
   # AppTitle: Alloy
   # AppTopBarText: Alloy
   # AppTopBarHexColor: "#0c918d"
@@ -141,7 +141,7 @@ settingsYaml:
 #     "response_type": "code",
 #     "scope": "openid profile s3 s3-vm alloy-api caster-api steamfitter-api",
 #     "automaticSilentRenew": true,
-#     "silent_redirect_uri": "http://localhost:4403/auth-callback"
+#     "silent_redirect_uri": "http://localhost:4403/auth-callback-silent.html"
 #   },
 #   "AppTitle": "Alloy",
 #   "AppTopBarText": "Alloy",
