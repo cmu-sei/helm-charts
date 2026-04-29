@@ -2057,7 +2057,7 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://__DOMAIN__/blueprint/auth-callback",
-        "https://__DOMAIN__/blueprint/auth-callback-silent"
+        "https://__DOMAIN__/blueprint/auth-callback-silent.html"
       ],
       "webOrigins": [
         "https://__DOMAIN__/blueprint"
@@ -2253,7 +2253,7 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://__DOMAIN__/cite/auth-callback",
-        "https://__DOMAIN__/cite/auth-callback-silent"
+        "https://__DOMAIN__/cite/auth-callback-silent.html"
       ],
       "webOrigins": [
         "https://__DOMAIN__/cite"
@@ -2411,7 +2411,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://__DOMAIN__/gallery/auth-callback-silent",
+        "https://__DOMAIN__/gallery/auth-callback-silent.html",
         "https://__DOMAIN__/gallery/auth-callback"
       ],
       "webOrigins": [
@@ -2577,7 +2577,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "https://__DOMAIN__/steamfitter/auth-callback-silent",
+        "https://__DOMAIN__/steamfitter/auth-callback-silent.html",
         "https://__DOMAIN__/steamfitter/auth-callback"
       ],
       "webOrigins": [

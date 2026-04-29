@@ -248,7 +248,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile alloy-api player-api caster-api steamfitter-api vm-api` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://alloy.example.com/auth-callback-silent` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://alloy.example.com/auth-callback-silent.html` |
 | `AppTitle` | Browser/application title | `Alloy` |
 | `AppTopBarText` | Text displayed in the UI header | `Alloy` |
 | `AppTopBarHexColor` | Hex color for the header background | `#b00` |

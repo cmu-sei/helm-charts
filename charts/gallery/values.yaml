@@ -155,7 +155,7 @@ gallery-ui:
     #   response_type: code
     #   scope: openid profile gallery
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://gallery.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://gallery.example.com/auth-callback-silent.html
     # AppTitle: Gallery
     # AppTopBarHexColor: "#2d69b4"
     # AppTopBarHexTextColor: "#FFFFFF"

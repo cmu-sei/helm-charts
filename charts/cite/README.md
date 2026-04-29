@@ -176,7 +176,7 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile alloy-api player-api vm-api cite-api` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 | `AppTitle` | Browser/application title | `CITE` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |

@@ -120,7 +120,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile player-api
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: https://example.com/player/auth-callback-silent
+  #   silent_redirect_uri: https://example.com/player/auth-callback-silent.html
   # NotificationsSettings:
   #   url: https://example.com/player/hubs
   #   number_to_display: 4

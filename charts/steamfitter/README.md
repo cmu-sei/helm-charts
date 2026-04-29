@@ -240,7 +240,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
 | `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api steamfitter-api`|
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
-| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent/` |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
 
 ### Shared Settings ConfigMap

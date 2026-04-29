@@ -395,7 +395,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile email caster-api` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://caster.example.com/auth-callback-silent/` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://caster.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
 ### Shared Settings ConfigMap

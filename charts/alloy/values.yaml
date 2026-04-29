@@ -204,7 +204,7 @@ alloy-ui:
     #   response_type: code
     #   scope: openid profile alloy-api player-api caster-api steamfitter-api vm-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://alloy.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://alloy.example.com/auth-callback-silent.html
     # AppTitle: Alloy
     # AppTopBarText: Alloy
     # AppTopBarHexColor: "#b00"

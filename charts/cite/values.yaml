@@ -180,7 +180,7 @@ cite-ui:
     #   response_type: code
     #   scope: openid profile alloy-api player-api vm-api cite-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://cite.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://cite.example.com/auth-callback-silent.html
     # AppTitle: CITE
     # AppTopBarHexColor: "#2d69b4"
     # AppTopBarHexTextColor: "#FFFFFF"

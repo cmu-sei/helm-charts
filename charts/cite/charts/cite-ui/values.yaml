@@ -120,7 +120,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile player player-vm cite
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: http://localhost:4721/auth-callback-silent
+  #   silent_redirect_uri: http://localhost:4721/auth-callback-silent.html
   # AppTitle: CITE
   # AppTopBarHexColor: "#2d69b4"
   # AppTopBarHexTextColor: "#FFFFFF"

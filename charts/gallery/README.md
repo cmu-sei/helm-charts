@@ -177,7 +177,7 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile gallery` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
 ### Shared Settings ConfigMap
