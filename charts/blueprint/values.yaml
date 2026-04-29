@@ -124,7 +124,7 @@ blueprint-ui:
     #   response_type: code
     #   scope: openid profile blueprint
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent.html
     # AppTitle: Blueprint
     # AppTopBarHexColor: "#2d69b4"
     # AppTopBarHexTextColor: "#FFFFFF"

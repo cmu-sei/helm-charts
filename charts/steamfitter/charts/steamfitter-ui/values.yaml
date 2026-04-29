@@ -122,7 +122,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile s3 s3-vm steamfitter
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: http://host.docker.internal:4401/auth-callback-silent
+  #   silent_redirect_uri: http://host.docker.internal:4401/auth-callback-silent.html
   # UseLocalAuthStorage: true
   HeaderBarSettings:
     banner_background_color: "#d40000ff"

@@ -145,7 +145,7 @@ alloy:
       "response_type": "code",
       "scope": "openid profile alloy player player-vm caster steamfitter",
       "automaticSilentRenew": true,
-      "silent_redirect_uri": "https://{{ .Values.global.domain }}/alloy/auth-callback-silent"
+      "silent_redirect_uri": "https://{{ .Values.global.domain }}/alloy/auth-callback-silent.html"
       },
       "AppTitle": "Alloy",
       "AppTopBarText": "Alloy",
@@ -254,7 +254,7 @@ blueprint:
         response_type: code
         scope: openid profile blueprint player player-vm cite gallery steamfitter
         automaticSilentRenew: true
-        silent_redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback-silent
+        silent_redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback-silent.html
       AppTitle: Blueprint
       AppTopBarText: "Blueprint  -  Exercise Planning"
       AppTopBarImage: /blueprint/assets/img/pencil-ruler-white.png
@@ -360,7 +360,7 @@ caster:
         response_type: code
         scope: openid profile caster
         automaticSilentRenew: true
-        silent_redirect_uri: https://{{ .Values.global.domain }}/caster/auth-callback-silent
+        silent_redirect_uri: https://{{ .Values.global.domain }}/caster/auth-callback-silent.html
       UseLocalAuthStorage: true
 
 # Deploy CITE
@@ -443,7 +443,7 @@ cite:
         response_type: code
         scope: openid profile cite
         automaticSilentRenew: true
-        silent_redirect_uri: https://{{ .Values.global.domain }}/cite/auth-callback-silent
+        silent_redirect_uri: https://{{ .Values.global.domain }}/cite/auth-callback-silent.html
       AppTitle: CITE
       AppTopBarText: "CITE  -  Collaborative Incident Threat Evaluator"
       AppTopBarImage: "/cite/assets/img/account-group-white.png"
@@ -529,7 +529,7 @@ gallery:
         response_type: code
         scope: openid profile gallery
         automaticSilentRenew: true
-        silent_redirect_uri: https://{{ .Values.global.domain }}/gallery/auth-callback-silent
+        silent_redirect_uri: https://{{ .Values.global.domain }}/gallery/auth-callback-silent.html
       AppTitle: Gallery
       AppTopBarText: "Gallery  -  Exercise Information Sharing"
       AppTopBarImage: /gallery/assets/img/monitor-dashboard-white.png
@@ -955,7 +955,7 @@ steamfitter:
         response_type: code
         scope: openid profile steamfitter player player-vm
         automaticSilentRenew: true
-        silent_redirect_uri: https://{{ .Values.global.domain }}/steamfitter/auth-callback-silent
+        silent_redirect_uri: https://{{ .Values.global.domain }}/steamfitter/auth-callback-silent.html
       UseLocalAuthStorage: true
 
 # Deploy TopoMojo

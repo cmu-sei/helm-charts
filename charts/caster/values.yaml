@@ -352,7 +352,7 @@ caster-ui:
     #   response_type: code
     #   scope: openid profile email caster-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://caster.example.com/auth-callback-silent/
+    #   silent_redirect_uri: https://caster.example.com/auth-callback-silent.html
     # UseLocalAuthStorage: true
     HeaderBarSettings:
       banner_background_color: "#d40000ff"
