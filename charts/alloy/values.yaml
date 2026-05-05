@@ -211,15 +211,15 @@ alloy-ui:
     # PlayerUIAddress: https://player.example.com
     # PollingIntervalMS: "3500"
     # UseLocalAuthStorage: true
-    HeaderBarSettings:
-      banner_background_color: "#d40000ff"
-      classification_text: ""
-      classification_text_color: "#ffffff"
-      classification_text_fontsize: "14"
-      message_text: ""
-      message_text_color: "#ffffff"
-      message_text_fontsize: "14"
-      enabled: false
+    # HeaderBarSettings:
+    #   banner_background_color: "#d40000ff"
+    #   classification_text: ""
+    #   classification_text_color: "#ffffff"
+    #   classification_text_fontsize: "14"
+    #   message_text: ""
+    #   message_text_color: "#ffffff"
+    #   message_text_fontsize: "14"
+    #   enabled: false
 
   ## settings is stringified json that gets included as assets/settings.json
   settings: "{}"
