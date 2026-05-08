@@ -72,6 +72,13 @@ Return the name of the TLS certificate secret.
 {{- end }}
 
 {{/*
+Return the name of the OIDC client secrets secret.
+*/}}
+{{- define "crucible.oidcClientSecretsName" -}}
+{{- "crucible-oidc-client-secrets" -}}
+{{- end }}
+
+{{/*
 Return the Keycloak Operator service name.
 The operator creates a service named "<cr-name>-service".
 */}}
