@@ -40,11 +40,11 @@ spec:
               echo "Crucible realm is available"
 
               # Find admin user in crucible realm
-              USER_JSON=$(kubectl exec "${KEYCLOAK_POD}" -- ${KCADM} get users -r crucible ${KCADM_AUTH} -q username=admin -q exact=true 2>/dev/null)
+              USER_JSON=$(kubectl exec "${KEYCLOAK_POD}" -- ${KCADM} get users -r crucible ${KCADM_AUTH} -q "username=${REALM_ADMIN_USERNAME}" -q exact=true 2>/dev/null)
               USER_ID=$(echo "${USER_JSON}" | grep -o '"id" *: *"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
 
               if [ -z "${USER_ID}" ] || [ "${USER_ID}" = "null" ]; then
-                echo "ERROR: Admin user not found in crucible realm"
+                echo "ERROR: Admin user '${REALM_ADMIN_USERNAME}' not found in crucible realm"
                 exit 1
               fi
               echo "Found admin user: ${USER_ID}"
@@ -68,10 +68,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "crucible.keycloakAdminSecretName" . }}
                   key: password
+            - name: REALM_ADMIN_USERNAME
+              value: {{ .Values.keycloak.realmAdminUsername | quote }}
             - name: REALM_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: crucible-oidc-client-secrets
+                  name: {{ include "crucible.oidcClientSecretsName" . }}
                   key: realm-admin-password
 ---
 apiVersion: v1
