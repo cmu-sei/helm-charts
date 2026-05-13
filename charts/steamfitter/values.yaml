@@ -99,6 +99,19 @@ steamfitter-api:
     ClaimsTransformation__EnableCaching: true
     ClaimsTransformation__CacheExpirationSeconds: 60
 
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    XApiOptions__Username: ""
+    XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__ApiUrl: ""
+    XApiOptions__UiUrl: ""
+    XApiOptions__EmailDomain: ""
+    XApiOptions__Platform: "Steamfitter"
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingTimeoutMinutes: 10
+    XApiOptions__ProcessingDelaySeconds: 30
+
     # Crucible URLs
     ClientSettings__urls__playerApi: https://player.example.com/
     ClientSettings__urls__vmApi: https://vm.example.com/

@@ -76,6 +76,19 @@ gallery-api:
     ClaimsTransformation__EnableCaching: true
     ClaimsTransformation__CacheExpirationSeconds: 60
 
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    XApiOptions__Username: ""
+    XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__ApiUrl: ""
+    XApiOptions__UiUrl: ""
+    XApiOptions__EmailDomain: ""
+    XApiOptions__Platform: "Gallery"
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingTimeoutMinutes: 10
+    XApiOptions__ProcessingDelaySeconds: 30
+
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
@@ -162,6 +175,7 @@ gallery-ui:
     # AppTopBarText: Gallery  -  Exercise Information Sharing
     # AppTopBarImage: /assets/img/monitor-dashboard-white.png
     # UseLocalAuthStorage: true
+    # XApiEnabled: false
     # HeaderBarSettings:
     #   banner_background_color: "#d40000ff"
     #   classification_text: ""
