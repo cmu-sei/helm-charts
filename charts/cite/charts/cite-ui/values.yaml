@@ -122,6 +122,7 @@ settingsYaml:
   # AppTopBarHexTextColor: "#FFFFFF"
   # AppTopBarText: CITE  -  Financial Incident Threat Evaluator
   # UseLocalAuthStorage: true
+  # XApiEnabled: false
   # DefaultScoringModelId: ""
   # DefaultEvaluationId: ""
   # DefaultTeamId: ""
