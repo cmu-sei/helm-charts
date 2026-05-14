@@ -132,7 +132,7 @@ Use `settingsYaml` to configure the Angular UI application. Nested keys in the t
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile blueprint` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://blueprint.example.com/auth-callback-silent` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://blueprint.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 | `AppTitle` | Browser/application title | `Blueprint` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |

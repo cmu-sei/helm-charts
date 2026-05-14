@@ -53,6 +53,19 @@ blueprint-api:
     Authorization__ClientId: blueprint.swagger
     Authorization__ClientName: Blueprint API Swagger
 
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    XApiOptions__Username: ""
+    XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__ApiUrl: ""
+    XApiOptions__UiUrl: ""
+    XApiOptions__EmailDomain: ""
+    XApiOptions__Platform: "Blueprint"
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingTimeoutMinutes: 10
+    XApiOptions__ProcessingDelaySeconds: 30
+
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
@@ -131,7 +144,7 @@ blueprint-ui:
     #   response_type: code
     #   scope: openid profile blueprint
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent.html
     # AppTitle: Blueprint
     # AppTopBarHexColor: "#2d69b4"
     # AppTopBarHexTextColor: "#FFFFFF"

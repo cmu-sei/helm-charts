@@ -95,6 +95,13 @@ extraVolumes: ""
 
 extraVolumeMounts: ""
 
+## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+## settings.shared.json key. When set, the file is mounted into the Angular
+## app's assets/config/ directory alongside settings.env.json so the app can
+## load shared UI configuration that is common across multiple Crucible services.
+## Per-app values can still be overridden via settingsYaml.
+sharedSettingsConfigMap: ""
+
 env:
   ## basehref is path to the app
   APP_BASEHREF: ""
@@ -113,7 +120,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile player-api vm-api
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: https://example.com/console/auth-callback-silent
+  #   silent_redirect_uri: https://example.com/console/auth-callback-silent.html
   # UseLocalAuthStorage: true
   # VmResolutionOptions:
   #   - width: 2560

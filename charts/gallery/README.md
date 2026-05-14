@@ -22,11 +22,27 @@ helm install gallery sei/gallery -f values.yaml
 
 The following are configured via the `gallery-api.env` settings. These Gallery API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Gallery.Api/blob/development/Gallery.Api/appsettings.json) which may contain more options than are described here.
 
+### Logging
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Logging__IncludeScopes` | Include scopes in logging | `false` |
+| `Logging__Debug__LogLevel__Default` | Debug log level default | `Warning` |
+| `Logging__Debug__LogLevel__Microsoft` | Debug log level Microsoft | `Warning` |
+| `Logging__Debug__LogLevel__System` | Debug log level System | `Warning` |
+| `Logging__Console__LogLevel__Default` | Console log level default | `Warning` |
+| `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Warning` |
+| `Logging__Console__LogLevel__System` | Console log level System | `Warning` |
+
 ### Database Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `ConnectionStrings__PostgreSQL` | PostgreSQL connection string | `Server=postgres;Port=5432;Database=gallery;Username=gallery;Password=PASSWORD;` |
+| `Database__AutoMigrate` | Automatically apply database migrations | `true` |
+| `Database__DevModeRecreate` | Recreate database on startup (dev only) | `false` |
+| `Database__Provider` | Database provider | `PostgreSQL` |
+| `Database__SeedFile` | Seed data file | `seed-data.json` |
 
 **Important:** The PostgreSQL database must include the `uuid-ossp` extension:
 
@@ -44,6 +60,26 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Authorization__AuthorizationScope` | OAuth scope requested by the API | `gallery-api` |
 | `Authorization__ClientId` | OAuth client ID used by Swagger and other interactive clients | `gallery-api` |
 | `Authorization__ClientName` | Display name for the client (optional) | `Gallery` |
+| `Authorization__ClientSecret` | OAuth2 client secret | `""` |
+| `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
+
+### Claims Transformation
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
+| `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### CORS Policy
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
+| `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
+| `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
+| `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
+| `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
+| `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 ### Certificate Trust
 
@@ -141,9 +177,70 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 | `OIDCSettings.response_type` | OAuth response type | `code` |
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile gallery` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
-| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent` |
+| `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://gallery.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
+### Shared Settings ConfigMap
+
+`sharedSettingsConfigMap` mounts a pre-existing Kubernetes ConfigMap as `settings.shared.json` into the Angular app's `assets/config/` directory alongside `settings.env.json`. This is intended for UI configuration values that are consistent across several Crucible applications, so the values only need to be defined in one place. Any value in the shared file can be overridden per-application using `settingsYaml`.
+
+```yaml
+gallery-ui:
+  sharedSettingsConfigMap: "crucible-shared-ui-settings"
+```
+
+The referenced ConfigMap must contain a key named `settings.shared.json`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crucible-shared-ui-settings
+data:
+  settings.shared.json: |
+    {
+      "HeaderBarSettings": {
+        "banner_background_color": "#d40000ff",
+        "classification_text": "EXAMPLE // CLASSIFICATION",
+        "enabled": true
+      }
+    }
+```
+
+When `sharedSettingsConfigMap` is not set (the default), no shared settings file is mounted and the behavior is unchanged.
+
+### Classification Banner
+
+Gallery UI supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
+| `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
+| `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
+| `HeaderBarSettings.classification_text_fontsize` | Font size (px) of the classification label | `"14"` |
+| `HeaderBarSettings.message_text` | Secondary message text displayed in the banner | `""` |
+| `HeaderBarSettings.message_text_color` | Color of the secondary message text | `#ffffff` |
+| `HeaderBarSettings.message_text_fontsize` | Font size (px) of the secondary message text | `"14"` |
+
+Example:
+
+```yaml
+gallery-ui:
+  settingsYaml:
+    HeaderBarSettings:
+      enabled: true
+      banner_background_color: "#d40000ff"
+      classification_text: "Example Classification Test"
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: "Example Message"
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+```
+
+![example classification banner with an example message](img/gallery-classification-banner-example.png)
 
 ## References
 

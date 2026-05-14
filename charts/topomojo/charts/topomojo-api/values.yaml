@@ -274,6 +274,14 @@ env:
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information
   # Ui__Branding__BackgroundImageUrl = theme/demo.png
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  # OTEL_SERVICE_NAME: topomojo-api
+  # OpenTelemetry__AddAlwaysOnTracingSampler: false
+  # OpenTelemetry__AddConsoleExporter: false
+  # OpenTelemetry__AddPrometheusExporter: false
+  # OpenTelemetry__IncludeDefaultActivitySources: true
+  # OpenTelemetry__IncludeDefaultMeters: true
 
 ## Create a seed data file based on the contents of an existing secret
 ## or by values that support templating via the tpl function.

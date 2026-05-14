@@ -52,11 +52,29 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "player-ui.fullname" . }}-settings
+            - mountPath: /usr/share/nginx/html/assets/config/settings.shared.json
+              subPath: settings.shared.json
+              name: {{ include "player-ui.fullname" . }}-shared-settings
             {{- include "player-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "player-ui.fullname" . }}-settings
           configMap:
             name: {{ include "player-ui.fullname" . }}
+        {{- if .Values.sharedSettingsConfigMap }}
+        - name: {{ include "player-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ .Values.sharedSettingsConfigMap }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- else }}
+        - name: {{ include "player-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ include "player-ui.fullname" . }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- end }}
         {{- include "player-ui.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
