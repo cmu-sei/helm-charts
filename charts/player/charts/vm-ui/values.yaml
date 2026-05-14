@@ -102,8 +102,6 @@ extraVolumeMounts: ""
 ## Per-app values can still be overridden via settingsYaml.
 sharedSettingsConfigMap: ""
 
-additionalVolumes: []
-
 env:
   ## basehref is path to the app
   APP_BASEHREF: ""
