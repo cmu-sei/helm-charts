@@ -52,11 +52,9 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "alloy-ui.fullname" . }}-settings
-            {{- if .Values.sharedSettingsConfigMap }}
             - mountPath: /usr/share/nginx/html/assets/config/settings.shared.json
               subPath: settings.shared.json
               name: {{ include "alloy-ui.fullname" . }}-shared-settings
-            {{- end }}
             {{- include "alloy-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "alloy-ui.fullname" . }}-settings
@@ -66,6 +64,13 @@ spec:
         - name: {{ include "alloy-ui.fullname" . }}-shared-settings
           configMap:
             name: {{ .Values.sharedSettingsConfigMap }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- else }}
+        - name: {{ include "alloy-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ include "alloy-ui.fullname" . }}
             items:
               - key: settings.shared.json
                 path: settings.shared.json

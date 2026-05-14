@@ -52,11 +52,9 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "gallery-ui.fullname" . }}-settings
-            {{- if .Values.sharedSettingsConfigMap }}
             - mountPath: /usr/share/nginx/html/assets/config/settings.shared.json
               subPath: settings.shared.json
               name: {{ include "gallery-ui.fullname" . }}-shared-settings
-            {{- end }}
             {{- include "gallery-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "gallery-ui.fullname" . }}-settings
@@ -66,6 +64,13 @@ spec:
         - name: {{ include "gallery-ui.fullname" . }}-shared-settings
           configMap:
             name: {{ .Values.sharedSettingsConfigMap }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- else }}
+        - name: {{ include "gallery-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ include "gallery-ui.fullname" . }}
             items:
               - key: settings.shared.json
                 path: settings.shared.json
