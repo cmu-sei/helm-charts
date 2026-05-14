@@ -59,7 +59,7 @@ jobs:
         if: steps.update.outputs.has_changes == 'true'
         id: version
         run: |
-          cd charts/crucible
+          cd charts/crucible-apps
 
           # Get current version
           CURRENT_VERSION=$(yq -r .version Chart.yaml)
