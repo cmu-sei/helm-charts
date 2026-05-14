@@ -1,0 +1,43 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Release.Name }}-postgresql
+  labels:
+    {{- include "crucible-infra.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.postgresql.instances | default 1 }}
+  storage:
+    size: {{ .Values.postgresql.persistence.size | default "1Gi" }}
+    {{- if .Values.postgresql.persistence.storageClass }}
+    storageClass: {{ .Values.postgresql.persistence.storageClass }}
+    {{- end }}
+  superuserSecret:
+    name: {{ .Release.Name }}-postgresql
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      secret:
+        name: {{ .Release.Name }}-postgresql
+      postInitSQL:
+        {{- range .Values.postgresql.databases }}
+        {{- $owner := .owner | default .name }}
+        {{- if not .owner }}
+        - CREATE USER {{ .name }} WITH PASSWORD '{{ .name }}';
+        {{- end }}
+        - CREATE DATABASE {{ .name }} OWNER {{ $owner }};
+        - GRANT ALL PRIVILEGES ON DATABASE {{ .name }} TO {{ $owner }};
+        {{- end }}
+  managed:
+    roles:
+      {{- range .Values.postgresql.databases }}
+      {{- if not .owner }}
+      - name: {{ .name }}
+        ensure: present
+        login: true
+        passwordSecret:
+          name: {{ $.Release.Name }}-db-{{ .name | replace "_" "-" }}
+      {{- end }}
+      {{- end }}
+{{- end }}

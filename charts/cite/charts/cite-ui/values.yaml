@@ -23,12 +23,10 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  {}
+podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext:
-  {}
+securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -43,8 +41,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -57,8 +54,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -120,21 +116,22 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile player player-vm cite
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: http://localhost:4721/auth-callback-silent
+  #   silent_redirect_uri: http://localhost:4721/auth-callback-silent.html
   # AppTitle: CITE
   # AppTopBarHexColor: "#2d69b4"
   # AppTopBarHexTextColor: "#FFFFFF"
   # AppTopBarText: CITE  -  Financial Incident Threat Evaluator
   # UseLocalAuthStorage: true
+  # XApiEnabled: false
   # DefaultScoringModelId: ""
   # DefaultEvaluationId: ""
   # DefaultTeamId: ""
-  HeaderBarSettings:
-    banner_background_color: "#d40000ff"
-    classification_text: ""
-    classification_text_color: "#ffffff"
-    classification_text_fontsize: "14"
-    message_text: ""
-    message_text_color: "#ffffff"
-    message_text_fontsize: "14"
-    enabled: true
+  # HeaderBarSettings:
+  #   banner_background_color: "#d40000ff"
+  #   classification_text: ""
+  #   classification_text_color: "#ffffff"
+  #   classification_text_fontsize: "14"
+  #   message_text: ""
+  #   message_text_color: "#ffffff"
+  #   message_text_fontsize: "14"
+  #   enabled: true

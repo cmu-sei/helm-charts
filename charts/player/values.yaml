@@ -130,6 +130,18 @@ player-api:
     # SeedData__Users__0__Name: "Seed User"
     # SeedData__Users__0__Role: "Demo Role"
 
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    XApiOptions__Username: ""
+    XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__ApiUrl: ""
+    XApiOptions__UiUrl: ""
+    XApiOptions__Platform: "Player"
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingTimeoutMinutes: 10
+    XApiOptions__ProcessingDelaySeconds: 30
+
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
@@ -207,7 +219,7 @@ player-ui:
     #   response_type: code
     #   scope: openid profile player-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://player.example.com/auth-callback-silent/
+    #   silent_redirect_uri: https://player.example.com/auth-callback-silent.html
     # NotificationsSettings:
     #   url: https://player.example.com/hubs
     #   number_to_display: 4
@@ -216,6 +228,7 @@ player-ui:
     # AppTopBarHexColor: "#b00"
     # AppTopBarHexTextColor: "#FFFFFF"
     # UseLocalAuthStorage: true
+    # XApiEnabled: false
     # HeaderBarSettings:
     #   banner_background_color: "#d40000ff"
     #   classification_text: ""
@@ -451,7 +464,7 @@ vm-ui:
     #   response_type: code
     #   scope: openid profile player-api vm-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://vm.example.com/auth-callback-silent/
+    #   silent_redirect_uri: https://vm.example.com/auth-callback-silent.html
     # UseLocalAuthStorage: true
 
 console-ui:
@@ -516,7 +529,7 @@ console-ui:
     #   response_type: code
     #   scope: openid profile player-api vm-api vm-console-api
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://console.example.com/auth-callback-silent/
+    #   silent_redirect_uri: https://console.example.com/auth-callback-silent.html
     # UseLocalAuthStorage: true
     # VmResolutionOptions:
     #   - width: 2560

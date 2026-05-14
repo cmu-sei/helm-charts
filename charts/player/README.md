@@ -213,7 +213,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow        | `code`                                             |
 | `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested              | `openid profile player-api`                        |
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                      | `true`                                             |
-| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks               | `https://player.example.com/auth-callback-silent/` |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks               | `https://player.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage`        | Whether authentication state is stored locally in browser   | `true`                                             |
 | `NotificationsSettings.url`  | URL for receiving notifications                             | `https://player.example.com/hubs`                  |
 | `NotificationsSettings.number_to_display` | Number of items in the notification area       | `4`                                                |
@@ -387,7 +387,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                            |
 | `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api`                |
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
-| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://vm.example.com/auth-callback-silent/`    |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://vm.example.com/auth-callback-silent.html`    |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
 
 
@@ -409,7 +409,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.response_type` | OAuth response type defining the authentication flow  | `code`                                              |
 | `OIDCSettings.scope`         | Space-delimited list of OAuth scopes requested        | `openid profile player-api vm-api vm-console-api`   |
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                              |
-| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://console.example.com/auth-callback-silent/` |
+| `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://console.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
 

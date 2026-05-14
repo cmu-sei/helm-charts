@@ -120,7 +120,7 @@ settingsYaml:
   #   response_type: code
   #   scope: openid profile player-api vm-api
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: https://example.com/console/auth-callback-silent
+  #   silent_redirect_uri: https://example.com/console/auth-callback-silent.html
   # UseLocalAuthStorage: true
   # VmResolutionOptions:
   #   - width: 2560

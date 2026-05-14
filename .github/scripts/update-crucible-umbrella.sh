@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Update all cemusei repository dependencies to their latest versions
+# Update all cmusei repository dependencies to their latest versions
 # Updates the Chart.yaml with the latest versions from https://helm.cmusei.dev/charts
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CHART_DIR="$SCRIPT_DIR/../../charts/crucible"
+CHART_DIR="$SCRIPT_DIR/../../charts/crucible-apps"
 CHART_FILE="$CHART_DIR/Chart.yaml"
-CEMUSEI_REPO="https://helm.cmusei.dev/charts"
-REPO_NAME="cemusei"
+cmusei_REPO="https://helm.cmusei.dev/charts"
+REPO_NAME="cmusei"
 
 # Color output
 RED='\033[0;31m'
@@ -17,7 +17,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "=========================================="
-echo "Updating cemusei chart dependencies"
+echo "Updating cmusei chart dependencies"
 echo "=========================================="
 
 # Check if helm is installed
@@ -41,21 +41,21 @@ echo "=========================================="
 echo "Fetching latest versions..."
 echo "=========================================="
 
-# Extract cemusei dependencies from Chart.yaml
+# Extract cmusei dependencies from Chart.yaml
 declare -a charts_to_update
 while IFS= read -r line; do
     if [[ $line =~ ^[[:space:]]*-[[:space:]]*name:[[:space:]]*(.+)$ ]]; then
         current_chart="${BASH_REMATCH[1]}"
     elif [[ $line =~ ^[[:space:]]*repository:[[:space:]]*(.+)$ ]]; then
         repo="${BASH_REMATCH[1]}"
-        if [[ "$repo" == "$CEMUSEI_REPO" ]]; then
+        if [[ "$repo" == "$cmusei_REPO" ]]; then
             charts_to_update+=("$current_chart")
         fi
     fi
 done < "$CHART_FILE"
 
 if [ ${#charts_to_update[@]} -eq 0 ]; then
-    echo -e "${RED}No cemusei dependencies found in Chart.yaml${NC}"
+    echo -e "${RED}No cmusei dependencies found in Chart.yaml${NC}"
     exit 0
 fi
 

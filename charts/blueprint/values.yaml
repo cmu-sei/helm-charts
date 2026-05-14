@@ -83,6 +83,19 @@ blueprint-api:
     ClaimsTransformation__EnableCaching: true
     ClaimsTransformation__CacheExpirationSeconds: 60
 
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    XApiOptions__Username: ""
+    XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__ApiUrl: ""
+    XApiOptions__UiUrl: ""
+    XApiOptions__EmailDomain: ""
+    XApiOptions__Platform: "Blueprint"
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingTimeoutMinutes: 10
+    XApiOptions__ProcessingDelaySeconds: 30
+
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
@@ -150,6 +163,13 @@ blueprint-ui:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.env.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
+
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
     # ApiUrl: https://blueprint.example.com
@@ -161,22 +181,22 @@ blueprint-ui:
     #   response_type: code
     #   scope: openid profile blueprint
     #   automaticSilentRenew: true
-    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent
+    #   silent_redirect_uri: https://blueprint.example.com/auth-callback-silent.html
     # AppTitle: Blueprint
     # AppTopBarHexColor: "#2d69b4"
     # AppTopBarHexTextColor: "#FFFFFF"
     # AppTopBarText: Blueprint  -  Exercise Planning
     # AppTopBarImage: /assets/img/monitor-dashboard-white.png
     # UseLocalAuthStorage: true
-    HeaderBarSettings:
-      banner_background_color: "#d40000ff"
-      classification_text: ""
-      classification_text_color: "#ffffff"
-      classification_text_fontsize: "14"
-      message_text: ""
-      message_text_color: "#ffffff"
-      message_text_fontsize: "14"
-      enabled: false
+#     HeaderBarSettings:
+#       banner_background_color: "#d40000ff"
+#       classification_text: ""
+#       classification_text_color: "#ffffff"
+#       classification_text_fontsize: "14"
+#       message_text: ""
+#       message_text_color: "#ffffff"
+#       message_text_fontsize: "14"
+#       enabled: false
 
     ## settings is stringified json that gets included as appsettings.Production.json
     # settings: '{

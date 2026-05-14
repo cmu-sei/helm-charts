@@ -52,11 +52,9 @@ spec:
             - mountPath: /usr/share/nginx/html/assets/config/settings.env.json
               subPath: settings.env.json
               name: {{ include "cite-ui.fullname" . }}-settings
-            {{- if .Values.sharedSettingsConfigMap }}
             - mountPath: /usr/share/nginx/html/assets/config/settings.shared.json
               subPath: settings.shared.json
               name: {{ include "cite-ui.fullname" . }}-shared-settings
-            {{- end }}
             {{- include "cite-ui.extraVolumeMounts" . | nindent 12 }}
       volumes:
         - name: {{ include "cite-ui.fullname" . }}-settings
@@ -66,6 +64,13 @@ spec:
         - name: {{ include "cite-ui.fullname" . }}-shared-settings
           configMap:
             name: {{ .Values.sharedSettingsConfigMap }}
+            items:
+              - key: settings.shared.json
+                path: settings.shared.json
+        {{- else }}
+        - name: {{ include "cite-ui.fullname" . }}-shared-settings
+          configMap:
+            name: {{ include "cite-ui.fullname" . }}
             items:
               - key: settings.shared.json
                 path: settings.shared.json

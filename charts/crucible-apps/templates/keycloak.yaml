@@ -1,0 +1,50 @@
+{{- if .Values.keycloak.enabled }}
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: {{ include "crucible.fullname" . }}-keycloak
+  labels:
+    {{- include "crucible.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.keycloak.instances | default 1 }}
+  db:
+    vendor: postgres
+    host: {{ .Values.keycloak.externalDatabase.host }}
+    port: {{ .Values.keycloak.externalDatabase.port | default 5432 }}
+    database: {{ .Values.keycloak.externalDatabase.database | default "keycloak" }}
+    usernameSecret:
+      name: {{ .Values.keycloak.externalDatabase.existingSecret }}
+      key: {{ .Values.keycloak.externalDatabase.existingSecretUserKey | default "username" }}
+    passwordSecret:
+      name: {{ .Values.keycloak.externalDatabase.existingSecret }}
+      key: {{ .Values.keycloak.externalDatabase.existingSecretPasswordKey | default "password" }}
+  http:
+    httpEnabled: true
+  hostname:
+    hostname: {{ .Values.global.domain }}
+  proxy:
+    headers: xforwarded
+  ingress:
+    enabled: false
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - env:
+              - name: KC_HTTP_RELATIVE_PATH
+                value: "/keycloak/"
+              # Prevent KC_HTTP_RELATIVE_PATH from affecting the management port (9000)
+              # so the operator's default health probes at /health/* continue to work.
+              - name: KC_HTTP_MANAGEMENT_RELATIVE_PATH
+                value: "/"
+{{- if .Values.keycloak.importRealmSecret }}
+            volumeMounts:
+              - name: realm-import
+                mountPath: /opt/keycloak/data/import
+                readOnly: true
+        volumes:
+          - name: realm-import
+            secret:
+              secretName: {{ .Values.keycloak.importRealmSecret }}
+{{- end }}
+{{- end }}
