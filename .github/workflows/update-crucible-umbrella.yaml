@@ -38,7 +38,7 @@ jobs:
 
       - name: Add Helm repositories
         run: |
-          helm repo add cemusei https://helm.cmusei.dev/charts
+          helm repo add cmusei https://helm.cmusei.dev/charts
           helm repo update
 
       - name: Run update script
@@ -47,7 +47,7 @@ jobs:
           .github/scripts/update-crucible-umbrella.sh
 
           # Check if there were any changes
-          if git diff --quiet charts/crucible/Chart.yaml charts/crucible/Chart.lock; then
+          if git diff --quiet charts/crucible-apps/Chart.yaml charts/crucible-apps/Chart.lock; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected"
           else
