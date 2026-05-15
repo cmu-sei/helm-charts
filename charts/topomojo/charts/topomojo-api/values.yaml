@@ -158,9 +158,14 @@ resources: {}
   # limits:
   #   cpu: 200m
   #   memory: 512Mi
+  #   # When using FileUpload__UseDatastoreApi without persistent volume for TempRoot,
+  #   # set ephemeral-storage to prevent node crashes. Recommended: MaxFileBytes × 4
+  #   # Example for 20GB max file: ephemeral-storage: "80Gi"
+  #   # ephemeral-storage: "80Gi"
   # requests:
   #   cpu: 100m
   #   memory: 256Mi
+  #   # ephemeral-storage: "40Gi"
 
 nodeSelector: {}
 
@@ -239,6 +244,13 @@ env:
   # FileUpload__TopoRoot: tm
   # FileUpload__IsoRoot: tm/isos
   # FileUpload__DocRoot: tm/_docs
+  # FileUpload__MaxFileBytes: 21474836480  # 20GB
+  ## VMware Cloud API upload settings (when NFS mount unavailable)
+  # FileUpload__UseDatastoreApi: false
+  # FileUpload__TempRoot: /mnt/tm/topoiso-staging  # Use EFS/persistent volume, NOT /tmp
+  # FileUpload__UploadTimeoutMinutes: 180
+  # FileUpload__AsyncUploadThresholdBytes: 1073741824  # 1GB
+  # FileUpload__TempFileExpirationHours: 24
   # Core__DefaultGamespaceMinutes: 120
   # Core__DefaultGamespaceLimit: 2
   # Core__DefaultWorkspaceLimit: 0
