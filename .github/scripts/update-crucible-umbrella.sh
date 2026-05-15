@@ -56,7 +56,7 @@ done < "$CHART_FILE"
 
 if [ ${#charts_to_update[@]} -eq 0 ]; then
     echo -e "${RED}No cmusei dependencies found in Chart.yaml${NC}"
-    exit 0
+    exit 1
 fi
 
 # Store version updates
@@ -97,6 +97,11 @@ for chart_name in "${charts_to_update[@]}"; do
         ((UPDATED++))
     fi
 done
+
+if [ $FAILED -gt 0 ]; then
+    echo -e "${RED}$FAILED chart(s) failed to fetch. Aborting before mutating Chart.yaml.${NC}"
+    exit 1
+fi
 
 # Apply all updates in a single pass if there are any
 if [ $UPDATED -gt 0 ]; then
