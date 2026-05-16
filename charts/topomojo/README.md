@@ -83,16 +83,62 @@ topomojo-api:
 
 ### File Storage
 
-| Setting | Description | Example |
-|---------|-------------|---------|
-| `FileUpload__TopoRoot` | Root directory for various files such as workspace import/export zips. The path provided is a path mounted in the container. (e.g., `/mnt/tm`) | `/opt/topomojo` (Default) |
-| `FileUpload__IsoRoot` | Directory for ISO files. This is typically an NFS mounted volume that is also presented as a datastore to the hypervisor to allow mounting ISOs to VMs. | `/opt/topomojo/isos` (Default) |
-| `FileUpload__DocRoot` | Directory for documentation | `/opt/topomojo/docs` (Default) |
+TopoMojo writes uploaded files to several directories inside the API pod. The most important is the path that holds ISOs, because ISOs ultimately need to be written where the hypervisor can read them. There are two ways the chart can deliver an uploaded ISO to the hypervisor:
+
+| Mode | Where TopoMojo writes the file | Where the hypervisor reads from | When to use |
+|---|---|---|---|
+| **NFS-mounted ISO datastore** (default) | `FileUpload__IsoRoot` — a path inside the container backed by an NFS share | The same NFS share, mounted on ESXi as a vSphere datastore (named in `Pod__IsoStore`) | When you have the ability to attach an NFS datastore to ESXi hosts |
+| **vSphere HTTP datastore upload** (`FileUpload__UseDatastoreApi: true`) | `FileUpload__TempRoot` — a transient staging dir on the API pod, then HTTP PUT to vSphere | The vSphere datastore named in `Pod__IsoStore` (vSAN, VMFS, etc.), populated by the upload | VMware Cloud on AWS or any environment where the ESXi/SDDC hosts cannot mount your NFS share as a datastore |
+
+In NFS mode, `IsoRoot` is the *final destination* — the file is written once and stays there, visible to both TopoMojo and the hypervisor through the shared NFS mount. In datastore-API mode, `TempRoot` is just a staging area: the file is written there, optionally wrapped in an ISO, HTTP PUT to the vSphere datastore through vCenter, and then reaped by the Janitor when stale.
+
+`TempRoot` is therefore unrelated to `IsoRoot`. They never both contain the same file. `TempRoot` is only read when `UseDatastoreApi=true`; `IsoRoot` is only used as a destination when `UseDatastoreApi=false`. Both are still set on the chart at all times — they're just unused in the mode they don't apply to.
+
+#### Path settings
+
+| Setting | Description | Chart default |
+|---------|-------------|---------------|
+| `FileUpload__TopoRoot` | Root directory for workspace import/export zips and other persistent files. Backed by the topomojo PVC mount. | `/mnt/tm` |
+| `FileUpload__IsoRoot` | Directory for ISO files in NFS mode. Must be accessible to both TopoMojo and the hypervisor — typically an NFS share that ESXi mounts as a vSphere datastore. Unused when `FileUpload__UseDatastoreApi=true`. | `/mnt/tm/isos` |
+| `FileUpload__DocRoot` | Directory where workspace document images are stored and served. Points at the chart's dedicated `wwwroot/docs` mount so uploaded images are served by ASP.NET's static-file handler. | `/home/app/wwwroot/docs` |
+| `FileUpload__TempRoot` | Staging directory for datastore-API uploads. Backed by a subdirectory on the topomojo PVC; the vol-permissions init container creates and chowns it. Override only if you have provisioned alternative storage yourself. Unused when `FileUpload__UseDatastoreApi=false`. | `/mnt/tm/_iso-staging` |
 
 **Important**
 - These paths must be on persistent storage for data to remain after a pod restart.
-- ISO directory must be accessible to both TopoMojo and hypervisors (typically NFS).
+- **NFS mode:** the chart default `FileUpload__IsoRoot` points at the topomojo PVC, which is *not* readable by ESXi. Override it to a path mounted from the same NFS share your hypervisor uses as a vSphere datastore (the share named in `Pod__IsoStore`); otherwise uploaded ISOs never reach the hypervisor.
+- **Datastore-API mode:** `TempRoot` does **not** need to be visible to the hypervisor — only the API pod writes to it. ISOs reach the hypervisor over HTTP via vCenter.
 - See the [Storage Section](#storage) for more information on storage.
+
+#### Datastore-API upload settings (VMware Cloud)
+
+In environments where the ESXi hosts cannot mount the shared NFS share
+backing `Pod__IsoStore` — most notably **VMware Cloud on AWS**, where
+the SDDC's hosts can only see datastores presented by the SDDC itself
+(vSAN or attached VMFS) — set `FileUpload__UseDatastoreApi: true`.
+TopoMojo will stage uploads to `FileUpload__TempRoot` and then HTTP PUT
+them to the vSphere datastore named in `Pod__IsoStore` through vCenter.
+The chart provisions `TempRoot` automatically; no extra storage values
+are required.
+
+To enable:
+
+```yaml
+topomojo-api:
+  env:
+    FileUpload__UseDatastoreApi: true
+```
+
+Optional tuning knobs (defaults shown):
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `FileUpload__MaxFileBytes` | Max upload size in bytes (`0` for unlimited) | `0` |
+| `FileUpload__UploadTimeoutMinutes` | HTTP timeout for the datastore PUT | `120` |
+| `FileUpload__AsyncUploadThresholdBytes` | Files above this size upload asynchronously | `1073741824` (1 GB) |
+| `FileUpload__TempFileExpirationHours` | Stale temp file cleanup threshold | `24` |
+
+Existing NFS-mount deployments leave `FileUpload__UseDatastoreApi`
+unset (the default is `false`) and behavior is unchanged.
 
 ### Core Application Settings
 

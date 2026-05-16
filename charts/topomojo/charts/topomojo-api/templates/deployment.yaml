@@ -41,6 +41,7 @@ spec:
             - |
               /mnt/scripts/vol-permissions.sh /docs
               /mnt/scripts/vol-permissions.sh /theme
+              /mnt/scripts/vol-permissions.sh /iso-staging
           volumeMounts:
             - mountPath: /docs
               name: {{ include "topomojo-api.name" . }}-vol
@@ -48,6 +49,9 @@ spec:
             - mountPath: /theme
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}/_theme
+            - mountPath: /iso-staging
+              name: {{ include "topomojo-api.name" . }}-vol
+              subPath: {{ include "topomojo-api.fullname" . }}/_iso-staging
             - mountPath: /mnt/scripts/vol-permissions.sh
               name: {{ include "topomojo-api.name" . }}-scripts
               subPath: vol-permissions.sh
