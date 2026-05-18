@@ -303,6 +303,33 @@ topomojo-api:
     class: "nfs-client"
 ```
 
+The chart does not impose a default `storage.size` — operators choose a value appropriate for their usage based on factors such as: workspace import/export volume, document-image footprint, and ISO uploads (if using datastore-API mode).
+
+##### Sizing for ISO uploads (datastore-API mode only)
+
+This guidance **only applies when `FileUpload__UseDatastoreApi: true`**. In NFS mode (the default), uploaded ISOs are written directly to the NFS share backing `Pod__IsoStore` and never touch this PVC, so PVC sizing is governed only by `TopoRoot` (workspace export data) and `DocRoot` (documents and images).
+
+When the datastore-API upload feature is enabled, TopoMojo stages each upload at `FileUpload__TempRoot` (a subdirectory on this PVC) before HTTP PUT to vSphere. Sizing this directory has to account for two cases:
+
+- **Non-ISO uploads are wrapped into an ISO before transfer.** A user can upload any file (e.g., an installer or media file) and TopoMojo will build a `.iso` container around it. During that wrap step the staging directory holds *both* the original file *and* the generated ISO — roughly **2× the original size** — until the wrap completes. The original is then deleted immediately, before the upload to vCenter starts.
+
+To size the PVC:
+
+1. **Cap per-upload size** by setting `FileUpload__MaxFileBytes` to a non-zero value. The chart default of `0` means unlimited. Pick a size based on the largest file you expect operators to upload (ISO or otherwise).
+2. **Allow at least 4× `FileUpload__MaxFileBytes`** of headroom on top of your normal `TopoRoot` working set. This covers a few concurrent uploads in flight (each transiently 2× during the ISO wrap step for non-ISO files) plus margin for failed async uploads waiting on Janitor cleanup. Environments expecting many simultaneous uploaders should size higher.
+3. **Shorten `FileUpload__TempFileExpirationHours`** if failed-upload residue is the bottleneck — successful uploads clean up immediately, so this knob only governs how long failures and crashed-mid-upload files linger.
+
+Example for a deployment expecting up to 20 GB ISOs:
+
+```yaml
+topomojo-api:
+  storage:
+    size: "100Gi"  # ~80Gi staging headroom + TopoRoot working set
+  env:
+    FileUpload__UseDatastoreApi: true
+    FileUpload__MaxFileBytes: 21474836480  # 20 GB cap
+```
+
 #### Extra Environment Sources
 
 Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
