@@ -134,7 +134,6 @@ Optional tuning knobs (defaults shown):
 |---------|-------------|---------|
 | `FileUpload__MaxFileBytes` | Max upload size in bytes (`0` for unlimited) | `0` |
 | `FileUpload__UploadTimeoutMinutes` | HTTP timeout for the datastore PUT | `120` |
-| `FileUpload__AsyncUploadThresholdBytes` | Files above this size upload asynchronously | `1073741824` (1 GB) |
 | `FileUpload__TempFileExpirationHours` | Stale temp file cleanup threshold | `24` |
 
 Existing NFS-mount deployments leave `FileUpload__UseDatastoreApi`
@@ -316,8 +315,8 @@ When the datastore-API upload feature is enabled, TopoMojo stages each upload at
 To size the PVC:
 
 1. **Cap per-upload size** by setting `FileUpload__MaxFileBytes` to a non-zero value. The chart default of `0` means unlimited. Pick a size based on the largest file you expect operators to upload (ISO or otherwise).
-2. **Allow at least 4× `FileUpload__MaxFileBytes`** of headroom on top of your normal `TopoRoot` working set. This covers a few concurrent uploads in flight (each transiently 2× during the ISO wrap step for non-ISO files) plus margin for failed async uploads waiting on Janitor cleanup. Environments expecting many simultaneous uploaders should size higher.
-3. **Shorten `FileUpload__TempFileExpirationHours`** if failed-upload residue is the bottleneck — successful uploads clean up immediately, so this knob only governs how long failures and crashed-mid-upload files linger.
+2. **Allow at least 4× `FileUpload__MaxFileBytes`** of headroom on top of your normal `TopoRoot` working set. This covers a few concurrent uploads in flight (each transiently 2× during the ISO wrap step for non-ISO files). Environments expecting many simultaneous uploaders should size higher.
+3. **Shorten `FileUpload__TempFileExpirationHours`** if mid-upload crashes are leaving residue — successful and failed uploads both clean up immediately, so this knob only governs how long files orphaned by an unclean pod restart linger.
 
 Example for a deployment expecting up to 20 GB ISOs:
 

@@ -256,7 +256,6 @@ env:
   FileUpload__TempRoot: /mnt/tm/_iso-staging
   # FileUpload__UseDatastoreApi: false
   # FileUpload__UploadTimeoutMinutes: 180
-  # FileUpload__AsyncUploadThresholdBytes: 1073741824  # 1GB
   # FileUpload__TempFileExpirationHours: 24
 
   # Core__DefaultGamespaceMinutes: 120
