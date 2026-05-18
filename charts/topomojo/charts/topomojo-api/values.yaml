@@ -253,7 +253,7 @@ env:
   ## TempRoot is set to a subdirectory of the existing topomojo
   ## PVC mount; the vol-permissions init container creates and chowns it.
   ## Override only if you have provisioned alternative storage yourself.
-  FileUpload__TempRoot: "/mnt/tm/_iso-staging"
+  FileUpload__TempRoot: /mnt/tm/_iso-staging
   # FileUpload__UseDatastoreApi: false
   # FileUpload__UploadTimeoutMinutes: 180
   # FileUpload__AsyncUploadThresholdBytes: 1073741824  # 1GB
