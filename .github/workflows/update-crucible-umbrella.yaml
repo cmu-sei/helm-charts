@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
           version: "latest"
 
@@ -38,7 +38,7 @@ jobs:
 
       - name: Add Helm repositories
         run: |
-          helm repo add cemusei https://helm.cmusei.dev/charts
+          helm repo add cmusei https://helm.cmusei.dev/charts
           helm repo update
 
       - name: Run update script
@@ -47,7 +47,7 @@ jobs:
           .github/scripts/update-crucible-umbrella.sh
 
           # Check if there were any changes
-          if git diff --quiet charts/crucible/Chart.yaml charts/crucible/Chart.lock; then
+          if git diff --quiet charts/crucible-apps/Chart.yaml charts/crucible-apps/Chart.lock; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected"
           else
@@ -59,7 +59,7 @@ jobs:
         if: steps.update.outputs.has_changes == 'true'
         id: version
         run: |
-          cd charts/crucible
+          cd charts/crucible-apps
 
           # Get current version
           CURRENT_VERSION=$(yq -r .version Chart.yaml)
@@ -96,7 +96,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.update.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: update crucible umbrella chart to ${{ steps.version.outputs.new_version }}
           branch: crucible-umbrella-${{ steps.version.outputs.new_version }}

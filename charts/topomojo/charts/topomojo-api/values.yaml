@@ -225,20 +225,39 @@ env:
   # Oidc__UserRolesClaimMap__observer: Observer
   # Oidc__UserRolesClaimMap__user: user
   # Oidc__UserRolesClaimPath = realm_access.roles
+
   # Database__Provider: InMemory
   # Database__ConnectionString: topomojo_db
   # Database__SeedFile: seed-data.json
   # Database__AdminId: ""
   # Database__AdminName: ""
+
   # Cache__RedisUrl: ""
   # Cache__Key: ""
   # Cache__SharedFolder: ""
+
   # OpenApi__Enabled: true
   # OpenApi__ApiName: TopoMojo
   # OpenApi__Client__ClientId: topomojo-swagger
-  # FileUpload__TopoRoot: tm
-  # FileUpload__IsoRoot: tm/isos
-  # FileUpload__DocRoot: tm/_docs
+
+  FileUpload__TopoRoot: /mnt/tm
+  ## In NFS mode (UseDatastoreApi=false), override this to a path backed by
+  ## the NFS share your ESXi hosts also mount as a vSphere datastore.
+  FileUpload__IsoRoot: /mnt/tm/isos
+  ## DocRoot points at the chart's dedicated wwwroot/docs mount so uploaded
+  ## images are served by ASP.NET's static-file handler.
+  FileUpload__DocRoot: /home/app/wwwroot/docs
+  # FileUpload__MaxFileBytes: 21474836480  # 20GB
+
+  ## VMware Cloud API upload settings (when NFS mount unavailable).
+  ## TempRoot is set to a subdirectory of the existing topomojo
+  ## PVC mount; the vol-permissions init container creates and chowns it.
+  ## Override only if you have provisioned alternative storage yourself.
+  FileUpload__TempRoot: /mnt/tm/_iso-staging
+  # FileUpload__UseDatastoreApi: false
+  # FileUpload__UploadTimeoutMinutes: 180
+  # FileUpload__TempFileExpirationHours: 24
+
   # Core__DefaultGamespaceMinutes: 120
   # Core__DefaultGamespaceLimit: 2
   # Core__DefaultWorkspaceLimit: 0
@@ -251,6 +270,7 @@ env:
   # Core__LaunchUrl: /lp?
   # Core__DocPath: wwwroot/docs
   # Core__AllowUnprivilegedVmReconfigure: false
+
   # Pod__Url: ""
   # Pod__User: ""
   # Pod__Password: ""
@@ -271,9 +291,12 @@ env:
   # Pod__Sddc__AuthUrl: ""
   # Pod__Sddc__CertificatePath: ""
   # Pod__Sddc__CertificatePassword: ""
+
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information
+
   # Ui__Branding__BackgroundImageUrl = theme/demo.png
+
   # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # OTEL_SERVICE_NAME: topomojo-api
