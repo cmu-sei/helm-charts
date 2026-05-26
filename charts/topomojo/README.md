@@ -164,7 +164,6 @@ unset (the default is `false`) and behavior is unchanged.
 | `Core__DefaultTemplateLimit` | Max VMs per workspace | `3` |
 | `Core__DefaultUserScope` | Default scope assigned to new users for gamespace access | `everyone` |
 | `Core__ReplicaLimit` | Maximum number of replicas allowed per gamespace | `5` |
-| `Core__NetworkHostTemplateId` | Template ID used for network host VMs (0 = disabled) | `0` |
 | `Core__GameEngineIsoFolder` | Folder name within the ISO store used by the game engine | `static` |
 | `Core__LaunchUrl` | URL path used for gamespace launch links | `/lp` |
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
