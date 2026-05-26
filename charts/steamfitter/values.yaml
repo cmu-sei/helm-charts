@@ -1,4 +1,8 @@
 steamfitter-api:
+  # Docker image release version. Defaults to appVersion of steamfitter-api child chart
+  image:
+    tag: ""
+
   probes:
     livenessProbe:
       enabled: true
@@ -172,6 +176,10 @@ steamfitter-api:
     # OTEL_SERVICE_NAME: steamfitter-api
 
 steamfitter-ui:
+  # Docker image release version. Defaults to appVersion of steamfitter-ui child chart
+  image:
+    tag: ""
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:

@@ -30,6 +30,12 @@ helm install steamfitter sei/steamfitter -f values.yaml
 
 The following are configured via the `steamfitter-api.env` settings. These Steamfitter API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Steamfitter.Api/blob/development/Steamfitter.Api/appsettings.json) which may contain more settings than are described here.
 
+### Image
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `image.tag` | Override the image tag (defaults to chart `appVersion`) | `""` |
+
 ### Database Settings
 
 | Setting | Description | Example |
@@ -253,6 +259,14 @@ Steamfitter-api:
 - Resource attribute `service_name` defaults to `Steamfitter-api` (or your `OTEL_SERVICE_NAME` override).
 
 ## Steamfitter UI Configuration
+
+### Image
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `image.tag` | Override the image tag (defaults to chart `appVersion`) | `""` |
+
+### Application Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
