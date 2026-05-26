@@ -70,16 +70,38 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
-### CORS Policy
+### CORS Policy Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://gallery.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
+
+### xAPI Settings
+
+Gallery API supports sending [xAPI](https://xapi.com/) (Experience API) statements to a Learning Record Store (LRS). Configure the options below to enable this integration.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
+| `XApiOptions__Endpoint` | LRS xAPI endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | OIDC issuer URL used to build actor identifiers | `""` |
+| `XApiOptions__ApiUrl` | Gallery API base URL (used in statement context) | `""` |
+| `XApiOptions__UiUrl` | Gallery UI base URL (used in statement context) | `""` |
+| `XApiOptions__EmailDomain` | Email domain appended to usernames for actor mbox | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `Gallery` |
+| `XApiOptions__RetentionDays` | Number of days to retain processed xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Minutes before an in-progress statement times out | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Seconds to wait between processing batches | `30` |
 
 ### Certificate Trust
 
@@ -184,6 +206,16 @@ gallery-api:
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+The ServiceDefaults-specific toggles are documented in the table below.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Register the AlwaysOn sampler (traces every request) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export telemetry to stdout (useful for debugging) | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` Prometheus scrape endpoint | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the standard Crucible activity sources for tracing | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the standard Crucible meters for metrics | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
