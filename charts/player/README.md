@@ -586,6 +586,26 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
 
+### PasteSpeeds
+
+Controls the paste speed options available in the Console UI send-text dialog. Each entry has a `name` (display label) and `value` (delay in milliseconds between keystrokes).
+
+```yaml
+console-ui:
+  settingsYaml:
+    PasteSpeeds:
+      - name: Fastest
+        value: 10
+      - name: Fast
+        value: 30
+      - name: Normal
+        value: 60
+      - name: Slow
+        value: 100
+      - name: Slowest
+        value: 500
+```
+
 ## Shared Settings ConfigMap
 
 `sharedSettingsConfigMap` mounts a pre-existing Kubernetes ConfigMap as `settings.shared.json` into the Angular app's `assets/config/` directory alongside `settings.env.json`. This is intended for UI configuration values that are consistent across several Crucible applications, so the values only need to be defined in one place. Any value in the shared file can be overridden per-application using `settingsYaml`. Each Player UI application (player-ui, vm-ui, console-ui) can be configured independently.
