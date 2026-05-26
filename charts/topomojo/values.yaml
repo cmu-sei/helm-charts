@@ -228,6 +228,7 @@ topomojo-api:
     # FileUpload__TopoRoot: tm
     # FileUpload__IsoRoot: tm/isos
     # FileUpload__DocRoot: tm/_docs
+    # FileUpload__SupportsSubfolders: false  # Set false for Proxmox with local ISO storage
     # Core__DefaultGamespaceMinutes: 120
     # Core__DefaultGamespaceLimit: 2
     # Core__DefaultWorkspaceLimit: 0
