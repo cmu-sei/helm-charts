@@ -117,6 +117,15 @@ gameboard-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### Existing Secret
+
+Reference a Kubernetes Secret whose key/value pairs will be injected as environment variables into the API container. This is the simplest way to supply sensitive configuration (e.g., database passwords) from a pre-existing secret.
+
+```yaml
+gameboard-api:
+  existingSecret: "gameboard-api-secret"
+```
+
 ### Extra Environment Sources
 
 Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.

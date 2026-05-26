@@ -197,6 +197,7 @@ gameboard-api:
     # Oidc__Authority: http://localhost:8080/realms/foundry
     # Oidc__DefaultUserNameInferFromEmail: false
     # Oidc__StoreUserEmails: false
+
     # Oidc__UserRolesClaimMap__administrator: Admin
     # Oidc__UserRolesClaimMap__director: Director
     # Oidc__UserRolesClaimMap__member: Member
@@ -213,7 +214,6 @@ gameboard-api:
 
 gameboard-ui:
   # Default values for gameboard-ui.
-  # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
 
   image:
