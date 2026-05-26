@@ -73,13 +73,15 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `CorsPolicy__Origins__0` | First allowed CORS origin (add `__1`, `__2`, etc. for more) | `https://cite.example.com` |
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://cite.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
 
 ### Claims Transformation Settings
 
@@ -189,6 +191,15 @@ cite-api:
 
 CITE.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for CITE to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
 
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP collector endpoint URL | `""` |
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Enable always-on tracing sampler | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export telemetry to console | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose Prometheus metrics scrape endpoint | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register default ASP.NET Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register default ASP.NET Core meters | `true` |
+
 ```yaml
 cite-api:
   env:
@@ -217,6 +228,12 @@ cite-api:
 ## CITE UI Configuration
 
 Use ``settingsYaml` to configure the Angular UI application.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `APP_BASEHREF` | Base href path for the Angular app (set when hosting at a subpath) | `""` |
+
+### Application Settings (`settingsYaml`)
 
 | Setting | Description | Example |
 |---------|-------------|---------|
@@ -296,7 +313,7 @@ CITE UI supports an optional classification banner via `HeaderBarSettings`. The 
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `false` |
 | `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
 | `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
 | `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
