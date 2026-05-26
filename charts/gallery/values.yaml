@@ -61,6 +61,11 @@ gallery-api:
   # - configMapRef:
   #     name: my-configmap
 
+  # If this deployment needs to trust non-public certificates,
+  # create a configMap with the needed certifcates and specify
+  # the configMap name here
+  certificateMap: ""
+
   env:
     Logging__IncludeScopes: false
     Logging__Debug__LogLevel__Default: Warning
