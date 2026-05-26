@@ -200,9 +200,9 @@ alloy-api:
       successThreshold: 1
     startupProbe:
       enabled: true
-      initialDelaySeconds: 30
+      initialDelaySeconds: 0
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 15
       failureThreshold: 15
       successThreshold: 1
 ```
