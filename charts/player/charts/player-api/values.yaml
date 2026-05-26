@@ -44,16 +44,16 @@ probes:
     enabled: true
     initialDelaySeconds: 30
     periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 6
+    timeoutSeconds: 15
+    failureThreshold: 5
     successThreshold: 1
 
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
     periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 6
+    timeoutSeconds: 15
+    failureThreshold: 5
     successThreshold: 1
 
   startupProbe:
