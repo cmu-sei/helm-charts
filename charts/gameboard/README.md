@@ -117,24 +117,28 @@ gameboard-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### CORS Policy Settings
+
+Gameboard uses `Headers__Cors__*` settings rather than the `CorsPolicy__*` prefix used by other Crucible applications, but the behavior is equivalent.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Headers__Cors__Origins__0` | First allowed CORS origin | `""` |
+| `Headers__Cors__Methods__0` | Allowed HTTP method | `""` |
+| `Headers__Cors__Headers__0` | Allowed request header | `""` |
+| `Headers__Cors__AllowCredentials` | Allow credentials (cookies, auth headers) in cross-origin requests | `false` |
+
+**Note:** Additional origins can be added using the pattern `Headers__Cors__Origins__1`, `Headers__Cors__Origins__2`, etc. The same indexed pattern applies to `Headers__Cors__Methods__*` and `Headers__Cors__Headers__*`. Setting any entry to `"*"` enables the corresponding allow-any behavior.
+
 ### HTTP Headers Configuration
 
-Control CORS, forwarding, and security response headers for the API.
+Control forwarding and security response headers for the API.
 
-#### CORS
+#### Header Logging
 
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `Headers__LogHeaders` | Log incoming request headers for debugging | `false` |
-| `Headers__Cors__Origins__0` | First allowed CORS origin | `""` |
-| `Headers__Cors__Methods__0` | Allowed HTTP method | `""` |
-| `Headers__Cors__Headers__0` | Allowed request header | `""` |
-| `Headers__Cors__AllowAnyOrigin` | Allow requests from any origin | `false` |
-| `Headers__Cors__AllowAnyMethod` | Allow any HTTP method | `false` |
-| `Headers__Cors__AllowAnyHeader` | Allow any request header | `false` |
-| `Headers__Cors__AllowCredentials` | Allow credentials (cookies, auth headers) in cross-origin requests | `false` |
-
-**Note:** Additional origins can be added using the pattern `Headers__Cors__Origins__1`, `Headers__Cors__Origins__2`, etc. The same indexed pattern applies to `Headers__Cors__Methods__*` and `Headers__Cors__Headers__*`.
 
 #### Forwarded Headers
 
