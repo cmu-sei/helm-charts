@@ -185,7 +185,7 @@ gallery-api:
 
 ### OpenTelemetry
 
-Gagllery.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Gallery to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
+Gallery.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Gallery to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
 
 ```yaml
 gallery-api:
@@ -207,15 +207,13 @@ gallery-api:
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
 
-The ServiceDefaults-specific toggles are documented in the table below.
-
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `OpenTelemetry__AddAlwaysOnTracingSampler` | Register the AlwaysOn sampler (traces every request) | `false` |
-| `OpenTelemetry__AddConsoleExporter` | Export telemetry to stdout (useful for debugging) | `false` |
-| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` Prometheus scrape endpoint | `false` |
-| `OpenTelemetry__IncludeDefaultActivitySources` | Register the standard Crucible activity sources for tracing | `true` |
-| `OpenTelemetry__IncludeDefaultMeters` | Register the standard Crucible meters for metrics | `true` |
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.

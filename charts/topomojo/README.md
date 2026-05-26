@@ -410,17 +410,13 @@ topomojo-api:
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
 
-#### OpenTelemetry Settings Reference
-
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | Wire protocol used by the OTLP exporter. Use `http/protobuf` to force HTTP instead of the default gRPC. | `http/protobuf` |
-| `OTEL_SERVICE_NAME` | Service name reported to the OpenTelemetry collector. Overrides the default derived from the application name. | `topomojo-api` |
-| `OpenTelemetry__AddAlwaysOnTracingSampler` | When `true`, enables an always-on sampler that records every trace regardless of upstream sampling decisions. | `false` |
-| `OpenTelemetry__AddConsoleExporter` | When `true`, exports traces and metrics to the console (stdout). Useful for local debugging. | `false` |
-| `OpenTelemetry__AddPrometheusExporter` | When `true`, exposes a `/metrics` Prometheus scrape endpoint. | `false` |
-| `OpenTelemetry__IncludeDefaultActivitySources` | When `true`, registers the default ASP.NET Core and HttpClient activity sources for distributed tracing. | `true` |
-| `OpenTelemetry__IncludeDefaultMeters` | When `true`, registers the default ASP.NET Core, HttpClient, EF Core, and runtime meters. | `true` |
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.

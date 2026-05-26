@@ -94,7 +94,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CITE API can emit [xAPI](https://xapi.com/) (Experience API) statements to a Learning Record Store (LRS). Set `XApiOptions__Enabled` to `true` and configure the remaining options to activate xAPI reporting.
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
 | `XApiOptions__Enabled` | Enable xAPI statement emission | `false` |
 | `XApiOptions__Endpoint` | LRS xAPI endpoint URL | `""` |
@@ -191,15 +191,6 @@ cite-api:
 
 CITE.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for CITE to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP collector endpoint URL | `""` |
-| `OpenTelemetry__AddAlwaysOnTracingSampler` | Enable always-on tracing sampler | `false` |
-| `OpenTelemetry__AddConsoleExporter` | Export telemetry to console | `false` |
-| `OpenTelemetry__AddPrometheusExporter` | Expose Prometheus metrics scrape endpoint | `false` |
-| `OpenTelemetry__IncludeDefaultActivitySources` | Register default ASP.NET Core activity sources | `true` |
-| `OpenTelemetry__IncludeDefaultMeters` | Register default ASP.NET Core meters | `true` |
-
 ```yaml
 cite-api:
   env:
@@ -219,6 +210,14 @@ cite-api:
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
