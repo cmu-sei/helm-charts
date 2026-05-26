@@ -459,6 +459,27 @@ data:
 
 When `sharedSettingsConfigMap` is not set (the default), no shared settings file is mounted and the behavior is unchanged.
 
+### Extra Volumes
+
+Mount additional Kubernetes volumes into the UI container using `extraVolumes` and `extraVolumeMounts`. Both values accept stringified YAML following the standard Kubernetes volume spec.
+
+A common use case is replacing the application favicon with a custom icon stored in a ConfigMap:
+
+```yaml
+caster-ui:
+  extraVolumes: |
+    - name: replacement-icon-vol
+      configMap:
+        name: replacement-icons
+
+  extraVolumeMounts: |
+    - name: replacement-icon-vol
+      mountPath: /usr/share/nginx/html/assets/img/caster.ico
+      subPath: caster.ico
+```
+
+See the [Kubernetes volumes documentation](https://kubernetes.io/docs/concepts/storage/volumes/) for all supported volume types.
+
 ### Classification Banner
 
 Caster UI supports an optional classification banner via `HeaderBarSettings`. The banner is enabled by default with empty message values, resulting in no header bar being shown to the user. Configure `classification_text` and `message_text` to display content.
