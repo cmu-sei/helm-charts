@@ -248,7 +248,6 @@ topomojo-api:
     # Pod__VmStore: ""
     # Pod__IsoStore: ""
     # Pod__DiskStore: ""
-    # Pod__ConsoleUrl: ""
     # Pod__TicketUrlHandler: querystring
     # Pod__Vlan__Range: ""
     # Pod__KeepAliveMinutes: 10
