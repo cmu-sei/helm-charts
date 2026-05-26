@@ -123,7 +123,7 @@ Add CORS origins to allow bidirectional communication between Player and the int
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
-Add more origins with `__3`, `__4`, etc.
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__3`, `CorsPolicy__Origins__4`, etc.
 
 ### Notifications
 
@@ -472,7 +472,7 @@ vm-api:
 | `IsoUpload__BasePath` | ISO upload base path | `"/app/isos/player"` |
 | `IsoUpload_MaxFileSize` | ISO upload max file size | `6000000000` |
 
-#### CORS
+#### CORS Policy Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
@@ -484,6 +484,8 @@ vm-api:
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__2`, `CorsPolicy__Origins__3`, etc.
 
 ### Health Probes
 
