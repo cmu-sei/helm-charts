@@ -62,16 +62,19 @@ The following settings are applied through `caster-api.env`. These Caster API se
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
 
-### CORS Policy
+### CORS Policy Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://caster.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
 
 ### Authentication (OIDC)
 
@@ -391,15 +394,17 @@ caster-api:
     # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: caster-api
-
-    # These settings toggle ServiceDefaults configurations for Otel
-    # The values listed here are the defaults
-    # OpenTelemetry__AddAlwaysOnTracingSampler: false
-    # OpenTelemetry__AddConsoleExporter: false
-    # OpenTelemetry__AddPrometheusExporter: false
-    # OpenTelemetry__IncludeDefaultActivitySources: true
-    # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+#### OpenTelemetry Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (overrides the default parent-based sampler) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Write traces and metrics to stdout | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` Prometheus scrape endpoint | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core / HttpClient activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core / runtime meters | `true` |
 
 #### Custom metrics from Caster
 - Gauges: `caster_projects`, `caster_workspaces`
@@ -415,7 +420,7 @@ caster-api:
 |---------|-------------|---------|
 | `APP_BASEHREF` | Set when hosting the UI from a subpath | `/caster` |
 
-Use `settingsYaml` to configure settings for the Angular UI application.
+Use `settingsYaml` to configure settings for the Angular UI application. Alternatively, `settings` accepts the same configuration as a pre-serialized JSON string — useful when the values are managed by an external secrets tool or templating layer. When both are provided, `settingsYaml` takes precedence.
 
 | Setting | Description | Example |
 |---------|-------------|---------|
