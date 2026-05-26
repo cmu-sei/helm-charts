@@ -80,16 +80,38 @@ steamfitter-api:
 | `Authorization__ClientSecret` | OAuth2 client secret | `""` |
 | `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
 
-### CORS Policy
+### CORS Policy Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://steamfitter.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
+
+### xAPI Options
+
+Steamfitter can emit [xAPI](https://xapi.com/) statements to a Learning Record Store (LRS) to record scenario task activity.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement emission | `false` |
+| `XApiOptions__Endpoint` | LRS endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | Identity provider issuer URL (used to resolve actor identifiers) | `""` |
+| `XApiOptions__ApiUrl` | Steamfitter API URL (used in statement context) | `""` |
+| `XApiOptions__UiUrl` | Steamfitter UI URL (used in statement context) | `""` |
+| `XApiOptions__EmailDomain` | Email domain appended to usernames to form xAPI actor mbox | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `Steamfitter` |
+| `XApiOptions__RetentionDays` | Number of days to retain locally stored xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI statement processing | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing cycles | `30` |
 
 ### Claims Transformation
 
