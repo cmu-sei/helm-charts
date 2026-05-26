@@ -73,6 +73,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin (add `__1`, `__2`, etc. for more) | `https://cite.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
@@ -86,6 +87,25 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 |-----------|-------------|---------|
 | `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### xAPI Settings
+
+CITE API can emit [xAPI](https://xapi.com/) (Experience API) statements to a Learning Record Store (LRS). Set `XApiOptions__Enabled` to `true` and configure the remaining options to activate xAPI reporting.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement emission | `false` |
+| `XApiOptions__Endpoint` | LRS xAPI endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | OIDC issuer URL used in actor IFI | `""` |
+| `XApiOptions__ApiUrl` | Public URL of the CITE API (used in statement object IDs) | `""` |
+| `XApiOptions__UiUrl` | Public URL of the CITE UI (used in statement context) | `""` |
+| `XApiOptions__EmailDomain` | Email domain appended to usernames for actor IFI | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `CITE` |
+| `XApiOptions__RetentionDays` | Number of days to retain local xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI processing jobs | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing attempts | `30` |
 
 ### Certificate Trust
 
@@ -210,6 +230,7 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+| `XApiEnabled` | Show xAPI-related UI features | `false` |
 | `AppTitle` | Browser/application title | `CITE` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
