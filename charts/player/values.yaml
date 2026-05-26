@@ -6,23 +6,23 @@ player-api:
       enabled: true
       initialDelaySeconds: 30
       periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 6
+      timeoutSeconds: 15
+      failureThreshold: 5
       successThreshold: 1
 
     readinessProbe:
       enabled: true
       initialDelaySeconds: 5
       periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 6
+      timeoutSeconds: 15
+      failureThreshold: 5
       successThreshold: 1
 
     startupProbe:
       enabled: true
-      initialDelaySeconds: 30
+      initialDelaySeconds: 0
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 15
       failureThreshold: 15
       successThreshold: 1
 
@@ -289,6 +289,31 @@ vm-api:
     size: ""
     server: ""
     path: ""
+
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 5
+      successThreshold: 1
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 5
+      successThreshold: 1
+
+    startupProbe:
+      enabled: true
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 15
+      successThreshold: 1
 
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
