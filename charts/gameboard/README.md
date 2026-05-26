@@ -117,6 +117,48 @@ gameboard-api:
   certificateMap: "custom-ca-certs"
 ```
 
+### HTTP Headers Configuration
+
+Control CORS, forwarding, and security response headers for the API.
+
+#### CORS
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Headers__LogHeaders` | Log incoming request headers for debugging | `false` |
+| `Headers__Cors__Origins__0` | First allowed CORS origin | `""` |
+| `Headers__Cors__Methods__0` | Allowed HTTP method | `""` |
+| `Headers__Cors__Headers__0` | Allowed request header | `""` |
+| `Headers__Cors__AllowAnyOrigin` | Allow requests from any origin | `false` |
+| `Headers__Cors__AllowAnyMethod` | Allow any HTTP method | `false` |
+| `Headers__Cors__AllowAnyHeader` | Allow any request header | `false` |
+| `Headers__Cors__AllowCredentials` | Allow credentials (cookies, auth headers) in cross-origin requests | `false` |
+
+**Note:** Additional origins can be added using the pattern `Headers__Cors__Origins__1`, `Headers__Cors__Origins__2`, etc. The same indexed pattern applies to `Headers__Cors__Methods__*` and `Headers__Cors__Headers__*`.
+
+#### Forwarded Headers
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Headers__Forwarding__ForwardLimit` | Number of proxy hops to trust | `1` |
+| `Headers__Forwarding__TargetHeaders` | Which forwarded headers to process (e.g. `All`) | `None` |
+| `Headers__Forwarding__KnownNetworks` | Space-separated CIDR ranges of trusted upstream networks | `10.0.0.0/8 172.16.0.0/12 192.168.0.0/24 ::ffff:a00:0/104 ::ffff:b00a:0/108 ::ffff:c0d0:0/120` |
+| `Headers__Forwarding__KnownProxies` | Space-separated IP addresses of trusted proxies | `::1` |
+
+#### Security Headers
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Headers__Security__ContentSecurity` | `Content-Security-Policy` header value | `default-src 'self' 'unsafe-inline'; img-src data: 'self'` |
+| `Headers__Security__XContentType` | `X-Content-Type-Options` header value | `nosniff` |
+| `Headers__Security__XFrame` | `X-Frame-Options` header value | `SAMEORIGIN` |
+
+### Logging
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Logging__MinimumLogLevel` | Minimum log level for the application (`Trace`, `Debug`, `Information`, `Warning`, `Error`, `Critical`) | `Information` |
+
 ### Existing Secret
 
 Reference a Kubernetes Secret whose key/value pairs will be injected as environment variables into the API container. This is the simplest way to supply sensitive configuration (e.g., database passwords) from a pre-existing secret.
@@ -225,6 +267,8 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `appname` | Application display name shown in the UI and browser title. | `Gameboard` |
 | `apphost` | Base URL for the Gameboard application | `/gb` |
 | `tochost` | URL for table of contents/static markdown docs | `/gb/docs` |
+| `tocfile` | Filename of the table of contents document to load from `tochost` | `""` (empty — uses default) |
+| `countdownStartSecondsAtMinute` | Minute threshold (in seconds) at which the session countdown timer begins flashing to warn users | `5` |
 | `custom_background` | Set the background color to a custom color | `custom-bg-black` |
 | `unityclienthost` | Set the Unity Client Host for "External" game types that use a Unity game client (e.g., [Cubespace](https://github.com/cmu-sei/cubespace/)) | `https://gameboard.example.com/cubespace` |
 | `oidc.client_id` | The OIDC client identifier used when authenticating the UI with the identity provider. | `gameboard-ui` |
