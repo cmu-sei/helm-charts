@@ -329,6 +329,16 @@ topomojo-api:
     FileUpload__MaxFileBytes: 21474836480  # 20 GB cap
 ```
 
+#### Volume Permissions
+
+On startup, an init container chowns the paths under `FileUpload__TopoRoot` and `FileUpload__DocRoot` to UID/GID `1654` (the .NET runtime user). Set `SKIP_VOL_PERMISSIONS` to `"true"` to skip this step — for example, when using a storage class that handles ownership automatically or when the pod runs with a different security context.
+
+```yaml
+topomojo-api:
+  env:
+    SKIP_VOL_PERMISSIONS: "true"
+```
+
 #### Extra Environment Sources
 
 Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
