@@ -168,6 +168,38 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 
 See the [StackStorm](https://docs.stackstorm.com/) documentation for more information.
 
+### Health Probes
+
+The deployment configures Kubernetes liveness, readiness, and startup probes against the API's `/api/health/live` and `/api/health/ready` endpoints. Defaults are tuned to tolerate slow startups (e.g. EF Core migrations, cold JIT) while still surfacing failures.
+
+```yaml
+steamfitter-api:
+  probes:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 5
+      successThreshold: 1
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 5
+      successThreshold: 1
+    startupProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 15
+      successThreshold: 1
+```
+
+Set `enabled: false` on a probe to disable it.
+
 ### Ingress
 Configure the ingress to allow connections to the application (typically uses an ingress controller like [ingress-nginx](https://github.com/kubernetes/ingress-nginx)).
 
