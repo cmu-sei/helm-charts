@@ -1,4 +1,8 @@
 player-api:
+  # Docker image release version. Defaults to appVersion of player-api child chart
+  image:
+    tag: ""
+
   kind: "Deployment"
 
   probes:
@@ -201,6 +205,10 @@ player-api:
     # OTEL_SERVICE_NAME: player-api
 
 player-ui:
+  # Docker image release version. Defaults to appVersion of player-ui child chart
+  image:
+    tag: ""
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -283,6 +291,10 @@ player-ui:
     #   enabled: true
 
 vm-api:
+  # Docker image release version. Defaults to appVersion of vm-api child chart
+  image:
+    tag: ""
+
   # iso - an NFS volume mount for ISO uploads
   iso:
     enabled: false
@@ -500,6 +512,10 @@ vm-api:
     # OTEL_SERVICE_NAME: vm-api
 
 vm-ui:
+  # Docker image release version. Defaults to appVersion of vm-ui child chart
+  image:
+    tag: ""
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
@@ -569,6 +585,10 @@ vm-ui:
     # UseLocalAuthStorage: true
 
 console-ui:
+  # Docker image release version. Defaults to appVersion of console-ui child chart
+  image:
+    tag: ""
+
   # Ingress configuration example for NGINX
   # TLS and Host URLs need configured
   ingress:
