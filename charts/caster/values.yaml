@@ -230,7 +230,7 @@ caster-api:
     Player__RemoveLoopSeconds: 300
 
     Terraform__BinaryPath: "/terraform/binaries"
-    Terraform__DefaultVersion: "0.12.24"
+    Terraform__DefaultVersion: "0.14.0"
     # Terraform__PluginDirectory: '/terraform/plugins'
     Terraform__PluginCache: "/terraform/plugin-cache"
     Terraform__RootWorkingDirectory: "/terraform/root"
