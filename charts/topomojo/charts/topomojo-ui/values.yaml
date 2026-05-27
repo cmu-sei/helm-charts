@@ -1,6 +1,3 @@
-# Default values for topomojo-ui.
-# Declare variables to be passed into your templates.
-
 image:
   repository: cmusei/topomojo-ui
   pullPolicy: IfNotPresent
@@ -12,19 +9,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: false
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # If name is not set and create is true,
+  # a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -36,20 +28,6 @@ securityContext: {}
 service: {}
   # type: ClusterIP
   # port: 80
-
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -64,10 +42,22 @@ resources: {}
   #   memory: 10Mi
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 ## basehref is path to the app
 basehref: ""

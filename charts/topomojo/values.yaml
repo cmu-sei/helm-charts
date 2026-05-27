@@ -1,8 +1,4 @@
 topomojo-api:
-  # Default values for topomojo-api.
-  # This is a YAML-formatted file.
-  # Declare variables to be passed into your templates.
-
   image:
     repository: cmusei/topomojo-api
     pullPolicy: IfNotPresent
@@ -13,32 +9,15 @@ topomojo-api:
   nameOverride: ""
   fullnameOverride: ""
 
-  # livenessProbe:
-  #   httpGet:
-  #     path: /api/healthz/<template_id>
-
-  # startupProbe:
-  #   httpGet:
-  #     path: /api/healthz/<template_id>
-
-  # readinessProbe:
-  #   httpGet:
-  #     path: /api/healthz/<template_id>
-
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
     name: ""
 
   podAnnotations: {}
-
   podSecurityContext: {}
-    # fsGroup: 2000
-
   securityContext: {}
     # capabilities:
     #   drop:
@@ -51,20 +30,44 @@ topomojo-api:
     # type: ClusterIP
     # port: 80
 
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 200m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 256Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  health: {}
+    # livenessProbe:
+    #   initialDelaySeconds: 10
+    #   httpGet:
+    #     path: /api/healthz
+    #     port: http
+    # startupProbe:
+    #   initialDelaySeconds: 30
+    #   httpGet:
+    #     path: /api/healthz
+    #     port: http
+    #   failureThreshold: 9
+    #   periodSeconds: 10
+
   ingress:
-    enabled: false
+    enabled: true
     className: ""
     annotations: {}
     hosts:
       - host: chart-example.local
         paths:
-          - path: /api
-            pathType: ImplementationSpecific
-          - path: /hub
-            pathType: ImplementationSpecific
-          - path: /docs
-            pathType: ImplementationSpecific
-          - path: /theme
+          - path: /(api|hub|docs|theme)
             pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
@@ -116,24 +119,15 @@ topomojo-api:
     hosts:
       - host: connect.example.com
         paths: []
-    tls:
-      - secretName: ""
-        hosts:
-          - connect.example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  health: {}
-    # livenessProbe:
-    #   initialDelaySeconds: 10
-    #   httpGet:
-    #     path: /api/healthz
-    #     port: http
-    # startupProbe:
-    #   initialDelaySeconds: 30
-    #   httpGet:
-    #     path: /api/healthz
-    #     port: http
-    #   failureThreshold: 9
-    #   periodSeconds: 10
+  # If this deployment needs to trust non-public certificates,
+  # create a configMap with the needed certificates and specify
+  # the configMap name here
+  certificateMap: ""
 
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
@@ -141,24 +135,6 @@ topomojo-api:
     size: ""
     mode: ReadWriteOnce
     class: default
-
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 200m
-    #   memory: 512Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 256Mi
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
 
   ## migrations sets how data migrations run
   ## If enabled, all replicas will wait until a single migration job runs.
@@ -201,7 +177,7 @@ topomojo-api:
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/TopoMojo/blob/master/src/TopoMojo.Api/appsettings.conf
+  # see https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf
   env:
     ## By default we change ownership of the paths at and recursively below the root of the topomojo docs directory
     ## to that of the running user and group, which are both 1654 per .NET conventions.
@@ -231,7 +207,7 @@ topomojo-api:
     # OpenApi__Enabled: true
     # OpenApi__ApiName: TopoMojo
     # OpenApi__Client__ClientId: topomojo-swagger
-    
+
     # FileUpload__TopoRoot: /mnt/tm
     ## In NFS mode (UseDatastoreApi=false), override this to a path backed by
     ## the NFS share your ESXi hosts also mount as a vSphere datastore.
@@ -293,14 +269,20 @@ topomojo-api:
 
     # Ui__Branding__BackgroundImageUrl = theme/demo.png
 
+    # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-    # OTEL_SERVICE_NAME: topomojo-api
+
+    # These settings toggle ServiceDefaults configurations for Otel
     # OpenTelemetry__AddAlwaysOnTracingSampler: false
     # OpenTelemetry__AddConsoleExporter: false
     # OpenTelemetry__AddPrometheusExporter: false
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: topomojo-api
 
   ## Create a seed data file based on the contents of an existing secret
   ## or by values that support templating via the tpl function.
@@ -321,10 +303,6 @@ topomojo-api:
     #       IsAdmin: true
 
 topomojo-ui:
-  # Default values for topomojo-ui.
-  # This is a YAML-formatted file.
-  # Declare variables to be passed into your templates.
-
   image:
     repository: cmusei/topomojo-ui
     pullPolicy: IfNotPresent
@@ -336,19 +314,14 @@ topomojo-ui:
   fullnameOverride: ""
 
   serviceAccount:
-    # Specifies whether a service account should be created
     create: false
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
     name: ""
 
   podAnnotations: {}
-
   podSecurityContext: {}
-    # fsGroup: 2000
-
   securityContext: {}
     # capabilities:
     #   drop:
@@ -360,20 +333,6 @@ topomojo-ui:
   service: {}
     # type: ClusterIP
     # port: 80
-
-  ingress:
-    enabled: false
-    className: ""
-    annotations: {}
-    hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -388,10 +347,22 @@ topomojo-ui:
     #   memory: 10Mi
 
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
   ## basehref is path to the app
   basehref: ""

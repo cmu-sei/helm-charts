@@ -295,17 +295,12 @@ Configure the ingress to allow connections to the application (typically uses an
       nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-body-size: 30m
+      nginx.ingress.kubernetes.io/use-regex: "true"
 
     hosts:
       - host: topomojo.example.com
         paths:
-          - path: /tm/api
-            pathType: ImplementationSpecific
-          - path: /tm/hub
-            pathType: ImplementationSpecific
-          - path: /tm/docs
-            pathType: ImplementationSpecific
-          - path: /tm/theme
+          - path: /tm/(api|hub|docs|theme)
             pathType: ImplementationSpecific
     tls:
       - secretName: tls-secret-name # this tls secret should already exist
