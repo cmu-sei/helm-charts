@@ -214,19 +214,12 @@ gameboard-api:
       nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-body-size: 30m
+      nginx.ingress.kubernetes.io/use-regex: "true"
 
     hosts:
       - host: gameboard.example.com
         paths:
-          - path: /gb/api
-            pathType: ImplementationSpecific
-          - path: /gb/hub
-            pathType: ImplementationSpecific
-          - path: /gb/img
-            pathType: ImplementationSpecific
-          - path: /gb/docs
-            pathType: ImplementationSpecific
-          - path: /gb/supportfiles
+          - path: /gb/(api|hub|img|docs|supportfiles)
             pathType: ImplementationSpecific
     tls:
       - secretName: tls-secret-name # this tls secret should already exist

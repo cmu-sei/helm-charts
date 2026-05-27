@@ -1,7 +1,4 @@
 gameboard-api:
-  # Default values for gameboard-api.
-  # Declare variables to be passed into your templates.
-
   image:
     repository: cmusei/gameboard-api
     pullPolicy: IfNotPresent
@@ -13,19 +10,14 @@ gameboard-api:
   fullnameOverride: ""
 
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
     name: ""
 
   podAnnotations: {}
-
   podSecurityContext: {}
-    # fsGroup: 2000
-
   securityContext: {}
     # capabilities:
     #   drop:
@@ -38,25 +30,21 @@ gameboard-api:
     type: ClusterIP
     port: 80
 
-  ingress:
-    enabled: false
-    className: ""
-    annotations: {}
-    hosts:
-      - host: chart-example.local
-        paths:
-          - path: /api
-            pathType: ImplementationSpecific
-          - path: /hub
-            pathType: ImplementationSpecific
-          - path: /img
-            pathType: ImplementationSpecific
-          - path: /docs
-            pathType: ImplementationSpecific
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 200m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 256Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
   health: {}
     # livenessProbe:
@@ -72,6 +60,25 @@ gameboard-api:
     #   failureThreshold: 9
     #   periodSeconds: 10
 
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /(api|hub|img|docs)
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  # If this deployment needs to trust non-public certificates,
+  # create a configMap with the needed certificates and specify
+  # the configMap name here
+  certificateMap: ""
+
   # storage - either an existing pvc, the size for a new pvc, or emptyDir
   storage:
     existing: ""
@@ -79,23 +86,17 @@ gameboard-api:
     mode: ReadWriteOnce
     class: default
 
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 200m
-    #   memory: 512Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 256Mi
+  # cacert - add custom CA certificate in-line
+  # cacert: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
+  #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
+  #   …
+  #   -----END CERTIFICATE-----
 
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
+  # cacertSecret - Trust a custom CA certificate in an existing Secret
+  cacertSecret: ""
+  cacertSecretKey: ca.crt
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -110,21 +111,9 @@ gameboard-api:
   # - configMapRef:
   #     name: my-configmap
 
-  # cacert - add custom CA certificate in-line
-  # cacert: |-
-  #   -----BEGIN CERTIFICATE-----
-  #   MIIDGDCCAgCgAwIBAgIUPO57TE7AQJRsMEtzii2SYwZ9TRIwDQYJKoZIhvcNAQEL
-  #   BQAwJDEiMCAGA1UEAxMZRm91bmRyeSBBcHBsaWFuY2UgUm9vdCBDQTAeFw0yMTAz
-  #   …
-  #   -----END CERTIFICATE-----
-
-  # cacertSecret - Trust a custom CA certificate in an existing Secret
-  cacertSecret: ""
-  cacertSecretKey: ca.crt
-
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/gameboard/blob/master/src/Gameboard.Api/appsettings.conf
+  # see https://github.com/cmu-sei/gameboard/blob/main/src/Gameboard.Api/appsettings.conf
   env: {}
     ####################################################
     ## CORE (behavior)
@@ -213,9 +202,6 @@ gameboard-api:
   pollInterval: 5
 
 gameboard-ui:
-  # Default values for gameboard-ui.
-  # Declare variables to be passed into your templates.
-
   image:
     repository: cmusei/gameboard-ui
     pullPolicy: IfNotPresent
@@ -227,19 +213,14 @@ gameboard-ui:
   fullnameOverride: ""
 
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
     name: ""
 
   podAnnotations: {}
-
   podSecurityContext: {}
-    # fsGroup: 2000
-
   securityContext: {}
     # capabilities:
     #   drop:
@@ -251,20 +232,6 @@ gameboard-ui:
   service:
     type: ClusterIP
     port: 80
-
-  ingress:
-    enabled: false
-    className: ""
-    annotations: {}
-    hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -279,10 +246,22 @@ gameboard-ui:
     #   memory: 10Mi
 
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
   ## basehref is path to the app
   basehref: ""
