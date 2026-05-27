@@ -1,7 +1,3 @@
-# Default values for caster-ui.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 image:
   repository: cmusei/caster-ui
   pullPolicy: IfNotPresent
@@ -13,19 +9,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # If name is not set and create is true,
+  # a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -38,23 +29,7 @@ service:
   type: ClusterIP
   port: 80
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-resources: {}
+  resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -67,12 +42,24 @@ resources: {}
   #   memory: 128Mi
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
 
-## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: caster.example.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
 # Example use to overwrite the favicon from a file in a configMap:
 #
 # extraVolumes: |
@@ -82,14 +69,18 @@ affinity: {}
 #
 # extraVolumeMounts: |
 #   - name: "replacement-icon-vol"
-#     mountPath: /usr/share/nginx/html/assets/img/alloy.ico
-#     subPath: alloy.ico
+#     mountPath: /usr/share/nginx/html/assets/img/caster.ico
+#     subPath: caster.ico
 #
 # See kubernetes documentation for configuring your volumes:
 # https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumeMounts: ""
 extraVolumes: ""
 
-extraVolumeMounts: ""
+# env is pod env vars
+env:
+  ## basehref is path to the app
+  APP_BASEHREF: ""
 
 ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
 ## settings.shared.json key. When set, the file is mounted into the Angular
@@ -98,25 +89,18 @@ extraVolumeMounts: ""
 ## Per-app values can still be overridden via settingsYaml.
 sharedSettingsConfigMap: ""
 
-env:
-  ## basehref is path to the app
-  APP_BASEHREF: ""
-
-## settings is stringified json that gets included as assets/settings.json
-settings: "{}"
-
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml:
-  # ApiUrl: ""
+  # ApiUrl: https://caster.example.com
   # OIDCSettings:
-  #   authority: ""
+  #   authority: https://identity.example.com/
   #   client_id: caster-ui-dev
-  #   redirect_uri: ""
-  #   post_logout_redirect_uri: ""
+  #   redirect_uri: https://caster.example.com/auth-callback/
+  #   post_logout_redirect_uri: https://caster.example.com/
   #   response_type: code
   #   scope: openid profile email caster-api
   #   automaticSilentRenew: true
-  #   silent_redirect_uri: ""
+  #   silent_redirect_uri: https://caster.example.com/auth-callback-silent.html
   # UseLocalAuthStorage: true
   # HeaderBarSettings:
   #   banner_background_color: "#d40000ff"
@@ -127,3 +111,29 @@ settingsYaml:
   #   message_text_color: "#ffffff"
   #   message_text_fontsize: "14"
   #   enabled: true
+
+## settings is stringified json that gets included as appsettings.Production.json
+# settings: '{
+#   "ApiUrl": "https://caster.example.com",
+#   "OIDCSettings": {
+#     "authority": "https://identity.example.com/",
+#     "client_id": "caster-ui-dev",
+#     "redirect_uri": "https://caster.example.com/auth-callback/",
+#     "post_logout_redirect_uri": "https://caster.example.com/",
+#     "response_type": "code",
+#     "scope": "openid profile email caster-api",
+#     "automaticSilentRenew": true,
+#     "silent_redirect_uri": "https://caster.example.com/auth-callback-silent.html"
+#   },
+#   "UseLocalAuthStorage": true,
+#   "HeaderBarSettings": {
+#     "banner_background_color": "#d40000ff",
+#     "classification_text": "",
+#     "classification_text_color": "#ffffff",
+#     "classification_text_fontsize": "14",
+#     "message_text": "",
+#     "message_text_color": "#ffffff",
+#     "message_text_fontsize": "14",
+#     "enabled": false
+#   }
+# }'

@@ -1,7 +1,3 @@
-# Default values for caster-api.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 image:
   repository: cmusei/caster-api
   pullPolicy: IfNotPresent
@@ -13,19 +9,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # If name is not set and create is true,
+  # a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -37,6 +28,22 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
 probes:
   livenessProbe:
@@ -64,57 +71,22 @@ probes:
     successThreshold: 1
 
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
-        - path: /
+        - path: /(api|swagger|hubs)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
-# If this deployment needs to trust non-public certificates,
-# create a configMap with the needed certifcates and specify
-# the configMap name here
-certificateMap: ""
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-command: ["./Caster.Api"]
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
-# storage - either an existing pvc, the size for a new pvc, or emptyDir
-storage:
-  existing: ""
-  size: ""
-  mode: ReadWriteOnce # If using Kubernetes execution mode, this should be a storage that supports ReadWriteMany to enable jobs running on different k8s nodes
-
-  class: default
-
-gitcredentials: ""
-
 # Use a .terraformrc file to overwrite standard Terraform configuration
+# https://www.terraform.io/docs/cli/config/config-file.html
+# NOTE:  If enabled,  Terraform__PluginDirectory environment variable must be set to empty explicitly
 terraformrc:
   enabled: false
   value: |
@@ -129,6 +101,26 @@ terraformrc:
         }
     }
 
+# storage - either an existing pvc, the size for a new pvc, or emptyDir
+storage:
+  existing: ""
+  size: ""
+  mode: ReadWriteOnce
+  class: default
+
+# If this deployment needs to trust non-public certificates,
+# create a configMap with the needed certificates and specify
+# the configMap name here
+certificateMap: ""
+
+# Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token
+# Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
+# Example:
+# gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
+gitcredentials: ""
+
+command: ["./Caster.Api"]
+
 ## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
 existingSecret: ""
@@ -142,25 +134,31 @@ extraEnvFrom: []
 # - configMapRef:
 #     name: my-configmap
 
+# Config app settings with environment vars.
+# Those most likely needing values are listed. For others,
+# see https://github.com/cmu-sei/crucible/blob/master/caster.api/src/Caster.Api/appsettings.json
 env:
-  # http_proxy:
-  # https_proxy:
-  # HTTP_PROXY:
-  # HTTPS_PROXY:
-  # NO_PROXY:
-  # no_proxy:
-
   ## If hosting in virtual directory, specify path base
   PathBase: ""
 
+  # This deployment comes built in with a script to install Terraform and the necessary
+  # plugins to run Caster properly.  Internet access is required for this script to run properly.
+  # It's recommended that this should remain false.  Please see the file "terraform-installation.tpl"
+  # for more information on the installation process.
+  # Installation will always be skipped if Kubernetes Jobs are enabled.
   SKIP_TERRAFORM_INSTALLATION: false
   SKIP_VOL_PERMISSIONS: false
 
-  VSPHERE_SERVER:
-  VSPHERE_USER:
-  VSPHERE_PASSWORD:
+  VSPHERE_SERVER: ""
+  VSPHERE_USER: ""
+  VSPHERE_PASSWORD: ""
   VSPHERE_ALLOW_UNVERIFIED_SSL: true
 
+  # === Terraform Crucible Provider Section ===
+  # These variables only need filled in if you are using the following provider:
+  # https://registry.terraform.io/providers/cmu-sei/crucible/latest
+
+  # An Identity Service account with Caster Admin privileges
   SEI_CRUCIBLE_USERNAME: ""
   SEI_CRUCIBLE_PASSWORD: ""
   SEI_CRUCIBLE_AUTH_URL: ""
@@ -190,9 +188,9 @@ env:
   Logging__Console__LogLevel__Microsoft: Error
   Logging__Console__LogLevel__System: Error
 
-  CorsPolicy__Origins__0: http://localhost:4310
-  CorsPolicy__Methods__0: ""
-  CorsPolicy__Headers__0: ""
+  # CorsPolicy__Origins__0: ""
+  # CorsPolicy__Methods__0: ""
+  # CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
@@ -207,9 +205,9 @@ env:
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  Authorization__Authority:
-  Authorization__AuthorizationUrl:
-  Authorization__TokenUrl:
+  Authorization__Authority: ""
+  Authorization__AuthorizationUrl: ""
+  Authorization__TokenUrl: ""
   Authorization__AuthorizationScope: "caster-api"
   Authorization__ClientId: caster-api-dev
   Authorization__ClientName: "Caster API"
@@ -241,7 +239,7 @@ env:
     # Terraform__GitlabGroupId: 6
   Terraform__GitlabApiUrl: ""
   Terraform__GitlabToken: ""
-  Terraform__GitlabGroupId: 6
+  Terraform__GitlabGroupId: ""
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
   Terraform__StateRetryIntervalSeconds: 5
