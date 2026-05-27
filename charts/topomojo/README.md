@@ -148,6 +148,7 @@ Optional tuning knobs (defaults shown):
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `FileUpload__MaxFileBytes` | Max upload size in bytes (`0` for unlimited) | `0` |
+| `FileUpload__SupportsSubfolders` | Enable subdirectory organization for ISOs. Set to `false` for Proxmox with local ISO storage. | `true` |
 | `FileUpload__UploadTimeoutMinutes` | HTTP timeout for the datastore PUT | `120` |
 | `FileUpload__TempFileExpirationHours` | Stale temp file cleanup threshold | `24` |
 
@@ -275,7 +276,7 @@ See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/d
 | `Pod__Vlan__ResetDebounceMaxDuration` | (Optional) Maximum number of milliseconds TopoMojo will debounce before it reloads Proxmox's SDN following a network operation. | `5000` |
 | `Pod__IsoStore` | Datastore for ISO files | `iso` |
 | `FileUpload__IsoRoot` | Path mounted to the container that ISOs uploaded through TopoMojo will be saved to - should map to the same storage as `Pod__IsoStore`. **For Proxmox deployments, this path must end with `/template/iso`.** | `/mnt/isos/template/iso` |
-| `FileUpload_SupportsSubFolders` | Set to `false` for Proxmox deployments because Proxmox does not allow sub folders in ISO stores | `false` |
+| `FileUpload__SupportsSubfolders` | Set to `false` for Proxmox deployments because Proxmox does not allow sub folders in ISO stores | `false` |
 
 
 ### Helm Deployment Configuration

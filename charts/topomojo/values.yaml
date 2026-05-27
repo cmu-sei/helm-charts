@@ -231,25 +231,29 @@ topomojo-api:
     # OpenApi__Enabled: true
     # OpenApi__ApiName: TopoMojo
     # OpenApi__Client__ClientId: topomojo-swagger
-
-    FileUpload__TopoRoot: /mnt/tm
+    
+    # FileUpload__TopoRoot: /mnt/tm
     ## In NFS mode (UseDatastoreApi=false), override this to a path backed by
     ## the NFS share your ESXi hosts also mount as a vSphere datastore.
-    FileUpload__IsoRoot: /mnt/tm/isos
+    # FileUpload__IsoRoot: /mnt/tm/isos
     ## DocRoot points at the chart's dedicated wwwroot/docs mount so uploaded
     ## images are served by ASP.NET's static-file handler.
-    FileUpload__DocRoot: /home/app/wwwroot/docs
+    # FileUpload__DocRoot: /home/app/wwwroot/docs
     # FileUpload__MaxFileBytes: 21474836480  # 20GB
+    # FileUpload__SupportsSubfolders: false  # Set false for Proxmox with local ISO storage
 
     ## VMware Cloud API upload settings (when NFS mount unavailable).
     ## TempRoot is set to a subdirectory of the existing topomojo
     ## PVC mount; the vol-permissions init container creates and chowns it.
     ## Override only if you have provisioned alternative storage yourself.
-    FileUpload__TempRoot: /mnt/tm/_iso-staging
+    # FileUpload__TempRoot: /mnt/tm/_iso-staging
     # FileUpload__UseDatastoreApi: false
     # FileUpload__UploadTimeoutMinutes: 180
     # FileUpload__TempFileExpirationHours: 24
 
+    # FileUpload__TopoRoot: tm
+    # FileUpload__IsoRoot: tm/isos
+    # FileUpload__DocRoot: tm/_docs
     # Core__DefaultGamespaceMinutes: 120
     # Core__DefaultGamespaceLimit: 2
     # Core__DefaultWorkspaceLimit: 0

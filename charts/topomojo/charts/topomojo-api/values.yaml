@@ -255,6 +255,7 @@ env:
   ## Override only if you have provisioned alternative storage yourself.
   FileUpload__TempRoot: /mnt/tm/_iso-staging
   # FileUpload__UseDatastoreApi: false
+  # FileUpload__SupportsSubfolders: true  # Set false for Proxmox with local ISO storage
   # FileUpload__UploadTimeoutMinutes: 180
   # FileUpload__TempFileExpirationHours: 24
 
