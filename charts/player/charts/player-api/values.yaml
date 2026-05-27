@@ -1,8 +1,3 @@
-# Default values for player-api.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-kind: "Deployment"
 image:
   repository: cmusei/player-api
   pullPolicy: IfNotPresent
@@ -14,19 +9,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # If name is not set and create is true,
+  # a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -38,6 +28,24 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+kind: "Deployment"
 
 probes:
   livenessProbe:
@@ -65,15 +73,13 @@ probes:
     successThreshold: 1
 
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
-        - path: /
+        - path: /(api|swagger|hubs)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
@@ -81,36 +87,19 @@ ingress:
   #      - chart-example.local
 
 # If this deployment needs to trust non-public certificates,
-# create a configMap with the needed certifcates and specify
+# create a configMap with the needed certificates and specify
 # the configMap name here
 certificateMap: ""
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
-command: ["./Player.Api"]
-
 # storage - either an existing pvc, the size for a new pvc, or emptyDir
+# this is used to store uploaded files
 storage:
   existing: ""
   size: ""
   mode: ReadWriteOnce
   class: default
+
+command: ["./Player.Api"]
 
 ## existingSecret references a secret already in k8s.
 ## The key/value pairs in the secret are added as environment variables.
@@ -125,15 +114,10 @@ extraEnvFrom: []
 # - configMapRef:
 #     name: my-configmap
 
-# env is pod env vars
+# Config app settings with environment vars.
+# Those most likely needing values are listed. For others,
+# see https://github.com/cmu-sei/Player.Api/blob/main/Player.Api/appsettings.json
 env:
-  # http_proxy: ""
-  # https_proxy: ""
-  # HTTP_PROXY: ""
-  # HTTPS_PROXY: ""
-  # NO_PROXY: ""
-  # no_proxy: ""
-
   ## If hosting in virtual directory, specify path base
   PathBase: ""
 
@@ -153,9 +137,9 @@ env:
   Database__DevModeRecreate: false
   Database__Provider: PostgreSQL
 
-  CorsPolicy__Origins__0: ""
-  CorsPolicy__Methods__0: ""
-  CorsPolicy__Headers__0: ""
+  # CorsPolicy__Origins__0: ""
+  # CorsPolicy__Methods__0: ""
+  # CorsPolicy__Headers__0: ""
   CorsPolicy__AllowAnyOrigin: false
   CorsPolicy__AllowAnyMethod: true
   CorsPolicy__AllowAnyHeader: true
@@ -187,6 +171,29 @@ env:
   FileUpload__allowedExtensions__5: ".docx"
   FileUpload__allowedExtensions__6: ".gif"
   FileUpload__allowedExtensions__7: ".txt"
+
+  # Basic seed data to jumpstart deployment
+  # This is a placeholder and needs to be updated for a new install.
+  # Upgrades should keep administrators from the previous install.
+
+  # SeedData__Permissions__0__Name: "Demo Permission"
+  # SeedData__Permissions__0__Description: "This is a demo permission"
+
+  # SeedData__Roles__0__Name: "Demo Role"
+  # SeedData__Roles__0__AllPermissions: false
+  # SeedData__Roles__0__Permissions__0: "Demo Permission"
+
+  # SeedData__TeamPermissions__0__Name: "Demo Team Permission"
+  # SeedData__TeamPermissions__0__Description: "Demo Team Permission"
+
+  # SeedData__TeamRoles__0__Name: "Demo Team Role Name"
+  # SeedData__TeamRoles__0__AllPermissions: false
+  # SeedData__TeamRoles__0__Permissions__0: "Demo Team Permission"
+  # SeedData__TeamRoles__0__Permissions__1: "ManageTeam"
+
+  # SeedData__Users__0__Id: "2d977dea-678f-4e99-98ef-a8c59ec0fdc9"
+  # SeedData__Users__0__Name: "Seed User"
+  # SeedData__Users__0__Role: "Demo Role"
 
   XApiOptions__Enabled: false
   XApiOptions__Endpoint: ""

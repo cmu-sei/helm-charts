@@ -1,7 +1,50 @@
 player-api:
-  # Docker image release version. Defaults to appVersion of player-api child chart
   image:
+    repository: cmusei/player-api
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
   kind: "Deployment"
 
@@ -30,28 +73,22 @@ player-api:
       failureThreshold: 15
       successThreshold: 1
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-      nginx.ingress.kubernetes.io/use-regex: "true"
+    annotations: {}
     hosts:
-      - host: player.example.com
+      - host: chart-example.local
         paths:
-          - path: /(hubs|swagger|api)
+          - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
   # If this deployment needs to trust non-public certificates,
-  # create a configMap with the needed certifcates and specify
+  # create a configMap with the needed certificates and specify
   # the configMap name here
   certificateMap: ""
 
@@ -62,6 +99,8 @@ player-api:
     size: ""
     mode: ReadWriteOnce
     class: default
+
+  command: ["./Player.Api"]
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -78,16 +117,8 @@ player-api:
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/crucible/blob/master/player.api/S3.Player.Api/appsettings.json
+  # see https://github.com/cmu-sei/Player.Api/blob/main/Player.Api/appsettings.json
   env:
-    # Proxy Settings - Set these in your values file if you are behind a proxy.
-    # http_proxy: proxy.example.com:9000
-    # https_proxy: proxy.example.com:9000
-    # HTTP_PROXY: proxy.example.com:9000
-    # HTTPS_PROXY: proxy.example.com:9000
-    # NO_PROXY: .local
-    # no_proxy: .local
-
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
@@ -101,35 +132,23 @@ player-api:
     Logging__Console__LogLevel__Microsoft: Error
     Logging__Console__LogLevel__System: Error
 
-    # CORS policy settings.
-    # The first entry should be the URL to player
-    # The second entry should be the URL to VM App
-    # Subsequent entries can be other integrated apps, such as OSTicket
-    # Connection String to database
     # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=player_api;Username=player_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: ""
     Database__AutoMigrate: true
     Database__DevModeRecreate: false
     Database__Provider: PostgreSQL
 
-    # CORS policy settings.
-    # The first entry should be the URL to player
-    # The second entry should be the URL to VM App
-    # Subsequent entries can be other integrated apps, such as OSTicket
-    CorsPolicy__Origins__0: "https://player.example.com"
-    CorsPolicy__Origins__1: "https://vm.example.com"
-    CorsPolicy__Origins__2: "https://osticket.example.com"
-    CorsPolicy__Methods__0: ""
-    CorsPolicy__Headers__0: ""
+    # CorsPolicy__Origins__0: ""
+    # CorsPolicy__Methods__0: ""
+    # CorsPolicy__Headers__0: ""
     CorsPolicy__AllowAnyOrigin: false
     CorsPolicy__AllowAnyMethod: true
     CorsPolicy__AllowAnyHeader: true
     CorsPolicy__SupportsCredentials: true
 
-    # OAuth2 Identity Client for Application
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
+    Authorization__Authority: ""
+    Authorization__AuthorizationUrl: ""
+    Authorization__TokenUrl: ""
     Authorization__AuthorizationScope: "player-api"
     Authorization__ClientId: player-api-dev
     Authorization__ClientName: "Player API"
@@ -154,7 +173,7 @@ player-api:
     FileUpload__allowedExtensions__6: ".gif"
     FileUpload__allowedExtensions__7: ".txt"
 
-    # Basic seed data to jumpstart deployement
+    # Basic seed data to jumpstart deployment
     # This is a placeholder and needs to be updated for a new install.
     # Upgrades should keep administrators from the previous install.
 
@@ -205,28 +224,68 @@ player-api:
     # OTEL_SERVICE_NAME: player-api
 
 player-ui:
-  # Docker image release version. Defaults to appVersion of player-ui child chart
   image:
+    repository: cmusei/player-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+    resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
+    annotations: {}
     hosts:
       - host: player.example.com
         paths:
           - path: /
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
   #
   # extraVolumes: |
@@ -241,29 +300,26 @@ player-ui:
   #
   # See kubernetes documentation for configuring your volumes:
   # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumeMounts: ""
   extraVolumes: ""
 
-  extraVolumeMounts: ""
-
-  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
-  ## settings.shared.json key. When set, the file is mounted into the Angular
-  ## app's assets/config/ directory alongside settings.env.json so the app can
-  ## load shared UI configuration that is common across multiple Crucible services.
-  ## Per-app values can still be overridden via settingsYaml.
-  sharedSettingsConfigMap: ""
-
+  # env is pod env vars
   env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
     # ApiUrl: https://player.example.com
     # OIDCSettings:
-    #   authority: https://identity.example.com
+    #   authority: https://identity.example.com/
     #   client_id: player-ui-dev
     #   redirect_uri: https://player.example.com/auth-callback/
     #   post_logout_redirect_uri: https://player.example.com
@@ -290,10 +346,88 @@ player-ui:
     #   message_text_fontsize: "14"
     #   enabled: true
 
+  ## settings is stringified json that gets included as appsettings.Production.json
+  # settings: '{
+  #   "ApiUrl": "https://player.example.com",
+  #   "OIDCSettings": {
+  #     "authority": "https://identity.example.com/",
+  #     "client_id": "player-ui-dev",
+  #     "redirect_uri": "https://player.example.com/auth-callback/",
+  #     "post_logout_redirect_uri": "https://player.example.com",
+  #     "response_type": "code",
+  #     "scope": "openid profile player-api",
+  #     "automaticSilentRenew": true,
+  #     "silent_redirect_uri": "https://player.example.com/auth-callback-silent.html"
+  #   },
+  #   "NotificationsSettings": {
+  #     "url": "https://player.example.com/hubs",
+  #     "number_to_display": 4
+  #   },
+  #   "AppTitle": "Crucible",
+  #   "AppTopBarText": "Crucible",
+  #   "AppTopBarHexColor": "#b00",
+  #   "AppTopBarHexTextColor": "#FFFFFF",
+  #   "UseLocalAuthStorage": true,
+  #   "XApiEnabled": false,
+  #   "HeaderBarSettings": {
+  #     "banner_background_color": "#d40000ff",
+  #     "classification_text": "",
+  #     "classification_text_color": "#ffffff",
+  #     "classification_text_fontsize": "14",
+  #     "message_text": "",
+  #     "message_text_color": "#ffffff",
+  #     "message_text_fontsize": "14",
+  #     "enabled": true
+  #   }
+  # }'
+
 vm-api:
-  # Docker image release version. Defaults to appVersion of vm-api child chart
   image:
+    repository: cmusei/vm-api
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
   # iso - an NFS volume mount for ISO uploads
   iso:
@@ -327,64 +461,40 @@ vm-api:
       failureThreshold: 15
       successThreshold: 1
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    annotations: {}
     hosts:
-      - host: vm.example.com
+      - host: chart-example.local
         paths:
           - path: /(notifications|hubs|api|swagger)
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  # VM-API deployment adds a second ingress
-  # - This ingress is used as a proxy for getting a websocket
-  #   console connection to vCenter hosts.
-  # - TLS and Host URLs need configured, but the snippet should be left alone
-  # NOTES:
-  # - This is only used if RewriteHost__RewriteHost below is true, otherwise
-  #   connections will go directly from the UI to the vCenter hosts themselves
-  # - The host value here corresponds to RewriteHost__RewriteHostUrl below
-  consoleIngress:
-    deployConsoleProxy: false
-    className: ""
-    name: player-connect
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
-      nginx.ingress.kubernetes.io/server-snippet: |
-        location /ticket {
-            proxy_pass https://$arg_vmhost$uri;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_request_buffering off;
-            proxy_buffering off;
-            proxy_ssl_session_reuse on;
-        }
-    hosts:
-      - host: connect.example.com
-        paths: []
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    consoleIngress:
+      deployConsoleProxy: false
+      name: ""
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: chart-example.local
+          paths: []
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
 
   # If this deployment needs to trust non-public certificates,
-  # create a configMap with the needed certifcates and specify
+  # create a configMap with the needed certificates and specify
   # the configMap name here
   certificateMap: ""
+
+  command: ["dotnet", "Player.Vm.Api.dll"]
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -401,16 +511,8 @@ vm-api:
 
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
-  # see https://github.com/cmu-sei/crucible/blob/master/vm.api/S3.VM.Api/appsettings.json
+  # see https://github.com/cmu-sei/Vm.Api/blob/main/src/Player.Vm.Api/appsettings.json
   env:
-    # Proxy Settings
-    # http_proxy: proxy.example.com:9000
-    # https_proxy: proxy.example.com:9000
-    # HTTP_PROXY: proxy.example.com:9000
-    # HTTPS_PROXY: proxy.example.com:9000
-    # NO_PROXY: .local
-    # no_proxy: .local
-
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
@@ -422,40 +524,36 @@ vm-api:
     Logging__Console__LogLevel__Microsoft: Error
     Logging__Console__LogLevel__System: Error
 
-    # Connection String to database
     # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=vm_api;Username=vm_dbu;Password=;"
+    ConnectionStrings__PostgreSQL: ""
     Database__AutoMigrate: true
     Database__DevModeRecreate: false
     Database__Provider: PostgreSQL
 
-    # CORS policy settings.
-    # The first entry should be the URL to VM App
-    # The second entry should be the URL to Console App
-    CorsPolicy__Origins__0: "https://vm.example.com"
-    CorsPolicy__Origins__1: "https://console.example.com"
-    CorsPolicy__Methods__0: ""
-    CorsPolicy__Headers__0: ""
+    # CorsPolicy__Origins__0: ""
+    # CorsPolicy__Methods__0: ""
+    # CorsPolicy__Headers__0: ""
     CorsPolicy__AllowAnyOrigin: false
     CorsPolicy__AllowAnyMethod: true
     CorsPolicy__AllowAnyHeader: true
     CorsPolicy__SupportsCredentials: true
 
-    # OAuth2 Identity Client for Application
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
+    Authorization__Authority: ""
+    Authorization__AuthorizationUrl: ""
+    Authorization__TokenUrl: ""
     Authorization__AuthorizationScope: "vm-api player-api"
     Authorization__ClientId: vm-api-dev
     Authorization__ClientName: "VM API"
     Authorization__ClientSecret: ""
     Authorization__RequireHttpsMetaData: false
 
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
+
     IsoUpload__BasePath: "/app/isos/player"
     IsoUpload_MaxFileSize: 6000000000
 
-    # OAuth2 Identity Client /w Password
-    IdentityClient__TokenUrl: https://identity.example.com/connect/token
+    IdentityClient__TokenUrl: ""
     IdentityClient__ClientId: "player-vm-admin"
     IdentityClient__Scope: "player-api vm-api"
     IdentityClient__Username: ""
@@ -464,19 +562,10 @@ vm-api:
     IdentityClient__TokenRefreshSeconds: 600
 
     # Crucible Player URL
-    ClientSettings__urls__playerApi: "https://player.example.com"
+    ClientSettings__urls__playerApi: ""
 
-    # VCenter settings
-    #
-    # A privileged vCenter used is required to read and write files
-    #
-    # A datastore needs to be created for Player to store files.  This is
-    # typically an NFS share in the format:  <DATASTORE>/player/
-    #
-    # - DsName denotes the DataStore name
-    # - BaseFolder is the folder inside the DataStore to use
-    Vsphere__Host: "vcenter.example.com"
-    Vsphere__Username: "player-account@vsphere.local"
+    Vsphere__Host: ""
+    Vsphere__Username: ""
     Vsphere__Password: ""
     Vsphere__DsName: ""
     Vsphere__BaseFolder: "player"
@@ -490,10 +579,8 @@ vm-api:
     Vsphere__ReCheckTaskProgressIntervalMilliseconds: 1000
     Vsphere__HealthAllowanceSeconds: 180
 
-    # Rewrite Host settings
-    # See "consoleIngress" section above for usage
     RewriteHost__RewriteHost: false
-    RewriteHost__RewriteHostUrl: "connect.example.com"
+    RewriteHost__RewriteHostUrl: ""
     RewriteHost__RewriteHostQueryParam: "vmhost"
 
     # Open Telemetry
@@ -512,28 +599,68 @@ vm-api:
     # OTEL_SERVICE_NAME: vm-api
 
 vm-ui:
-  # Docker image release version. Defaults to appVersion of vm-ui child chart
   image:
+    repository: cmusei/vm-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+    resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
+    annotations: {}
     hosts:
       - host: vm.example.com
         paths:
           - path: /
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
   #
   # extraVolumes: |
@@ -548,23 +675,20 @@ vm-ui:
   #
   # See kubernetes documentation for configuring your volumes:
   # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumeMounts: ""
   extraVolumes: ""
 
-  extraVolumeMounts: ""
-
-  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
-  ## settings.shared.json key. When set, the file is mounted into the Angular
-  ## app's assets/config/ directory alongside settings.env.json so the app can
-  ## load shared UI configuration that is common across multiple Crucible services.
-  ## Per-app values can still be overridden via settingsYaml.
-  sharedSettingsConfigMap: ""
-
+  # env is pod env vars
   env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
@@ -574,7 +698,7 @@ vm-ui:
     # WelderUrl: ""
     # UserFollowUrl: https://console.example.com/user/{userId}/view/{viewId}/console
     # OIDCSettings:
-    #   authority: https://identity.example.com
+    #   authority: https://identity.example.com/
     #   client_id: vm-ui-dev
     #   redirect_uri: https://vm.example.com/auth-callback/
     #   post_logout_redirect_uri: https://vm.example.com
@@ -583,30 +707,109 @@ vm-ui:
     #   automaticSilentRenew: true
     #   silent_redirect_uri: https://vm.example.com/auth-callback-silent.html
     # UseLocalAuthStorage: true
+    # HeaderBarSettings:
+    #   banner_background_color: "#d40000ff"
+    #   classification_text: ""
+    #   classification_text_color: "#ffffff"
+    #   classification_text_fontsize: "14"
+    #   message_text: ""
+    #   message_text_color: "#ffffff"
+    #   message_text_fontsize: "14"
+    #   enabled: true
+
+  ## settings is stringified json that gets included as appsettings.Production.json
+  # settings: '{
+  #   "ApiUrl": "https://vm.example.com/api",
+  #   "DeployApiUrl": "",
+  #   "ApiPlayerUrl": "https://player.example.com/api",
+  #   "WelderUrl": "",
+  #   "UserFollowUrl": "https://console.example.com/user/{userId}/view/{viewId}/console",
+  #   "OIDCSettings": {
+  #     "authority": "https://identity.example.com/",
+  #     "client_id": "vm-ui-dev",
+  #     "redirect_uri": "https://vm.example.com/auth-callback/",
+  #     "post_logout_redirect_uri": "https://vm.example.com",
+  #     "response_type": "code",
+  #     "scope": "openid profile player-api vm-api",
+  #     "automaticSilentRenew": true,
+  #     "silent_redirect_uri": "https://vm.example.com/auth-callback-silent.html"
+  #   },
+  #   "UseLocalAuthStorage": true,
+  #   "HeaderBarSettings": {
+  #     "banner_background_color": "#d40000ff",
+  #     "classification_text": "",
+  #     "classification_text_color": "#ffffff",
+  #     "classification_text_fontsize": "14",
+  #     "message_text": "",
+  #     "message_text_color": "#ffffff",
+  #     "message_text_fontsize": "14",
+  #     "enabled": true
+  #   }
+  # }'
 
 console-ui:
-  # Docker image release version. Defaults to appVersion of console-ui child chart
   image:
+    repository: cmusei/vm-console-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+    resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
+    annotations: {}
     hosts:
       - host: console.example.com
         paths:
           - path: /
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
   #
   # extraVolumes: |
@@ -621,29 +824,26 @@ console-ui:
   #
   # See kubernetes documentation for configuring your volumes:
   # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumeMounts: ""
   extraVolumes: ""
 
-  extraVolumeMounts: ""
-
-  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
-  ## settings.shared.json key. When set, the file is mounted into the Angular
-  ## app's assets/config/ directory alongside settings.env.json so the app can
-  ## load shared UI configuration that is common across multiple Crucible services.
-  ## Per-app values can still be overridden via settingsYaml.
-  sharedSettingsConfigMap: ""
-
+  # env is pod env vars
   env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
     # ConsoleApiUrl: https://vm.example.com/api/
     # OIDCSettings:
-    #   authority: https://identity.example.com
+    #   authority: https://identity.example.com/
     #   client_id: vm-console-ui-dev
     #   redirect_uri: https://console.example.com/auth-callback/
     #   post_logout_redirect_uri: https://console.example.com
@@ -690,3 +890,38 @@ console-ui:
     #     value: 100
     #   - name: Slowest
     #     value: 500
+    # HeaderBarSettings:
+    #   banner_background_color: "#d40000ff"
+    #   classification_text: ""
+    #   classification_text_color: "#ffffff"
+    #   classification_text_fontsize: "14"
+    #   message_text: ""
+    #   message_text_color: "#ffffff"
+    #   message_text_fontsize: "14"
+    #   enabled: true
+
+  ## settings is stringified json that gets included as appsettings.Production.json
+  # settings: '{
+  #   "ConsoleApiUrl": "https://vm.example.com/api/",
+  #   "OIDCSettings": {
+  #     "authority": "https://identity.example.com/",
+  #     "client_id": "vm-console-ui-dev",
+  #     "redirect_uri": "https://console.example.com/auth-callback/",
+  #     "post_logout_redirect_uri": "https://console.example.com",
+  #     "response_type": "code",
+  #     "scope": "openid profile player-api vm-api vm-console-api",
+  #     "automaticSilentRenew": true,
+  #     "silent_redirect_uri": "https://console.example.com/auth-callback-silent.html"
+  #   },
+  #   "UseLocalAuthStorage": true,
+  #   "HeaderBarSettings": {
+  #     "banner_background_color": "#d40000ff",
+  #     "classification_text": "",
+  #     "classification_text_color": "#ffffff",
+  #     "classification_text_fontsize": "14",
+  #     "message_text": "",
+  #     "message_text_color": "#ffffff",
+  #     "message_text_fontsize": "14",
+  #     "enabled": true
+  #   }
+  # }'
