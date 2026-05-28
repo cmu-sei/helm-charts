@@ -192,7 +192,7 @@ topomojo-api:
     # Oidc__UserRolesClaimMap__creator: Creator
     # Oidc__UserRolesClaimMap__observer: Observer
     # Oidc__UserRolesClaimMap__user: user
-    # Oidc__UserRolesClaimPath = realm_access.roles
+    # Oidc__UserRolesClaimPath: realm_access.roles
 
     # Database__Provider: InMemory
     # Database__ConnectionString: topomojo_db
@@ -209,7 +209,7 @@ topomojo-api:
     # OpenApi__Client__ClientId: topomojo-swagger
 
     # FileUpload__TopoRoot: /mnt/tm
-    ## In NFS mode (UseDatastoreApi=false), override this to a path backed by
+    ## In NFS mode (UseDatastoreApi: false), override this to a path backed by
     ## the NFS share your ESXi hosts also mount as a vSphere datastore.
     # FileUpload__IsoRoot: /mnt/tm/isos
     ## DocRoot points at the chart's dedicated wwwroot/docs mount so uploaded
@@ -255,7 +255,7 @@ topomojo-api:
     # Pod__IsNsxNetwork: false
     # Pod__Sddc__ApiUrl: ""
     # Pod__Sddc__MetadataUrl: ""
-    # Pod__Sddc__SegmentApiPath = policy/api/v1/infra/tier-1s/cgw/segments
+    # Pod__Sddc__SegmentApiPath: policy/api/v1/infra/tier-1s/cgw/segments
     # Pod__Sddc__ApiKey: ""
     # Pod__Sddc__AuthUrl: ""
     # Pod__Sddc__CertificatePath: ""
@@ -264,7 +264,7 @@ topomojo-api:
     # Logging__Console__DisableColors: false
     # Logging__LogLevel__Default: Information
 
-    # Ui__Branding__BackgroundImageUrl = theme/demo.png
+    # Ui__Branding__BackgroundImageUrl: theme/demo.png
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
