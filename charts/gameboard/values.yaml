@@ -67,7 +67,7 @@ gameboard-api:
     hosts:
       - host: chart-example.local
         paths:
-          - path: /(api|hub|img|docs)
+          - path: /(api|hub|img|docs|supportfiles)
             pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
