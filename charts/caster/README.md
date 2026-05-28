@@ -400,7 +400,7 @@ caster-api:
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (overrides the default parent-based sampler) | `false` |
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
 | `OpenTelemetry__AddConsoleExporter` | Write traces and metrics to stdout | `false` |
 | `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` Prometheus scrape endpoint | `false` |
 | `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core / HttpClient activity sources | `true` |

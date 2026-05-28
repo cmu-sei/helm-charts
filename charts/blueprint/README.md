@@ -207,7 +207,7 @@ blueprint-api:
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `OpenTelemetry__AddAlwaysOnTracingSampler` | Use the AlwaysOn sampler instead of the default parent-based sampler | `false` |
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
 | `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to the console (useful for debugging) | `false` |
 | `OpenTelemetry__AddPrometheusExporter` | Expose a Prometheus `/metrics` scrape endpoint | `false` |
 | `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core and HttpClient activity sources | `true` |
