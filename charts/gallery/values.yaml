@@ -294,6 +294,7 @@ gallery-ui:
     #   enabled: false
 
   ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://gallery.example.com",
   #   "OIDCSettings": {

@@ -402,6 +402,7 @@ caster-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://caster.example.com",
   #   "OIDCSettings": {

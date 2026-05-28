@@ -347,6 +347,7 @@ player-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://player.example.com",
   #   "OIDCSettings": {
@@ -718,6 +719,7 @@ vm-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://vm.example.com/api",
   #   "DeployApiUrl": "",
@@ -901,6 +903,7 @@ console-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
   # settings: '{
   #   "ConsoleApiUrl": "https://vm.example.com/api/",
   #   "OIDCSettings": {

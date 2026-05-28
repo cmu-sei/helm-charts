@@ -151,6 +151,7 @@ settingsYaml:
   #   enabled: true
 
 ## settings is stringified json that gets included as appsettings.Production.json
+settings: "{}"
 # settings: '{
 #   "ConsoleApiUrl": "https://vm.example.com/api/",
 #   "OIDCSettings": {
