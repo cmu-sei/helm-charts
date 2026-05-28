@@ -91,12 +91,28 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# VM-API deployment adds a second ingress
+# - This ingress is used as a proxy for getting a websocket
+#   console connection to vCenter hosts.
+# - TLS and Host URLs need configured, but the snippet should be left alone
+# NOTES:
+# - This is only used if RewriteHost__RewriteHost below is true, otherwise
+#   connections will go directly from the UI to the vCenter hosts themselves
+# - The host value here corresponds to RewriteHost__RewriteHostUrl below
 consoleIngress:
   deployConsoleProxy: false
-  name: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  className: ""
+  name: player-connect
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location /ticket {
+          proxy_pass https://$arg_vmhost$uri;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_request_buffering off;
+          proxy_buffering off;
+          proxy_ssl_session_reuse on;
+      }
   hosts:
     - host: chart-example.local
       paths: []
