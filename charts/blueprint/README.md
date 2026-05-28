@@ -83,7 +83,7 @@ Blueprint API supports sending xAPI statements to a Learning Record Store (LRS) 
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `XApiOptions__Enabled` | Enable xAPI statement submission | `false` |
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
 | `XApiOptions__Endpoint` | LRS endpoint URL | `""` |
 | `XApiOptions__Username` | LRS basic-auth username | `""` |
 | `XApiOptions__Password` | LRS basic-auth password | `""` |

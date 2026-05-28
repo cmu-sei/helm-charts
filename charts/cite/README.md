@@ -96,7 +96,7 @@ CITE API can emit [xAPI](https://xapi.com/) (Experience API) statements to a Lea
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `XApiOptions__Enabled` | Enable xAPI statement emission | `false` |
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
 | `XApiOptions__Endpoint` | LRS xAPI endpoint URL | `""` |
 | `XApiOptions__Username` | LRS basic-auth username | `""` |
 | `XApiOptions__Password` | LRS basic-auth password | `""` |
@@ -246,7 +246,7 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
-| `XApiEnabled` | Show xAPI-related UI features | `false` |
+| `XApiEnabled` | Enable xAPI tracking features | `false` |
 | `AppTitle` | Browser/application title | `CITE` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |

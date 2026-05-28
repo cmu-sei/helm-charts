@@ -100,7 +100,7 @@ Steamfitter can emit [xAPI](https://xapi.com/) statements to a Learning Record S
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `XApiOptions__Enabled` | Enable xAPI statement emission | `false` |
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
 | `XApiOptions__Endpoint` | LRS endpoint URL | `""` |
 | `XApiOptions__Username` | LRS basic-auth username | `""` |
 | `XApiOptions__Password` | LRS basic-auth password | `""` |
