@@ -50,7 +50,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: cite.example.com
+    - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific

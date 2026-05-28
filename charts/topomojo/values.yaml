@@ -117,7 +117,7 @@ topomojo-api:
           proxy_ssl_session_reuse on;
         }
     hosts:
-      - host: connect.example.com
+      - host: chart-example.local
         paths: []
     tls: []
     #  - secretName: chart-example-tls

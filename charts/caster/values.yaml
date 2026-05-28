@@ -235,9 +235,9 @@ caster-api:
     Terraform__PluginCache: "/terraform/plugin-cache"
     Terraform__RootWorkingDirectory: "/terraform/root"
     # Example:
-      # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
-      # Terraform__GitlabToken: "your-gitlab-token"
-      # Terraform__GitlabGroupId: 6
+    # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
+    # Terraform__GitlabToken: "your-gitlab-token"
+    # Terraform__GitlabGroupId: 6
     Terraform__GitlabApiUrl: ""
     Terraform__GitlabToken: ""
     Terraform__GitlabGroupId: ""
@@ -339,7 +339,7 @@ caster-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: caster.example.com
+      - host: chart-example.local
         paths:
           - path: /
             pathType: ImplementationSpecific

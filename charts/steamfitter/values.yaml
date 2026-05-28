@@ -253,7 +253,7 @@ steamfitter-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: steamfitter.example.com
+      - host: chart-example.local
         paths:
           - path: /
             pathType: ImplementationSpecific
