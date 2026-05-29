@@ -171,9 +171,9 @@ env:
 
   # Stackstorm Configuration
   VmTaskProcessing__ApiType: st2
-  VmTaskProcessing__ApiUsername: ""
-  VmTaskProcessing__ApiPassword: ""
-  VmTaskProcessing__ApiBaseUrl: ""
+  VmTaskProcessing__ApiUsername:
+  VmTaskProcessing__ApiPassword:
+  VmTaskProcessing__ApiBaseUrl:
   VmTaskProcessing__VmListUpdateIntervalMinutes: 5
   VmTaskProcessing__HealthCheckSeconds: 30
   VmTaskProcessing__HealthCheckTimeoutSeconds: 90
