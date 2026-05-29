@@ -73,6 +73,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://cite.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
@@ -80,12 +81,33 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
+
 ### Claims Transformation Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
 | `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
+
+### xAPI Settings
+
+CITE API can emit [xAPI](https://xapi.com/) (Experience API) statements to a Learning Record Store (LRS). Set `XApiOptions__Enabled` to `true` and configure the remaining options to activate xAPI reporting.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
+| `XApiOptions__Endpoint` | LRS xAPI endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | OIDC issuer URL used in actor IFI | `""` |
+| `XApiOptions__ApiUrl` | Public URL of the CITE API (used in statement object IDs) | `""` |
+| `XApiOptions__UiUrl` | Public URL of the CITE UI (used in statement context) | `""` |
+| `XApiOptions__EmailDomain` | Email domain appended to usernames for actor IFI | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `CITE` |
+| `XApiOptions__RetentionDays` | Number of days to retain local xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI processing jobs | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing attempts | `30` |
 
 ### Certificate Trust
 
@@ -189,6 +211,14 @@ cite-api:
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
 
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
+
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
 - Built-in meters: `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Server.Kestrel`, `System.Net.Http`, `System.Net.NameResolution`, `Microsoft.EntityFrameworkCore`, plus runtime/process meters.
@@ -197,6 +227,12 @@ cite-api:
 ## CITE UI Configuration
 
 Use ``settingsYaml` to configure the Angular UI application.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `APP_BASEHREF` | Base href path for the Angular app (set when hosting at a subpath) | `""` |
+
+### Application Settings (`settingsYaml`)
 
 | Setting | Description | Example |
 |---------|-------------|---------|
@@ -210,6 +246,7 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://cite.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+| `XApiEnabled` | Enable xAPI tracking features | `false` |
 | `AppTitle` | Browser/application title | `CITE` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
@@ -275,7 +312,7 @@ CITE UI supports an optional classification banner via `HeaderBarSettings`. The 
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `HeaderBarSettings.enabled` | Show or hide the classification banner | `true` |
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `false` |
 | `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
 | `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
 | `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |

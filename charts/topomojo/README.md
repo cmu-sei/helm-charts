@@ -24,6 +24,12 @@ helm install topomojo sei/topomojo -f values.yaml
 
 The following are configured via the `topomojo-api.env` settings. These TopoMojo API settings reflect the application's [appsettings.conf](https://github.com/cmu-sei/TopoMojo/blob/main/src/TopoMojo.Api/appsettings.conf) which may contain more settings than are described here.
 
+### General Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `PathBase` | Path base for virtual directory hosting (e.g., `/tm` when serving from a subpath) | `""` |
+
 ### Database Settings
 
 | Setting | Description | Values | Example |
@@ -38,12 +44,21 @@ The following are configured via the `topomojo-api.env` settings. These TopoMojo
 - For production, use `PostgreSQL` or `SqlServer`
 - `AdminId` should match the user's subject claim from your identity provider
 
+### Cache Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Cache__RedisUrl` | Redis connection URL for distributed caching. Leave empty to use the default in-process cache. | `""` |
+| `Cache__Key` | Cache key prefix used to namespace entries in the cache store. | `""` |
+| `Cache__SharedFolder` | Path to a shared folder used for file-based cache sharing between replicas. | `""` |
+
 ### Authentication (OIDC)
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
-| `Oidc__Authority` | Identity provider URL | `https://identity.example.com` |
+| `Oidc__Authority` | Identity provider URL | `http://localhost:5000` |
 | `Oidc__Audience` | Expected audience in tokens | `topomojo-api` |
+| `Oidc__ServiceAccountClientIdClaimType` | JWT claim type used to identify service account clients. Set to `"null"` to disable client credentials authentication. | `client_id` |
 
 #### Identity Provider Role Mapping
 
@@ -142,13 +157,18 @@ unset (the default is `false`) and behavior is unchanged.
 
 ### Core Application Settings
 
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---------|-------------|---------|
-| `Core__DefaultGamespaceMinutes` | Default gamespace duration | `60` (Default) |
-| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `1` (Default) |
-| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `10` (Default) |
-| `Core__DefaultTemplateLimit` | Max VMs per workspace | `10` (Default) |
-| `Core__AllowUnprivilegedVmReconfigure` | Allow users set VM networks to reserved network segments  | `false` (Default) |
+| `Core__DefaultGamespaceMinutes` | Default gamespace duration in minutes | `120` |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `2` |
+| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `0` |
+| `Core__DefaultTemplateLimit` | Max VMs per workspace | `3` |
+| `Core__DefaultUserScope` | Default scope assigned to new users for gamespace access | `everyone` |
+| `Core__ReplicaLimit` | Maximum number of replicas allowed per gamespace | `5` |
+| `Core__GameEngineIsoFolder` | Folder name within the ISO store used by the game engine | `static` |
+| `Core__LaunchUrl` | URL path used for gamespace launch links | `/lp` |
+| `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
+| `Core__AllowUnprivilegedVmReconfigure` | Allow unprivileged users to set VM networks to reserved network segments | `false` |
 
 ### OpenAPI/Swagger
 
@@ -179,9 +199,14 @@ See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/d
 | `Pod__Uplink` | Virtual switch for VM networking | `dvs-topomojo` or `vSwitch0` or `vmc-hostswitch` |
 | `Pod__Vlan__Range` | Available VLAN IDs for isolation | `100-200` or `10,20,30-40` |
 | `Pod__IsNsxNetwork` | Set to `true` when using NSX Networking. | `false` (default) |
+| `Pod__TicketUrlHandler` | Method used to construct VM console ticket URLs. | `querystring` |
 | `Pod__Sddc__AuthUrl` | When using a VMware Cloud SDDC, set the URL for SDDC authentication. | `https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize` |
-| `Pod__Sddc__MetadataUrl` | When using a VMware Cloud SDDC, set the URL used to read SDDC Metadata such as the NSX endpoint URLs | `https://vmc.vmware.com/vmc/api/orgs/<org_id>/sddcs/<sddc_id>`
-| Pod__Sddc__ApiKey` | When using a VMware Cloud SDDC, set the value of an API key for authentication | `api_key`
+| `Pod__Sddc__MetadataUrl` | When using a VMware Cloud SDDC, set the URL used to read SDDC Metadata such as the NSX endpoint URLs | `https://vmc.vmware.com/vmc/api/orgs/<org_id>/sddcs/<sddc_id>` |
+| `Pod__Sddc__ApiKey` | When using a VMware Cloud SDDC, set the value of an API key for authentication | `api_key` |
+| `Pod__Sddc__ApiUrl` | SDDC/vSphere API base URL for direct API calls (distinct from MetadataUrl). | `""` |
+| `Pod__Sddc__SegmentApiPath` | NSX-T API path used to manage SDDC network segments. | `policy/api/v1/infra/tier-1s/cgw/segments` |
+| `Pod__Sddc__CertificatePath` | Path to a client certificate file used for SDDC API authentication. | `""` |
+| `Pod__Sddc__CertificatePassword` | Password for the SDDC client certificate. | `""` |
 | `Pod__ExcludeNetworkMask` | Exclude network segments from TopoMojo | `vmcloud` |
 | `Pod__KeepAliveMinutes` | Connection keepalive interval | `10` |
 | `Pod__DebugVerbose` | Enable verbose hypervisor logging | `false` |
@@ -270,17 +295,12 @@ Configure the ingress to allow connections to the application (typically uses an
       nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
       nginx.ingress.kubernetes.io/proxy-body-size: 30m
+      nginx.ingress.kubernetes.io/use-regex: "true"
 
     hosts:
       - host: topomojo.example.com
         paths:
-          - path: /tm/api
-            pathType: ImplementationSpecific
-          - path: /tm/hub
-            pathType: ImplementationSpecific
-          - path: /tm/docs
-            pathType: ImplementationSpecific
-          - path: /tm/theme
+          - path: /tm/(api|hub|docs|theme)
             pathType: ImplementationSpecific
     tls:
       - secretName: tls-secret-name # this tls secret should already exist
@@ -330,6 +350,16 @@ topomojo-api:
     FileUpload__MaxFileBytes: 21474836480  # 20 GB cap
 ```
 
+#### Volume Permissions
+
+On startup, an init container chowns the paths under `FileUpload__TopoRoot` and `FileUpload__DocRoot` to UID/GID `1654` (the .NET runtime user). Set `SKIP_VOL_PERMISSIONS` to `"true"` to skip this step — for example, when using a storage class that handles ownership automatically or when the pod runs with a different security context.
+
+```yaml
+topomojo-api:
+  env:
+    SKIP_VOL_PERMISSIONS: "true"
+```
+
 #### Extra Environment Sources
 
 Inject additional environment variables into the API container from existing Kubernetes Secrets or ConfigMaps using `extraEnvFrom`. This is useful for integrating with external secret managers such as AWS Secrets Manager (via the [External Secrets Operator](https://external-secrets.io/)) or HashiCorp Vault.
@@ -344,6 +374,13 @@ topomojo-api:
 ```
 
 Each entry follows the standard Kubernetes [`envFrom`](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables) spec and supports both `secretRef` and `configMapRef`.
+
+### Logging Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Logging__Console__DisableColors` | Disable ANSI color codes in console log output (useful in environments that don't support color). | `false` |
+| `Logging__LogLevel__Default` | Default minimum log level for all categories. Valid values: `Trace`, `Debug`, `Information`, `Warning`, `Error`, `Critical`, `None`. | `Information` |
 
 ### OpenTelemetry
 
@@ -368,6 +405,14 @@ topomojo-api:
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.

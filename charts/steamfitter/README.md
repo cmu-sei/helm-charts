@@ -30,6 +30,12 @@ helm install steamfitter sei/steamfitter -f values.yaml
 
 The following are configured via the `steamfitter-api.env` settings. These Steamfitter API settings reflect the application's [appsettings.json](https://github.com/cmu-sei/Steamfitter.Api/blob/development/Steamfitter.Api/appsettings.json) which may contain more settings than are described here.
 
+### Image
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `image.tag` | Override the image tag (defaults to chart `appVersion`) | `""` |
+
 ### Database Settings
 
 | Setting | Description | Example |
@@ -74,16 +80,38 @@ steamfitter-api:
 | `Authorization__ClientSecret` | OAuth2 client secret | `""` |
 | `Authorization__RequireHttpsMetaData` | Require HTTPS for metadata | `false` |
 
-### CORS Policy
+### CORS Policy Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://steamfitter.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
+
+### xAPI Settings
+
+Steamfitter can emit [xAPI](https://xapi.com/) statements to a Learning Record Store (LRS) to record scenario task activity.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
+| `XApiOptions__Endpoint` | LRS endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | Identity provider issuer URL (used to resolve actor identifiers) | `""` |
+| `XApiOptions__ApiUrl` | Steamfitter API URL (used in statement context) | `""` |
+| `XApiOptions__UiUrl` | Steamfitter UI URL (used in statement context) | `""` |
+| `XApiOptions__EmailDomain` | Email domain appended to usernames to form xAPI actor mbox | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `Steamfitter` |
+| `XApiOptions__RetentionDays` | Number of days to retain locally stored xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI statement processing | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing cycles | `30` |
 
 ### Claims Transformation
 
@@ -228,7 +256,7 @@ Configure the ingress to allow connections to the application (typically uses an
 Steamfitter.Api is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Steamfitter to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
 
 ```yaml
-Steamfitter-api:
+steamfitter-api:
   env:
     # This can be a kubernetes service address if the collector is running in the cluster
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -236,7 +264,7 @@ Steamfitter-api:
     # Optional: force HTTP instead of the default gRPC protocol
     # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     # Optional: override the service name reported to collectors
-    # OTEL_SERVICE_NAME: Steamfitter-api
+    # OTEL_SERVICE_NAME: steamfitter-api
 
     # These settings toggle ServiceDefaults configurations for Otel
     # The values listed here are the defaults
@@ -247,12 +275,28 @@ Steamfitter-api:
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
 
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
+
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
 - Built-in meters: `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Server.Kestrel`, `System.Net.Http`, `System.Net.NameResolution`, `Microsoft.EntityFrameworkCore`, plus runtime/process meters.
-- Resource attribute `service_name` defaults to `Steamfitter-api` (or your `OTEL_SERVICE_NAME` override).
+- Resource attribute `service_name` defaults to `steamfitter-api` (or your `OTEL_SERVICE_NAME` override).
 
 ## Steamfitter UI Configuration
+
+### Image
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `image.tag` | Override the image tag (defaults to chart `appVersion`) | `""` |
+
+### Application Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
