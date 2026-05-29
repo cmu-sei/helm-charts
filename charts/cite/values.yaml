@@ -74,7 +74,13 @@ cite-api:
   ingress:
     enabled: true
     className: ""
-    annotations: {}
+    # Default annotations target nginx-ingress. The use-regex flag is required
+    # for the regex-style ImplementationSpecific path below to actually match;
+    # without it, nginx treats the parens as literal characters.
+    annotations:
+      # nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: chart-example.local
         paths:

@@ -8,52 +8,52 @@ home: https://cmu-sei.github.io/crucible/
 dependencies:
   # Crucible Applications
   - name: alloy
-    repository: https://helm.cmusei.dev/charts
-    version: 1.7.8
+    repository: file://../alloy
+    version: 1.8.0
     condition: alloy.enabled
 
   - name: blueprint
-    repository: https://helm.cmusei.dev/charts
-    version: 1.9.3
+    repository: file://../blueprint
+    version: 1.10.0
     condition: blueprint.enabled
 
   - name: caster
-    repository: https://helm.cmusei.dev/charts
-    version: 1.8.9
+    repository: file://../caster
+    version: 1.9.0
     condition: caster.enabled
 
   - name: cite
-    repository: https://helm.cmusei.dev/charts
-    version: 1.9.7
+    repository: file://../cite
+    version: 1.10.0
     condition: cite.enabled
 
   - name: gallery
-    repository: https://helm.cmusei.dev/charts
-    version: 1.9.7
+    repository: file://../gallery
+    version: 1.10.0
     condition: gallery.enabled
 
   - name: gameboard
-    repository: https://helm.cmusei.dev/charts
-    version: 0.5.14
+    repository: file://../gameboard
+    version: 0.6.0
     condition: gameboard.enabled
 
   - name: player
-    repository: https://helm.cmusei.dev/charts
-    version: 1.9.13
+    repository: file://../player
+    version: 1.10.0
     condition: player.enabled
 
   - name: steamfitter
-    repository: https://helm.cmusei.dev/charts
-    version: 1.7.7
+    repository: file://../steamfitter
+    version: 1.8.0
     condition: steamfitter.enabled
 
   - name: topomojo
-    repository: https://helm.cmusei.dev/charts
-    version: 0.7.1
+    repository: file://../topomojo
+    version: 0.9.0
     condition: topomojo.enabled
 
   # Moodle LMS
   - name: moodle
-    repository: https://helm.cmusei.dev/charts
+    repository: file://../moodle
     version: 0.2.7
     condition: moodle.enabled
