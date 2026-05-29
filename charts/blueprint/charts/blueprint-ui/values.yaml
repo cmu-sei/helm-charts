@@ -55,9 +55,9 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-    # - secretName: ""
-    #   hosts:
-    #     - example.com
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
 # Example use to overwrite the white ruler icon from a file in a configMap:
