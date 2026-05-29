@@ -1,0 +1,51 @@
+name: Validate Charts
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+permissions:
+  contents: read
+
+jobs:
+  version-check:
+    name: Chart Version Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check chart versions
+        run: |
+          .github/scripts/check-chart-versions.sh "origin/${{ github.base_ref }}"
+
+  values-sync:
+    name: Parent/Child Values Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check parent/child values sync
+        run: |
+          python3 .github/scripts/check-values-sync.py --base-ref "origin/${{ github.base_ref }}"
+
+  readme-reminder:
+    name: README Sync Reminder
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check README sync (non-blocking)
+        run: |
+          .github/scripts/check-readme-sync.sh "origin/${{ github.base_ref }}"
