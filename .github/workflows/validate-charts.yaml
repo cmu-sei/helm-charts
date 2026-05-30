@@ -38,13 +38,13 @@ jobs:
           python3 .github/scripts/check-values-sync.py --base-ref "origin/${{ github.base_ref }}"
 
   readme-reminder:
-    name: README Sync Reminder
+    name: README Reminder
     runs-on: ubuntu-latest
-    # checks: write lets us publish a neutral (yellow) check run carrying the
-    # reminder. The job itself still succeeds, so this stays non-blocking.
+    # pull-requests: write lets us maintain a single sticky reminder comment.
+    # The job still succeeds, so this stays non-blocking.
     permissions:
       contents: read
-      checks: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -56,33 +56,48 @@ jobs:
         run: |
           .github/scripts/check-readme-sync.sh "origin/${{ github.base_ref }}"
 
-      # Publish a separate check run so the reminder shows as yellow on the PR.
-      # A job conclusion can only be success/failure, so the warning would
-      # otherwise hide behind a green check. action_required is the only
-      # *completed* conclusion GitHub renders yellow (neutral renders grey).
-      # Skipped on fork PRs, where GITHUB_TOKEN is read-only and cannot write checks.
-      - name: Publish README sync check run
-        if: steps.readme.outputs.warnings != '0' && github.event.pull_request.head.repo.fork == false
+      # Maintain ONE reminder comment on the PR. Keyed by a hidden marker, it is
+      # created on the first flagged push and edited in place afterward, so
+      # repeated pushes never add duplicate comments. When a later push fixes
+      # the sync (no charts flagged), the comment is deleted. Skipped on fork
+      # PRs, where GITHUB_TOKEN is read-only.
+      - name: Sticky README reminder comment
+        if: github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@v7
         with:
           script: |
+            const marker = '<!-- readme-sync-reminder -->';
             const charts = '${{ steps.readme.outputs.charts }}'.split(',').filter(Boolean);
-            const count = charts.length;
-            const list = charts.map(c => `- \`charts/${c}/values.yaml\` changed without a \`README.md\` update`).join('\n');
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'README Sync',
-              head_sha: context.payload.pull_request.head.sha,
-              status: 'completed',
-              conclusion: 'action_required',
-              output: {
-                title: `${count} chart${count === 1 ? '' : 's'} may need a README update`,
-                summary: [
-                  'These charts changed `values.yaml` without touching their `README.md`.',
-                  'Confirm the README tables still reflect the values, then update them if needed.',
-                  '',
-                  list,
-                ].join('\n'),
-              },
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number, per_page: 100,
             });
+            const existing = comments.find(c => c.body.includes(marker));
+
+            // No reminders needed: clean up any prior comment and stop.
+            if (charts.length === 0) {
+              if (existing) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id });
+              }
+              return;
+            }
+
+            const list = charts.map(c =>
+              `- \`charts/${c}\` — \`values.yaml\` changed without a \`README.md\` update`).join('\n');
+            const body = [
+              marker,
+              '### ⚠️ README sync reminder',
+              '',
+              'These charts changed `values.yaml` without touching their `README.md`.',
+              'Confirm the README tables still reflect the values, then update them if needed.',
+              '',
+              list,
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
