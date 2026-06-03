@@ -42,5 +42,10 @@ jobs:
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
+        with:
+          # Releases are per-chart, so no single chart should carry the
+          # repo-wide "Latest" marker (it would otherwise land on whichever
+          # chart happens to publish last).
+          mark_as_latest: false
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
