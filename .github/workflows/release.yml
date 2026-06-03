@@ -29,6 +29,16 @@ jobs:
         with:
           version: "latest"
 
+      - name: Add dependency Helm repos
+        run: |
+          helm repo add sei https://helm.cmusei.dev/charts
+          helm repo add kvaps https://kvaps.github.io/charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add runix https://helm.runix.net
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         env:
