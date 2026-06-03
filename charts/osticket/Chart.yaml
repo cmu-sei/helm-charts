@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.17.6
+version: 1.17.7
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -23,8 +23,7 @@ version: 1.17.6
 # It is recommended to use it with quotes.
 appVersion: "1.17.5"
 dependencies:
-- name: mysql
-  version: "9.3.4"
-  repository: "https://charts.bitnami.com/bitnami"
-  condition: mysql.enabled
-
+  - name: mysql
+    version: "9.3.4"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: mysql.enabled
