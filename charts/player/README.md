@@ -123,7 +123,7 @@ Add CORS origins to allow bidirectional communication between Player and the int
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
-Add more origins with `__3`, `__4`, etc.
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__3`, `CorsPolicy__Origins__4`, etc.
 
 ### Notifications
 
@@ -257,6 +257,14 @@ player-api:
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: player-api
 ```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Custom metrics from Player
 - Meter: `player_view_users`
@@ -472,7 +480,7 @@ vm-api:
 | `IsoUpload__BasePath` | ISO upload base path | `"/app/isos/player"` |
 | `IsoUpload_MaxFileSize` | ISO upload max file size | `6000000000` |
 
-#### CORS
+#### CORS Policy Settings
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
@@ -484,6 +492,8 @@ vm-api:
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__2`, `CorsPolicy__Origins__3`, etc.
 
 ### Health Probes
 
@@ -583,6 +593,26 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://console.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
+
+### PasteSpeeds
+
+Controls the paste speed options available in the Console UI send-text dialog. Each entry has a `name` (display label) and `value` (delay in milliseconds between keystrokes).
+
+```yaml
+console-ui:
+  settingsYaml:
+    PasteSpeeds:
+      - name: Fastest
+        value: 10
+      - name: Fast
+        value: 30
+      - name: Normal
+        value: 60
+      - name: Slow
+        value: 100
+      - name: Slowest
+        value: 500
+```
 
 ## Shared Settings ConfigMap
 

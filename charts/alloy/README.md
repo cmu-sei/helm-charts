@@ -96,12 +96,15 @@ Store secrets in a Kubernetes Secret and reference it via `alloy-api.existingSec
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://alloy.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
 
 ### Crucible Service Endpoints
 
@@ -253,6 +256,16 @@ alloy-api:
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+#### OpenTelemetry Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Custom metrics from Alloy
 - Gauges: `alloy_active_events`, `alloy_ended_events`, `alloy_failed_events`

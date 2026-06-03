@@ -1,7 +1,50 @@
 caster-api:
-  # Docker image release version. Defaults to appVersion of caster-api child chart
   image:
+    repository: cmusei/caster-api
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
   probes:
     livenessProbe:
@@ -28,25 +71,25 @@ caster-api:
       failureThreshold: 15
       successThreshold: 1
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
   ingress:
     enabled: true
     className: ""
+    # Default annotations target nginx-ingress. The use-regex flag is required
+    # for the regex-style ImplementationSpecific path below to actually match;
+    # without it, nginx treats the parens as literal characters.
     annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      # nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+      # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: caster.example.com
+      - host: chart-example.local
         paths:
           - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
   # Use a .terraformrc file to overwrite standard Terraform configuration
   # https://www.terraform.io/docs/cli/config/config-file.html
@@ -73,7 +116,7 @@ caster-api:
     class: default
 
   # If this deployment needs to trust non-public certificates,
-  # create a configMap with the needed certifcates and specify
+  # create a configMap with the needed certificates and specify
   # the configMap name here
   certificateMap: ""
 
@@ -82,6 +125,8 @@ caster-api:
   # Example:
   # gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
   gitcredentials: ""
+
+  command: ["./Caster.Api"]
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.
@@ -100,14 +145,6 @@ caster-api:
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/crucible/blob/master/caster.api/src/Caster.Api/appsettings.json
   env:
-    # Proxy Settings
-    # http_proxy: proxy.example.com:9000
-    # https_proxy: proxy.example.com:9000
-    # HTTP_PROXY: proxy.example.com:9000
-    # HTTPS_PROXY: proxy.example.com:9000
-    # NO_PROXY: .local
-    # no_proxy: .local
-
     ## If hosting in virtual directory, specify path base
     PathBase: ""
 
@@ -119,10 +156,8 @@ caster-api:
     SKIP_TERRAFORM_INSTALLATION: false
     SKIP_VOL_PERMISSIONS: false
 
-    # VSphere settings:
-    # TODO - Document VSphere user role requirements
-    VSPHERE_SERVER: vcenter.example.com
-    VSPHERE_USER: caster-account@vsphere.local
+    VSPHERE_SERVER: ""
+    VSPHERE_USER: ""
     VSPHERE_PASSWORD: ""
     VSPHERE_ALLOW_UNVERIFIED_SSL: true
 
@@ -133,44 +168,16 @@ caster-api:
     # An Identity Service account with Caster Admin privileges
     SEI_CRUCIBLE_USERNAME: ""
     SEI_CRUCIBLE_PASSWORD: ""
-
-    # URL to the Identity Server Auth endpoint
-    SEI_CRUCIBLE_AUTH_URL: https://identity.example.com/connect/authorize
-    # URL to the Identity Server Token endpoint
-    SEI_CRUCIBLE_TOK_URL: https://identity.example.com/connect/token
-
-    # Identity Client information
-    SEI_CRUCIBLE_CLIENT_ID: player.provider
+    SEI_CRUCIBLE_AUTH_URL: ""
+    SEI_CRUCIBLE_TOK_URL: ""
+    SEI_CRUCIBLE_CLIENT_ID: ""
     SEI_CRUCIBLE_CLIENT_SECRET: ""
-
-    # URLs to Player API and VM API
-    SEI_CRUCIBLE_VM_API_URL: https://vm.example.com/api/
-    SEI_CRUCIBLE_PLAYER_API_URL: https://player.example.com/
-
-    # === End Terraform Crucible Provider Section ===
-
-    # === Terraform Identity Provider Section ===
-    # These variables only need filled in if you are using the following provider:
-    # https://registry.terraform.io/providers/cmu-sei/identity/latest
-
-    # URL to the Identity Server Auth endpoint
-    SEI_IDENTITY_TOK_URL: https://identity.example.com/connect/token
-    # URL to the Identity Server API endpoint
-    SEI_IDENTITY_API_URL: https://id.example.com/api/
-
-    # Identity Client information
-    SEI_IDENTITY_CLIENT_ID: terraform-identity-provider
+    SEI_CRUCIBLE_VM_API_URL: ""
+    SEI_CRUCIBLE_PLAYER_API_URL: ""
+    SEI_IDENTITY_TOK_URL: ""
+    SEI_IDENTITY_CLIENT_ID: ""
     SEI_IDENTITY_CLIENT_SECRET: ""
-
-    # === End Terraform Identity Provider Section ===
-
-    # === Terraform Azure Provider Section ===
-    # These variables only need filled in if you are using the following provider:
-    # https://registry.terraform.io/providers/hashicorp/azurerm/latest
-
-    # Remaining documentation provided by the plugin
-    # NOTE:  Use the certificateMap key in this chart to add certificates, which will be placed in:
-    #        /usr/local/share/ca-certificates
+    SEI_IDENTITY_API_URL: ""
     ARM_CLIENT_CERTIFICATE_PATH: ""
     ARM_CLIENT_ID: ""
     ARM_ENVIRONMENT: ""
@@ -178,8 +185,6 @@ caster-api:
     ARM_SUBSCRIPTION_ID: ""
     ARM_TENANT_ID: ""
 
-    # See here for more information regarding AllowedHosts
-    # https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.hostfiltering.hostfilteringoptions.allowedhosts?view=aspnetcore-3.1
     AllowedHosts: "*"
 
     Logging__IncludeScopes: false
@@ -190,38 +195,33 @@ caster-api:
     Logging__Console__LogLevel__Microsoft: Error
     Logging__Console__LogLevel__System: Error
 
-    # Connection String to database
-    # database requires the 'uuid-ossp' extension installed
-    ConnectionStrings__PostgreSQL: "Server=postgres;Port=5432;Database=caster_api;Username=caster_dbu;Password=;"
-    Database__AutoMigrate: true
-    Database__DevModeRecreate: false
-    Database__Provider: PostgreSQL
-
-    # CORS policy settings.
-    # The first entry should be the URL to Caster
-    CorsPolicy__Origins__0: "https://caster.example.com"
-    CorsPolicy__Methods__0: ""
-    CorsPolicy__Headers__0: ""
+    # CorsPolicy__Origins__0: ""
+    # CorsPolicy__Methods__0: ""
+    # CorsPolicy__Headers__0: ""
     CorsPolicy__AllowAnyOrigin: false
     CorsPolicy__AllowAnyMethod: true
     CorsPolicy__AllowAnyHeader: true
     CorsPolicy__SupportsCredentials: true
 
-    # OAuth2 Identity Client for Application
-    Authorization__Authority: https://identity.example.com
-    Authorization__AuthorizationUrl: https://identity.example.com/connect/authorize
-    Authorization__TokenUrl: https://identity.example.com/connect/token
+    ClaimsTransformation__EnableCaching: true
+    ClaimsTransformation__CacheExpirationSeconds: 60
+
+    # database requires the 'uuid-ossp' extension installed
+    ConnectionStrings__PostgreSQL: ""
+    Database__AutoMigrate: true
+    Database__DevModeRecreate: false
+    Database__Provider: PostgreSQL
+
+    Authorization__Authority: ""
+    Authorization__AuthorizationUrl: ""
+    Authorization__TokenUrl: ""
     Authorization__AuthorizationScope: "caster-api"
     Authorization__ClientId: caster-api-dev
     Authorization__ClientName: "Caster API"
     Authorization__ClientSecret: ""
     Authorization__RequireHttpsMetaData: false
 
-    ClaimsTransformation__EnableCaching: true
-    ClaimsTransformation__CacheExpirationSeconds: 60
-
-    # OAuth2 Identity Client /w Password
-    Client__TokenUrl: https://identity.example.com/connect/token
+    Client__TokenUrl: ""
     Client__ClientId: caster-admin
     Client__ClientSecret: ""
     Client__UserName: ""
@@ -230,25 +230,20 @@ caster-api:
     Client__MaxRetryDelaySeconds: 120
     Client__TokenRefreshSeconds: 600
 
-    # Crucible Player URLs
-    Player__VmApiUrl: "https://vm.example.com"
-    Player__VmConsoleUrl: "https://console.example.com/vm/{id}/console"
+    Player__VmApiUrl: ""
+    Player__VmConsoleUrl: ""
     Player__MaxParallelism: 8
     Player__RemoveLoopSeconds: 300
 
-    # Terraform Information
-    # - DefaultVersion - The default version to be used.
-    # - GitlabApiUrl - URL to the deployed Gitlab instance
-    # - TODO - Add link to Installation Documentation on how to get GitlabToken and GitlabGroupId
-    # Example:
-    # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
-    # Terraform__GitlabToken: "your-gitlab-token"
-    # Terraform__GitlabGroupId: 6
     Terraform__BinaryPath: "/terraform/binaries"
     Terraform__DefaultVersion: "0.14.0"
     # Terraform__PluginDirectory: '/terraform/plugins'
     Terraform__PluginCache: "/terraform/plugin-cache"
     Terraform__RootWorkingDirectory: "/terraform/root"
+    # Example:
+    # Terraform__GitlabApiUrl: "https://gitlab.example.com/api/v4/"
+    # Terraform__GitlabToken: "your-gitlab-token"
+    # Terraform__GitlabGroupId: 6
     Terraform__GitlabApiUrl: ""
     Terraform__GitlabToken: ""
     Terraform__GitlabGroupId: ""
@@ -279,22 +274,8 @@ caster-api:
     # Terraform__KubernetesJobs__ConfigMaps__0__Name: "caster-certs"
     # Terraform__KubernetesJobs__ConfigMaps__0__MountPath: "/usr/local/share/ca-certificates/"
 
-    # Configurable save lengths for Caster untagged versions
     FileVersions__DaysToSaveAllUntaggedVersions: 7
     FileVersions__DaysToSaveDailyUntaggedVersions: 31
-
-    # Basic seed data to jumpstart deployement
-    # TODO - Document seed data
-    # SeedData__Users__0__id: ""
-    # SeedData__Users__0__name: ""
-
-    # SeedData__Users__1__id: ""
-    # SeedData__Users__1__name: ""
-
-    # SeedData__UserPermissions__0__UserId:
-    # SeedData__UserPermissions__0__PermissionId:
-    # SeedData__UserPermissions__1__UserId:
-    # SeedData__UserPermissions__1__PermissionId:
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -312,28 +293,68 @@ caster-api:
     # OTEL_SERVICE_NAME: caster-api
 
 caster-ui:
-  # Docker image release version. Defaults to appVersion of caster-ui child chart
   image:
+    repository: cmusei/caster-ui
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # Ingress configuration example for NGINX
-  # TLS and Host URLs need configured
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    # If name is not set and create is true,
+    # a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.class: nginx
+    annotations: {}
     hosts:
-      - host: caster.example.com
+      - host: chart-example.local
         paths:
           - path: /
             pathType: ImplementationSpecific
-    tls:
-      - secretName: ""
-        hosts:
-          - example.com
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
-  ## extraVolumeMounts and extraVolumes are stringified YAML of kubernetes volume definitions
+  ## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
   # Example use to overwrite the favicon from a file in a configMap:
   #
   # extraVolumes: |
@@ -348,23 +369,20 @@ caster-ui:
   #
   # See kubernetes documentation for configuring your volumes:
   # https://kubernetes.io/docs/concepts/storage/volumes/
+  extraVolumeMounts: ""
   extraVolumes: ""
 
-  extraVolumeMounts: ""
-
-  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
-  ## settings.shared.json key. When set, the file is mounted into the Angular
-  ## app's assets/config/ directory alongside settings.env.json so the app can
-  ## load shared UI configuration that is common across multiple Crucible services.
-  ## Per-app values can still be overridden via settingsYaml.
-  sharedSettingsConfigMap: ""
-
+  # env is pod env vars
   env:
     ## basehref is path to the app
     APP_BASEHREF: ""
 
-  ## settings is stringified json that gets included as assets/settings.json
-  settings: "{}"
+  ## sharedSettingsConfigMap is the name of an existing ConfigMap containing a
+  ## settings.shared.json key. When set, the file is mounted into the Angular
+  ## app's assets/config/ directory alongside settings.json so the app can
+  ## load shared UI configuration that is common across multiple Crucible services.
+  ## Per-app values can still be overridden via settingsYaml.
+  sharedSettingsConfigMap: ""
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
@@ -387,4 +405,31 @@ caster-ui:
     #   message_text: ""
     #   message_text_color: "#ffffff"
     #   message_text_fontsize: "14"
-    #   enabled: false
+    #   enabled: true
+
+  ## settings is stringified json that gets included as appsettings.Production.json
+  settings: "{}"
+  # settings: '{
+  #   "ApiUrl": "https://caster.example.com",
+  #   "OIDCSettings": {
+  #     "authority": "https://identity.example.com/",
+  #     "client_id": "caster-ui-dev",
+  #     "redirect_uri": "https://caster.example.com/auth-callback/",
+  #     "post_logout_redirect_uri": "https://caster.example.com/",
+  #     "response_type": "code",
+  #     "scope": "openid profile email caster-api",
+  #     "automaticSilentRenew": true,
+  #     "silent_redirect_uri": "https://caster.example.com/auth-callback-silent.html"
+  #   },
+  #   "UseLocalAuthStorage": true,
+  #   "HeaderBarSettings": {
+  #     "banner_background_color": "#d40000ff",
+  #     "classification_text": "",
+  #     "classification_text_color": "#ffffff",
+  #     "classification_text_fontsize": "14",
+  #     "message_text": "",
+  #     "message_text_color": "#ffffff",
+  #     "message_text_fontsize": "14",
+  #     "enabled": false
+  #   }
+  # }'

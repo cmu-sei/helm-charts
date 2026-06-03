@@ -63,16 +63,38 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `Logging__Console__LogLevel__Microsoft` | Console log level Microsoft | `Warning` |
 | `Logging__Console__LogLevel__System` | Console log level System | `Warning` |
 
-### CORS Policy
+### CORS Policy Settings
 
 | Setting | Description | Example |
 |---------|-------------|---------|
+| `CorsPolicy__Origins__0` | First allowed CORS origin | `https://blueprint.example.com` |
 | `CorsPolicy__Methods__0` | CORS allowed methods | `""` |
 | `CorsPolicy__Headers__0` | CORS allowed headers | `""` |
 | `CorsPolicy__AllowAnyOrigin` | Allow any CORS origin | `false` |
 | `CorsPolicy__AllowAnyMethod` | Allow any CORS method | `true` |
 | `CorsPolicy__AllowAnyHeader` | Allow any CORS header | `true` |
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
+
+**Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__1`, `CorsPolicy__Origins__2`, etc.
+
+### xAPI Settings
+
+Blueprint API supports sending xAPI statements to a Learning Record Store (LRS) via the `XApiOptions` settings.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable xAPI statement recording | `false` |
+| `XApiOptions__Endpoint` | LRS endpoint URL | `""` |
+| `XApiOptions__Username` | LRS basic-auth username | `""` |
+| `XApiOptions__Password` | LRS basic-auth password | `""` |
+| `XApiOptions__IssuerUrl` | Identity provider issuer URL used in xAPI actor IFI | `""` |
+| `XApiOptions__ApiUrl` | Blueprint API base URL reported in xAPI statements | `""` |
+| `XApiOptions__UiUrl` | Blueprint UI base URL reported in xAPI statements | `""` |
+| `XApiOptions__EmailDomain` | Email domain used to construct actor mbox values | `""` |
+| `XApiOptions__Platform` | Platform name reported in xAPI statements | `Blueprint` |
+| `XApiOptions__RetentionDays` | Number of days to retain processed xAPI records | `7` |
+| `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI statement processing | `10` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing cycles | `30` |
 
 ### Claims Transformation
 
@@ -180,6 +202,16 @@ blueprint-api:
     # OpenTelemetry__IncludeDefaultActivitySources: true
     # OpenTelemetry__IncludeDefaultMeters: true
 ```
+
+#### OpenTelemetry Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to the console (useful for debugging) | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a Prometheus `/metrics` scrape endpoint | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core and HttpClient activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
 
 #### Default metrics from ServiceDefaults
 - Instrumentations: ASP.NET Core, HttpClient, Entity Framework Core, .NET runtime, and process resource metrics.
