@@ -1,0 +1,427 @@
+apiVersion: v1
+entries:
+  alloy:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:45.181420781Z"
+    description: Alloy enables users to launch on-demand events or join instances
+      of already-running simulations.
+    digest: 906177d32cac908fecdd857175fcddca4307638fdc51e19480a365a1b1fdcb6f
+    home: https://cmu-sei.github.io/crucible/alloy/
+    name: alloy
+    sources:
+    - https://github.com/cmu-sei/Alloy.Api
+    - https://github.com/cmu-sei/Alloy.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/alloy-1.8.0/alloy-1.8.0.tgz
+    version: 1.8.0
+  appmailrelay:
+  - apiVersion: v2
+    appVersion: 2.3.1
+    created: "2026-06-03T15:58:45.3694922Z"
+    description: Web API for SMTP email relay
+    digest: e4678611274620164bc0d4aca409576770e069dbc4c67166c32c0e29dc23a4ed
+    name: appmailrelay
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/appmailrelay-0.1.2/appmailrelay-0.1.2.tgz
+    version: 0.1.2
+  blueprint:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:45.620902024Z"
+    description: Blueprint enables collaborative creation and visualization of a Master
+      Scenario Event List (MSEL) for an exercise.
+    digest: 4ba8925f9e90d1a883f29c0dea951993b0e0b56ba410f55632617dd6297249aa
+    home: https://cmu-sei.github.io/crucible/blueprint/
+    name: blueprint
+    sources:
+    - https://github.com/cmu-sei/Blueprint.Api
+    - https://github.com/cmu-sei/Blueprint.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/blueprint-1.10.1/blueprint-1.10.1.tgz
+    version: 1.10.1
+  caster:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:45.838117915Z"
+    description: Caster enables the coded design and deployment of cyber topologies.
+    digest: d75710b9c69d6a00ef31ea0e41420f078ab1ecee7c1a44da8948251e23e03b37
+    home: https://cmu-sei.github.io/crucible/caster/
+    name: caster
+    sources:
+    - https://github.com/cmu-sei/Caster.Api/
+    - https://github.com/cmu-sei/Caster.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/caster-1.9.1/caster-1.9.1.tgz
+    version: 1.9.1
+  cite:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:46.080800703Z"
+    description: CITE enables participants from different organizations to evaluate,
+      score, and comment on cyber incidents.
+    digest: 0aaf2a1e431070661c288c8e3cb56c1134bea1f48234aff926a75d7d2a840d64
+    home: https://cmu-sei.github.io/crucible/cite/
+    name: cite
+    sources:
+    - https://github.com/cmu-sei/cite.Api
+    - https://github.com/cmu-sei/cite.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/cite-1.10.0/cite-1.10.0.tgz
+    version: 1.10.0
+  code-server:
+  - apiVersion: v2
+    appVersion: 4.9.1
+    created: "2026-06-03T15:58:46.293404908Z"
+    description: A Helm chart for coder/code-server
+    digest: 239b7342d77b75271aeebccc78085f7dba6543f767d7f8b0517f6f2e79513346
+    name: code-server
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/code-server-3.4.1/code-server-3.4.1.tgz
+    version: 3.4.1
+  crucible-apps:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:46.544898465Z"
+    dependencies:
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://helm.cmusei.dev/charts
+      version: 1.7.8
+    - condition: blueprint.enabled
+      name: blueprint
+      repository: https://helm.cmusei.dev/charts
+      version: 1.9.3
+    - condition: caster.enabled
+      name: caster
+      repository: https://helm.cmusei.dev/charts
+      version: 1.8.9
+    - condition: cite.enabled
+      name: cite
+      repository: https://helm.cmusei.dev/charts
+      version: 1.9.7
+    - condition: gallery.enabled
+      name: gallery
+      repository: https://helm.cmusei.dev/charts
+      version: 1.9.7
+    - condition: gameboard.enabled
+      name: gameboard
+      repository: https://helm.cmusei.dev/charts
+      version: 0.5.14
+    - condition: player.enabled
+      name: player
+      repository: https://helm.cmusei.dev/charts
+      version: 1.9.13
+    - condition: steamfitter.enabled
+      name: steamfitter
+      repository: https://helm.cmusei.dev/charts
+      version: 1.7.7
+    - condition: topomojo.enabled
+      name: topomojo
+      repository: https://helm.cmusei.dev/charts
+      version: 0.7.1
+    - condition: moodle.enabled
+      name: moodle
+      repository: https://helm.cmusei.dev/charts
+      version: 0.2.7
+    description: Crucible framework application deployment - A comprehensive cybersecurity
+      training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint,
+      CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
+    digest: 4066d9e0371572254ee0a7b80b89084c1bcf052359af61b902e30502dbc7487f
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-apps
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-apps-0.2.3/crucible-apps-0.2.3.tgz
+    version: 0.2.3
+  crucible-infra:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:46.834626512Z"
+    dependencies:
+    - condition: nfs-server-provisioner.enabled
+      name: nfs-server-provisioner
+      repository: https://kvaps.github.io/charts
+      version: 1.8.0
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.14.1
+    - condition: pgadmin4.enabled
+      name: pgadmin4
+      repository: https://helm.runix.net
+      version: 1.56.1
+    description: Crucible platform infrastructure deployment (ingress, database, storage)
+    digest: fb6c56f705aa0e8463a840c7b283097d3a4b0629edc4f3926b6387935277cc32
+    name: crucible-infra
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-infra-0.1.0/crucible-infra-0.1.0.tgz
+    version: 0.1.0
+  crucible-monitoring:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:47.053723949Z"
+    dependencies:
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 28.3.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 10.5.5
+    - condition: loki.enabled
+      name: loki
+      repository: https://grafana.github.io/helm-charts
+      version: 6.49.0
+    - condition: tempo.enabled
+      name: tempo
+      repository: https://grafana.github.io/helm-charts
+      version: 1.24.3
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://grafana.github.io/helm-charts
+      version: 1.5.2
+    description: Crucible platform monitoring and observability stack (Prometheus,
+      Grafana, Loki, Tempo, Alloy)
+    digest: 024981a5f290c9fafa2297142078ff2a188eabc6f47875ae2693938d2ae33f2b
+    name: crucible-monitoring
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-monitoring-0.0.2/crucible-monitoring-0.0.2.tgz
+    version: 0.0.2
+  crucible-operators:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:47.269143033Z"
+    dependencies:
+    - condition: cnpg.enabled
+      name: cloudnative-pg
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.25.0
+    description: Kubernetes operator prerequisites for the Crucible platform - installs
+      Keycloak Operator and CloudNative-PG Operator
+    digest: 588df3e180d20323f08b81d94f45b5509a15f483b9161dcba2a0c8d07f40c2f9
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-operators
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-operators-0.1.0/crucible-operators-0.1.0.tgz
+    version: 0.1.0
+  cubespace-client:
+  - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2026-06-03T15:58:47.480012476Z"
+    description: Cubespace WebGL client
+    digest: 4e31abe0fda56119c2db98384b6a40e4f2834349d208f16bffb840eed1ca5b41
+    name: cubespace-client
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/cubespace-client-0.2.2/cubespace-client-0.2.2.tgz
+    version: 0.2.2
+  cubespace-server:
+  - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2026-06-03T15:58:47.681193485Z"
+    description: Cubespace dedicated server
+    digest: cfde80199e07777c8d8eaf8d0c43ff278501deb5f78abb3226e2668f1651575c
+    name: cubespace-server
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/cubespace-server-0.2.2/cubespace-server-0.2.2.tgz
+    version: 0.2.2
+  gallery:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:47.905329728Z"
+    description: Gallery enables participants to review cyber incident data by source
+      type.
+    digest: d6ee487cf37414e8ca571c0372fe962a916808d34aaf7a0207c560e8ba146c0e
+    home: https://cmu-sei.github.io/crucible/gallery/
+    name: gallery
+    sources:
+    - https://github.com/cmu-sei/Gallery.Api/
+    - https://github.com/cmu-sei/Gallery.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gallery-1.10.0/gallery-1.10.0.tgz
+    version: 1.10.0
+  gameboard:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:48.105199491Z"
+    description: Gameboard provides a competition-ready user interface for running
+      cybersecurity games and challenges.
+    digest: 1a2d16497d5b61dd84c473c88bd08e4edf3218745e5eae290300c646a8486b13
+    home: https://cmu-sei.github.io/crucible/gameboard/
+    name: gameboard
+    sources:
+    - https://github.com/cmu-sei/Gameboard/
+    - https://github.com/cmu-sei/Gameboard-Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gameboard-0.6.0/gameboard-0.6.0.tgz
+    version: 0.6.0
+  gamebrain:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-06-03T15:58:48.323297228Z"
+    description: Gamebrain sync service for Cubespace video game
+    digest: 8df5a27357168da4c363db708bc8e9b6120be2cbf53162d053f068c0d35218c3
+    name: gamebrain
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gamebrain-0.1.3/gamebrain-0.1.3.tgz
+    version: 0.1.3
+  identity:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:48.55114446Z"
+    digest: 50e895f57a16f2b33a20e84d09cec918889e86acaf38f5c49fc12f6897da32d1
+    name: identity
+    sources:
+    - https://github.com/cmu-sei/identity
+    - https://github.com/cmu-sei/identity-ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/identity-0.2.4/identity-0.2.4.tgz
+    version: 0.2.4
+  lrsql:
+  - apiVersion: v2
+    appVersion: v0.9.3
+    created: "2026-06-03T15:58:48.777094907Z"
+    description: A helm chart to install the Yet Analytics SQL LRS (see https://github.com/yetanalytics/lrsql)
+    digest: 093c962e6101c9005984db4f169696408687b9d79b632ea8aaf2dcbf8d3fe329
+    name: lrsql
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/lrsql-0.1.3/lrsql-0.1.3.tgz
+    version: 0.1.3
+  mattermost-team-edition:
+  - apiVersion: v1
+    appVersion: 5.25.7
+    created: "2026-06-03T15:58:49.026536614Z"
+    description: Mattermost Team Edition server.
+    digest: a3a1f0c85623ee521b15e224fae18346f71e50ec27f4b2f142375665203e7fbe
+    home: https://mattermost.com
+    icon: http://www.mattermost.org/wp-content/uploads/2016/04/icon.png
+    keywords:
+    - mattermost
+    - communication
+    - team collaboration
+    maintainers:
+    - email: carlos@mattermost.com
+      name: cpanato
+    - email: joram@mattermost.com
+      name: jwilander
+    name: mattermost-team-edition
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/mattermost-team-edition-3.13.2/mattermost-team-edition-3.13.2.tgz
+    version: 3.13.2
+  mkdocs-material:
+  - apiVersion: v2
+    appVersion: 9.6.14
+    created: "2026-06-03T15:58:49.271457841Z"
+    description: Material for MkDocs is a static site generator for technical documentation
+    digest: 6cd5c55b4a860c890d48849b12bb79f3aed4530b34de8bc54bd0aa005b569c98
+    name: mkdocs-material
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/mkdocs-material-0.2.15/mkdocs-material-0.2.15.tgz
+    version: 0.2.15
+  moodle:
+  - apiVersion: v2
+    appVersion: 5.0.1
+    created: "2026-06-03T15:58:49.526301902Z"
+    description: Moodle is an open source Learning Management System.
+    digest: 753bfe9be205a171e70985891a16fad4d038bb0b838d438a3b938dbff544e571
+    home: https://moodle.org/
+    name: moodle
+    sources:
+    - https://github.com/moodle/moodle
+    - https://github.com/erseco/alpine-moodle
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/moodle-0.2.7/moodle-0.2.7.tgz
+    version: 0.2.7
+  osticket:
+  - apiVersion: v2
+    appVersion: 1.17.5
+    created: "2026-06-03T15:58:49.74523103Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.4
+    description: A Helm chart for Kubernetes
+    digest: 00fd7bad3ae9107bdf5819d22be5458ba2840097115a005804c8a79d54c69afc
+    name: osticket
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/osticket-1.17.7/osticket-1.17.7.tgz
+    version: 1.17.7
+  player:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:49.97821924Z"
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: 34dc0cd464e8aeef73664b7de63f05f7ee28c9ceed5c4a3517a0133d4a53b899
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.10.0/player-1.10.0.tgz
+    version: 1.10.0
+  staticweb:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-06-03T15:58:50.201395118Z"
+    description: A Helm chart for Kubernetes
+    digest: 2773b5f17dfee2dc5a1bd4076ef3f297da391edb0841a502db3953c57a40a566
+    name: staticweb
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/staticweb-0.2.2/staticweb-0.2.2.tgz
+    version: 0.2.2
+  steamfitter:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:50.42927141Z"
+    description: Steamfitter enables the organization and execution of scenario tasks
+      on virtual machines by integrating with StackStorm automation.
+    digest: bd60556ed0515743e8f54ec23f73293622917cee808eb7ebc97450004cfc5dae
+    home: https://cmu-sei.github.io/crucible/steamfitter
+    name: steamfitter
+    sources:
+    - https://github.com/cmu-sei/steamfitter.api
+    - https://github.com/cmu-sei/steamfitter.ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/steamfitter-1.8.0/steamfitter-1.8.0.tgz
+    version: 1.8.0
+  topomojo:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:50.643364513Z"
+    description: TopoMojo is a simple lab builder and player.
+    digest: 4207eb43639a639e83813af52e6b5e4646f7ea5cfa205dc267ca49cd65deb491
+    home: https://cmu-sei.github.io/crucible/topomojo
+    name: topomojo
+    sources:
+    - https://github.com/cmu-sei/TopoMojo
+    - https://github.com/cmu-sei/TopoMojo-ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/topomojo-0.10.0/topomojo-0.10.0.tgz
+    version: 0.10.0
+  webmail:
+  - apiVersion: v2
+    created: "2026-06-03T15:58:50.895895805Z"
+    description: A Helm chart for Kubernetes
+    digest: 7b929642a57652beb5a6625e22208602a31ac5df39007ef73ec6d5798abcc296
+    name: webmail
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.1/webmail-0.1.1.tgz
+    version: 0.1.1
+generated: "2026-06-03T15:58:50.895904618Z"
