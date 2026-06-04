@@ -7,9 +7,11 @@ Helm charts for deploying CMU Software Engineering Institute applications to Kub
 Add this Helm repository:
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm repo update
 ```
+
+> **Note:** The previous repository URL `https://helm.cmusei.dev/charts` is deprecated and will be taken down in the future. Please update any existing configurations to use the new URL above.
 
 ## Quick Start
 
