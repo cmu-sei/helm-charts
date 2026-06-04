@@ -18,7 +18,7 @@ If you are currently using the Bitnami Moodle Helm chart and want to migrate to 
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install moodle sei/moodle -f values.yaml
 ```
 

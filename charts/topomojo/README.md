@@ -16,7 +16,7 @@ This Helm chart deploys TopoMojo with both [API](https://github.com/cmu-sei/Topo
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install topomojo sei/topomojo -f values.yaml
 ```
 

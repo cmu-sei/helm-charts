@@ -14,7 +14,7 @@ This Helm chart deploys Gallery with both [API](https://github.com/cmu-sei/Galle
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install gallery sei/gallery -f values.yaml
 ```
 
