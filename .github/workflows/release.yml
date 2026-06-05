@@ -31,7 +31,7 @@ jobs:
 
       - name: Add dependency Helm repos
         run: |
-          helm repo add sei https://helm.cmusei.dev/charts
+          helm repo add sei https://cmu-sei.github.io/helm-charts
           helm repo add kvaps https://kvaps.github.io/charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo add runix https://helm.runix.net

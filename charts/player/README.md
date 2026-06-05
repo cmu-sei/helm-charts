@@ -21,7 +21,7 @@ This Helm chart deploys the full Player stack of integrated components:
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install player sei/player -f values.yaml
 ```
 

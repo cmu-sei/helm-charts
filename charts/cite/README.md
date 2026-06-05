@@ -14,7 +14,7 @@ This Helm chart deploys CITE with both [API](https://github.com/cmu-sei/CITE.Api
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install cite sei/cite -f values.yaml
 ```
 

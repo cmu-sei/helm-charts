@@ -15,7 +15,7 @@ This Helm chart deploys Gameboard with both [API](https://github.com/cmu-sei/gam
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install gameboard sei/gameboard -f values.yaml
 ```
 

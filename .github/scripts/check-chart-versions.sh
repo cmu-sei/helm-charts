@@ -1,6 +1,10 @@
 #!/bin/bash
 # This script checks that chart versions are incremented when chart files are modified.
 # It compares the current branch against the base branch and fails if any chart has
+# changes without a corresponding version bump in its Chart.yaml.
+#
+# README.md changes are ignored: docs-only updates don't require a version bump.
+# A chart whose only changed file is its README.md is therefore not flagged.
 #
 # When a sub-chart is modified (e.g., charts/alloy/charts/alloy-api),
 # the parent chart (charts/alloy) must also have its version incremented.
@@ -74,6 +78,11 @@ has_charts=false
 while IFS= read -r file; do
     # Only process files under charts/ directory
     if [[ "$file" =~ ^charts/ ]]; then
+        # Docs-only changes don't require a version bump. Skip README.md
+        # anywhere in a chart tree, and the moodle chart's migrate.md.
+        if [[ "$file" =~ /README\.md$ || "$file" == "charts/moodle/migrate.md" ]]; then
+            continue
+        fi
         if chart_dir=$(find_chart_dir "$file"); then
             modified_charts["$chart_dir"]=1
             has_charts=true

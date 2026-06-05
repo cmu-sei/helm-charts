@@ -29,7 +29,7 @@ Chart components are enabled by default, but can be disabled via the values file
 ### 1. Add the Helm Repository
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm repo update
 ```
 

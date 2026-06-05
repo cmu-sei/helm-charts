@@ -14,7 +14,7 @@ This Helm chart deploys Blueprint with both [API](https://github.com/cmu-sei/Blu
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install blueprint sei/blueprint -f values.yaml
 ```
 

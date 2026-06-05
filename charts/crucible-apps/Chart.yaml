@@ -2,58 +2,58 @@ apiVersion: v2
 name: crucible-apps
 description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.2.3
+version: 0.3.0
 home: https://cmu-sei.github.io/crucible/
 
 dependencies:
   # Crucible Applications
   - name: alloy
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.7.8
     condition: alloy.enabled
 
   - name: blueprint
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.9.3
     condition: blueprint.enabled
 
   - name: caster
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.8.9
     condition: caster.enabled
 
   - name: cite
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.9.7
     condition: cite.enabled
 
   - name: gallery
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.9.7
     condition: gallery.enabled
 
   - name: gameboard
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 0.5.14
     condition: gameboard.enabled
 
   - name: player
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.9.13
     condition: player.enabled
 
   - name: steamfitter
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 1.7.7
     condition: steamfitter.enabled
 
   - name: topomojo
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 0.7.1
     condition: topomojo.enabled
 
   # Moodle LMS
   - name: moodle
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 0.2.7
     condition: moodle.enabled

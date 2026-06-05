@@ -302,7 +302,7 @@ ingress:
 If you have not already added the SEI Helm repository:
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm repo update
 ```
 
@@ -536,5 +536,5 @@ kubectl rollout restart deployment -n <namespace> moodle
 - [Moodle Site backup](https://docs.moodle.org/500/en/Site_backup)
 - [Moodle Upgrading](https://docs.moodle.org/en/Upgrading)
 - [Alpine Moodle Image](https://github.com/erseco/alpine-moodle)
-- [SEI Moodle Helm Chart](https://helm.cmusei.dev/charts)
+- [SEI Moodle Helm Chart](https://cmu-sei.github.io/helm-charts)
 - [Bitnami Legacy Notice](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon)

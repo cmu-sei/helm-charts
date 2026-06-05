@@ -38,7 +38,7 @@ jobs:
 
       - name: Add Helm repositories
         run: |
-          helm repo add cmusei https://helm.cmusei.dev/charts
+          helm repo add cmusei https://cmu-sei.github.io/helm-charts
           helm repo update
 
       - name: Run update script

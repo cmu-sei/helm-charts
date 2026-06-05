@@ -22,7 +22,7 @@ This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/s
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install steamfitter sei/steamfitter -f values.yaml
 ```
 

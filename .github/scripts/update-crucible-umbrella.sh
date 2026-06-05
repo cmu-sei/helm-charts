@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Update all cmusei repository dependencies to their latest versions
-# Updates the Chart.yaml with the latest versions from https://helm.cmusei.dev/charts
+# Updates the Chart.yaml with the latest versions from https://cmu-sei.github.io/helm-charts
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHART_DIR="$SCRIPT_DIR/../../charts/crucible-apps"
 CHART_FILE="$CHART_DIR/Chart.yaml"
-cmusei_REPO="https://helm.cmusei.dev/charts"
+cmusei_REPO="https://cmu-sei.github.io/helm-charts"
 REPO_NAME="cmusei"
 
 # Color output

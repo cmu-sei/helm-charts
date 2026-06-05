@@ -15,7 +15,7 @@ This Helm chart deploys Alloy with both [API](https://github.com/cmu-sei/Alloy.A
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install alloy sei/alloy -f values.yaml
 ```
 

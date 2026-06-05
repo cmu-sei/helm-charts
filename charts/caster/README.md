@@ -19,7 +19,7 @@ VMware vSphere, Proxmox, or AWS/Azure cloud infrastructure are all supported opt
 ## Installation
 
 ```bash
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install caster sei/caster -f values.yaml
 ```
 
