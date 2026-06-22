@@ -151,9 +151,30 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__KubernetesJobs__RootWorkingDirectory` | K8s jobs root working directory | `"/terraform/root"` |
 | `Terraform__KubernetesJobs__ImageRegistry` | K8s jobs image registry | `"https://registry-1.docker.io/"` |
 | `Terraform__KubernetesJobs__ImageName` | K8s jobs image name | `"hashicorp/terraform"` |
+| `Terraform__KubernetesJobs__ImageTags__0` | Explicit image tag(s); indexed list. Optional — set when not querying tags | `"1.14"` |
 | `Terraform__KubernetesJobs__QueryImageTags` | Query image tags | `"true"` |
 | `Terraform__KubernetesJobs__QueryImageTagsRegex` | Image tags regex filter | `"^([0-9]\\d*\\.\\d+\\.\\d+)$"` |
 | `Terraform__KubernetesJobs__QueryImageTagsMinutes` | Image tags query interval | `"720"` |
+| `Terraform__KubernetesJobs__PodReadyTimeoutSeconds` | Max seconds to wait for a job pod to become ready | `"120"` |
+
+The following are optional. By default the chart manages the job volume via a
+PersistentVolumeClaim and sets the `PersistentVolumeClaimName`, `VolumeMountPath`,
+and `VolumeMountSubPath` values automatically when `Enabled` is `"true"`; override
+them only when you need to. Use `UseHostVolume`/`HostVolumePath` instead to back the
+job volume with a host path, and `JobTemplateFile`/`JobTemplateYaml` to supply a
+custom V1Job spec.
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Terraform__KubernetesJobs__UseHostVolume` | Use a hostPath volume instead of the chart-managed PVC | `"false"` |
+| `Terraform__KubernetesJobs__HostVolumePath` | Host path mounted when `UseHostVolume` is `"true"` | `"/mnt/data/terraform"` |
+| `Terraform__KubernetesJobs__PersistentVolumeClaimName` | PVC name for job storage. Set by chart; override if necessary | `"caster-terraform-data-pvc"` |
+| `Terraform__KubernetesJobs__VolumeMountPath` | Mount path inside the job pod. Set by chart; override if necessary | `"/terraform"` |
+| `Terraform__KubernetesJobs__VolumeMountSubPath` | Sub-path within the volume. Set by chart; override if necessary | `""` |
+| `Terraform__KubernetesJobs__ConfigMaps__0__Name` | Name of a ConfigMap to mount into the job; indexed list | `"caster-certs"` |
+| `Terraform__KubernetesJobs__ConfigMaps__0__MountPath` | Mount path for the indexed ConfigMap | `"/usr/local/share/ca-certificates/"` |
+| `Terraform__KubernetesJobs__JobTemplateFile` | Path to a V1Job YAML file to use as the job template | `""` |
+| `Terraform__KubernetesJobs__JobTemplateYaml` | Inline V1Job YAML string to use as the job template | `""` |
 
 > **GitLab prerequisites:** create a dedicated group for Caster projects, generate a token with `api` scope, and confirm the token has access to the group.
 
