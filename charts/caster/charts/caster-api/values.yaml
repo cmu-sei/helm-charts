@@ -265,6 +265,18 @@ env:
   Terraform__KubernetesJobs__QueryImageTags: "true"
   Terraform__KubernetesJobs__QueryImageTagsRegex: "^([0-9]\\d*\\.\\d+\\.\\d+)$"
   Terraform__KubernetesJobs__QueryImageTagsMinutes: "720"
+  # Max seconds to wait for a job pod to become ready
+  Terraform__KubernetesJobs__PodReadyTimeoutSeconds: "120"
+
+  # Use a hostPath volume instead of the chart-managed PersistentVolumeClaim.
+  # When enabled, HostVolumePath is mounted instead of the PVC settings below.
+  # Terraform__KubernetesJobs__UseHostVolume: "false"
+  # Terraform__KubernetesJobs__HostVolumePath: "/mnt/data/terraform"
+
+  # Optionally override the job pod spec with a V1Job template.
+  # Set a path to a YAML file (JobTemplateFile) or provide inline YAML (JobTemplateYaml).
+  # Terraform__KubernetesJobs__JobTemplateFile: ""
+  # Terraform__KubernetesJobs__JobTemplateYaml: ""
 
   # Set by chart, can override if necessary
   # Terraform__KubernetesJobs__PersistentVolumeClaimName: "caster-terraform-data-pvc"
