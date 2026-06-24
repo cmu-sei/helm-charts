@@ -1865,6 +1865,20 @@ entries:
     version: 0.1.0
   cite:
   - apiVersion: v2
+    created: "2026-06-24T18:20:03.104204874Z"
+    description: CITE enables participants from different organizations to evaluate,
+      score, and comment on cyber incidents.
+    digest: f8688f4b7c98f9b18c2ed3fb56b68565bd196ed238dfe421fc856a5319228423
+    home: https://cmu-sei.github.io/crucible/cite/
+    name: cite
+    sources:
+    - https://github.com/cmu-sei/cite.Api
+    - https://github.com/cmu-sei/cite.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/cite-1.10.1/cite-1.10.1.tgz
+    version: 1.10.1
+  - apiVersion: v2
     created: "2026-06-03T16:40:05.454288458Z"
     description: CITE enables participants from different organizations to evaluate,
       score, and comment on cyber incidents.
@@ -7718,4 +7732,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-06-24T18:14:09.788698524Z"
+generated: "2026-06-24T18:20:03.105045869Z"
