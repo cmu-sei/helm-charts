@@ -48,6 +48,15 @@ data:
 
     update-ca-certificates
 
+    # HOME may be read-only, which breaks `git config --global`
+    # (credential storage lock error). Point it at a writable dir.
+    export HOME=/tmp
+    # The /git checkout can be owned by a different uid than this container
+    # runs as; without this, git's CVE-2022-24765 hardening aborts with
+    # "detected dubious ownership in repository at '/git'" and every pull
+    # fails silently, leaving the docs site permanently stale.
+    git config --global --add safe.directory /git
+
     if [ -n $DOCS_GIT_CRED_FILE ]; then
         execute_git_command "git config --global credential.helper \"store --file=/git-credentials/${DOCS_GIT_CRED_FILE}\""
     fi
