@@ -5652,6 +5652,23 @@ entries:
     version: 1.17.5
   player:
   - apiVersion: v2
+    created: "2026-06-30T12:09:53.979567067Z"
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: 94f8e50c8675c838187bd7cad86c406a8c3921c97a06484bb4e198213c357f66
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.10.6/player-1.10.6.tgz
+    version: 1.10.6
+  - apiVersion: v2
     created: "2026-06-24T19:08:01.369714806Z"
     description: Player is a window into virtual environments - enabling assignment
       of team membership and customization of responsive, browser-based user interfaces.
@@ -7978,4 +7995,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-06-26T13:00:32.873980581Z"
+generated: "2026-06-30T12:09:53.980881241Z"
