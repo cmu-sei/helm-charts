@@ -398,9 +398,6 @@ caster-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    # Hotkeys:
-    #   ENTER:
-    #     preventDefault: false
     # ApiUrl: https://caster.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
