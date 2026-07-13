@@ -50,10 +50,10 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-  - host: chart-example.local
-    paths:
-    - path: /
-      pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -91,9 +91,6 @@ sharedSettingsConfigMap: ""
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml:
-  # Hotkeys:
-  #   ENTER:
-  #     preventDefault: false
   # ApiUrl: https://caster.example.com
   # OIDCSettings:
   #   authority: https://identity.example.com/
@@ -116,7 +113,7 @@ settingsYaml:
   #   enabled: true
 
 ## settings is stringified json that gets included as appsettings.Production.json
-settings: "{\"Hotkeys\": {\"ENTER\": {\"preventDefault\": false}}}"
+settings: "{}"
 # settings: '{
 #   "ApiUrl": "https://caster.example.com",
 #   "OIDCSettings": {
