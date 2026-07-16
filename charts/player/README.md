@@ -423,6 +423,12 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 | `Vsphere__CheckTaskProgressIntervalMilliseconds` | Task progress check interval | `5000` |
 | `Vsphere__ReCheckTaskProgressIntervalMilliseconds` | Task progress recheck interval | `1000` |
 | `Vsphere__HealthAllowanceSeconds` | Health allowance seconds | `180` |
+| `Vsphere__SkipGuestFileCertificateValidation` | Skip TLS certificate validation for guest file transfers | `false` |
+| `Vsphere__GuestFileTransferTimeoutMinutes` | Guest file transfer timeout in minutes | `3` |
+| `Vsphere__TaskTimeoutMinutes` | vSphere task timeout in minutes | `10` |
+| `Vsphere__TaskInfoUnavailableTimeoutSeconds` | Time to wait for unavailable vSphere task information | `30` |
+| `Vsphere__GuestProcessTempPath` | Temporary directory used for guest process files | `""` |
+| `Vsphere__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
 
 **Important:**
 - Requires a privileged vCenter user for file operations
@@ -494,6 +500,14 @@ vm-api:
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 **Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__2`, `CorsPolicy__Origins__3`, etc.
+
+### Proxmox Configuration
+
+| Setting | Description | Example |
+|-----------|-------------|---------|
+| `Proxmox__FileUploadMaxBytes` | Maximum guest file upload payload in bytes | `61440` |
+| `Proxmox__GuestProcessPollMs` | Guest process status polling interval in milliseconds | `500` |
+| `Proxmox__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
 
 ### Health Probes
 
