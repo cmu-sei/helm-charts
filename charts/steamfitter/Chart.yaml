@@ -1,7 +1,7 @@
 apiVersion: v2
 name: steamfitter
 description: Steamfitter enables the organization and execution of scenario tasks
-  on virtual machines by integrating with StackStorm automation.
+  on virtual machines via Player VM API (vSphere), SSH, and SMTP.
 type: application
 version: 1.8.2
 home: https://cmu-sei.github.io/crucible/steamfitter

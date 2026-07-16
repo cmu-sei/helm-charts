@@ -176,20 +176,27 @@ steamfitter-api:
     ClientSettings__urls__playerApi: ""
     ClientSettings__urls__vmApi: ""
 
-    # Stackstorm Configuration
-    VmTaskProcessing__ApiType: st2
-    VmTaskProcessing__ApiUsername:
-    VmTaskProcessing__ApiPassword:
-    VmTaskProcessing__ApiBaseUrl:
+    # VM task processing tuning
     VmTaskProcessing__VmListUpdateIntervalMinutes: 5
     VmTaskProcessing__HealthCheckSeconds: 30
     VmTaskProcessing__HealthCheckTimeoutSeconds: 90
     VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
     VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
     VmTaskProcessing__ExpirationCheckSeconds: 30
-    VmTaskProcessing__ApiParameters__clusters: ""
 
-    Files__LocalDirectory: "/tmp/"
+    # SMTP for send_email tasks
+    Email__SmtpHost: ""
+    Email__SmtpPort: 587
+    Email__UseStartTls: true
+    Email__SmtpUsername: ""
+    Email__SmtpPassword: ""
+    Email__DefaultFromAddress: ""
+
+    # SSH for linux_* and core_remote tasks
+    Ssh__DefaultPrivateKeyPath: ""
+    Ssh__CommandTimeoutSeconds: 60
+
+       Files__LocalDirectory: "/tmp/"
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
