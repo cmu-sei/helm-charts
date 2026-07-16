@@ -89,10 +89,10 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /(notifications|hubs|api|swagger)
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /(notifications|hubs|api|swagger)
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -121,8 +121,8 @@ consoleIngress:
           proxy_ssl_session_reuse on;
       }
   hosts:
-    - host: chart-example.local
-      paths: []
+  - host: chart-example.local
+    paths: []
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -236,3 +236,12 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: vm-api
+  Vsphere__SkipGuestFileCertificateValidation: false
+  Vsphere__GuestFileTransferTimeoutMinutes: 0
+  Vsphere__TaskTimeoutMinutes: 0
+  Vsphere__TaskInfoUnavailableTimeoutSeconds: 0
+  Vsphere__GuestProcessTempPath: ""
+  Vsphere__GuestProcessDefaultTimeoutSeconds: 0
+  Proxmox__FileUploadMaxBytes: 0
+  Proxmox__GuestProcessPollMs: 0
+  Proxmox__GuestProcessDefaultTimeoutSeconds: 0
