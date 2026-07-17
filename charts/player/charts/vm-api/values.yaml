@@ -236,3 +236,13 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: vm-api
+
+  Vsphere__SkipGuestFileCertificateValidation: false
+  Vsphere__GuestFileTransferTimeoutMinutes: 3
+  Vsphere__TaskTimeoutMinutes: 10
+  Vsphere__TaskInfoUnavailableTimeoutSeconds: 30
+  Vsphere__GuestProcessTempPath: ""
+  Vsphere__GuestProcessDefaultTimeoutSeconds: 300
+  Proxmox__FileUploadMaxBytes: 61440
+  Proxmox__GuestProcessPollMs: 500
+  Proxmox__GuestProcessDefaultTimeoutSeconds: 300
