@@ -2,4 +2,4 @@ apiVersion: v2
 name: player-api
 type: application
 version: 1.9.3
-appVersion: 3.5.10
+appVersion: 3.5.11
