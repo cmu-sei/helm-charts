@@ -191,6 +191,9 @@ env:
 
   IsoUpload__BasePath: "/app/isos/player"
   IsoUpload_MaxFileSize: 6000000000
+  IsoUpload__UploadToDatastore: false
+  IsoUpload__TempStagingPath: ""
+  IsoUpload__UploadTimeoutMinutes: 60
 
   IdentityClient__TokenUrl: ""
   IdentityClient__ClientId: "player-vm-admin"

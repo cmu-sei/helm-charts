@@ -485,6 +485,23 @@ vm-api:
 |-----------|-------------|---------|
 | `IsoUpload__BasePath` | ISO upload base path | `"/app/isos/player"` |
 | `IsoUpload_MaxFileSize` | ISO upload max file size | `6000000000` |
+| `IsoUpload__UploadToDatastore` | Push uploaded ISOs straight to the vSphere datastore instead of writing them to `BasePath` | `false` |
+| `IsoUpload__TempStagingPath` | Directory used to stage the ISO before it streams to the datastore. Empty uses the system temp path. Only applies when `UploadToDatastore` is `true` | `""` |
+| `IsoUpload__UploadTimeoutMinutes` | Timeout in minutes for the ISO upload to the datastore. Values of `0` or less fall back to 60. Only applies when `UploadToDatastore` is `true` | `60` |
+
+**Datastore upload mode:** setting `IsoUpload__UploadToDatastore: true` streams uploaded ISOs to the vSphere datastore rather than writing them under `BasePath`. This is intended for VMware Cloud on AWS SDDC environments, which only support vSAN and offer no NFS datastore. The default of `false` leaves existing NFS deployments unchanged. `BasePath` is not read in this mode, so the `iso.enabled` NFS mount is not required.
+
+In datastore mode the ISO is first staged as a local file (the upload is streamed to each host, which needs a seekable file), so the staging directory needs room for a full copy of the largest ISO you expect. The NFS path writes straight through and stages nothing, which is why `TempStagingPath` applies only to datastore mode. Uploads and deletes fan out across all enabled, connected hosts; if some hosts fail the operation still reports success along with a failed-host count.
+
+**ISO deletion:** the VM UI Files tab can now delete and list ISOs, not just upload them. Deletion is gated by three permissions Player API adds in 3.6.0, seeded by database migration and each covering a different scope:
+
+| Permission | Scope | Allows deleting |
+|---|---|---|
+| `DeleteIsos` | System | Any ISO in any View or team, including ones the user is not a member of |
+| `DeleteViewIsos` | View | View-wide ISOs and any team's ISOs within that View |
+| `DeleteTeamIsos` | Team | ISOs belonging to that specific team |
+
+Grant at least one to a role before the delete actions appear. The matching `UploadViewIsos` and `UploadTeamIsos` permissions already existed and are unchanged. Note that the Files tab listing follows the user's active (primary) team, so switching the active team narrows what is shown.
 
 #### CORS Policy Settings
 
@@ -733,6 +750,9 @@ player-ui:
 - Verify NFS mount is accessible if using `iso.enabled`
 - Ensure vCenter datastore has sufficient space
 - Check file permissions on datastore
+- In datastore upload mode (`IsoUpload__UploadToDatastore: true`), raise `IsoUpload__UploadTimeoutMinutes` for large ISOs on slow links, and confirm `IsoUpload__TempStagingPath` has room for a full copy of the ISO
+- A "failed on N of M hosts" message means the ISO reached some hosts but not others; check the VM API logs for which hosts failed
+- Missing delete buttons in the Files tab usually mean the user's role lacks `DeleteIsos`, `DeleteViewIsos`, or `DeleteTeamIsos`
 
 ## References
 
