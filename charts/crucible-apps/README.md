@@ -569,7 +569,8 @@ player:
       Proxmox__Host: "proxmox.example.com"
       Proxmox__Port: 8006 # Default Proxmox port, use 443 if behind reverse proxy
       Proxmox__Token: "PVEAPIToken=player@pve!tokenid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-      Proxmox__StateRefreshIntervalSeconds: 60
+      Proxmox__ValidateCertificate: true
+      Proxmox__StateRefreshIntervalSeconds: 5
 ```
 
 **Requirements:**
@@ -577,8 +578,9 @@ player:
 - Proxmox VE API token with appropriate permissions
 - Network access from Kubernetes cluster to Proxmox host
 - Token format: `PVEAPIToken=USER@REALM!TOKENID=UUID`
+- A PVE host serving its stock self-signed certificate needs either a trusted CA bundle (via `player.vm-api.certificateMap`) or `Proxmox__ValidateCertificate: false`
 
-**Note:** Player VM API can be configured for either vSphere OR Proxmox, not both simultaneously.
+**Note:** vSphere and Proxmox can both be enabled on the same Player VM API instance — each VM is routed to the backend matching its provider type. See the [Player chart documentation](https://github.com/cmu-sei/helm-charts/blob/main/charts/player/README.md) for the full list of Proxmox settings.
 
 #### Caster - vSphere Configuration
 

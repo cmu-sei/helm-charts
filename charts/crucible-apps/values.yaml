@@ -802,7 +802,8 @@ player:
       # Proxmox__Host: "proxmox.example.com"
       # Proxmox__Port: 8006  # Default Proxmox port. Change to 443 if using reverse proxy
       # Proxmox__Token: ""  # API token in format: PVEAPIToken=USER@REALM!TOKENID=UUID
-      # Proxmox__StateRefreshIntervalSeconds: 60
+      # Proxmox__ValidateCertificate: true  # Set false for a PVE host serving its stock self-signed certificate
+      # Proxmox__StateRefreshIntervalSeconds: 5
   vm-ui:
     ingress:
       className: ""
