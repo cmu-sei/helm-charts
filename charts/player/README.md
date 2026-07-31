@@ -520,11 +520,30 @@ Grant at least one to a role before the delete actions appear. The matching `Upl
 
 ### Proxmox Configuration
 
+VM API supports Proxmox VE as an alternative to vSphere. Authentication uses a Proxmox API token.
+
 | Setting | Description | Example |
 |-----------|-------------|---------|
+| `Proxmox__Enabled` | Enable the Proxmox VE backend | `false` |
+| `Proxmox__Host` | Proxmox node hostname or IP address | `proxmox.example.com` |
+| `Proxmox__Port` | Proxmox API port. Use `443` when going through a reverse proxy | `8006` |
+| `Proxmox__Token` | API token, in the format `PVEAPIToken=USER@REALM!TOKENID=UUID` | `""` |
+| `Proxmox__ValidateCertificate` | Validate the Proxmox host's TLS certificate | `true` |
+| `Proxmox__StateRefreshIntervalSeconds` | How often VM power state is reconciled from Proxmox cluster resources. Values below `1` are clamped to `1` | `5` |
+| `Proxmox__CheckTaskProgressIntervalMilliseconds` | Cluster task poll interval while no task is pending | `5000` |
+| `Proxmox__ReCheckTaskProgressIntervalMilliseconds` | Cluster task poll interval while a task is still running | `1000` |
 | `Proxmox__FileUploadMaxBytes` | Maximum guest file upload payload in bytes | `61440` |
 | `Proxmox__GuestProcessPollMs` | Guest process status polling interval in milliseconds | `500` |
 | `Proxmox__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
+
+**TLS verification (upgrade note):** `Proxmox__ValidateCertificate` defaults to `true`. Earlier VM API versions did not verify the Proxmox certificate at all, so a PVE host serving its stock self-signed certificate worked without any configuration. It no longer does. Either trust the PVE certificate authority by pointing `vm-api.certificateMap` at a ConfigMap containing the CA bundle (see the VM API *Certificate Trust* section above), or set `Proxmox__ValidateCertificate: false` to keep the previous behavior.
+
+**Note:** vSphere and Proxmox can both be enabled on the same VM API instance — each VM is routed to the backend matching its provider type. Leave `Proxmox__Enabled: false` on vSphere-only deployments.
+
+**Requirements:**
+
+- Proxmox VE API token with permissions to read cluster resources and perform VM power operations
+- Network access from the Kubernetes cluster to the Proxmox host on `Proxmox__Port`
 
 ### Health Probes
 
@@ -726,6 +745,12 @@ player-ui:
 - Check vCenter credentials have appropriate permissions
 - Ensure datastore exists and is accessible
 - For self-signed certs, consider trust configuration
+
+### Proxmox Connection Failures
+- TLS or certificate errors in the VM API log after an upgrade point at `Proxmox__ValidateCertificate`, which now defaults to `true`. Trust the PVE CA via `certificateMap`, or set it to `false`
+- Verify the Proxmox host is reachable from the VM API pod on `Proxmox__Port` (`8006` direct, `443` behind a reverse proxy)
+- Check the API token format: `PVEAPIToken=USER@REALM!TOKENID=UUID`
+- A warning that `StateRefreshIntervalSeconds` "would busy-loop" means the value is unset or below `1`; set `Proxmox__StateRefreshIntervalSeconds`
 
 ### Authentication Issues
 - Verify all OAuth clients are registered in identity provider
