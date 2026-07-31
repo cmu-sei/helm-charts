@@ -246,6 +246,15 @@ env:
   Vsphere__TaskInfoUnavailableTimeoutSeconds: 30
   Vsphere__GuestProcessTempPath: ""
   Vsphere__GuestProcessDefaultTimeoutSeconds: 300
+  # Proxmox VE. Can be configured alongside vSphere in the same instance.
+  Proxmox__Enabled: false
+  Proxmox__Host: ""
+  Proxmox__Port: 8006
+  Proxmox__Token: ""
+  Proxmox__ValidateCertificate: true
+  Proxmox__StateRefreshIntervalSeconds: 5
+  Proxmox__CheckTaskProgressIntervalMilliseconds: 5000
+  Proxmox__ReCheckTaskProgressIntervalMilliseconds: 1000
   Proxmox__FileUploadMaxBytes: 61440
   Proxmox__GuestProcessPollMs: 500
   Proxmox__GuestProcessDefaultTimeoutSeconds: 300
