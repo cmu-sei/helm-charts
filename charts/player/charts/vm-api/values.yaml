@@ -189,9 +189,9 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  IsoUpload__BasePath: "/app/isos/player"
-  IsoUpload_MaxFileSize: 6000000000
-  IsoUpload__UploadToDatastore: false
+  # The shared ISO upload pipeline. Where the bytes end up is per-provider: Vsphere__IsoRoot /
+  # Vsphere__UploadViaApi below, and Proxmox__IsoRoot / Proxmox__UploadViaApi.
+  IsoUpload__MaxFileSize: 6000000000
   IsoUpload__TempStagingPath: ""
   IsoUpload__UploadTimeoutMinutes: 60
 
@@ -207,6 +207,10 @@ env:
   ClientSettings__urls__playerApi: ""
 
   Vsphere__Host: ""
+  # Where vSphere ISOs are written. IsoRoot is the mount of the iso volume above; set UploadViaApi
+  # true instead where there is no NFS datastore to mount (VMware Cloud on AWS).
+  Vsphere__IsoRoot: "/app/isos/player"
+  Vsphere__UploadViaApi: false
   Vsphere__Username: ""
   Vsphere__Password: ""
   Vsphere__DsName: ""
@@ -258,3 +262,8 @@ env:
   Proxmox__FileUploadMaxBytes: 61440
   Proxmox__GuestProcessPollMs: 500
   Proxmox__GuestProcessDefaultTimeoutSeconds: 300
+  # View/team-scoped ISO storage. Set IsoStorage to turn Proxmox ISO support on; clear it to turn it off.
+  Proxmox__IsoStorage: ""
+  Proxmox__UploadViaApi: false
+  Proxmox__IsoRoot: ""
+  Proxmox__IsoScopeSeparator: "__"
