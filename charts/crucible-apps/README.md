@@ -571,6 +571,19 @@ player:
       Proxmox__Token: "PVEAPIToken=player@pve!tokenid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
       Proxmox__ValidateCertificate: true
       Proxmox__StateRefreshIntervalSeconds: 5
+      # ISO uploads (optional): name a PVE storage that accepts ISO images, then either
+      # mount its template/iso directory and point IsoRoot at the mount (as below), or
+      # push through the PVE API instead with Proxmox__UploadViaApi: true
+      Proxmox__IsoStorage: "nfs-isos"
+      Proxmox__IsoRoot: "/app/isos/proxmox"
+      Proxmox__UploadViaApi: false
+
+    # The NFS export behind nfs-isos/template/iso
+    iso:
+      enabled: true
+      server: "pve-nfs.example.com"
+      path: "/exports/pve-isos/template/iso"
+      mountPath: "/app/isos/proxmox"
 ```
 
 **Requirements:**

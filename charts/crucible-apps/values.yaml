@@ -804,6 +804,14 @@ player:
       # Proxmox__Token: ""  # API token in format: PVEAPIToken=USER@REALM!TOKENID=UUID
       # Proxmox__ValidateCertificate: true  # Set false for a PVE host serving its stock self-signed certificate
       # Proxmox__StateRefreshIntervalSeconds: 5
+      # Proxmox ISO uploads (optional). IsoStorage names a PVE storage that accepts ISO images;
+      # setting it turns Proxmox ISO support on. Then either mount that storage's template/iso
+      # directory and point IsoRoot at the mount (see player.vm-api.iso), or set UploadViaApi true
+      # to push each ISO through the PVE API instead.
+      # Proxmox__IsoStorage: ""
+      # Proxmox__UploadViaApi: false
+      # Proxmox__IsoRoot: ""
+      # Proxmox__IsoScopeSeparator: "__"
   vm-ui:
     ingress:
       className: ""
