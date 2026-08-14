@@ -589,6 +589,20 @@ entries:
     version: 0.1.0
   blueprint:
   - apiVersion: v2
+    created: "2026-08-14T12:40:56.935074249Z"
+    description: Blueprint enables collaborative creation and visualization of a Master
+      Scenario Event List (MSEL) for an exercise.
+    digest: 1557fff500d284ce206752ebb8865b2375ed2c235675950991e8d87a09f4baab
+    home: https://cmu-sei.github.io/crucible/blueprint/
+    name: blueprint
+    sources:
+    - https://github.com/cmu-sei/Blueprint.Api
+    - https://github.com/cmu-sei/Blueprint.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/blueprint-1.10.9/blueprint-1.10.9.tgz
+    version: 1.10.9
+  - apiVersion: v2
     created: "2026-08-13T19:59:56.950328604Z"
     description: Blueprint enables collaborative creation and visualization of a Master
       Scenario Event List (MSEL) for an exercise.
@@ -8372,4 +8386,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-08-13T20:06:00.372314944Z"
+generated: "2026-08-14T12:40:56.936002667Z"
