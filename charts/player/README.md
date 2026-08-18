@@ -428,8 +428,8 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 | `Vsphere__Hosts__*__Address` | vCenter hostname or IP address | `vcenter.example.com` |
 | `Vsphere__Hosts__*__Username` | vCenter username | `player-account@vsphere.local` |
 | `Vsphere__Hosts__*__Password` | vCenter password | `password` |
-| `Vsphere__Hosts__*__DsName` | Datastore name for file storage | `nfs-player` |
-| `Vsphere__Hosts__*__BaseFolder` | Folder within datastore | `player` |
+| `Vsphere__Hosts__*__DsName` | Datastore name for file storage. Also the datastore ISOs are written to and browsed on — see [ISO Upload](#iso-upload) | `nfs-player` |
+| `Vsphere__Hosts__*__BaseFolder` | Folder within datastore. Also the root of the ISO layout — see [ISO Upload](#iso-upload) | `player` |
 | `Vsphere__Timeout` | vSphere timeout | `30` |
 | `Vsphere__ConnectionRetryIntervalSeconds` | vSphere connection retry interval | `60` |
 | `Vsphere__ConnectionRefreshIntervalMinutes` | vSphere connection refresh interval | `20` |
@@ -449,9 +449,9 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 **Important:**
 - Requires a privileged vCenter user for file operations
 - Datastore should be NFS for ease of access
-- Format: `<DATASTORE>/player/` (if BaseFolder is provided)
+- Files live under `[<DsName>] <BaseFolder>/` on each host's own datastore
 
-vSphere ISO support is configured separately — see [ISO Upload](#iso-upload) for `Vsphere__IsoRoot` and `Vsphere__UploadViaApi`.
+vSphere ISO support is configured separately — see [ISO Upload](#iso-upload) for `Vsphere__IsoRoot` and `Vsphere__IsoUploadViaApi`.
 
 #### Console Proxy (Optional)
 
@@ -500,7 +500,7 @@ Every ISO upload runs through the same pipeline before it reaches a hypervisor:
 > | Old | New |
 > |---|---|
 > | `IsoUpload__BasePath` | `Vsphere__IsoRoot` |
-> | `IsoUpload__UploadToDatastore` | `Vsphere__UploadViaApi` |
+> | `IsoUpload__UploadToDatastore` | `Vsphere__IsoUploadViaApi` |
 >
 > The old names are **ignored, not mapped forward**. An override still using them leaves ISO upload
 > misconfigured on a pod that otherwise starts and serves traffic normally; the API logs an error at
@@ -509,14 +509,14 @@ Every ISO upload runs through the same pipeline before it reaches a hypervisor:
 > `MaxFileSize`.
 
 **Where the bytes go — directory mode vs API mode.** Each hypervisor has its own `IsoRoot` and its own
-`UploadViaApi` flag:
+`IsoUploadViaApi` flag:
 
 *vSphere:*
 
 | Setting | Description | Example |
 |-----------|-------------|---------|
-| `Vsphere__IsoRoot` | Directory ISOs are written to. Must be on an export that is also a vCenter NFS datastore | `"/app/isos/player"` |
-| `Vsphere__UploadViaApi` | Stream ISOs to the datastore through vSphere instead of writing to `IsoRoot` | `false` |
+| `Vsphere__IsoRoot` | Directory ISOs are written to. Must be an export that is also a vCenter NFS datastore **and** whose contents surface at exactly `[<DsName>] <BaseFolder>` — see below | `"/app/isos/player"` |
+| `Vsphere__IsoUploadViaApi` | Stream ISOs to the datastore through vSphere instead of writing to `IsoRoot` | `false` |
 
 *Proxmox:*
 
@@ -524,17 +524,35 @@ Every ISO upload runs through the same pipeline before it reaches a hypervisor:
 |-----------|-------------|---------|
 | `Proxmox__IsoStorage` | PVE storage id that holds Player-managed ISOs. Setting it turns Proxmox ISO support on; clearing it turns it off | `"nfs-isos"` |
 | `Proxmox__IsoRoot` | Directory ISOs are written to. Must be a mount of `IsoStorage`'s **`template/iso`** directory — the layout PVE imposes on every storage that accepts ISO images | `"/app/isos/proxmox"` |
-| `Proxmox__UploadViaApi` | Push ISOs through the PVE storage API instead of writing to `IsoRoot` | `false` |
+| `Proxmox__IsoUploadViaApi` | Push ISOs through the PVE storage API instead of writing to `IsoRoot` | `false` |
 | `Proxmox__IsoScopeSeparator` | Separator that keeps one View's or team's ISOs distinct from another's inside the storage | `"__"` |
 
-**Directory mode** (`UploadViaApi: false`, the default) writes straight through to a share the hypervisor
+**Directory mode** (`IsoUploadViaApi: false`, the default) writes straight through to a share the hypervisor
 also reads, and stages nothing. It needs an NFS mount, which is what the `iso` volume below provides.
 
-**API mode** (`UploadViaApi: true`) needs no share. On vSphere it is intended for VMware Cloud on AWS
+**API mode** (`IsoUploadViaApi: true`) needs no share. On vSphere it is intended for VMware Cloud on AWS
 SDDC environments, which only support vSAN and offer no NFS datastore; on Proxmox it pushes each ISO
 through the PVE storage API. Either way the ISO is first staged as a complete local file — the upload is
 streamed and needs a seekable source — so `IsoUpload__TempStagingPath` must have room for the largest ISO
 you accept. Left empty it stages in the pod's writable layer, which `resources` does not limit by default.
+
+**Where a vSphere ISO ends up.** Both modes use the same datastore layout, and only differ in how the
+bytes get there:
+
+```
+[<Vsphere__Hosts__*__DsName>] <Vsphere__Hosts__*__BaseFolder>/<viewId>/<scopeId>/<filename>.iso
+```
+
+In API mode the ISO is pushed to **every enabled, connected host**, each through its own `DsName` and
+`BaseFolder`, and the destination folder is created if it does not exist. In directory mode the same tree
+is written locally under `Vsphere__IsoRoot`.
+
+This matters for directory mode because listing an ISO — and the VM console's ISO mount picker — always
+browses the vCenter datastore, in **both** modes. A `Vsphere__IsoRoot` that is on a datastore but at some
+other path within it will accept uploads that then never appear in Player. So it is not enough for
+`Vsphere__IsoRoot` to be *a* datastore export: mounting the export behind `[<DsName>]` at
+`/app/isos` and setting `Vsphere__IsoRoot: "/app/isos/player"` is correct when `BaseFolder` is `player`,
+because the two then name the same directory.
 
 Proxmox storage is a flat namespace, so an ISO's View or team is encoded into its filename using
 `Proxmox__IsoScopeSeparator`. Changing that value hides ISOs uploaded under the previous one.
@@ -636,8 +654,8 @@ vm-api:
       mountPath: /app/iso-staging
   env:
     IsoUpload__TempStagingPath: "/app/iso-staging"
-    Vsphere__UploadViaApi: true
-    Proxmox__UploadViaApi: true
+    Vsphere__IsoUploadViaApi: true
+    Proxmox__IsoUploadViaApi: true
     Proxmox__IsoStorage: "vsan-isos"
 ```
 
@@ -684,7 +702,7 @@ VM API supports Proxmox VE as an alternative to vSphere. Authentication uses a P
 | `Proxmox__GuestProcessPollMs` | Guest process status polling interval in milliseconds | `500` |
 | `Proxmox__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
 
-Proxmox ISO support is configured separately — see [ISO Upload](#iso-upload) for `Proxmox__IsoStorage`, `Proxmox__IsoRoot`, `Proxmox__UploadViaApi` and `Proxmox__IsoScopeSeparator`, and [ISO Storage](#iso-storage-optional) for the volume each mode needs.
+Proxmox ISO support is configured separately — see [ISO Upload](#iso-upload) for `Proxmox__IsoStorage`, `Proxmox__IsoRoot`, `Proxmox__IsoUploadViaApi` and `Proxmox__IsoScopeSeparator`, and [ISO Storage](#iso-storage-optional) for the volume each mode needs.
 
 **TLS verification (upgrade note):** `Proxmox__ValidateCertificate` defaults to `true`. Earlier VM API versions did not verify the Proxmox certificate at all, so a PVE host serving its stock self-signed certificate worked without any configuration. It no longer does. Either trust the PVE certificate authority by pointing `vm-api.certificateMap` at a ConfigMap containing the CA bundle (see the VM API *Certificate Trust* section above), or set `Proxmox__ValidateCertificate: false` to keep the previous behavior.
 
@@ -924,10 +942,11 @@ player-ui:
 - Check `proxy-body-size` annotation is set depending on your ISO size needs
 - Verify NFS mount is accessible if using `iso.enabled`, and that `iso.mountPath` agrees with the `IsoRoot` of each hypervisor using it
 - If an override still sets `IsoUpload__BasePath` or `IsoUpload__UploadToDatastore`, it is being ignored — see the renamed keys under *ISO Upload* above. The VM API logs an error at startup naming the variable to set
-- "Proxmox:IsoRoot is required" means directory mode is on with no mount configured. Point `Proxmox__IsoRoot` at a mount of `<Proxmox__IsoStorage>`'s `template/iso` directory, or set `Proxmox__UploadViaApi: true`
+- A vSphere upload that reports success but lists no ISOs means `Vsphere__IsoRoot` is not the directory that surfaces at `[<Vsphere__Hosts__*__DsName>] <Vsphere__Hosts__*__BaseFolder>` — listing browses the datastore in both modes, so the two have to name the same place
+- "Proxmox:IsoRoot is required" means directory mode is on with no mount configured. Point `Proxmox__IsoRoot` at a mount of `<Proxmox__IsoStorage>`'s `template/iso` directory, or set `Proxmox__IsoUploadViaApi: true`
 - Ensure the vCenter datastore or PVE storage has sufficient space
 - Check file permissions on the datastore or export
-- In API mode (`UploadViaApi: true`), raise `IsoUpload__UploadTimeoutMinutes` for large ISOs on slow links, and confirm `IsoUpload__TempStagingPath` has room for a full copy of the ISO
+- In API mode (`IsoUploadViaApi: true`), raise `IsoUpload__UploadTimeoutMinutes` for large ISOs on slow links, and confirm `IsoUpload__TempStagingPath` has room for a full copy of the ISO
 - A "failed on N of M hosts" message means the ISO reached some hosts but not others; check the VM API logs for which hosts failed
 - Missing delete buttons in the Files tab usually mean the user's role lacks `DeleteIsos`, `DeleteViewIsos`, or `DeleteTeamIsos`
 

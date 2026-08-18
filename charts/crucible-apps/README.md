@@ -573,10 +573,10 @@ player:
       Proxmox__StateRefreshIntervalSeconds: 5
       # ISO uploads (optional): name a PVE storage that accepts ISO images, then either
       # mount its template/iso directory and point IsoRoot at the mount (as below), or
-      # push through the PVE API instead with Proxmox__UploadViaApi: true
+      # push through the PVE API instead with Proxmox__IsoUploadViaApi: true
       Proxmox__IsoStorage: "nfs-isos"
       Proxmox__IsoRoot: "/app/isos/proxmox"
-      Proxmox__UploadViaApi: false
+      Proxmox__IsoUploadViaApi: false
 
     # The NFS export behind nfs-isos/template/iso
     iso:

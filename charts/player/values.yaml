@@ -437,7 +437,7 @@ vm-api:
   affinity: {}
 
   # iso - an NFS volume mount for ISO uploads, used when a hypervisor writes ISOs directly to a
-  # share rather than pushing them through its API (Vsphere__UploadViaApi / Proxmox__UploadViaApi
+  # share rather than pushing them through its API (Vsphere__IsoUploadViaApi / Proxmox__IsoUploadViaApi
   # false). Point mountPath at, or above, the ISO root(s) configured in env below:
   #   vSphere only  - mountPath /app/isos/player, path being the export behind the vCenter datastore
   #   Proxmox only  - mountPath /app/isos/proxmox, path being the export behind <IsoStorage>/template/iso,
@@ -547,7 +547,7 @@ vm-api:
   #   - name: "pve-iso-vol"
   #     mountPath: /app/isos/proxmox
   #
-  # Example use to give Vsphere__UploadViaApi / Proxmox__UploadViaApi somewhere to stage the
+  # Example use to give Vsphere__IsoUploadViaApi / Proxmox__IsoUploadViaApi somewhere to stage the
   # local copy they make of each ISO. Size it for the largest ISO you expect to accept
   # (IsoUpload__MaxFileSize) and point IsoUpload__TempStagingPath at the mountPath, otherwise
   # that copy is written to the pod's filesystem:
@@ -623,9 +623,9 @@ vm-api:
     ClaimsTransformation__CacheExpirationSeconds: 60
 
     # The shared ISO upload pipeline. Where the bytes end up is per-provider: Vsphere__IsoRoot /
-    # Vsphere__UploadViaApi below, and Proxmox__IsoRoot / Proxmox__UploadViaApi.
+    # Vsphere__IsoUploadViaApi below, and Proxmox__IsoRoot / Proxmox__IsoUploadViaApi.
     IsoUpload__MaxFileSize: 6000000000
-    # Where UploadViaApi stages its local copy of each ISO. Empty means the system temp directory,
+    # Where IsoUploadViaApi stages its local copy of each ISO. Empty means the system temp directory,
     # which is the pod's own filesystem; see extraVolumes above for mounting scratch space instead.
     IsoUpload__TempStagingPath: ""
     IsoUpload__UploadTimeoutMinutes: 60
@@ -643,10 +643,15 @@ vm-api:
 
     Vsphere__Host: ""
     # Where vSphere ISOs are written. IsoRoot is a path under the iso volume's mountPath above, on an
-    # export that is also a vCenter NFS datastore; set UploadViaApi true instead where there is no
+    # export that is also a vCenter NFS datastore; set IsoUploadViaApi true instead where there is no
     # such datastore to mount (VMware Cloud on AWS), and no iso volume is needed.
+    #
+    # Both modes use one datastore layout: "[<DsName>] <BaseFolder>/<viewId>/<scopeId>/<file>.iso", written
+    # to every enabled host in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
+    # the directory that surfaces at "[<DsName>] <BaseFolder>" or uploads succeed and then list empty.
+    # See the ISO Upload section of this chart's README.
     Vsphere__IsoRoot: "/app/isos/player"
-    Vsphere__UploadViaApi: false
+    Vsphere__IsoUploadViaApi: false
     Vsphere__Username: ""
     Vsphere__Password: ""
     Vsphere__DsName: ""
@@ -701,12 +706,12 @@ vm-api:
     # View/team-scoped ISO storage. Set IsoStorage to turn Proxmox ISO support on; clear it to turn it off.
     # It names a PVE storage that accepts ISO images, and IsoRoot must be a mount of that same storage's
     # template/iso directory - the layout PVE itself imposes, so an NFS export of it is mounted as e.g.
-    # /app/isos/proxmox via the iso volume above. Set UploadViaApi true to push each ISO through the PVE
+    # /app/isos/proxmox via the iso volume above. Set IsoUploadViaApi true to push each ISO through the PVE
     # API instead, which needs no mount but stages a local copy first (IsoUpload__TempStagingPath).
     # Proxmox storage is a flat namespace, so IsoScopeSeparator is what keeps one View or team's ISOs
     # distinct from another's within it; changing it hides ISOs uploaded under the previous value.
     Proxmox__IsoStorage: ""
-    Proxmox__UploadViaApi: false
+    Proxmox__IsoUploadViaApi: false
     Proxmox__IsoRoot: ""
     Proxmox__IsoScopeSeparator: "__"
 
