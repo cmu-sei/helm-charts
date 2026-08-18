@@ -598,7 +598,7 @@ gameboard:
       # Role mappings from Keycloak
       # See https://github.com/cmu-sei/Gameboard/releases/tag/3.35.0 for more details
       Oidc__UserRolesClaimPath: "realm_access.roles"
-      Oidc__UserRolesClaimMap__administrator: Administrator
+      Oidc__UserRolesClaimMap__administrator: Admin
       Oidc__UserRolesClaimMap__director: Director
       Oidc__UserRolesClaimMap__member: Member
       Oidc__UserRolesClaimMap__support: Support
@@ -923,6 +923,7 @@ steamfitter:
       # Stackstorm Configuration (placeholder for local development)
       VmTaskProcessing__ApiType: st2
       VmTaskProcessing__ApiUsername: "st2admin"
+      # VmTaskProcessing__ApiPassword: ""
       VmTaskProcessing__ApiBaseUrl: "https://stackstorm.local"
       # Optional: Trust a custom CA certificate
       # Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
@@ -1037,6 +1038,11 @@ topomojo:
       # Pod__Vlan__Range: ""
       # Pod__KeepAliveMinutes: 10
       # Pod__DebugVerbose: false
+      # Proxmox-specific Pod settings (only when Pod__HypervisorType is "Proxmox")
+      # Pod__AccessToken: ""  # Proxmox authentication access token
+      # Pod__SDNZone: ""  # Proxmox SDN Zone for VM networking (VXLAN only)
+      # Pod__Vlan__ResetDebounceDuration: 2000
+      # Pod__Vlan__ResetDebounceMaxDuration: 5000
       # VMware NSX/SDDC Configuration (optional)
       # Advanced networking configuration for VMware NSX environments
       # Uncomment and configure if using NSX-T or VMware Cloud on AWS (VMC)
