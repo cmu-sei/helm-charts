@@ -649,7 +649,7 @@ vm-api:
     # Both modes use one datastore layout: "[<DsName>] <BaseFolder>/<viewId>/<scopeId>/<file>.iso", written
     # to every enabled host in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
     # the directory that surfaces at "[<DsName>] <BaseFolder>" or uploads succeed and then list empty.
-    # See the ISO Upload section of this chart's README.
+    # See the ISO Upload section of the player chart README.
     Vsphere__IsoRoot: "/app/isos/player"
     Vsphere__IsoUploadViaApi: false
     Vsphere__Username: ""
