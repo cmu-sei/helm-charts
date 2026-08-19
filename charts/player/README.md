@@ -495,7 +495,7 @@ Every ISO upload runs through the same pipeline before it reaches a hypervisor:
 | `IsoUpload__UploadTimeoutMinutes` | Timeout in minutes for an API-mode upload. Values of `0` or less fall back to 60 | `60` |
 
 > [!IMPORTANT]
-> **Renamed in VM API 3.9.0.** Where an ISO ends up is now a per-hypervisor setting, so two keys moved:
+> **Renamed in VM API 3.10.0.** Where an ISO ends up is now a per-hypervisor setting, so two keys moved:
 >
 > | Old | New |
 > |---|---|
