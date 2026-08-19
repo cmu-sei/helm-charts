@@ -89,10 +89,10 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /(notifications|hubs|api|swagger)
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /(notifications|hubs|api|swagger)
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -121,8 +121,8 @@ consoleIngress:
           proxy_ssl_session_reuse on;
       }
   hosts:
-    - host: chart-example.local
-      paths: []
+  - host: chart-example.local
+    paths: []
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -189,9 +189,7 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  IsoUpload__BasePath: "/app/isos/player"
   IsoUpload_MaxFileSize: 6000000000
-  IsoUpload__UploadToDatastore: false
   IsoUpload__TempStagingPath: ""
   IsoUpload__UploadTimeoutMinutes: 60
 
@@ -249,3 +247,12 @@ env:
   Proxmox__FileUploadMaxBytes: 61440
   Proxmox__GuestProcessPollMs: 500
   Proxmox__GuestProcessDefaultTimeoutSeconds: 300
+  Vsphere__IsoUploadViaApi: false
+  Vsphere__IsoRoot: ""
+  Proxmox__ValidateCertificate: false
+  Proxmox__CheckTaskProgressIntervalMilliseconds: 0
+  Proxmox__ReCheckTaskProgressIntervalMilliseconds: 0
+  Proxmox__IsoStorage: ""
+  Proxmox__IsoUploadViaApi: false
+  Proxmox__IsoRoot: ""
+  Proxmox__IsoScopeSeparator: ""
