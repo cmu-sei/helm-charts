@@ -569,7 +569,21 @@ player:
       Proxmox__Host: "proxmox.example.com"
       Proxmox__Port: 8006 # Default Proxmox port, use 443 if behind reverse proxy
       Proxmox__Token: "PVEAPIToken=player@pve!tokenid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-      Proxmox__StateRefreshIntervalSeconds: 60
+      Proxmox__ValidateCertificate: true
+      Proxmox__StateRefreshIntervalSeconds: 5
+      # ISO uploads (optional): name a PVE storage that accepts ISO images, then either
+      # mount its template/iso directory and point IsoRoot at the mount (as below), or
+      # push through the PVE API instead with Proxmox__IsoUploadViaApi: true
+      Proxmox__IsoStorage: "nfs-isos"
+      Proxmox__IsoRoot: "/app/isos/proxmox"
+      Proxmox__IsoUploadViaApi: false
+
+    # The NFS export behind nfs-isos/template/iso
+    iso:
+      enabled: true
+      server: "pve-nfs.example.com"
+      path: "/exports/pve-isos/template/iso"
+      mountPath: "/app/isos/proxmox"
 ```
 
 **Requirements:**
@@ -577,8 +591,9 @@ player:
 - Proxmox VE API token with appropriate permissions
 - Network access from Kubernetes cluster to Proxmox host
 - Token format: `PVEAPIToken=USER@REALM!TOKENID=UUID`
+- A PVE host serving its stock self-signed certificate needs either a trusted CA bundle (via `player.vm-api.certificateMap`) or `Proxmox__ValidateCertificate: false`
 
-**Note:** Player VM API can be configured for either vSphere OR Proxmox, not both simultaneously.
+**Note:** vSphere and Proxmox can both be enabled on the same Player VM API instance — each VM is routed to the backend matching its provider type. See the [Player chart documentation](https://github.com/cmu-sei/helm-charts/blob/main/charts/player/README.md) for the full list of Proxmox settings.
 
 #### Caster - vSphere Configuration
 

@@ -45,12 +45,21 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-# iso - an NFS volume mount for ISO uploads
+# iso - an NFS volume mount for ISO uploads, used when a hypervisor writes ISOs directly to a
+# share rather than pushing them through its API (Vsphere__IsoUploadViaApi / Proxmox__IsoUploadViaApi
+# false). Point mountPath at, or above, the ISO root(s) configured in env below:
+#   vSphere only  - mountPath /app/isos/player, path being the export behind the vCenter datastore
+#   Proxmox only  - mountPath /app/isos/proxmox, path being the export behind <IsoStorage>/template/iso,
+#                   and set Proxmox__IsoRoot to the same mountPath
+#   both, one export registered in vCenter *and* PVE - mountPath /app/isos, with
+#                   Vsphere__IsoRoot /app/isos/player and Proxmox__IsoRoot /app/isos/template/iso
+# Two separate exports need a second volume; see extraVolumes below.
 iso:
   enabled: false
   size: ""
   server: ""
   path: ""
+  mountPath: "/app/isos/player"
 
 probes:
   livenessProbe:
@@ -133,6 +142,39 @@ consoleIngress:
 # the configMap name here
 certificateMap: ""
 
+## extraVolumeMounts and Volumes is stringified YAML of kubernetes volume definitions
+# Example use to add a second ISO share, when vSphere and Proxmox write to different NFS
+# exports (the iso volume above serves the first one):
+#
+# extraVolumes: |
+#   - name: "pve-iso-vol"
+#     nfs:
+#       server: "pve-nfs.example.com"
+#       path: "/exports/pve-iso/template/iso"
+#
+# extraVolumeMounts: |
+#   - name: "pve-iso-vol"
+#     mountPath: /app/isos/proxmox
+#
+# Example use to give Vsphere__IsoUploadViaApi / Proxmox__IsoUploadViaApi somewhere to stage the
+# local copy they make of each ISO. Size it for the largest ISO you expect to accept
+# (IsoUpload__MaxFileSize) and point IsoUpload__TempStagingPath at the mountPath, otherwise
+# that copy is written to the pod's filesystem:
+#
+# extraVolumes: |
+#   - name: "iso-staging-vol"
+#     emptyDir:
+#       sizeLimit: "8Gi"
+#
+# extraVolumeMounts: |
+#   - name: "iso-staging-vol"
+#     mountPath: /app/iso-staging
+#
+# See kubernetes documentation for configuring your volumes:
+# https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumeMounts: ""
+extraVolumes: ""
+
 command: ["dotnet", "Player.Vm.Api.dll"]
 
 ## existingSecret references a secret already in k8s.
@@ -189,9 +231,11 @@ env:
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
 
-  IsoUpload__BasePath: "/app/isos/player"
-  IsoUpload_MaxFileSize: 6000000000
-  IsoUpload__UploadToDatastore: false
+  # The shared ISO upload pipeline. Where the bytes end up is per-provider: Vsphere__IsoRoot /
+  # Vsphere__IsoUploadViaApi below, and Proxmox__IsoRoot / Proxmox__IsoUploadViaApi.
+  IsoUpload__MaxFileSize: 6000000000
+  # Where IsoUploadViaApi stages its local copy of each ISO. Empty means the system temp directory,
+  # which is the pod's own filesystem; see extraVolumes above for mounting scratch space instead.
   IsoUpload__TempStagingPath: ""
   IsoUpload__UploadTimeoutMinutes: 60
 
@@ -207,6 +251,16 @@ env:
   ClientSettings__urls__playerApi: ""
 
   Vsphere__Host: ""
+  # Where vSphere ISOs are written. IsoRoot is a path under the iso volume's mountPath above, on an
+  # export that is also a vCenter NFS datastore; set IsoUploadViaApi true instead where there is no
+  # such datastore to mount (VMware Cloud on AWS), and no iso volume is needed.
+  #
+  # Both modes use one datastore layout: "[<DsName>] <BaseFolder>/<viewId>/<scopeId>/<file>.iso", written
+  # to every enabled host in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
+  # the directory that surfaces at "[<DsName>] <BaseFolder>" or uploads succeed and then list empty.
+  # See the ISO Upload section of the player chart README.
+  Vsphere__IsoRoot: "/app/isos/player"
+  Vsphere__IsoUploadViaApi: false
   Vsphere__Username: ""
   Vsphere__Password: ""
   Vsphere__DsName: ""
@@ -246,6 +300,26 @@ env:
   Vsphere__TaskInfoUnavailableTimeoutSeconds: 30
   Vsphere__GuestProcessTempPath: ""
   Vsphere__GuestProcessDefaultTimeoutSeconds: 300
+  # Proxmox VE. Can be configured alongside vSphere in the same instance.
+  Proxmox__Enabled: false
+  Proxmox__Host: ""
+  Proxmox__Port: 8006
+  Proxmox__Token: ""
+  Proxmox__ValidateCertificate: true
+  Proxmox__StateRefreshIntervalSeconds: 5
+  Proxmox__CheckTaskProgressIntervalMilliseconds: 5000
+  Proxmox__ReCheckTaskProgressIntervalMilliseconds: 1000
   Proxmox__FileUploadMaxBytes: 61440
   Proxmox__GuestProcessPollMs: 500
   Proxmox__GuestProcessDefaultTimeoutSeconds: 300
+  # View/team-scoped ISO storage. Set IsoStorage to turn Proxmox ISO support on; clear it to turn it off.
+  # It names a PVE storage that accepts ISO images, and IsoRoot must be a mount of that same storage's
+  # template/iso directory - the layout PVE itself imposes, so an NFS export of it is mounted as e.g.
+  # /app/isos/proxmox via the iso volume above. Set IsoUploadViaApi true to push each ISO through the PVE
+  # API instead, which needs no mount but stages a local copy first (IsoUpload__TempStagingPath).
+  # Proxmox storage is a flat namespace, so IsoScopeSeparator is what keeps one View or team's ISOs
+  # distinct from another's within it; changing it hides ISOs uploaded under the previous value.
+  Proxmox__IsoStorage: ""
+  Proxmox__IsoUploadViaApi: false
+  Proxmox__IsoRoot: ""
+  Proxmox__IsoScopeSeparator: "__"

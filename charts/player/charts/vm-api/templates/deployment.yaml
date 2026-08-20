@@ -93,8 +93,9 @@ spec:
           {{- end }}
           {{ if .Values.iso.enabled }}
             - name: {{ include "vm-api.fullname" . }}-iso
-              mountPath: /app/isos/player
+              mountPath: {{ .Values.iso.mountPath }}
           {{- end }}
+          {{- include "vm-api.extraVolumeMounts" . | nindent 12 }}
 
       volumes:
       {{ if .Values.certificateMap }}
@@ -107,6 +108,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "vm-api.fullname" . }}-iso
       {{- end }}
+      {{- include "vm-api.extraVolumes" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
