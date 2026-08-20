@@ -3408,6 +3408,59 @@ entries:
     version: 0.0.1
   crucible-apps:
   - apiVersion: v2
+    created: "2026-08-20T14:36:25.245046599Z"
+    dependencies:
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.8.5
+    - condition: blueprint.enabled
+      name: blueprint
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.10
+    - condition: caster.enabled
+      name: caster
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.9.6
+    - condition: cite.enabled
+      name: cite
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.6
+    - condition: gallery.enabled
+      name: gallery
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.7
+    - condition: gameboard.enabled
+      name: gameboard
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.6.0
+    - condition: player.enabled
+      name: player
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: steamfitter.enabled
+      name: steamfitter
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.8.3
+    - condition: topomojo.enabled
+      name: topomojo
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.10.0
+    - condition: moodle.enabled
+      name: moodle
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.2.7
+    description: Crucible framework application deployment - A comprehensive cybersecurity
+      training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint,
+      CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
+    digest: 1deaf95a175847d0328db0bc7e22ddfa9e159b4880367f5214d99ff88925795b
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-apps
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-apps-0.3.5/crucible-apps-0.3.5.tgz
+    version: 0.3.5
+  - apiVersion: v2
     created: "2026-08-18T13:47:55.43260145Z"
     dependencies:
     - condition: alloy.enabled
@@ -6050,6 +6103,23 @@ entries:
     version: 1.17.5
   player:
   - apiVersion: v2
+    created: "2026-08-20T14:36:25.398768615Z"
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: 386b31ea900001c524ac9bbab9f5b0bbe4fc08d29466779a35468312a9a73ccc
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.12.0/player-1.12.0.tgz
+    version: 1.12.0
+  - apiVersion: v2
     created: "2026-07-29T16:01:26.373030721Z"
     description: Player is a window into virtual environments - enabling assignment
       of team membership and customization of responsive, browser-based user interfaces.
@@ -8509,4 +8579,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-08-18T13:47:55.433398268Z"
+generated: "2026-08-20T14:36:25.399597464Z"
