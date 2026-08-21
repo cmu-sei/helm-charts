@@ -82,10 +82,10 @@ steamfitter-api:
       # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /(api|swagger|hubs)
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /(api|swagger|hubs)
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -177,10 +177,6 @@ steamfitter-api:
     ClientSettings__urls__vmApi: ""
 
     # Stackstorm Configuration
-    VmTaskProcessing__ApiType: st2
-    VmTaskProcessing__ApiUsername:
-    VmTaskProcessing__ApiPassword:
-    VmTaskProcessing__ApiBaseUrl:
     VmTaskProcessing__VmListUpdateIntervalMinutes: 5
     VmTaskProcessing__HealthCheckSeconds: 30
     VmTaskProcessing__HealthCheckTimeoutSeconds: 90
@@ -206,6 +202,17 @@ steamfitter-api:
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: steamfitter-api
 
+    Email__SmtpHost: ""
+    Email__SmtpPort: 0
+    Email__UseStartTls: false
+    Email__SmtpUsername: ""
+    Email__SmtpPassword: ""
+    Email__DefaultFromAddress: ""
+    Email__AcceptAllCertificates: false
+    Ssh__DefaultPrivateKey: ""
+    Ssh__DefaultPrivateKeyPath: ""
+    Ssh__DefaultPrivateKeyPassphrase: ""
+    Ssh__CommandTimeoutSeconds: 0
 steamfitter-ui:
   image:
     repository: cmusei/steamfitter-ui
@@ -259,10 +266,10 @@ steamfitter-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
