@@ -10,7 +10,7 @@ metadata:
     {{- include "moodle.labels" $ | nindent 4 }}
   {{- with $.Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 data:
   {{- toYaml $configMap.data | nindent 2 }}
@@ -31,7 +31,7 @@ metadata:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- with .Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 data:
   configure_oidc.sh: {{ .Files.Get "files/configure_oidc.sh" | quote }}

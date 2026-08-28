@@ -35,7 +35,7 @@ spec:
       restartPolicy: OnFailure
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.imagePullSecrets "context" $) | nindent 8 }}
       {{- end }}
       containers:
       - name: create-database

@@ -16,12 +16,12 @@ metadata:
   annotations:
     helm.sh/resource-policy: keep
     {{- with $.Values.commonAnnotations }}
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" $.Values.commonAnnotations "context" $) | nindent 4 }}
     {{- end }}
   {{- else }}
   {{- with $.Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
   {{- end }}
 spec:

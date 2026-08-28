@@ -122,7 +122,12 @@ moodle:
     user: ""
     password: "" # Used only if existingSecret is empty
     existingSecret: ""
+    ## Which key in that Secret holds each field. A key left empty falls back to the plain
+    ## value above.
     existingSecretKey: "password"
+    existingSecretHostKey: ""
+    existingSecretPortKey: ""
+    existingSecretUserKey: ""
     protocol: ""
 
   mail:

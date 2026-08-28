@@ -39,7 +39,7 @@ metadata:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
   annotations:
-    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" $.Values.commonAnnotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
   {{- if not $autoscaling.enabled }}
@@ -68,17 +68,17 @@ spec:
         {{- $smtp := $moodle.smtp | default dict }}
         checksum/secrets: {{ printf "%s/%s" ($admin.password | default "") ($smtp.password | default "") | sha256sum }}
         {{- if .Values.podAnnotations }}
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.podAnnotations "context" $) | nindent 8 }}
         {{- end }}
       labels:
         {{- include "moodle.selectorLabels" . | nindent 8 }}
         {{- if .Values.podLabels }}
-        {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.podLabels "context" $) | nindent 8 }}
         {{- end }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.imagePullSecrets "context" $) | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "moodle.serviceAccountName" . }}
       {{- if $podSecurityContext.enabled }}
@@ -89,11 +89,11 @@ spec:
       automountServiceAccountToken: {{ $serviceAccount.automount | default false }}
       {{- if .Values.hostAliases }}
       hostAliases:
-        {{- toYaml .Values.hostAliases | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.hostAliases "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.affinity }}
       affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.affinity "context" $) | nindent 8 }}
       {{- else if or .Values.podAffinityPreset .Values.podAntiAffinityPreset $nodeAffinityPreset.type }}
       affinity:
         {{- if .Values.podAffinityPreset }}
@@ -108,11 +108,11 @@ spec:
       {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.tolerations }}
       tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.tolerations "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
@@ -122,7 +122,7 @@ spec:
       {{- end }}
       {{- if .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.topologySpreadConstraints "context" $) | nindent 8 }}
       {{- end }}
       {{- $persistence := .Values.persistence | default dict }}
       {{/* Above one pod localcachedir must be node-local, so force a per-pod emptyDir.
@@ -274,11 +274,11 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
-            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
         {{- end }}
         {{- if .Values.initContainers }}
-        {{- toYaml .Values.initContainers | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.initContainers "context" $) | nindent 8 }}
         {{- end }}
       {{- end }}
       containers:
@@ -308,9 +308,9 @@ spec:
             {{- $mail := $moodle.mail | default dict }}
             {{- $redis := $moodle.redis | default dict }}
             - name: MOODLE_USERNAME
-              value: {{ $admin.username | default "admin" | quote }}
+              value: {{ tpl ($admin.username | default "admin") $ | quote }}
             - name: MOODLE_EMAIL
-              value: {{ $admin.email | default "admin@example.com" | quote }}
+              value: {{ tpl ($admin.email | default "admin@example.com") $ | quote }}
             - name: MOODLE_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -368,17 +368,38 @@ spec:
               value: {{ $php.clientMaxBodySize | default "50M" | quote }}
             - name: max_input_vars
               value: {{ $php.maxInputVars | default "5000" | quote }}
-            {{- if $smtp.host }}
+            {{- if or $smtp.host (and $smtp.existingSecret $smtp.existingSecretHostKey) }}
             - name: SMTP_HOST
-              value: {{ $smtp.host | quote }}
+              {{- if and $smtp.existingSecret $smtp.existingSecretHostKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl $smtp.existingSecret $ }}
+                  key: {{ $smtp.existingSecretHostKey }}
+              {{- else }}
+              value: {{ tpl ($smtp.host | toString) $ | quote }}
+              {{- end }}
             {{- end }}
-            {{- if $smtp.port }}
+            {{- if or $smtp.port (and $smtp.existingSecret $smtp.existingSecretPortKey) }}
             - name: SMTP_PORT
+              {{- if and $smtp.existingSecret $smtp.existingSecretPortKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl $smtp.existingSecret $ }}
+                  key: {{ $smtp.existingSecretPortKey }}
+              {{- else }}
               value: {{ $smtp.port | quote }}
+              {{- end }}
             {{- end }}
-            {{- if $smtp.user }}
+            {{- if or $smtp.user (and $smtp.existingSecret $smtp.existingSecretUserKey) }}
             - name: SMTP_USER
-              value: {{ $smtp.user | quote }}
+              {{- if and $smtp.existingSecret $smtp.existingSecretUserKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl $smtp.existingSecret $ }}
+                  key: {{ $smtp.existingSecretUserKey }}
+              {{- else }}
+              value: {{ tpl ($smtp.user | toString) $ | quote }}
+              {{- end }}
             {{- end }}
             {{- if or $smtp.password $smtp.existingSecret }}
             - name: SMTP_PASSWORD
@@ -526,7 +547,7 @@ spec:
               value: {{ $oidc.waitInterval | quote }}
             {{- end }}
           {{- if .Values.extraEnvVars }}
-            {{- toYaml .Values.extraEnvVars | nindent 12 }}
+            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
           {{- if or .Values.extraEnvVarsCM .Values.extraEnvVarsSecret }}
           envFrom:
@@ -541,7 +562,7 @@ spec:
           {{- end }}
           {{- if .Values.lifecycleHooks }}
           lifecycle:
-            {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+            {{- include "moodle.tplvalues.render" (dict "value" $.Values.lifecycleHooks "context" $) | nindent 12 }}
           {{- end }}
           ports:
             - name: http
@@ -553,7 +574,7 @@ spec:
               protocol: TCP
             {{- end }}
             {{- if .Values.extraContainerPorts }}
-            {{- toYaml .Values.extraContainerPorts | nindent 12 }}
+            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraContainerPorts "context" $) | nindent 12 }}
             {{- end }}
           {{- $startupProbe := .Values.startupProbe | default dict }}
           {{- if .Values.customStartupProbe }}
@@ -678,10 +699,10 @@ spec:
               readOnly: true
             {{- end }}
             {{- if $.Values.extraVolumeMounts }}
-            {{- toYaml $.Values.extraVolumeMounts | nindent 12 }}
+            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
         {{- if .Values.sidecars }}
-        {{- toYaml .Values.sidecars | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.sidecars "context" $) | nindent 8 }}
         {{- end }}
       volumes:
         {{- if $codeVolume }}
@@ -710,7 +731,7 @@ spec:
         - name: {{ $key }}
           {{- if eq $type "persistentVolumeClaim" }}
           persistentVolumeClaim:
-            claimName: {{ $value.existingClaim | default (printf "%s-%s" (include "moodle.fullname" $) $key) }}
+            claimName: {{ tpl ($value.existingClaim | default (printf "%s-%s" (include "moodle.fullname" $) $key)) $ }}
           {{- else if eq $type "emptyDir" }}
           emptyDir:
             {{- if $value.medium }}
@@ -792,5 +813,5 @@ spec:
           {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
-        {{- toYaml $.Values.extraVolumes | nindent 8 }}
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumes "context" $) | nindent 8 }}
         {{- end }}

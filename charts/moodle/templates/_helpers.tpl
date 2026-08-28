@@ -41,7 +41,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- with .Values.commonLabels }}
-{{ toYaml . }}
+{{ include "moodle.tplvalues.render" (dict "value" . "context" $) }}
 {{- end }}
 {{- end }}
 
@@ -420,11 +420,11 @@ Validate required values for Moodle deployment
 {{/* Validate SMTP configuration consistency */}}
 {{- $smtp := $moodle.smtp | default dict }}
 {{- $smtpConfigured := or $smtp.host $smtp.port $smtp.user $smtp.password $smtp.existingSecret $smtp.protocol }}
-{{- if and $smtpConfigured (not $smtp.host) }}
-{{- fail "ERROR: moodle.smtp.host is required when any other moodle.smtp setting is configured.\n  Either:\n  1. Set moodle.smtp.host to the relay hostname\n  2. Remove every moodle.smtp setting to leave email unconfigured" }}
+{{- if and $smtpConfigured (not $smtp.host) (not (and $smtp.existingSecret $smtp.existingSecretHostKey)) }}
+{{- fail "ERROR: moodle.smtp.host is required when any other moodle.smtp setting is configured.\n  Either:\n  1. Set moodle.smtp.host to the relay hostname\n  2. Set moodle.smtp.existingSecret and moodle.smtp.existingSecretHostKey to read it from a Secret\n  3. Remove every moodle.smtp setting to leave email unconfigured" }}
 {{- end }}
-{{- if and (or $smtp.password $smtp.existingSecret) (not $smtp.user) }}
-{{- fail "ERROR: moodle.smtp.user is required when moodle.smtp.password or moodle.smtp.existingSecret is set.\n  Either:\n  1. Set moodle.smtp.user to the account the relay authenticates\n  2. Remove the password settings, for a relay that authenticates by address" }}
+{{- if and (or $smtp.password $smtp.existingSecret) (not $smtp.user) (not (and $smtp.existingSecret $smtp.existingSecretUserKey)) }}
+{{- fail "ERROR: moodle.smtp.user is required when moodle.smtp.password or moodle.smtp.existingSecret is set.\n  Either:\n  1. Set moodle.smtp.user to the account the relay authenticates\n  2. Set moodle.smtp.existingSecretUserKey to read it from the same Secret\n  3. Remove the password settings, for a relay that authenticates by address" }}
 {{- end }}
 
 {{/* Validate ingress configuration */}}
@@ -617,7 +617,7 @@ Validate required values for Moodle deployment
 
 {{/* Validate Install Arguments */}}
 {{- if not $readOnlyDirroot.enabled }}
-{{- $installArgs := dict "moodle.site.url" (tpl ($site.url | default "") .) "moodle.site.language" ($site.language | default "en") "moodle.admin.username" ($admin.username | default "admin") "moodle.admin.email" ($admin.email | default "admin@example.com") "moodle.admin.password" ($admin.password | default "") "moodle.database.type" ($database.type | default "pgsql") "moodle.database.host" (tpl ($database.host | default "") .) "moodle.database.port" ($database.port | default "5432") "moodle.database.name" (tpl ($database.name | default "") .) "moodle.database.user" (tpl ($database.user | default "") .) "moodle.database.prefix" (tpl ($database.prefix | default "mdl_") .) "moodle.database.password" ($database.password | default "") }}
+{{- $installArgs := dict "moodle.site.url" (tpl ($site.url | default "") .) "moodle.site.language" ($site.language | default "en") "moodle.admin.username" (tpl ($admin.username | default "admin") .) "moodle.admin.email" (tpl ($admin.email | default "admin@example.com") .) "moodle.admin.password" ($admin.password | default "") "moodle.database.type" ($database.type | default "pgsql") "moodle.database.host" (tpl ($database.host | default "") .) "moodle.database.port" ($database.port | default "5432") "moodle.database.name" (tpl ($database.name | default "") .) "moodle.database.user" (tpl ($database.user | default "") .) "moodle.database.prefix" (tpl ($database.prefix | default "mdl_") .) "moodle.database.password" ($database.password | default "") }}
 {{- range $path, $value := $installArgs }}
 {{- if regexMatch "\\s" ($value | toString) }}
 {{- fail (printf "ERROR: %s must not contain whitespace unless readOnlyDirroot.enabled=true.\n  The image generates config.php with an unquoted install.php argument list, so the value splits and the cold install aborts with 'Unrecognised options:' and CrashLoops the pod. With readOnlyDirroot enabled the chart owns config.php and the image never runs install.php.\n  Either:\n  1. Set readOnlyDirroot.enabled=true\n  2. Set %s to a value with no whitespace" $path $path) }}
@@ -706,4 +706,19 @@ than a name.
 {{- else -}}
 {{- printf "%s/%s" .Release.Namespace .Release.Name | sha256sum | trunc 5 -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Render a value that may contain template syntax.
+Free-form values -- annotations, labels, env vars, volumes, scheduling -- are written by the
+operator, and an umbrella chart usually wants {{ .Values.global.* }} in them. Every such block
+goes through here so they all behave the same way, whichever object they land on.
+Usage: {{ include "moodle.tplvalues.render" (dict "value" .Values.podLabels "context" $) }}
+*/}}
+{{- define "moodle.tplvalues.render" -}}
+{{- if typeIs "string" .value }}
+{{- tpl .value .context }}
+{{- else }}
+{{- tpl (.value | toYaml) .context }}
+{{- end }}
 {{- end -}}
