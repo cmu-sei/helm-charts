@@ -13,6 +13,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 list($options, $unrecognized) = cli_get_params([
     'step' => null,
     'file' => '',
+    'secretsfile' => '',
 
     // OAuth2 options
     'id' => '',
@@ -430,6 +431,23 @@ function preset_exists_by_name($name) {
 }
 
 function set_configs($options) {
+    // Settings whose value names a Secret arrive as environment variables. The manifest says
+    // which variable carries which setting; the value is in no rendered manifest.
+    $secretsfile = $options['secretsfile'] ?? '';
+    if ($secretsfile !== '' && is_readable($secretsfile)) {
+        foreach (load_json($secretsfile) as $ref) {
+            $value = getenv($ref['env']);
+            if ($value === false) {
+                cli_error("{$ref['plugin']}/{$ref['name']} expects {$ref['env']}, which is not set");
+            }
+            $component = ($ref['plugin'] === 'core') ? null : $ref['plugin'];
+            set_config($ref['name'], $value, $component);
+            echo "Set {$ref['plugin']}/{$ref['name']} from secret {$ref['secret']}\n";
+        }
+    }
+    if ($options['file'] === '' || !is_readable($options['file'])) {
+        return;
+    }
     foreach (load_json($options['file']) as $plugin => $settings) {
         $component = ($plugin === 'core') ? null : $plugin;
         foreach ($settings as $name => $value) {

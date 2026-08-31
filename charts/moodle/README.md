@@ -329,6 +329,7 @@ These are the keys through which a real deployment is expressed: the plugin tree
 | `moodle.preset.existingConfigMap` | ConfigMap you create holding that XML instead                                      | `""`  |
 | `moodle.preset.key`             | Key within `moodle.preset.existingConfigMap`                                       | `preset.xml` |
 | `moodle.config`                 | Map of component to settings, applied with `set_config()`; `core` is core          | `{}`    |
+| `moodle.config.<c>.<s>`         | A value may be `{existingSecret, key}` instead of a literal, for a sensitive value | —       |
 | `moodle.preConfigureCommands`   | Shell commands run before Moodle installation and upgrade                          | `""`    |
 | `moodle.postConfigureCommands`  | Shell commands run after Moodle installation and upgrade                           | `""`    |
 | `caBundle.existingConfigMap`    | ConfigMap mounted over `/etc/ssl/certs/ca-certificates.crt`; empty mounts nothing   | `""`    |
@@ -348,8 +349,12 @@ moodle:
     logstore_xapi: true
   config:
     core: { theme: boost_union, forcelogin: 1 }
-    logstore_xapi: { endpoint: "https://lrs.example.com/xapi" }
+    logstore_xapi:
+      endpoint: "https://lrs.example.com/xapi"
+      password: { existingSecret: lrs-creds, key: password }
 ```
+
+A `moodle.config` value that is a map names a Secret rather than holding the value: the chart passes it to the container from that Secret, so it never appears in `values.yaml` or in any rendered manifest. Use it for an API key, token, password or any other sensitive value. It must carry exactly `existingSecret` and `key`.
 
 | Field     | Effect                                                                      |
 | --------- | --------------------------------------------------------------------------- |

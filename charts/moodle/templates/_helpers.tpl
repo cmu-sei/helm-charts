@@ -722,3 +722,43 @@ Usage: {{ include "moodle.tplvalues.render" (dict "value" .Values.podLabels "con
 {{- tpl (.value | toYaml) .context }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Split moodle.config into literal values and values that name a Secret.
+A value that is a map is a reference and must carry exactly existingSecret and key.
+Map iteration in Helm is key-sorted, so the generated variable names are stable across renders.
+Returns {plain: <config without references>, refs: [{plugin,name,secret,key,env}]}
+*/}}
+{{- define "moodle.config.split" -}}
+{{- $cfg := fromYaml (tpl (toYaml .Values.moodle.config) $) -}}
+{{- $plain := dict -}}
+{{- $refs := list -}}
+{{- $i := 0 -}}
+{{- range $plugin, $settings := $cfg }}
+  {{- $keep := dict -}}
+  {{- range $name, $value := $settings }}
+    {{- if kindIs "map" $value }}
+      {{- if not (and (hasKey $value "existingSecret") (hasKey $value "key")) }}
+        {{- fail (printf "ERROR: moodle.config.%s.%s is a map, so it must name a Secret with existingSecret and key.\n  Either:\n  1. Set existingSecret and key to read the value from a Secret\n  2. Give a plain value" $plugin $name) }}
+      {{- end }}
+      {{- range $k, $v := $value }}
+        {{- if not (has $k (list "existingSecret" "key")) }}
+          {{- fail (printf "ERROR: moodle.config.%s.%s has an unknown field %q. A Secret reference takes existingSecret and key only." $plugin $name $k) }}
+        {{- end }}
+      {{- end }}
+      {{- if not $value.existingSecret }}
+        {{- fail (printf "ERROR: moodle.config.%s.%s has an empty existingSecret. Name the Secret holding the value." $plugin $name) }}
+      {{- end }}
+      {{- if not $value.key }}
+        {{- fail (printf "ERROR: moodle.config.%s.%s has an empty key. Name the key inside %s." $plugin $name $value.existingSecret) }}
+      {{- end }}
+      {{- $refs = append $refs (dict "plugin" $plugin "name" $name "secret" $value.existingSecret "key" $value.key "env" (printf "MOODLE_CFGSECRET_%d" $i)) -}}
+      {{- $i = add1 $i -}}
+    {{- else }}
+      {{- $_ := set $keep $name $value -}}
+    {{- end }}
+  {{- end }}
+  {{- if $keep }}{{- $_ := set $plain $plugin $keep -}}{{- end }}
+{{- end }}
+{{- toYaml (dict "plain" $plain "refs" $refs) -}}
+{{- end -}}

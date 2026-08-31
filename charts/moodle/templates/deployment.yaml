@@ -489,7 +489,7 @@ spec:
                 {{- end }}
                 {{- if $moodle.config }}
                 # System: Apply Moodle settings
-                php /opt/sei/custom-scripts/setup_environment.php --step=set_configs --file=/opt/sei/config-values/config.json
+                php /opt/sei/custom-scripts/setup_environment.php --step=set_configs --file=/opt/sei/config-values/config.json --secretsfile=/opt/sei/custom-scripts/config-secrets.json
                 {{- end }}
                 {{- if $moodle.enabledPlugins }}
                 # System: Enable Moodle plugins
@@ -546,6 +546,15 @@ spec:
             - name: OIDC_WAIT_INTERVAL
               value: {{ $oidc.waitInterval | quote }}
             {{- end }}
+          {{- if $moodle.config }}
+          {{- range (fromYaml (include "moodle.config.split" $)).refs }}
+            - name: {{ .env }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl .secret $ }}
+                  key: {{ .key }}
+          {{- end }}
+          {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

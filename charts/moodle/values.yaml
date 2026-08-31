@@ -230,6 +230,12 @@ moodle:
   ##     core: {theme: boost_union, forcelogin: 1}
   ##     mod_customcert: {verifyallcertificates: 1}
   ##     logstore_xapi: {endpoint: "https://lrs.example.com/xapi"}
+  ##
+  ## A value may name a Secret instead, for a setting that holds a sensitive value:
+  ##   config:
+  ##     logstore_xapi:
+  ##       endpoint: "https://lrs.example.com/xapi"
+  ##       password: {existingSecret: lrs-creds, key: password}
   config: {}
 
   ## Additional Settings

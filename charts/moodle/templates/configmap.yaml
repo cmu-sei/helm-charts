@@ -47,4 +47,10 @@ data:
   {{- with $preset.xml }}
   preset.xml: {{ tpl . $ | quote }}
   {{- end }}
+  {{- if $moodle.config }}
+  {{- $split := fromYaml (include "moodle.config.split" $) }}
+  {{- if $split.refs }}
+  config-secrets.json: {{ toJson $split.refs | quote }}
+  {{- end }}
+  {{- end }}
 {{- end }}
