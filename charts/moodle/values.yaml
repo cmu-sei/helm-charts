@@ -303,6 +303,10 @@ readOnlyDirroot:
 ## first, and maxSurge overlaps two code generations even at one replica.
 updateStrategy:
   type: Recreate # A rollout stops the site for one pod start plus the schema upgrade
+  ## Read only when type is RollingUpdate. maxSurge 0 ends the overlap at one replica only
+  # rollingUpdate:
+  #   maxSurge: 0
+  #   maxUnavailable: 1
 
 # Pod annotations and labels
 podAnnotations: {}
@@ -396,7 +400,7 @@ readinessProbe:
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 6
+  failureThreshold: 60
   successThreshold: 1
 
 ## Resource requests and limits
@@ -457,11 +461,12 @@ volumePermissions:
 persistence:
   moodledata:
     ## dataroot is shared between pods, with the cachedir, tempdir and backuptempdir
-    ## inside it; more than one pod refuses emptyDir and ReadWriteOnce.
+    ## inside it; more than one pod refuses emptyDir and ReadWriteOnce, a rolling update
+    ## refuses emptyDir.
     ##
-    ## localcachedir must stay node-local, so above one pod the chart mounts a per-pod
-    ## emptyDir over /var/www/moodledata/localcache. At one pod it is left inside
-    ## moodledata unless you enable persistence.localcache below.
+    ## localcachedir must stay node-local, so above one pod, and under a rolling update,
+    ## the chart mounts a per-pod emptyDir over /var/www/moodledata/localcache. At one pod
+    ## it is left inside moodledata unless you enable persistence.localcache below.
     enabled: true
     type: emptyDir # Every uploaded file is lost when the pod is replaced; persistentVolumeClaim keeps them
     sizeLimit: "5Gi"
@@ -473,8 +478,9 @@ persistence:
     # storageClass: "efs-sc"      # Storage class name
     # retain: true                # Keep PVC after helm uninstall
 
-  ## Node-local cache. Above one pod a per-pod emptyDir is always mounted, because a shared
-  ## localcachedir corrupts across pods. At one pod it lives inside moodledata by default.
+  ## Node-local cache. Above one pod, and under a rolling update, a per-pod emptyDir is
+  ## always mounted, because a shared localcachedir corrupts across pods. At one pod it
+  ## lives inside moodledata by default.
   ## Enable this to give it its own volume, or to change the emptyDir size.
   localcache:
     enabled: false

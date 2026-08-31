@@ -551,6 +551,16 @@ Validate required values for Moodle deployment
 {{- end }}
 {{- end }}
 
+{{/* Validate Rollout Dataroot */}}
+{{- if and (eq ($updateStrategy.type | default "RollingUpdate") "RollingUpdate") (not $multiPod) }}
+{{- if not $moodledata.enabled }}
+{{- fail "ERROR: updateStrategy.type=RollingUpdate with persistence.moodledata.enabled=false.\n  A rollout overlaps a second pod, and dataroot on each pod's own container layer is not shared between them.\n  Moodle enables maintenance mode by writing climaintenance.html into dataroot, so the pod still serving never sees it and keeps taking writes while the schema is upgraded.\n  Either:\n  1. Set updateStrategy.type=Recreate, which replaces the one pod instead of overlapping two.\n     A release already on RollingUpdate needs the strategy Kubernetes defaulted in cleared in the same patch:\n     kubectl patch deploy RELEASE-moodle -p '{\"spec\":{\"strategy\":{\"type\":\"Recreate\",\"rollingUpdate\":null}}}'\n  2. Set persistence.moodledata.type=persistentVolumeClaim, so both pods share dataroot" }}
+{{- end }}
+{{- if eq ($moodledata.type | default "persistentVolumeClaim") "emptyDir" }}
+{{- fail "ERROR: updateStrategy.type=RollingUpdate with persistence.moodledata.type=emptyDir.\n  A rollout overlaps a second pod, and an emptyDir gives each of them its own dataroot.\n  Moodle enables maintenance mode by writing climaintenance.html into dataroot, so the pod still serving never sees it and keeps answering 200 and taking writes while the schema is upgraded.\n  Either:\n  1. Set updateStrategy.type=Recreate, which replaces the one pod instead of overlapping two.\n     A release already on RollingUpdate needs the strategy Kubernetes defaulted in cleared in the same patch:\n     kubectl patch deploy RELEASE-moodle -p '{\"spec\":{\"strategy\":{\"type\":\"Recreate\",\"rollingUpdate\":null}}}'\n  2. Set persistence.moodledata.type=persistentVolumeClaim, so both pods share dataroot" }}
+{{- end }}
+{{- end }}
+
 {{/* Validate Dataroot Mount Path */}}
 {{- if and $moodledata.enabled $moodledata.mountPath (ne $moodledata.mountPath "/var/www/moodledata") }}
 {{- fail "ERROR: persistence.moodledata.mountPath is outside /var/www/moodledata, which is where dataroot is fixed.\n  The chart renders config.php with dataroot /var/www/moodledata, so the claim mounts where Moodle never reads, dataroot falls back to each pod's container layer, and every uploaded file and install record goes with the pod.\n  Set persistence.moodledata.mountPath to /var/www/moodledata." }}

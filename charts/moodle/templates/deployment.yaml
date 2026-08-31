@@ -16,6 +16,7 @@
 {{- $codeVolume := $readOnlyDirroot.enabled }}
 {{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
 {{- $multiPod := or (gt (.Values.replicaCount | default 1 | int) 1) $autoscaling.enabled }}
+{{- $rollingUpdate := eq ((.Values.updateStrategy | default dict).type | default "RollingUpdate") "RollingUpdate" }}
 {{- $maxPods := ternary ($autoscaling.maxReplicas | default 3 | int) (.Values.replicaCount | default 1 | int) (eq ($autoscaling.enabled | default false) true) }}
 {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
 {{- $configKey := $secretConfig.key | default "config.php" }}
@@ -128,7 +129,7 @@ spec:
       {{/* Above one pod localcachedir must be node-local, so force a per-pod emptyDir.
            A single pod may leave it inside moodledata. Injected here so the generic
            persistence loop below renders it like any other volume. */}}
-      {{- if and $multiPod (not ($persistence.localcache | default dict).enabled) }}
+      {{- if and (or $multiPod $rollingUpdate) (not ($persistence.localcache | default dict).enabled) }}
       {{- $_ := set $persistence "localcache" (dict "enabled" true "type" "emptyDir" "sizeLimit" "1Gi") }}
       {{- end }}
       {{- $volPerm := .Values.volumePermissions | default dict }}
