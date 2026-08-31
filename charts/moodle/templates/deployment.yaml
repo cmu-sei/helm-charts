@@ -5,6 +5,7 @@
 {{- $containerPorts := .Values.containerPorts | default dict }}
 {{- $nodeAffinityPreset := .Values.nodeAffinityPreset | default dict }}
 {{- $moodle := .Values.moodle | default dict }}
+{{- $site := $moodle.site | default dict }}
 {{- $webRoot := include "moodle.webRoot" . }}
 {{- $oidc := $moodle.oidc | default dict }}
 {{- $preset := $moodle.preset | default dict }}
@@ -22,6 +23,13 @@
 {{- $multiPod := or (gt (.Values.replicaCount | default 1 | int) 1) $autoscaling.enabled }}
 {{- $rollingUpdate := eq ((.Values.updateStrategy | default dict).type | default "RollingUpdate") "RollingUpdate" }}
 {{- $maxPods := ternary ($autoscaling.maxReplicas | default 3 | int) (.Values.replicaCount | default 1 | int) (eq ($autoscaling.enabled | default false) true) }}
+{{- $persistence := deepCopy (.Values.persistence | default dict) }}
+{{/* Above one pod localcachedir must be node-local, so force a per-pod emptyDir. A single
+     pod may leave it inside moodledata. Injected on a copy of Values so the persistence
+     loops below render it like any other volume without mutating the release-wide Values. */}}
+{{- if and (or $multiPod $rollingUpdate) (not ($persistence.localcache | default dict).enabled) }}
+{{- $_ := set $persistence "localcache" (dict "enabled" true "type" "emptyDir" "sizeLimit" "1Gi") }}
+{{- end }}
 {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
 {{- $configKey := $secretConfig.key | default "config.php" }}
 {{- $caBundle := .Values.caBundle | default dict }}
@@ -128,13 +136,6 @@ spec:
       {{- if .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- include "moodle.tplvalues.render" (dict "value" $.Values.topologySpreadConstraints "context" $) | nindent 8 }}
-      {{- end }}
-      {{- $persistence := .Values.persistence | default dict }}
-      {{/* Above one pod localcachedir must be node-local, so force a per-pod emptyDir.
-           A single pod may leave it inside moodledata. Injected here so the generic
-           persistence loop below renders it like any other volume. */}}
-      {{- if and (or $multiPod $rollingUpdate) (not ($persistence.localcache | default dict).enabled) }}
-      {{- $_ := set $persistence "localcache" (dict "enabled" true "type" "emptyDir" "sizeLimit" "1Gi") }}
       {{- end }}
       {{- $volPerm := .Values.volumePermissions | default dict }}
       {{- $moodleVol := ($persistence.moodle | default dict).enabled }}
@@ -602,7 +603,7 @@ spec:
               {{- if not ($moodle.proxy | default dict).reverseProxy }}
               httpHeaders:
                 - name: Host
-                  value: {{ (urlParse (tpl ($moodle.site).url $)).host | quote }}
+                  value: {{ (urlParse (tpl $site.url $)).host | quote }}
               {{- end }}
             initialDelaySeconds: {{ $startupProbe.initialDelaySeconds | default 0 }}
             periodSeconds: {{ $startupProbe.periodSeconds | default 10 }}
@@ -642,7 +643,7 @@ spec:
               {{- if not ($moodle.proxy | default dict).reverseProxy }}
               httpHeaders:
                 - name: Host
-                  value: {{ (urlParse (tpl ($moodle.site).url $)).host | quote }}
+                  value: {{ (urlParse (tpl $site.url $)).host | quote }}
               {{- end }}
             initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 30 }}
             periodSeconds: {{ $readinessProbe.periodSeconds | default 10 }}
@@ -656,7 +657,6 @@ spec:
           {{- else if ne (.Values.resourcesPreset | default "none") "none" }}
           resources: {{- include "moodle.resources.preset" (dict "type" .Values.resourcesPreset) | nindent 12 }}
           {{- end }}
-          {{- $persistence := .Values.persistence | default dict }}
           volumeMounts:
             {{- if $codeVolume }}
             - name: dirroot
