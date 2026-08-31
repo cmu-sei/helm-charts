@@ -71,10 +71,10 @@ topomojo-api:
       # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /(api|hub|docs|theme)
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /(api|hub|docs|theme)
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -123,8 +123,8 @@ topomojo-api:
           proxy_ssl_session_reuse on;
         }
     hosts:
-      - host: chart-example.local
-        paths: []
+    - host: chart-example.local
+      paths: []
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -289,6 +289,12 @@ topomojo-api:
 
   ## Create a seed data file based on the contents of an existing secret
   ## or by values that support templating via the tpl function.
+    Pod__IsoScopeSeparator: ""
+    Pod__EnableHA: ""
+    Pod__RequireHA: ""
+    Pod__HaAutoRebalance: ""
+    Pod__HaMaxRestart: ""
+    Pod__HaMaxRelocate: ""
   seedData:
     # If specified, the secret at the specified key is used as the contents of the file.
     # Note that this data must be in JSON format for an existing secret.
@@ -358,10 +364,10 @@ topomojo-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
