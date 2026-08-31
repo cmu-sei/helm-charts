@@ -107,6 +107,20 @@ OIDC client secret name
 {{- end }}
 
 {{/*
+Secret holding moodle.config.
+*/}}
+{{- define "moodle.settings.secretName" -}}
+{{- printf "%s-settings" (include "moodle.fullname" .) }}
+{{- end }}
+
+{{/*
+ConfigMap holding the chart's scripts and the manifests they read.
+*/}}
+{{- define "moodle.scripts.configMapName" -}}
+{{- printf "%s-scripts" (include "moodle.fullname" .) }}
+{{- end }}
+
+{{/*
 (Placeholder — reserved for future OIDC helpers)
 */}}
 

@@ -263,7 +263,7 @@ spec:
               mountPath: /opt/sei/config
               readOnly: true
             {{- if $scripts }}
-            - name: oidc-scripts
+            - name: chart-scripts
               mountPath: /opt/sei/custom-scripts
               readOnly: true
             {{- end }}
@@ -681,7 +681,7 @@ spec:
             {{- end }}
             {{- end }}
             {{- if $scripts }}
-            - name: oidc-scripts
+            - name: chart-scripts
               mountPath: /opt/sei/custom-scripts
               readOnly: true
             {{- end }}
@@ -782,15 +782,15 @@ spec:
           {{- end }}
         {{- end }}
         {{- if $scripts }}
-        - name: oidc-scripts
+        - name: chart-scripts
           configMap:
-            name: {{ include "moodle.fullname" $ }}-oidc
+            name: {{ include "moodle.scripts.configMapName" $ }}
             defaultMode: 0755
         {{- end }}
         {{- if $moodle.config }}
         - name: config-values
           secret:
-            secretName: {{ include "moodle.oidc.secretName" $ }}
+            secretName: {{ include "moodle.settings.secretName" $ }}
             defaultMode: 0444
             items:
               - key: config.json
