@@ -176,16 +176,13 @@ moodle:
   ##   moodle:
   ##     allowWebPluginInstall: false
   ##
-  ## 2. On, and kept across restarts by a named PVC at the code tree:
+  ## 2. On, and kept across restarts by a PVC at the code tree (see persistence.moodle below):
   ##   replicaCount: 1
   ##   moodle:
   ##     allowWebPluginInstall: true
-  ##   extraVolumes:
-  ##     - name: code
-  ##       persistentVolumeClaim: {claimName: "moodle-code-pvc"}
-  ##   extraVolumeMounts:
-  ##     - name: code
-  ##       mountPath: /var/www/html
+  ##   persistence:
+  ##     moodle:
+  ##       enabled: true
   ##
   ## 3. On and ephemeral. The plugin serves until the pod restarts, then its rows outlive its code:
   ##   replicaCount: 1
@@ -491,6 +488,16 @@ persistence:
     enabled: false
     type: emptyDir
     sizeLimit: "1Gi"
+
+  ## Code tree at /var/www/html. Intended for a single instance under Recreate, and not
+  ## compatible with readOnlyDirroot, which manages the code volume itself. Above one pod,
+  ## or under a rolling update, replicas share one code tree, which Moodle does not intend.
+  ## Keeps web-installed plugins across pod restarts.
+  moodle:
+    enabled: false
+    type: persistentVolumeClaim
+    size: 8Gi
+    # mountPath: /var/www/html   # default
 
 ## Extra volumes to add to the deployment
 extraVolumes: []
