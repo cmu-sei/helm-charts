@@ -14,6 +14,10 @@
 {{- $scripts := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.plugins $moodle.enabledPlugins $presetWanted ($moodle.redis | default dict).host }}
 {{- $readOnlyDirroot := .Values.readOnlyDirroot | default dict }}
 {{- $codeVolume := $readOnlyDirroot.enabled }}
+{{- $configSplit := dict "plain" dict "refs" list }}
+{{- if $moodle.config }}
+{{- $configSplit = fromYaml (include "moodle.config.split" $) }}
+{{- end }}
 {{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
 {{- $multiPod := or (gt (.Values.replicaCount | default 1 | int) 1) $autoscaling.enabled }}
 {{- $rollingUpdate := eq ((.Values.updateStrategy | default dict).type | default "RollingUpdate") "RollingUpdate" }}
@@ -547,8 +551,8 @@ spec:
             - name: OIDC_WAIT_INTERVAL
               value: {{ $oidc.waitInterval | quote }}
             {{- end }}
-          {{- if $moodle.config }}
-          {{- range (fromYaml (include "moodle.config.split" $)).refs }}
+          {{- if $configSplit.refs }}
+          {{- range $configSplit.refs }}
             - name: {{ .env }}
               valueFrom:
                 secretKeyRef:
@@ -686,7 +690,7 @@ spec:
               mountPath: /opt/sei/custom-scripts
               readOnly: true
             {{- end }}
-            {{- if $moodle.config }}
+            {{- if $configSplit.plain }}
             - name: config-values
               mountPath: /opt/sei/config-values
               readOnly: true
@@ -788,7 +792,7 @@ spec:
             name: {{ include "moodle.scripts.configMapName" $ }}
             defaultMode: 0755
         {{- end }}
-        {{- if $moodle.config }}
+        {{- if $configSplit.plain }}
         - name: config-values
           secret:
             secretName: {{ include "moodle.settings.secretName" $ }}
