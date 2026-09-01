@@ -22,6 +22,27 @@ helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install moodle sei/moodle -f values.yaml
 ```
 
+## Deployment Topologies
+
+The chart runs as either a single instance or a highly available multi-replica deployment, and **defaults to a single instance** (`replicaCount: 1`).
+
+**Single instance** — the defaults are sufficient. Provide a database and a site URL and you are done:
+
+```yaml
+replicaCount: 1
+moodle:
+  site:
+    url: "https://moodle.example.com" # https, or terminate TLS in front and set proxy.sslProxy
+  database:
+    existingSecret: "moodle-db" # or moodle.database.password for dev
+```
+
+`moodle.redis.host` may stay empty (file-based sessions are fine on one pod), `persistence.moodledata` may stay `emptyDir` (or use a `ReadWriteOnce` PVC to keep uploads), and `readOnlyDirroot` may stay disabled.
+
+**High availability** — set `replicaCount > 1` (or enable `autoscaling`), then satisfy the shared-state requirements: a `moodle.redis.host`, a `ReadWriteMany` `moodledata` volume, and a per-pod code tree (the default already is per-pod). See [Scaling Configuration](#scaling-configuration). The chart's validation refuses a multi-replica release that is missing any of these rather than letting it come up broken.
+
+Both topologies use the same defaults elsewhere (`updateStrategy: Recreate`, in-pod `cron`, `autoUpdateMoodle`); the [values.yaml](values.yaml) comments note where a setting behaves differently at one pod versus many.
+
 ## Moodle Configuration
 
 The following settings configure the Moodle application via environment variables. Most settings correspond to the [alpine-moodle image configuration](https://github.com/erseco/alpine-moodle#configuration).

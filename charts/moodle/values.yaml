@@ -2,7 +2,7 @@
 global:
   nameOverride: ""
   fullnameOverride: ""
-  domain: "" # Inherited from parent chart when used as subchart
+  domain: "" # Not read by this chart; a parent chart may set it as a subchart convention
 
 # Common annotations and labels
 commonAnnotations: {}
@@ -16,7 +16,7 @@ image:
   registry: ""
   repository: erseco/alpine-moodle
   tag: v5.2.2
-  digest: "" # Set image.tag to the matching version, the chart reads the 5.0 or 5.1 layout split from it
+  digest: "" # If set, also set image.tag: the chart reads the 5.0/5.1 web-root layout from the tag, not the digest
   pullPolicy: IfNotPresent
 
 ## CA bundle mounted over /etc/ssl/certs/ca-certificates.crt when outbound TLS is intercepted.
@@ -26,6 +26,11 @@ caBundle:
   existingConfigMap: ""
   existingSecret: ""
   key: "ca-certificates.crt"
+
+## Topology: defaults to a single instance (replicaCount: 1). For HA, set replicaCount > 1
+## (or autoscaling), add moodle.redis.host and a ReadWriteMany dataroot; the chart's guards
+## enforce the rest. A rolling update surges a second pod even at one replica, so it needs a
+## shared dataroot too. Comments below mark settings that differ between one pod and many.
 
 # Number of replicas
 replicaCount: 1
@@ -42,15 +47,16 @@ moodle:
     existingSecretKey: "admin-password"
 
   ## Site Configuration
-  ## url must match your actual domain or ingress hostname
+  ## url is the address browsers use, no port (serve on 80/443; a port loops redirects unless
+  ## behind a reverse proxy). Use https or terminate TLS in front. Same for one pod or many.
   site:
     url: "https://moodle.example.com"
     name: "Moodle"
     language: "en"
 
   ## Proxy Configuration
-  ## reverseProxy: true cannot be combined with this chart's own ingress: nginx keeps
-  ## the Host header, so Moodle answers reverseproxyabused while every pod stays Ready.
+  ## sslProxy: true when TLS is terminated in front and site.url is https (usual, and simplest for
+  ## one pod); false to serve plain http. reverseProxy: true is incompatible with this chart's ingress.
   proxy:
     reverseProxy: false
     sslProxy: true
@@ -136,7 +142,7 @@ moodle:
 
   ## Redis Configuration
   redis:
-    host: "" # Set this with more than one pod, or sessions fall back to files on the shared dataroot
+    host: "" # Single instance: optional (file sessions). HA: required, else sessions serialise across pods
     port: ""
     password: "" ## Redis AUTH password (used only if existingSecret is empty)
     existingSecret: "" ## Name of secret holding the Redis password (recommended)
@@ -170,16 +176,13 @@ moodle:
   ##   moodle:
   ##     allowWebPluginInstall: false
   ##
-  ## 2. On, and kept across restarts by a named PVC at the code tree:
+  ## 2. On, and kept across restarts by a PVC at the code tree (see persistence.moodle below):
   ##   replicaCount: 1
   ##   moodle:
   ##     allowWebPluginInstall: true
-  ##   extraVolumes:
-  ##     - name: code
-  ##       persistentVolumeClaim: {claimName: "moodle-code-pvc"}
-  ##   extraVolumeMounts:
-  ##     - name: code
-  ##       mountPath: /var/www/html
+  ##   persistence:
+  ##     moodle:
+  ##       enabled: true
   ##
   ## 3. On and ephemeral. The plugin serves until the pod restarts, then its rows outlive its code:
   ##   replicaCount: 1
@@ -245,9 +248,8 @@ moodle:
   ## postConfigureCommands runs on every boot of every replica, so it must be idempotent
   ## A non-zero exit stops the pod from serving
   postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
-  ## The image runs admin/cli/cron.php in every replica; Moodle's own concurrency limit stops
-  ## them multiplying the work. Set false to run cron yourself, from a CronJob or a dedicated
-  ## one instance is no longer enough.
+  ## In-pod scheduled tasks (admin/cli/cron.php). Single instance: all the cron you need. HA: every
+  ## pod runs it, Moodle's concurrency limit prevents duplication. Set false to run cron externally.
   cron:
     enabled: true
 
@@ -257,7 +259,8 @@ moodle:
   debug: false
 
 ## Read-Only Dirroot Configuration
-## Enables immutable application directory for security and multi-replica support
+## Optional, off by default. Single instance: not needed (Moodle runs from the image's writable
+## tree). Enable for an immutable code directory (hardening; a clean per-pod tree that also suits HA).
 ## When enabled:
 ##   - Moodle code is mounted read-only from a volume
 ##   - config.php is seeded into that volume at mode 0444, so it is read-only too
@@ -299,11 +302,11 @@ readOnlyDirroot:
     key: "config.php"
 
 ## Deployment update strategy
-## Recreate is the default: Moodle's one published cluster upgrade procedure drains
-## first, and maxSurge overlaps two code generations even at one replica.
+## Recreate (default), for one pod or many: drains old code before new starts (a rolling maxSurge
+## would overlap two code generations on one database). Every upgrade briefly stops the site.
 updateStrategy:
-  type: Recreate # A rollout stops the site for one pod start plus the schema upgrade
-  ## Read only when type is RollingUpdate. maxSurge 0 ends the overlap at one replica only
+  type: Recreate
+  ## When type is RollingUpdate, maxSurge 0 ends the overlap at one replica
   # rollingUpdate:
   #   maxSurge: 0
   #   maxUnavailable: 1
@@ -460,13 +463,13 @@ volumePermissions:
 ## See: https://kubernetes.io/docs/concepts/storage/volumes/
 persistence:
   moodledata:
-    ## dataroot is shared between pods, with the cachedir, tempdir and backuptempdir
-    ## inside it; more than one pod refuses emptyDir and ReadWriteOnce, a rolling update
-    ## refuses emptyDir.
+    ## dataroot: uploads plus cachedir/tempdir/backuptempdir. Single instance: emptyDir (default;
+    ## lost on pod replace) or a ReadWriteOnce PVC to keep uploads. HA: a shared ReadWriteMany volume
+    ## (the chart refuses emptyDir and ReadWriteOnce above one pod, and emptyDir under a rolling update).
     ##
-    ## localcachedir must stay node-local, so above one pod, and under a rolling update,
-    ## the chart mounts a per-pod emptyDir over /var/www/moodledata/localcache. At one pod
-    ## it is left inside moodledata unless you enable persistence.localcache below.
+    ## localcachedir stays node-local: HA, and any rolling update, mounts a per-pod emptyDir at
+    ## .../localcache; a single instance replaced in place keeps it inside moodledata unless
+    ## persistence.localcache below is enabled.
     enabled: true
     type: emptyDir # Every uploaded file is lost when the pod is replaced; persistentVolumeClaim keeps them
     sizeLimit: "5Gi"
@@ -478,14 +481,23 @@ persistence:
     # storageClass: "efs-sc"      # Storage class name
     # retain: true                # Keep PVC after helm uninstall
 
-  ## Node-local cache. Above one pod, and under a rolling update, a per-pod emptyDir is
-  ## always mounted, because a shared localcachedir corrupts across pods. At one pod it
-  ## lives inside moodledata by default.
-  ## Enable this to give it its own volume, or to change the emptyDir size.
+  ## Node-local cache. HA, and any rolling update, always mount a per-pod emptyDir (a shared one
+  ## corrupts). Single instance under Recreate: lives inside moodledata by default; enable to give
+  ## it its own volume or size.
   localcache:
     enabled: false
     type: emptyDir
     sizeLimit: "1Gi"
+
+  ## Code tree at /var/www/html. Intended for a single instance under Recreate, and not
+  ## compatible with readOnlyDirroot, which manages the code volume itself. Above one pod,
+  ## or under a rolling update, replicas share one code tree, which Moodle does not intend.
+  ## Keeps web-installed plugins across pod restarts.
+  moodle:
+    enabled: false
+    type: persistentVolumeClaim
+    size: 8Gi
+    # mountPath: /var/www/html   # default
 
 ## Extra volumes to add to the deployment
 extraVolumes: []
