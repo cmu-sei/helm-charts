@@ -9,7 +9,7 @@ metadata:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
   annotations:
-    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" $.Values.commonAnnotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
   scaleTargetRef:

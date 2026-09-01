@@ -15,15 +15,25 @@ imagePullSecrets: []
 image:
   registry: ""
   repository: erseco/alpine-moodle
-  tag: v5.0.1
-  digest: ""
+  tag: v5.2.2
+  digest: "" # Set image.tag to the matching version, the chart reads the 5.0 or 5.1 layout split from it
   pullPolicy: IfNotPresent
+
+## CA bundle mounted over /etc/ssl/certs/ca-certificates.crt when outbound TLS is intercepted.
+## Optional: leave both sources empty and nothing is mounted. Set one only if a proxy re-signs
+## outbound HTTPS, or plugin downloads fail with 'unable to get local issuer certificate'.
+caBundle:
+  existingConfigMap: ""
+  existingSecret: ""
+  key: "ca-certificates.crt"
 
 # Number of replicas
 replicaCount: 1
 
 ## Moodle Configuration
 moodle:
+  ## Applied, not read: on every boot the image writes these onto the first $CFG->siteadmins
+  ## account, renaming it if username does not match. See migrate.md before adopting a database.
   admin:
     username: "moodle-local-admin"
     email: "moodle-local-admin@example.com"
@@ -34,17 +44,20 @@ moodle:
   ## Site Configuration
   ## url must match your actual domain or ingress hostname
   site:
-    url: "http://localhost:8080"
+    url: "https://moodle.example.com"
     name: "Moodle"
     language: "en"
 
   ## Proxy Configuration
+  ## reverseProxy: true cannot be combined with this chart's own ingress: nginx keeps
+  ## the Host header, so Moodle answers reverseproxyabused while every pod stays Ready.
   proxy:
     reverseProxy: false
     sslProxy: true
 
   ## External database Configuration
-  ### Requires an external databsae to exist already (this chart will not deploy a database server)
+  ### Requires an external database to exist already (this chart will not deploy a database server)
+  ### Moodle 5.2 requires PostgreSQL 16 or newer
   database:
     type: "pgsql"
     host: "pg-postgresql"
@@ -53,7 +66,7 @@ moodle:
     user: "moodle" # Used only if existingSecret is empty or existingSecretUserKey is not set
     prefix: "mdl_"
     password: "" # Used only if existingSecret is empty
-    existingSecret: "pg-postgresql" # Name of secret containing db credentials (recommended)
+    existingSecret: "" # Name of secret containing db credentials (recommended); empty uses moodle.database.password
     existingSecretUserKey: "" # Key in the secret containing the username (optional, uses 'user' field if empty)
     existingSecretPasswordKey: "postgres-password" # Key in the secret containing the password
     ## Create Database
@@ -93,7 +106,7 @@ moodle:
       existingSecret: "" ## Secret containing the CA certificate
       existingConfigMap: "" ## ConfigMap containing the CA certificate
       key: "ca.crt"
-      path: "/opt/sei/certs/oidc-ca.crt" ## File path in the container
+      path: "/opt/sei/certs/oidc-ca.crt" ## Where the certificate is mounted, ignored when no file is there
 
   ## PHP/Upload Limits Configuration
   php:
@@ -109,7 +122,12 @@ moodle:
     user: ""
     password: "" # Used only if existingSecret is empty
     existingSecret: ""
+    ## Which key in that Secret holds each field. A key left empty falls back to the plain
+    ## value above.
     existingSecretKey: "password"
+    existingSecretHostKey: ""
+    existingSecretPortKey: ""
+    existingSecretUserKey: ""
     protocol: ""
 
   mail:
@@ -118,76 +136,177 @@ moodle:
 
   ## Redis Configuration
   redis:
-    host: ""
+    host: "" # Set this with more than one pod, or sessions fall back to files on the shared dataroot
     port: ""
+    password: "" ## Redis AUTH password (used only if existingSecret is empty)
+    existingSecret: "" ## Name of secret holding the Redis password (recommended)
+    existingSecretKey: "redis-password"
+    ## Key prefixes keeping releases apart on a shared Redis. Changing one resets what it covers.
+    sessionPrefix: "" ## Session keys; empty derives one. Moodle sets no prefix of its own here
+    cachePrefix: "" ## MUC store keys; empty derives one. Moodle permits at most 5 characters
+    database: "" ## Optional session Redis database index; empty leaves Moodle's default of 0
+
+  ## Plugin Installation
+  ## Fetched into dirroot at every pod start unless the tree survived at that version.
+  ## Nothing resolves dependencies: declare every plugin a plugin needs.
+  ##   plugins:
+  ##     - {name: mod_customcert, version: "2026042006"}
+  ##     - name: qtype_mojomatch
+  ##       url: https://example.org/moodle-plugins/qtype_mojomatch_2026060800.zip
+  ##       version: "2026060800"
+  ##
+  ## The list installs, it never removes. Deleting an entry drops the code and leaves
+  ## the database rows. Finish a removal by hand, never with --purge-missing:
+  ##   php admin/cli/uninstall_plugins.php --plugins=<component> --run
+  plugins: []
+
+  ## Web Plugin Installation
+  ## Off by default: a plugin installed through Site administration lands in a code tree the pod
+  ## rebuilds on restart, which leaves the database rows behind with no code to match them. Set
+  ## true to hand installation back to the web interface. Uninstall stays CLI-only either way,
+  ## because it deletes code and database rows together and would fight moodle.plugins above.
+  ##
+  ## 1. Off, the default. Plugins arrive only through moodle.plugins:
+  ##   moodle:
+  ##     allowWebPluginInstall: false
+  ##
+  ## 2. On, and kept across restarts by a named PVC at the code tree:
+  ##   replicaCount: 1
+  ##   moodle:
+  ##     allowWebPluginInstall: true
+  ##   extraVolumes:
+  ##     - name: code
+  ##       persistentVolumeClaim: {claimName: "moodle-code-pvc"}
+  ##   extraVolumeMounts:
+  ##     - name: code
+  ##       mountPath: /var/www/html
+  ##
+  ## 3. On and ephemeral. The plugin serves until the pod restarts, then its rows outlive its code:
+  ##   replicaCount: 1
+  ##   moodle:
+  ##     allowWebPluginInstall: true
+  ##
+  ## Needs one pod and readOnlyDirroot.enabled=false. The chart refuses both of the others.
+  allowWebPluginInstall: false
+
+  ## Plugin Enablement
+  ## Applied with each plugin type's own enable_plugin() API.
+  ##   enabledPlugins:
+  ##     auth_oauth2: true
+  enabledPlugins: {}
+
+  ## Site Admin Preset
+  ## Applied with \core_adminpresets\helper::change_default_preset(), the call Moodle's installer
+  ## makes. The baseline: enabledPlugins and config both override it wherever they name the same
+  ## setting. A setting whose plugin is absent is dropped on import and logged as a warning.
+  ##
+  ## 1. A preset the site already holds:
+  ##   preset:
+  ##     name: starter
+  ##
+  ## 2. An exported preset carried in the release:
+  ##   preset:
+  ##     xml: |
+  ##       <?xml version="1.0" encoding="UTF-8"?>
+  ##       <PRESET>...</PRESET>
+  ##
+  ## 3. The same, read from a file shipped inside the chart:
+  ##   preset:
+  ##     xml: '{{ .Files.Get "files/site-preset.xml" }}'
+  ##
+  ## 4. A ConfigMap you create, which outlives the release:
+  ##   preset:
+  ##     existingConfigMap: my-site-preset
+  ##     key: preset.xml
+  ##
+  ## Export from Site administration > Site admin presets. .Files.Get reads only inside the chart
+  ## and returns empty for anything outside it; to keep the file where it is, pass it at install:
+  ##   helm install moodle ./moodle --set-file moodle.preset.xml=./my-site.xml
+  preset: {}
+
+  ## Moodle Settings
+  ## Applied with set_config(). The top-level key is the component, and core is core.
+  ##   config:
+  ##     core: {theme: boost_union, forcelogin: 1}
+  ##     mod_customcert: {verifyallcertificates: 1}
+  ##     logstore_xapi: {endpoint: "https://lrs.example.com/xapi"}
+  ##
+  ## A value may name a Secret instead, for a setting that holds a sensitive value:
+  ##   config:
+  ##     logstore_xapi:
+  ##       endpoint: "https://lrs.example.com/xapi"
+  ##       password: {existingSecret: lrs-creds, key: password}
+  config: {}
 
   ## Additional Settings
+  ## preConfigureCommands runs in the main container before install/upgrade
+  ## Under readOnlyDirroot the code tree is read-only there
   preConfigureCommands: "" ## Custom shell commands to run before Moodle installation/upgrade
+  ## postConfigureCommands runs on every boot of every replica, so it must be idempotent
+  ## A non-zero exit stops the pod from serving
   postConfigureCommands: "" ## Custom shell commands to run after Moodle installation/upgrade
-  autoUpdateMoodle: false
+  ## The image runs admin/cli/cron.php in every replica; Moodle's own concurrency limit stops
+  ## them multiplying the work. Set false to run cron yourself, from a CronJob or a dedicated
+  ## one instance is no longer enough.
+  cron:
+    enabled: true
+
+  ## Runs the image's own admin/cli/upgrade.php pass on a warm boot, on one replica only.
+  ## Set false only to freeze the schema: the database stops following image.tag.
+  autoUpdateMoodle: true
   debug: false
 
 ## Read-Only Dirroot Configuration
 ## Enables immutable application directory for security and multi-replica support
 ## When enabled:
 ##   - Moodle code is mounted read-only from a volume
-##   - config.php is mounted separately from a secret
+##   - config.php is seeded into that volume at mode 0444, so it is read-only too
 ##   - Prevents runtime modifications to application files
 ##
-## Recommended Volume Configurations:
+## dirroot is per pod: the chart refuses any volume that would share one code
+## tree, and a named claim is one, so it also requires updateStrategy Recreate.
 ##
-## 1. EmptyDir:
+## 1. EmptyDir, the default:
+##   readOnlyDirroot:
+##     enabled: true
+##     volume: {}
+##
+## 2. Per-pod PVC:
 ##   readOnlyDirroot:
 ##     enabled: true
 ##     volume:
-##       emptyDir:
-##         sizeLimit: "1Gi"
+##       ephemeral:
+##         volumeClaimTemplate:
+##           spec:
+##             accessModes: ["ReadWriteOnce"]
+##             resources: {requests: {storage: "4Gi"}}
 ##
-## 2. PersistentVolumeClaim with EFS:
+## 3. Named PVC, one pod only:
+##   replicaCount: 1
+##   updateStrategy: {type: Recreate}
 ##   readOnlyDirroot:
 ##     enabled: true
 ##     volume:
-##       persistentVolumeClaim:
-##         claimName: "moodle-code-pvc"
-##
-##   Note: Requires ReadWriteMany access mode (EFS, NFS, Azure Files, etc.)
-##
-## Advanced: Any Kubernetes volume type is supported (hostPath, nfs, csi, etc.)
-##
-## Config.php Secret:
-## - If secret.name is empty, chart auto-generates minimal config.php using database password lookup
-## - For production, provide your own secret with config.php
-##
-## Example with External Secret:
-##   readOnlyDirroot:
-##     secret:
-##       name: "moodle-config"  # Your pre-created secret
-##       key: "config.php"      # Key in the secret
-##
-## Auto-generation:
-##   readOnlyDirroot:
-##     secret:
-##       name: ""  # Empty = auto-generate
-##       key: "config.php"
+##       persistentVolumeClaim: {claimName: "moodle-code-pvc"}
 readOnlyDirroot:
-  # IMPORTANT: When using database.existingSecret from the same Helm release,
-  # set enabled=false. The lookup function cannot find secrets that don't exist yet,
-  # resulting in an empty password in config.php. The alpine-moodle image will
-  # generate config.php at runtime from environment variables instead.
   enabled: false
-  volume:
-    emptyDir:
-      sizeLimit: "1Gi"
+  volume: {} # Empty renders an emptyDir; a volume you set replaces it instead of merging into it
+  ## The generated config.php holds no credentials, only getenv() calls, so it is fine in
+  ## production. Supply your own only to set what the chart does not render: it replaces the
+  ## whole file, there is no partial override.
   secret:
-    name: ""
+    name: "" # Empty auto-generates config.php from the values below
     key: "config.php"
 
 ## Deployment update strategy
+## Recreate is the default: Moodle's one published cluster upgrade procedure drains
+## first, and maxSurge overlaps two code generations even at one replica.
 updateStrategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 25%
-    maxUnavailable: 25%
+  type: Recreate # A rollout stops the site for one pod start plus the schema upgrade
+  ## Read only when type is RollingUpdate. maxSurge 0 ends the overlap at one replica only
+  # rollingUpdate:
+  #   maxSurge: 0
+  #   maxUnavailable: 1
 
 # Pod annotations and labels
 podAnnotations: {}
@@ -229,7 +348,7 @@ serviceAccount:
 # Container ports
 containerPorts:
   http: 8080
-  https: 8443
+  https: "" # The image serves plain http, so set this only when a sidecar in the pod terminates TLS
 
 ## Extra environment variables
 extraEnvVars: []
@@ -245,7 +364,12 @@ command: []
 args: []
 
 ## Lifecycle hooks for the container
-lifecycleHooks: {}
+lifecycleHooks:
+  ## The ingress keeps routing to a terminating pod for a moment, so the container stays up
+  ## long enough for the endpoint to be withdrawn. Replacing this whole key removes that.
+  preStop:
+    exec:
+      command: ["/bin/sh", "-c", "sleep 5"]
 
 ## Startup probe
 startupProbe:
@@ -254,13 +378,15 @@ startupProbe:
   initialDelaySeconds: 0
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 30
+  ## The image opens its port only when the whole init chain is done, so this probe measures the install
+  failureThreshold: 120
   successThreshold: 1
 
 ## Liveness probe values
 livenessProbe:
   enabled: true
-  path: "/login/index.php"
+  ## An empty path renders a tcpSocket probe; a database-backed path restarts the fleet on any blip
+  path: ""
   initialDelaySeconds: 120
   periodSeconds: 10
   timeoutSeconds: 5
@@ -274,7 +400,7 @@ readinessProbe:
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 6
+  failureThreshold: 60
   successThreshold: 1
 
 ## Resource requests and limits
@@ -286,6 +412,14 @@ extraContainerPorts: []
 
 # Init containers
 initContainers: []
+
+## Root init container that chowns a mounted code volume to the container user.
+## Rendered only when a volume is mounted over the code tree, because storage normally
+## presents a root-owned volume root and fsGroup sets only the group.
+## Set false only if the container already runs as root, or your storage presents a
+## root owned by the container user.
+volumePermissions:
+  enabled: true
 
 ## Persistence Configuration
 ## Configure storage for Moodle data directory (/var/www/moodledata)
@@ -300,9 +434,6 @@ initContainers: []
 ##       type: emptyDir
 ##       sizeLimit: "5Gi"
 ##       mountPath: /var/www/moodledata
-##
-##   Use case: Testing, ephemeral deployments
-##   Warning: Data is lost when pod is deleted or restarted
 ##
 ## 2. PersistentVolumeClaim - Create New:
 ##   persistence:
@@ -329,16 +460,32 @@ initContainers: []
 ## See: https://kubernetes.io/docs/concepts/storage/volumes/
 persistence:
   moodledata:
+    ## dataroot is shared between pods, with the cachedir, tempdir and backuptempdir
+    ## inside it; more than one pod refuses emptyDir and ReadWriteOnce, a rolling update
+    ## refuses emptyDir.
+    ##
+    ## localcachedir must stay node-local, so above one pod, and under a rolling update,
+    ## the chart mounts a per-pod emptyDir over /var/www/moodledata/localcache. At one pod
+    ## it is left inside moodledata unless you enable persistence.localcache below.
     enabled: true
-    type: emptyDir
+    type: emptyDir # Every uploaded file is lost when the pod is replaced; persistentVolumeClaim keeps them
     sizeLimit: "5Gi"
     mountPath: /var/www/moodledata
     ## For persistentVolumeClaim type, configure these:
     # existingClaim: ""           # Use existing PVC (leave empty to create new)
-    # accessMode: ReadWriteMany   # ReadWriteOnce or ReadWriteMany
+    # accessMode: ReadWriteMany   # Of the PVC to create, or of an existingClaim
     # size: 20Gi                  # Size of PVC to create
     # storageClass: "efs-sc"      # Storage class name
     # retain: true                # Keep PVC after helm uninstall
+
+  ## Node-local cache. Above one pod, and under a rolling update, a per-pod emptyDir is
+  ## always mounted, because a shared localcachedir corrupts across pods. At one pod it
+  ## lives inside moodledata by default.
+  ## Enable this to give it its own volume, or to change the emptyDir size.
+  localcache:
+    enabled: false
+    type: emptyDir
+    sizeLimit: "1Gi"
 
 ## Extra volumes to add to the deployment
 extraVolumes: []
@@ -351,7 +498,7 @@ service:
   type: ClusterIP
   ports:
     http: 8080
-    https: 8443
+    https: "" # Set this only when containerPorts.https names a port something in the pod listens on
 
 # Ingress configuration
 ingress:

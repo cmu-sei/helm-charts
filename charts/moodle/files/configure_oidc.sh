@@ -13,7 +13,7 @@ MOODLE_DIR="/var/www/html"
 OAUTH2_ISSUER_ID=""
 
 PHP_CA_FLAGS=""
-if [ -n "$OIDC_CA_CERT_PATH" ]; then
+if [ -n "$OIDC_CA_CERT_PATH" ] && [ -f "$OIDC_CA_CERT_PATH" ]; then
   PHP_CA_FLAGS="-d curl.cainfo=${OIDC_CA_CERT_PATH} -d openssl.cafile=${OIDC_CA_CERT_PATH}"
   export CURL_CA_BUNDLE="$OIDC_CA_CERT_PATH"
   export SSL_CERT_FILE="$OIDC_CA_CERT_PATH"
@@ -103,6 +103,30 @@ fetch_discovery_document() {
   '
 }
 
+list_issuers() {
+  php_exec /opt/sei/custom-scripts/setup_environment.php \
+      --step=manage_oauth \
+      --list \
+      --json=1 2>/dev/null
+}
+
+issuer_field() {
+  OIDC_ISSUER_FIELD="$1" php -r '
+    $name = getenv("OIDC_NAME");
+    $field = getenv("OIDC_ISSUER_FIELD");
+    $data = json_decode(stream_get_contents(STDIN), true);
+    if (!empty($data["data"])) {
+        foreach ($data["data"] as $issuer) {
+            if (isset($issuer["name"]) && $issuer["name"] === $name) {
+                echo $issuer[$field] ?? "";
+                exit(0);
+            }
+        }
+    }
+    exit(1);
+  '
+}
+
 user_field_mapping_exists() {
   local issuer_id="$1"
   local external="$2"
@@ -164,6 +188,17 @@ record_status() {
     echo "$section = $status" >> "$STATUS_FILE"
 }
 
+# Function to report the outcome of the user field mapping section
+finish() {
+    status=$(grep "^OAuth2 User Field Mappings =" "$STATUS_FILE" 2>/dev/null | cut -d '=' -f2 | xargs)
+    if [ "$status" = "Failed" ]; then
+        echo "[ERROR] OAuth2 user field mappings are incomplete, so the provider maps fewer claims than moodle.oidc.userFieldMappings declares" | tee -a "$LOG_FILE" >&2
+        exit 1
+    fi
+    log "OIDC OAuth2 configuration script completed successfully!"
+    exit 0
+}
+
 # Function to check and execute a section
 execute_section() {
     section="$1"
@@ -173,15 +208,18 @@ execute_section() {
     if [ "$status" != "Completed" ]; then
         log "Running section: $section"
         $func
-        if [ $? -eq 0 ]; then
+        section_rc=$?
+        if [ $section_rc -eq 0 ]; then
             record_status "$section" "Completed"
         else
             record_status "$section" "Failed"
             log "Section $section failed."
         fi
-    else
-        log "Skipping section: $section (already completed)"
+        return $section_rc
     fi
+
+    log "Skipping section: $section (already completed)"
+    return 0
 }
 
 configure_oauth2() {
@@ -254,93 +292,79 @@ configure_oauth2() {
   # Check if issuer already exists
   log "Checking for existing OAuth2 provider named '$OIDC_NAME'..."
 
-  EXISTING_JSON=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
-      --step=manage_oauth \
-      --list \
-      --json=1 2>/dev/null)
+  EXISTING_JSON=$(list_issuers)
 
-  EXISTING_ID=$(printf '%s\n' "$EXISTING_JSON" | php -r '
-    $name = "'"$OIDC_NAME"'";
-    $data = json_decode(stream_get_contents(STDIN), true);
-    if (!empty($data["data"])) {
-        foreach ($data["data"] as $issuer) {
-            if (isset($issuer["name"]) && $issuer["name"] === $name) {
-                echo $issuer["id"];
-                exit(0);
-            }
-        }
-    }
-    exit(1);
-  ')
+  EXISTING_ID=$(printf '%s\n' "$EXISTING_JSON" | issuer_field id)
 
   if [ -n "$EXISTING_ID" ]; then
       log "OAuth2 provider already exists with ID: $EXISTING_ID"
       OAUTH2_ISSUER_ID="$EXISTING_ID"
 
-      # Update the provider image if it differs from the desired icon URL
-      EXISTING_IMAGE=$(printf '%s\n' "$EXISTING_JSON" | php -r '
-        $name = "'"$OIDC_NAME"'";
-        $data = json_decode(stream_get_contents(STDIN), true);
-        if (!empty($data["data"])) {
-            foreach ($data["data"] as $issuer) {
-                if (isset($issuer["name"]) && $issuer["name"] === $name) {
-                    echo $issuer["image"] ?? "";
-                    exit(0);
-                }
-            }
-        }
-      ')
+      # The chart owns the provider record, so every boot rewrites it from the values
+      log "Updating provider $EXISTING_ID from the chart values..."
+      php_exec /opt/sei/custom-scripts/setup_environment.php \
+        --step=manage_oauth \
+        --id="$EXISTING_ID" \
+        --baseurl="$PROVIDER_BASEURL" \
+        --clientid="$OIDC_CLIENT_ID" \
+        --clientsecret="$OIDC_CLIENT_SECRET" \
+        --loginscopes="${OIDC_LOGIN_SCOPES:-openid profile email}" \
+        --loginscopesoffline="${OIDC_LOGIN_SCOPES_OFFLINE:-openid profile email offline_access}" \
+        --name="$OIDC_NAME" \
+        --image="$OIDC_ICON_URL" \
+        --requireconfirmation="${OIDC_REQUIRE_CONFIRMATION:-0}" \
+        --showonloginpage="$OIDC_SHOW_ON_LOGIN_PAGE" 2>&1
+  else
+      log "No existing provider found. Creating a new one..."
 
-      if [ "$EXISTING_IMAGE" != "$OIDC_ICON_URL" ]; then
-          log "Updating provider image from '$EXISTING_IMAGE' to '$OIDC_ICON_URL'..."
-          php_exec /opt/sei/custom-scripts/setup_environment.php \
-            --step=manage_oauth \
-            --id="$EXISTING_ID" \
-            --image="$OIDC_ICON_URL" 2>&1
+      PROVIDER_OUTPUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+        --step=manage_oauth \
+        --baseurl="$PROVIDER_BASEURL" \
+        --clientid="$OIDC_CLIENT_ID" \
+        --clientsecret="$OIDC_CLIENT_SECRET" \
+        --loginscopes="${OIDC_LOGIN_SCOPES:-openid profile email}" \
+        --loginscopesoffline="${OIDC_LOGIN_SCOPES_OFFLINE:-openid profile email offline_access}" \
+        --name="$OIDC_NAME" \
+        --tokenendpoint="$OIDC_TOKEN_ENDPOINT" \
+        --userinfoendpoint="$OIDC_USERINFO_ENDPOINT" \
+        --image="$OIDC_ICON_URL" \
+        --requireconfirmation="${OIDC_REQUIRE_CONFIRMATION:-0}" \
+        --showonloginpage="$OIDC_SHOW_ON_LOGIN_PAGE" \
+        2>&1)
+      rc=$?
+      log "Provider creation output: $PROVIDER_OUTPUT"
+      if [ "$rc" -ne 0 ]; then
+        error "$section" "Provider creation failed (rc=$rc)."
       fi
 
-      return 0
+      OAUTH2_ISSUER_ID=$(printf '%s\n' "$PROVIDER_OUTPUT" \
+        | awk '/Created provider with ID[[:space:]][0-9]+/ {print $NF; exit}')
+      if [ -z "$OAUTH2_ISSUER_ID" ]; then
+        error "$section" "Failed to retrieve the new provider ID; aborting mapping."
+      fi
+      log "OAuth2 Provider created successfully with ID: $OAUTH2_ISSUER_ID"
   fi
 
-  log "No existing provider found. Creating a new one..."
+  log "OAuth2 provider configuration completed successfully."
+}
 
-  PROVIDER_OUTPUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
-    --step=manage_oauth \
-    --baseurl="$PROVIDER_BASEURL" \
-    --clientid="$OIDC_CLIENT_ID" \
-    --clientsecret="$OIDC_CLIENT_SECRET" \
-    --loginscopes="${OIDC_LOGIN_SCOPES:-openid profile email}" \
-    --loginscopesoffline="${OIDC_LOGIN_SCOPES_OFFLINE:-openid profile email offline_access}" \
-    --name="$OIDC_NAME" \
-    --tokenendpoint="$OIDC_TOKEN_ENDPOINT" \
-    --userinfoendpoint="$OIDC_USERINFO_ENDPOINT" \
-    --image="$OIDC_ICON_URL" \
-    --requireconfirmation="${OIDC_REQUIRE_CONFIRMATION:-0}" \
-    --showonloginpage="$OIDC_SHOW_ON_LOGIN_PAGE" \
-    2>&1)
-  rc=$?
-  log "Provider creation output: $PROVIDER_OUTPUT"
-  if [ "$rc" -ne 0 ]; then
-    error "$section" "Provider creation failed (rc=$rc)."
+configure_user_field_mappings() {
+  section="OAuth2 User Field Mappings"
+
+  OAUTH2_ISSUER_ID=$(list_issuers | issuer_field id)
+  if [ -z "$OAUTH2_ISSUER_ID" ]; then
+    error "$section" "No OAuth2 provider named '$OIDC_NAME' to map user fields onto."
   fi
 
-  NEW_ISSUER_ID=$(printf '%s\n' "$PROVIDER_OUTPUT" \
-    | awk '/Created provider with ID[[:space:]][0-9]+/ {print $NF; exit}')
-  if [ -z "$NEW_ISSUER_ID" ]; then
-    error "$section" "Failed to retrieve the new provider ID; aborting mapping."
-  fi
-  log "OAuth2 Provider created successfully with ID: $NEW_ISSUER_ID"
-  OAUTH2_ISSUER_ID="$NEW_ISSUER_ID"
-
-  # ---- User field mappings ----
   log "Processing user field mappings: $OIDC_USER_FIELD_MAPPINGS"
+  mapping_failures=0
 
   for m in $OIDC_USER_FIELD_MAPPINGS; do
     external=$(printf '%s' "$m" | cut -d':' -f1)
     internal=$(printf '%s' "$m" | cut -d':' -f2)
     json=$(printf '{"externalfieldname":"%s","internalfieldname":"%s"}' "$external" "$internal")
 
-    if user_field_mapping_exists "$NEW_ISSUER_ID" "$external" "$internal"; then
+    if user_field_mapping_exists "$OAUTH2_ISSUER_ID" "$external" "$internal"; then
       log "Mapping ($external -> $internal) already exists; continuing."
       continue
     fi
@@ -350,11 +374,11 @@ configure_oauth2() {
     interval="${OIDC_USERFIELD_RETRY_INTERVAL:-5}"
 
     while true; do
-      log "Creating user field mapping ($external -> $internal) for provider ID: $NEW_ISSUER_ID (attempt ${local_attempt}/${max_attempts})..."
+      log "Creating user field mapping ($external -> $internal) for provider ID: $OAUTH2_ISSUER_ID (attempt ${local_attempt}/${max_attempts})..."
       MAP_OUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
         --step=manage_oauth \
         --create-user-field \
-        --id="$NEW_ISSUER_ID" \
+        --id="$OAUTH2_ISSUER_ID" \
         --json="$json" 2>&1)
       rc=$?
       log "User field mapping output: $MAP_OUT"
@@ -373,13 +397,15 @@ configure_oauth2() {
         break
       fi
 
-      if user_field_mapping_exists "$NEW_ISSUER_ID" "$external" "$internal"; then
+      if user_field_mapping_exists "$OAUTH2_ISSUER_ID" "$external" "$internal"; then
         log "Mapping ($external -> $internal) detected after failure; continuing."
         break
       fi
 
       if [ "$local_attempt" -ge "$max_attempts" ]; then
-        error "$section" "Failed to create mapping ($external -> $internal) (rc=$rc)."
+        log "Failed to create mapping ($external -> $internal) (rc=$rc); it is retried on the next boot."
+        mapping_failures=$((mapping_failures + 1))
+        break
       fi
 
       log "Retrying mapping ($external -> $internal) in ${interval}s..."
@@ -388,7 +414,12 @@ configure_oauth2() {
     done
   done
 
-  log "OAuth2 configuration completed successfully."
+  if [ "$mapping_failures" -ne 0 ]; then
+    log "OAuth2 configuration left $mapping_failures user field mappings unfinished."
+    return 1
+  fi
+
+  log "OAuth2 user field mappings completed successfully."
 }
 
 # Enable Oauth2 Plugin
@@ -408,49 +439,61 @@ configure_site() {
   section="Site Configuration"
   log "Configuring Site for OIDC provider communication..."
 
-  # Extract the provider host from the discovery URL for CURL security
-  OIDC_HOST=""
-  if [ -n "$OIDC_DISCOVERY_URL" ]; then
-    OIDC_HOST=$(echo "$OIDC_DISCOVERY_URL" | sed -e 's#^https\?://##' -e 's#/.*##')
-  fi
-
   if [ "$OIDC_DISABLE_CURL_SECURITY" = "true" ]; then
     log "Disabling CURL security restrictions for internal OIDC provider communication..."
 
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
-    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set='' || error "$section" "Failed to set curlsecurityallowedhosts"
     php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
 
     log "CURL security restrictions disabled."
   else
-    if [ -z "$OIDC_HOST" ]; then
-      log "No OIDC provider host configured, skipping CURL security configuration."
+    if [ -z "$OIDC_DISCOVERY_URL" ]; then
+      log "No OIDC discovery URL configured, skipping CURL security configuration."
       return 0
     fi
 
-    log "Adding OIDC provider domain to allowed hosts..."
-
-    CURRENT_ALLOWED=$(php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts 2>/dev/null | grep -v "^$" | tail -1 || echo "")
-    if [ -z "$CURRENT_ALLOWED" ] || [ "$CURRENT_ALLOWED" = "curlsecurityallowedhosts" ]; then
-      NEW_ALLOWED="$OIDC_HOST"
-    else
-      if echo "$CURRENT_ALLOWED" | grep -q "$OIDC_HOST"; then
-        NEW_ALLOWED="$CURRENT_ALLOWED"
-      else
-        NEW_ALLOWED=$(printf '%s\n%s' "$CURRENT_ALLOWED" "$OIDC_HOST")
-      fi
+    # Moodle has no host allowlist, so only the port list can be widened from here
+    OIDC_PORT=$(printf '%s' "$OIDC_DISCOVERY_URL" | sed -n 's#^[a-z][a-z0-9+.-]*://[^/]*:\([0-9][0-9]*\).*#\1#p')
+    if [ -z "$OIDC_PORT" ]; then
+      case "$OIDC_DISCOVERY_URL" in
+        https://*) OIDC_PORT=443 ;;
+        *) OIDC_PORT=80 ;;
+      esac
     fi
 
-    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedhosts --set="$NEW_ALLOWED" || error "$section" "Failed to set curlsecurityallowedhosts"
-    log "OIDC provider domain ($OIDC_HOST) added to allowed hosts."
+    CURRENT_PORTS=$(php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport 2>/dev/null) || CURRENT_PORTS=""
+
+    if printf '%s\n' "$CURRENT_PORTS" | grep -qx "$OIDC_PORT"; then
+      log "Port $OIDC_PORT is already in curlsecurityallowedport."
+    else
+      NEW_PORTS=$(printf '%s\n%s' "$CURRENT_PORTS" "$OIDC_PORT" | grep -v "^$")
+      php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set="$NEW_PORTS" || error "$section" "Failed to set curlsecurityallowedport"
+      log "Port $OIDC_PORT added to curlsecurityallowedport."
+    fi
+
+    log "curlsecurityblockedhosts is unchanged, so a provider on a private address stays blocked."
   fi
 }
 
 # Main execution
+STAGE="${1:-all}"
+case "$STAGE" in
+    all|provider|mappings)
+        ;;
+    *)
+        echo "[ERROR] Unknown stage '$STAGE'. The stage is one of all, provider or mappings." >&2
+        exit 1
+        ;;
+esac
 log "Starting OIDC OAuth2 configuration script..."
 
 # Create STATUS_FILE if it doesn't exist
 touch "$STATUS_FILE"
+
+if [ "$STAGE" = "mappings" ]; then
+    execute_section "OAuth2 User Field Mappings" configure_user_field_mappings
+    finish
+fi
 
 # ALWAYS run Site Configuration (CURL security must be configured before OAuth2 operations)
 log "Running section: Site Configuration"
@@ -467,10 +510,22 @@ execute_section "OAuth2 Configuration" configure_oauth2
 execute_section "Enable OAuth2 Plugin" enable_oauth2_plugin
 
 # On subsequent runs add admin user to the list of site admins
-ADMINUSERID=$(moosh -n user-list 2>/dev/null | grep "$MOODLE_EMAIL" | sed -e "s/admin.*(\([0-9]\+\)),.*/\1/")
+ADMINUSERID=$(moosh -n user-list 2>/dev/null | grep "$MOODLE_EMAIL" | sed -n 's/^[^(]*(\([0-9][0-9]*\)).*/\1/p' | head -1)
 if [ -n "$ADMINUSERID" ]; then
-    log "Found user $MOODLE_EMAIL with ID: $ADMINUSERID and resetting siteadmins list"
-    php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins --set="2,$ADMINUSERID"
+    log "Found user $MOODLE_EMAIL with ID: $ADMINUSERID and adding it to the siteadmins list"
+    CURRENT_ADMINS=$(php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins 2>/dev/null | grep -v "^$" | tail -1 || echo "")
+    if [ -z "$CURRENT_ADMINS" ] || [ "$CURRENT_ADMINS" = "siteadmins" ]; then
+        NEW_ADMINS="$ADMINUSERID"
+    elif echo ",$CURRENT_ADMINS," | grep -q ",$ADMINUSERID,"; then
+        NEW_ADMINS="$CURRENT_ADMINS"
+    else
+        NEW_ADMINS="$CURRENT_ADMINS,$ADMINUSERID"
+    fi
+    php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins --set="$NEW_ADMINS"
 fi
 
-log "OIDC OAuth2 configuration script completed successfully!"
+if [ "$STAGE" = "all" ]; then
+    execute_section "OAuth2 User Field Mappings" configure_user_field_mappings
+fi
+
+finish

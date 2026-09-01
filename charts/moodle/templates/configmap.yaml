@@ -10,7 +10,7 @@ metadata:
     {{- include "moodle.labels" $ | nindent 4 }}
   {{- with $.Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 data:
   {{- toYaml $configMap.data | nindent 2 }}
@@ -20,19 +20,37 @@ data:
 ---
 {{- $moodle := .Values.moodle | default dict }}
 {{- $oidc := $moodle.oidc | default dict }}
-{{- if $oidc.enabled }}
+{{- $preset := $moodle.preset | default dict }}
+{{- $scripts := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.plugins $moodle.enabledPlugins $preset.name $preset.xml $preset.existingConfigMap ($moodle.redis | default dict).host }}
+{{- if $scripts }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "moodle.fullname" . }}-oidc
+  name: {{ include "moodle.scripts.configMapName" . }}
   labels:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- with .Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 data:
   configure_oidc.sh: {{ .Files.Get "files/configure_oidc.sh" | quote }}
   setup_environment.php: {{ .Files.Get "files/setup_environment.php" | quote }}
+  place_plugins.php: {{ .Files.Get "files/place_plugins.php" | quote }}
   key.svg: {{ .Files.Get "files/key.svg" | quote }}
+  {{- with $moodle.plugins }}
+  plugins.json: {{ toJson (fromYamlArray (tpl (toYaml .) $)) | quote }}
+  {{- end }}
+  {{- with $moodle.enabledPlugins }}
+  enabled-plugins.json: {{ toJson . | quote }}
+  {{- end }}
+  {{- with $preset.xml }}
+  preset.xml: {{ tpl . $ | quote }}
+  {{- end }}
+  {{- if $moodle.config }}
+  {{- $split := fromYaml (include "moodle.config.split" $) }}
+  {{- if $split.refs }}
+  config-secrets.json: {{ toJson $split.refs | quote }}
+  {{- end }}
+  {{- end }}
 {{- end }}

@@ -5,28 +5,41 @@
 {{- $dbUser := tpl ($database.user | default "moodle") . -}}
 {{- $dbHost := tpl ($database.host | default "pg-postgresql") . -}}
 {{- $dbPort := $database.port | default "5432" -}}
-{{- $dbSecretName := tpl ($database.existingSecret | default "pg-postgresql") . -}}
+{{- $dbSecretName := tpl ($database.existingSecret | default (include "moodle.database.secretName" .)) . -}}
 {{- $dbSecretUserKey := $database.existingSecretUserKey | default "" -}}
 {{- $dbSecretPasswordKey := $database.existingSecretPasswordKey | default "postgres-password" -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "moodle.fullname" . }}-create-database-{{ .Release.Revision }}
+  name: {{ include "moodle.fullname" . }}-create-database
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "moodle.labels" . | nindent 4 }}
     app.kubernetes.io/component: database-init
+  annotations:
+    # helm rollback fires neither pre-install nor pre-upgrade, so it is listed too
+    "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
+    "helm.sh/hook-weight": "-10"
+    # Without hook-succeeded the Job outlives helm uninstall and blocks the next install
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
+      # Not moodle.selectorLabels: this pod must never become a Moodle endpoint
       labels:
-        {{- include "moodle.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: database-init
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: {{ include "moodle.chart" . }}
     spec:
       restartPolicy: OnFailure
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- include "moodle.tplvalues.render" (dict "value" $.Values.imagePullSecrets "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: create-database
-        image: postgres:15-alpine
+        image: postgres:16-alpine
         env:
         {{- if $dbSecretUserKey }}
         - name: PGUSER
@@ -35,11 +48,16 @@ spec:
               name: {{ $dbSecretName }}
               key: {{ $dbSecretUserKey }}
         {{- end }}
+        {{- if $database.existingSecret }}
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $dbSecretName }}
               key: {{ $dbSecretPasswordKey }}
+        {{- else }}
+        - name: PGPASSWORD
+          value: {{ $database.password | quote }}
+        {{- end }}
         command:
         - sh
         - -c
