@@ -5612,6 +5612,16 @@ entries:
   lrsql:
   - apiVersion: v2
     appVersion: v0.9.3
+    created: "2026-09-03T12:57:57.110055348Z"
+    description: A helm chart to install the Yet Analytics SQL LRS (see https://github.com/yetanalytics/lrsql)
+    digest: 5f9f1530662a4a9c363fc616e2faca976be47af7d73fb2eb1cedfa7cec896540
+    name: lrsql
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/lrsql-0.1.4/lrsql-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: v0.9.3
     created: "2026-06-03T16:40:16.054037969Z"
     description: A helm chart to install the Yet Analytics SQL LRS (see https://github.com/yetanalytics/lrsql)
     digest: 9c147129efc0c5eb12a7530d23cb73a7eb8e9aafb8082bcf668a3d9030fb16ec
@@ -8607,4 +8617,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-09-01T13:21:21.325619586Z"
+generated: "2026-09-03T12:57:57.110699844Z"
