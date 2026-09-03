@@ -1,6 +1,6 @@
-# Migrating Bitnami Moodle 5.0.2 to SEI Moodle 5.2.2
+# Migrating from Bitnami Moodle to the SEI Moodle Chart
 
-This guide migrates a deployment running the Bitnami Moodle 5.0.2 image to the SEI Moodle chart running `erseco/alpine-moodle:v5.2.2`. It does not apply to another source Moodle version.
+This guide walks through the steps required to migrate an existing Moodle deployment that uses the [Bitnami Moodle Helm chart](https://artifacthub.io/packages/helm/bitnami/moodle) and [container image](https://hub.docker.com/r/bitnamilegacy/moodle) to the SEI Moodle Helm chart, which uses the lightweight [Alpine Linux based Moodle image](https://github.com/erseco/alpine-moodle).
 
 ## Why migrate?
 
@@ -8,8 +8,8 @@ Bitnami has archived the majority of its public container images and Helm charts
 
 ## Assumptions
 
-- The source deployment runs the Bitnami Moodle **5.0.2** image and the target SEI chart runs Moodle **5.2.2**. This guide does not cover another source Moodle version.
-- Moodle uses **PostgreSQL 16 or newer**, the minimum PostgreSQL version supported by Moodle 5.2.
+- This procedure migrates **Bitnami Moodle 5.0.2** to the SEI chart running `erseco/alpine-moodle:v5.0.2`. It is not a Moodle upgrade; the source and target both run Moodle 5.0.2.
+- Moodle is using **PostgreSQL** as its database.
 - You have `kubectl` and `helm` (v3+) access to the cluster.
 - You have access to the SEI Helm chart repository or a local copy of the chart.
 - **The Bitnami release owns its PVC and its admin secret.** If it was deployed with `persistence.existingClaim` or `existingSecret` it owns neither, and steps 2, 3, 5 and 14 do not apply: `helm uninstall` leaves the claim `Bound` and your secret untouched, so skip the reclaim-policy and re-bind work and point the new release at the claim you already have.
@@ -106,13 +106,13 @@ kubectl exec -n <namespace> "$MOODLE_POD" -- \
   php /bitnami/moodle/admin/cli/uninstall_plugins.php --show-contrib
 ```
 
-Each plugin it prints needs an entry in `moodle.plugins` in step 8. Treat the reported version as the database floor, then select a release that supports Moodle 5.2. Run the same command against the migrated site in step 11 to confirm nothing was left behind.
+Each plugin it prints needs an entry in `moodle.plugins` in step 8, pinned to the version it reports. Run the same command against the migrated site in step 11 to confirm nothing was left behind.
 
 **Important:**
 
 - Subplugins shipped inside a parent plugin's archive appear in the list but must not be declared separately; declaring the parent brings them
 - Nothing resolves dependencies, so declare every plugin that a declared plugin requires
-- Select a release of every plugin that supports Moodle 5.2 and is not older than the version recorded in the source database. If the Moodle plugins directory does not publish that release, provide a compatible archive with `url` and `version`; older code fails with `cannotdowngrade`
+- If the Moodle plugins directory does not publish the version your database expects, zip that plugin from the `moodle/` archive above and give the entry a `url` alongside its `version`; a floating `name` installs older code and Moodle refuses it with `cannotdowngrade`
 - Anything that is not a plugin (a patched core file, an edited theme) has no `moodle.plugins` entry. Place it with an `initContainers` entry writing into the code volume, or carry it in your own image built `FROM` the Moodle one
 
 ## Migration steps
@@ -374,7 +374,7 @@ Create a values file for the SEI Moodle chart. The key settings to configure are
 ```yaml
 image:
   repository: erseco/alpine-moodle
-  tag: v5.2.2 # First boot upgrades the existing Moodle 5.0.2 database
+  tag: v5.0.2 # Must match the Bitnami Moodle 5.0.2 source
   pullPolicy: IfNotPresent
 
 ## The inherited claim is ReadWriteOnce: never run two pods against it
@@ -387,13 +387,6 @@ readOnlyDirroot:
   volume: {}
 
 moodle:
-  ## Keep scheduled tasks off until the upgraded site has been verified.
-  cron:
-    enabled: false
-
-  ## Run admin/cli/upgrade.php so the database follows image.tag.
-  autoUpdateMoodle: true
-
   admin:
     ## All three are written over the existing admin account on every boot. See below
     username: "<your-admin-username>"
@@ -411,16 +404,16 @@ moodle:
   proxy:
     sslProxy: true # Set to true if behind an SSL-terminating proxy
 
-  ## One Moodle 5.2-compatible release per non-standard component from the inventory.
-  ## A migrated database already carries the plugin's rows, settings and installed
-  ## version; this restores compatible code to disk. Every entry is fetched again
-  ## on every pod start, and a pod that cannot reach the source does not serve.
+  ## One entry per non-standard component from the inventory. A migrated database
+  ## already carries the plugin's rows, its settings and its version; this is only
+  ## how the code gets back onto disk. Every entry is fetched again on every pod
+  ## start, and a pod that cannot reach the source does not serve.
   plugins:
     - name: mod_customcert
-      version: <moodle-5.2-compatible-version>
+      version: 2025041408
     - name: local_yourplugin
-      url: https://plugins.example.org/local_yourplugin_<version>.zip
-      version: <moodle-5.2-compatible-version>
+      url: https://plugins.example.org/local_yourplugin_2026082100.zip
+      version: 2026082100
 
   ## The image rewrites the mail settings, enableblogs, debug and the exec paths on every
   ## boot from its own environment defaults. Add the moodle.smtp, moodle.mail and
@@ -457,10 +450,10 @@ persistence:
 #     mountPath: /opt/your-org/custom-scripts
 #     subPath: "your-scripts-dir"
 
-## Configure ingress to match your current setup, but keep it disabled until step 11 passes
+## Configure ingress to match your current setup
 
 ingress:
-  enabled: false
+  enabled: true
   className: "nginx"
   hostname: "your-moodle-domain.com"
   path: /
@@ -513,7 +506,7 @@ Monitor the rollout:
 kubectl get pods -n <namespace> -l app.kubernetes.io/name=moodle -w
 ```
 
-The SEI image will detect the existing Moodle database tables, skip the initial installation, generate a new `config.php`, and run `admin/cli/upgrade.php` to upgrade the schema from Moodle 5.0.2 to 5.2.2. Wait until the pod reaches `Running` and `1/1 Ready`. Once this upgrade starts, rollback requires restoring the pre-migration database backup; Moodle does not support schema downgrades.
+The SEI image will detect the existing Moodle database tables, skip the initial installation, and generate a new `config.php` from the environment variables. Wait until the pod reaches `Running` and `1/1 Ready`.
 
 > **If this CrashLoops, look for a stranded maintenance file before you retry.** The image's
 > If an upgrade aborts partway, `climaintenance.html` is left on the shared `moodledata` and every
@@ -558,7 +551,9 @@ Confirm that:
   file you saved before migrating rather than reading it, because the two are often
   identical across all 46 components, subplugins included, and a diff says so in one line.
 
-Because this migration crosses from Moodle 5.0.2 to 5.2.2, confirm that the database upgrade landed cleanly:
+If the migration also crossed a Moodle version, ask the database whether the upgrade landed where a
+native install would have. This is the check that makes an intermediate hop unnecessary, and it is
+one command:
 
 ```bash
 kubectl exec -n <namespace> "$NEW_POD" -- \
@@ -566,7 +561,8 @@ kubectl exec -n <namespace> "$NEW_POD" -- \
 # Expected: Database structure is ok.
 ```
 
-Anything else is a schema the target version does not recognise. Restore the database backup before retrying; do not start Moodle 5.0.2 against a partly upgraded database.
+Anything else is a schema the target version does not recognise, and no amount of `purge_caches`
+will settle it, restore the database from *Back up the database* and take the two hops separately.
 
 Then measure the site rather than the kubelet. A probe that reaches the pod by IP proves nothing:
 Moodle answers it with a 303 to `$CFG->wwwroot`, and `wget -q` prints an empty body either way, so
@@ -587,23 +583,6 @@ kubectl exec -n <namespace> "$NEW_POD" -- sh -c "grep ' /var/www/html ' /proc/mo
 # Expected: ... /var/www/html ext4 ro,...
 kubectl exec -n <namespace> "$NEW_POD" -- sh -c "touch /var/www/html/probe"
 # Expected: Read-only file system
-```
-
-After these checks pass, enable ingress and scheduled tasks in `sei-moodle-values.yaml`:
-
-```yaml
-moodle:
-  cron:
-    enabled: true
-
-ingress:
-  enabled: true
-```
-
-Apply the updated file:
-
-```bash
-helm upgrade moodle sei/moodle -n <namespace> -f sei-moodle-values.yaml
 ```
 
 Finish by logging in as a real, non-admin user from your old site and opening a course with an
@@ -671,7 +650,7 @@ This path only exists while `moodle/` is still on the PVC, i.e. before step 13. 
 is gone, `moodleSkipInstall=true` leaves Bitnami with an empty dirroot and the only way back is
 *Restoring from backup* below.
 
-If the migration fails and you need to restore the Bitnami deployment, restore the pre-migration database before starting Moodle 5.0.2. Reinstalling the old image against a Moodle 5.2 database is not a rollback.
+If the migration fails and you need to restore the Bitnami deployment:
 
 1. Uninstall the SEI release:
 
@@ -708,7 +687,13 @@ If the migration fails and you need to restore the Bitnami deployment, restore t
      }'
    ```
 
-3. Restore `moodle_db_backup.dump.gz` using step 2 under *Restoring from backup* below. This restores both the Moodle 5.0.2 schema and the original `/bitnami/moodledata` path settings.
+3. Revert any database path updates:
+
+   ```bash
+   kubectl exec -n <namespace> <postgresql-pod> -- \
+     sh -c "PGPASSWORD='<password>' psql -U <user> -d <database> -c \
+       \"UPDATE mdl_config SET value = REPLACE(value, '/var/www/moodledata', '/bitnami/moodledata') WHERE value LIKE '%/var/www/moodledata%';\""
+   ```
 
 4. Reinstall the Bitnami chart with your original values, using the retained PVC:
 
@@ -719,6 +704,14 @@ If the migration fails and you need to restore the Bitnami deployment, restore t
      -f bitnami-moodle-values-backup.yaml \
      --set persistence.existingClaim=moodle-data \
      --set moodleSkipInstall=true
+   ```
+
+   The admin account still carries whatever `moodle.admin.*` wrote onto it during the migration.
+   Reset it from the Bitnami side if you changed it:
+
+   ```bash
+   kubectl exec -n <namespace> "$MOODLE_POD" -- \
+     php /bitnami/moodle/admin/cli/reset_password.php
    ```
 
 ## Restoring from backup (alternative approach)
@@ -816,4 +809,3 @@ kubectl rollout restart deployment -n <namespace> moodle
 - [Alpine Moodle Image](https://github.com/erseco/alpine-moodle)
 - [SEI Moodle Helm Chart](https://cmu-sei.github.io/helm-charts)
 - [Bitnami Legacy Notice](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon)
-- [Moodle 5.2 release requirements](https://moodledev.io/general/releases/5.2)
