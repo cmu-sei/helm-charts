@@ -1,6 +1,6 @@
-# Migrating from Bitnami Moodle to the SEI Moodle Chart
+# Migrating Bitnami Moodle 5.0.2 to SEI Moodle 5.2.2
 
-This guide walks through the steps required to migrate an existing Moodle deployment that uses the [Bitnami Moodle Helm chart](https://artifacthub.io/packages/helm/bitnami/moodle) and [container image](https://hub.docker.com/r/bitnamilegacy/moodle) to the SEI Moodle Helm chart, which uses the lightweight [Alpine Linux based Moodle image](https://github.com/erseco/alpine-moodle).
+This guide migrates a deployment running the Bitnami Moodle 5.0.2 image to the SEI Moodle chart running `erseco/alpine-moodle:v5.2.2`. It does not apply to another source Moodle version.
 
 ## Why migrate?
 
@@ -8,7 +8,7 @@ Bitnami has archived the majority of its public container images and Helm charts
 
 ## Assumptions
 
-- The source site runs Moodle **5.0.2** and the target SEI chart runs Moodle **5.2.2**. Moodle 5.2 supports direct upgrades from Moodle 4.4 or later, so no Moodle 5.1 application hop is required.
+- The source deployment runs the Bitnami Moodle **5.0.2** image and the target SEI chart runs Moodle **5.2.2**. This guide does not cover another source Moodle version.
 - Moodle uses **PostgreSQL 16 or newer**, the minimum PostgreSQL version supported by Moodle 5.2.
 - You have `kubectl` and `helm` (v3+) access to the cluster.
 - You have access to the SEI Helm chart repository or a local copy of the chart.
