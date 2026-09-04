@@ -222,7 +222,6 @@ topomojo-api:
     ## images are served by ASP.NET's static-file handler.
     # FileUpload__DocRoot: /home/app/wwwroot/docs
     # FileUpload__MaxFileBytes: 21474836480  # 20GB
-    # FileUpload__SupportsSubfolders: false  # Set false for Proxmox with local ISO storage
 
     ## VMware Cloud API upload settings (when NFS mount unavailable).
     ## TempRoot is set to a subdirectory of the existing topomojo
@@ -246,13 +245,24 @@ topomojo-api:
     # Core__DocPath: wwwroot/docs
     # Core__AllowUnprivilegedVmReconfigure: false
 
+    ## Selects the hypervisor driver. Set to Proxmox for a Proxmox-backed instance;
+    ## see the Proxmox settings below.
+    # Pod__HypervisorType: Vsphere
     # Pod__Url: ""
+    ## Skip TLS validation of the hypervisor API certificate. Debug use only; prefer
+    ## trusting the certificate via certificateMap. Proxmox honors this as of TopoMojo
+    ## 2.9.1, where it previously never validated.
+    # Pod__IgnoreCertificateErrors: false
     # Pod__User: ""
     # Pod__Password: ""
     # Pod__PoolPath: ""
     # Pod__Uplink: vSwitch0
     # Pod__VmStore: ""
     # Pod__IsoStore: ""
+    ## Proxmox only. Separator folded into an uploaded Proxmox ISO filename to carry
+    ## workspace scope, as {workspaceId}{separator}{filename}. Proxmox rewrites any
+    ## character outside [-a-zA-Z0-9_.], so keep the default unless you must change it.
+    # Pod__IsoScopeSeparator: __
     # Pod__DiskStore: ""
     # Pod__TicketUrlHandler: querystring
     # Pod__Vlan__Range: ""
@@ -266,6 +276,19 @@ topomojo-api:
     # Pod__Sddc__AuthUrl: ""
     # Pod__Sddc__CertificatePath: ""
     # Pod__Sddc__CertificatePassword: ""
+
+    ## Proxmox only. Register deployed vms as cluster HA resources so the Proxmox Cluster
+    ## Resource Scheduler (CRS) can place and rebalance them. Also required for workspace
+    ## Host Affinity on Proxmox. Requires PVE 9 and vm disks on shared storage.
+    # Pod__EnableHA: false
+    ## Fail a deployment when a vm cannot be registered as an HA resource, rather than
+    ## deploying it un-managed. No effect unless Pod__EnableHA is true.
+    # Pod__RequireHA: false
+    ## Allow CRS to migrate HA managed vms during automatic rebalancing.
+    # Pod__HaAutoRebalance: true
+    ## HA restart/relocate attempt limits. Leave unset to use the Proxmox defaults.
+    # Pod__HaMaxRestart:
+    # Pod__HaMaxRelocate:
 
     # Logging__Console__DisableColors: false
     # Logging__LogLevel__Default: Information
