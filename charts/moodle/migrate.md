@@ -8,7 +8,7 @@ Bitnami has archived the majority of its public container images and Helm charts
 
 ## Assumptions
 
-- You are running the **same Moodle version** on the Bitnami chart that the SEI chart targets (e.g. both are Moodle 5.0.x). If not, [upgrade your Bitnami Moodle first](https://docs.moodle.org/en/Upgrading).
+- This procedure migrates **Bitnami Moodle 5.0.2** to the SEI chart running `erseco/alpine-moodle:v5.0.2`. It is not a Moodle upgrade; the source and target both run Moodle 5.0.2.
 - Moodle is using **PostgreSQL** as its database.
 - You have `kubectl` and `helm` (v3+) access to the cluster.
 - You have access to the SEI Helm chart repository or a local copy of the chart.
@@ -374,7 +374,7 @@ Create a values file for the SEI Moodle chart. The key settings to configure are
 ```yaml
 image:
   repository: erseco/alpine-moodle
-  tag: v5.0.1 # Must match your current Moodle version
+  tag: v5.0.2 # Must match the Bitnami Moodle 5.0.2 source
   pullPolicy: IfNotPresent
 
 ## The inherited claim is ReadWriteOnce: never run two pods against it
