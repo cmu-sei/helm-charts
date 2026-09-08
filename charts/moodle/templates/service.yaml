@@ -51,8 +51,9 @@ spec:
       {{- else if eq ($service.type | default "ClusterIP") "ClusterIP" }}
       nodePort: null
       {{- end }}
+    {{- if $service.ports.https }}
     - name: https
-      port: {{ $service.ports.https | default 443 }}
+      port: {{ $service.ports.https }}
       targetPort: https
       protocol: TCP
       {{- if and (or (eq ($service.type | default "ClusterIP") "NodePort") (eq ($service.type | default "ClusterIP") "LoadBalancer")) (not (empty ($service.nodePorts).https)) }}
@@ -60,6 +61,7 @@ spec:
       {{- else if eq ($service.type | default "ClusterIP") "ClusterIP" }}
       nodePort: null
       {{- end }}
+    {{- end }}
     {{- if $service.extraPorts }}
     {{- range $service.extraPorts }}
     - name: {{ .name }}

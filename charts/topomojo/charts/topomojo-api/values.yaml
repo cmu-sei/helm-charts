@@ -221,7 +221,6 @@ env:
   ## images are served by ASP.NET's static-file handler.
   # FileUpload__DocRoot: /home/app/wwwroot/docs
   # FileUpload__MaxFileBytes: 21474836480  # 20GB
-  # FileUpload__SupportsSubfolders: false  # Set false for Proxmox with local ISO storage
 
   ## VMware Cloud API upload settings (when NFS mount unavailable).
   ## TempRoot is set to a subdirectory of the existing topomojo
@@ -245,13 +244,16 @@ env:
   # Core__DocPath: wwwroot/docs
   # Core__AllowUnprivilegedVmReconfigure: false
 
+  # Pod__HypervisorType: Vsphere
   # Pod__Url: ""
+  # Pod__IgnoreCertificateErrors: false
   # Pod__User: ""
   # Pod__Password: ""
   # Pod__PoolPath: ""
   # Pod__Uplink: vSwitch0
   # Pod__VmStore: ""
   # Pod__IsoStore: ""
+  # Pod__IsoScopeSeparator: __
   # Pod__DiskStore: ""
   # Pod__TicketUrlHandler: querystring
   # Pod__Vlan__Range: ""
@@ -265,6 +267,11 @@ env:
   # Pod__Sddc__AuthUrl: ""
   # Pod__Sddc__CertificatePath: ""
   # Pod__Sddc__CertificatePassword: ""
+  # Pod__EnableHA: false
+  # Pod__RequireHA: false
+  # Pod__HaAutoRebalance: true
+  # Pod__HaMaxRestart: 1
+  # Pod__HaMaxRelocate: 1
 
   # Logging__Console__DisableColors: false
   # Logging__LogLevel__Default: Information

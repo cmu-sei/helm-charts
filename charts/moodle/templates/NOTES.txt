@@ -23,7 +23,7 @@
 
 2. Administrator credentials:
 
-  Username: {{ $admin.username | default "admin" }}
+  Username: {{ tpl ($admin.username | default "admin") $ }}
   Password: Run the following command to retrieve your password:
 {{- $secretKey := $admin.existingSecretKey | default "admin-password" }}
 {{- if $admin.existingSecret }}

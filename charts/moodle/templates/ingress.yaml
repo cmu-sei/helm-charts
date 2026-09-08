@@ -85,7 +85,7 @@ spec:
   {{- if $ingress.tls }}
   tls:
     {{- range $ingress.tls }}
-    - secretName: {{ .secretName }}
+    - secretName: {{ tpl .secretName $ }}
       {{- if .hosts }}
       hosts:
         {{- range .hosts }}

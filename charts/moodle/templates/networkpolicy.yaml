@@ -12,7 +12,7 @@ metadata:
     {{- include "moodle.labels" . | nindent 4 }}
   {{- with .Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 spec:
   podSelector:
@@ -58,8 +58,10 @@ spec:
     - ports:
         - port: {{ ($containerPorts.http | default 8080 | int) }}
           protocol: TCP
-        - port: {{ ($containerPorts.https | default 8443 | int) }}
+        {{- if $containerPorts.https }}
+        - port: {{ ($containerPorts.https | int) }}
           protocol: TCP
+        {{- end }}
       {{- if not $networkPolicy.allowExternal }}
       from:
         # Allow from same namespace

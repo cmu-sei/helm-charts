@@ -102,10 +102,10 @@ TopoMojo writes uploaded files to several directories inside the API pod. The mo
 
 | Mode | Where TopoMojo writes the file | Where the hypervisor reads from | When to use |
 |---|---|---|---|
-| **NFS-mounted ISO datastore** (default) | `FileUpload__IsoRoot` — a path inside the container backed by an NFS share | The same NFS share, mounted on ESXi as a vSphere datastore (named in `Pod__IsoStore`) | When you have the ability to attach an NFS datastore to ESXi hosts |
-| **vSphere HTTP datastore upload** (`FileUpload__UseDatastoreApi: true`) | `FileUpload__TempRoot` — a transient staging dir on the API pod, then HTTP PUT to vSphere | The vSphere datastore named in `Pod__IsoStore` (vSAN, VMFS, etc.), populated by the upload | VMware Cloud on AWS or any environment where the ESXi/SDDC hosts cannot mount your NFS share as a datastore |
+| **Mounted ISO datastore** (default) | `FileUpload__IsoRoot` — a path inside the container backed by the storage the hypervisor also uses | The same storage, mounted on ESXi as a vSphere datastore or as the Proxmox ISO storage named in `Pod__IsoStore` | When TopoMojo can mount the hypervisor's ISO storage. For Proxmox the path must end in `/template/iso`. |
+| **Datastore API upload** (`FileUpload__UseDatastoreApi: true`) | `FileUpload__TempRoot` — a transient staging dir on the API pod, then uploaded over HTTP | The vSphere datastore or Proxmox ISO storage named in `Pod__IsoStore`, populated by the upload | VMware Cloud on AWS, or any environment where the hypervisor cannot mount your share. Proxmox datastore uploads require TopoMojo `2.9.1` or later. |
 
-In NFS mode, `IsoRoot` is the *final destination* — the file is written once and stays there, visible to both TopoMojo and the hypervisor through the shared NFS mount. In datastore-API mode, `TempRoot` is just a staging area: the file is written there, optionally wrapped in an ISO, HTTP PUT to the vSphere datastore through vCenter, and then reaped by the Janitor when stale.
+In mounted-datastore mode, `IsoRoot` is the *final destination* — the file is written once and stays there, visible to both TopoMojo and the hypervisor through the shared mount. In datastore-API mode, `TempRoot` is just a staging area: the file is written there, optionally wrapped in an ISO, uploaded over HTTP to the vSphere datastore through vCenter or directly to the Proxmox ISO storage, and then reaped by the Janitor when stale.
 
 `TempRoot` is therefore unrelated to `IsoRoot`. They never both contain the same file. `TempRoot` is only read when `UseDatastoreApi=true`; `IsoRoot` is only used as a destination when `UseDatastoreApi=false`. Both are still set on the chart at all times — they're just unused in the mode they don't apply to.
 
@@ -114,17 +114,17 @@ In NFS mode, `IsoRoot` is the *final destination* — the file is written once a
 | Setting | Description | Chart default |
 |---------|-------------|---------------|
 | `FileUpload__TopoRoot` | Root directory for workspace import/export zips and other persistent files. Backed by the topomojo PVC mount. | `/mnt/tm` |
-| `FileUpload__IsoRoot` | Directory for ISO files in NFS mode. Must be accessible to both TopoMojo and the hypervisor — typically an NFS share that ESXi mounts as a vSphere datastore. Unused when `FileUpload__UseDatastoreApi=true`. | `/mnt/tm/isos` |
+| `FileUpload__IsoRoot` | Directory for ISO files in mounted-datastore mode. Must be accessible to both TopoMojo and the hypervisor — typically an NFS share ESXi mounts as a vSphere datastore, or the mount of the Proxmox ISO storage, in which case the path must end in `/template/iso`. Unused when `FileUpload__UseDatastoreApi=true`. | `/mnt/tm/isos` |
 | `FileUpload__DocRoot` | Directory where workspace document images are stored and served. Points at the chart's dedicated `wwwroot/docs` mount so uploaded images are served by ASP.NET's static-file handler. | `/home/app/wwwroot/docs` |
 | `FileUpload__TempRoot` | Staging directory for datastore-API uploads. Backed by a subdirectory on the topomojo PVC; the vol-permissions init container creates and chowns it. Override only if you have provisioned alternative storage yourself. Unused when `FileUpload__UseDatastoreApi=false`. | `/mnt/tm/_iso-staging` |
 
 **Important**
 - These paths must be on persistent storage for data to remain after a pod restart.
-- **NFS mode:** the chart default `FileUpload__IsoRoot` points at the topomojo PVC, which is *not* readable by ESXi. Override it to a path mounted from the same NFS share your hypervisor uses as a vSphere datastore (the share named in `Pod__IsoStore`); otherwise uploaded ISOs never reach the hypervisor.
-- **Datastore-API mode:** `TempRoot` does **not** need to be visible to the hypervisor — only the API pod writes to it. ISOs reach the hypervisor over HTTP via vCenter.
+- **Mounted-datastore mode:** the chart default `FileUpload__IsoRoot` points at the topomojo PVC, which is *not* readable by the hypervisor. Override it to a path mounted from the same storage your hypervisor uses (the datastore or ISO storage named in `Pod__IsoStore`); otherwise uploaded ISOs never reach the hypervisor.
+- **Datastore-API mode:** `TempRoot` does **not** need to be visible to the hypervisor — only the API pod writes to it. ISOs reach the hypervisor over HTTP, via vCenter for vSphere or the Proxmox API for Proxmox.
 - See the [Storage Section](#storage) for more information on storage.
 
-#### Datastore-API upload settings (VMware Cloud)
+#### Datastore-API upload settings
 
 In environments where the ESXi hosts cannot mount the shared NFS share
 backing `Pod__IsoStore` — most notably **VMware Cloud on AWS**, where
@@ -134,6 +134,8 @@ TopoMojo will stage uploads to `FileUpload__TempRoot` and then HTTP PUT
 them to the vSphere datastore named in `Pod__IsoStore` through vCenter.
 The chart provisions `TempRoot` automatically; no extra storage values
 are required.
+
+As of TopoMojo `2.9.1` this mode also works with Proxmox: uploads are staged to `FileUpload__TempRoot` and pushed to the Proxmox storage named in `Pod__IsoStore` through the Proxmox API, so no mounted `/template/iso` share is required and `FileUpload__IsoRoot` is unused.
 
 To enable:
 
@@ -148,8 +150,7 @@ Optional tuning knobs (defaults shown):
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `FileUpload__MaxFileBytes` | Max upload size in bytes (`0` for unlimited) | `0` |
-| `FileUpload__SupportsSubfolders` | Enable subdirectory organization for ISOs. Set to `false` for Proxmox with local ISO storage. | `true` |
-| `FileUpload__UploadTimeoutMinutes` | HTTP timeout for the datastore PUT | `120` |
+| `FileUpload__UploadTimeoutMinutes` | HTTP timeout for the datastore upload. The chart ships a commented suggestion of `180` for large ISOs. | `60` |
 | `FileUpload__TempFileExpirationHours` | Stale temp file cleanup threshold | `24` |
 
 Existing NFS-mount deployments leave `FileUpload__UseDatastoreApi`
@@ -188,7 +189,8 @@ See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/d
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `Pod__HypervisorType` | Set to `vsphere` for vSphere mode | `vsphere` |
+| `Pod__HypervisorType` | Set to `Vsphere` for vSphere mode | `Vsphere` |
+| `Pod__IgnoreCertificateErrors` | Skip TLS validation of the hypervisor API certificate. Debug use only; prefer [Certificate Trust](#certificate-trust). | `false` |
 | `Pod__Url` | vCenter SDK URL | `https://vcenter.example.com/sdk` |
 | `Pod__User` | vCenter username | `topomojo@vsphere.local` |
 | `Pod__Password` | vCenter password | `abcd1234` |
@@ -265,6 +267,8 @@ topomojo-api:
 
 See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/Proxmox.md) for more details and an example Proxmox configuration. **There are several prerequisite configurations outlined in that documentation.**
 
+**Upgrade note for `2.9.1`:** TopoMojo now validates Proxmox API certificates. It previously ignored `Pod__IgnoreCertificateErrors` on Proxmox and never validated. Before upgrading, deployments whose PVE nodes serve self-signed or otherwise untrusted certificates must either set `Pod__IgnoreCertificateErrors: true` or make the certificate trusted (see [Certificate Trust](#certificate-trust)), or every Proxmox API call will fail.
+
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `Pod__HypervisorType` | Set to `Proxmox` for Proxmox mode | `Proxmox` |
@@ -275,9 +279,30 @@ See the [TopoMojo documentation](https://github.com/cmu-sei/TopoMojo/blob/main/d
 | `Pod__Vlan__ResetDebounceDuration` | (Optional) Number of milliseconds to wait after a virtual network operation is initiated before reloading Proxmox's SDN. | `2000` |
 | `Pod__Vlan__ResetDebounceMaxDuration` | (Optional) Maximum number of milliseconds TopoMojo will debounce before it reloads Proxmox's SDN following a network operation. | `5000` |
 | `Pod__IsoStore` | Datastore for ISO files | `iso` |
-| `FileUpload__IsoRoot` | Path mounted to the container that ISOs uploaded through TopoMojo will be saved to - should map to the same storage as `Pod__IsoStore`. **For Proxmox deployments, this path must end with `/template/iso`.** | `/mnt/isos/template/iso` |
-| `FileUpload__SupportsSubfolders` | Set to `false` for Proxmox deployments because Proxmox does not allow sub folders in ISO stores | `false` |
+| `FileUpload__IsoRoot` | Mounted-datastore mode only. Path mounted to the container that ISOs uploaded through TopoMojo will be saved to - should map to the same storage as `Pod__IsoStore`. **For Proxmox deployments, this path must end with `/template/iso`.** Not required when `FileUpload__UseDatastoreApi` is `true`, which uploads through the Proxmox API instead. | `/mnt/isos/template/iso` |
+| `Pod__IgnoreCertificateErrors` | Skip TLS validation of the Proxmox API certificate. Debug use only; prefer [Certificate Trust](#certificate-trust). See the upgrade note above. | `false` |
+| `Pod__IsoScopeSeparator` | (Optional) Separator folded into an uploaded ISO filename to carry workspace scope, as `{workspaceId}{separator}{filename}`, because a Proxmox ISO store is flat. Proxmox rewrites any character outside `[-a-zA-Z0-9_.]`. The legacy `{workspaceId}#{filename}` layout stays readable and deletable. | `__` |
+| `Pod__EnableHA` | Register deployed VMs as cluster HA resources so the Proxmox Cluster Resource Scheduler (CRS) can place and rebalance them. Also required for workspace Host Affinity on Proxmox. See [High Availability and CRS](#high-availability-and-crs) below. | `false` |
+| `Pod__RequireHA` | Fail a deployment when a VM cannot be registered as an HA resource, rather than deploying it un-managed. No effect unless `Pod__EnableHA` is `true`. | `false` |
+| `Pod__HaAutoRebalance` | Allow CRS to migrate HA managed VMs during automatic rebalancing. No effect unless `Pod__EnableHA` is `true`. | `true` |
+| `Pod__HaMaxRestart` | Maximum times the HA manager retries starting a VM on a node after a failed start. Leave unset for the Proxmox default. | `1` |
+| `Pod__HaMaxRelocate` | Maximum times the HA manager retries relocating a VM that fails to start. Leave unset for the Proxmox default. | `1` |
 
+#### High Availability and CRS
+
+By default TopoMojo picks a node when it deploys a VM and the VM stays there for its lifetime. Proxmox's [Cluster Resource Scheduler](https://pve.proxmox.com/wiki/High_Availability#ha_manager_crs) only places and rebalances VMs registered as cluster HA resources, so it has no effect on a default installation. Setting `Pod__EnableHA: true` registers each deployed VM as an HA resource with `auto_rebalance` enabled, letting CRS choose the node a VM starts on and move it later as cluster load changes.
+
+Prerequisites, all on the Proxmox side:
+
+- Proxmox **9** — HA rules and the per-resource `auto_rebalance` option are PVE 9 features.
+- At least three nodes, so the cluster can hold quorum.
+- VM disks on **shared** storage (Ceph, NFS, iSCSI). TopoMojo deploys linked clones, and a linked clone on node-local storage cannot be migrated, so CRS cannot rebalance it.
+- CRS enabled in `/etc/pve/datacenter.cfg`, for example `crs: ha=static,ha-rebalance-on-start=1`. The `ha-rebalance-on-start=1` part is what makes CRS pick the best node when a VM starts.
+- VMs with the VNC clipboard enabled can only be live migrated on PVE 9.1 or later, and only when the VM's QEMU machine version is 10.1 or later. A VM pinned to an older machine version will not be moved by CRS.
+
+With HA enabled the HA manager owns VM power state, and a VM may not be on the node it was cloned to — TopoMojo resolves the current node before console, save, reconfigure, and delete operations. If registering an HA resource fails the deployment still succeeds and the VM is simply not HA managed, unless `Pod__RequireHA` is `true`, in which case the clone is destroyed and the deployment fails. See the [TopoMojo Proxmox documentation](https://github.com/cmu-sei/TopoMojo/blob/main/docs/Proxmox.md#high-availability-and-crs) for the full behavior list and for guidance on updating templates that predate PVE 9.1.
+
+These settings require TopoMojo API `2.9.1` or later.
 
 ### Helm Deployment Configuration
 
@@ -521,7 +546,7 @@ topomojo-ui:
 ### Hypervisor Connection Failures
 - Verify `Pod__Url` is accessible (try from within a pod)
 - Check credentials (`Pod__User` and `Pod__Password`)
-- For self-signed certs, may need custom CA trust
+- For self-signed certs, add the CA via [Certificate Trust](#certificate-trust) or set `Pod__IgnoreCertificateErrors: true`. Proxmox enforces certificate validation as of TopoMojo `2.9.1`.
 - Enable `Pod__DebugVerbose: true` for detailed logs
 
 ### ISO Mounting Problems
