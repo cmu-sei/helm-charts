@@ -175,14 +175,34 @@ env:
   ClientSettings__urls__playerApi: ""
   ClientSettings__urls__vmApi: ""
 
-  # Stackstorm Configuration
+  # VM Task Processing
   VmTaskProcessing__VmListUpdateIntervalMinutes: 5
   VmTaskProcessing__HealthCheckSeconds: 30
   VmTaskProcessing__HealthCheckTimeoutSeconds: 90
   VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
   VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
   VmTaskProcessing__ExpirationCheckSeconds: 30
-  VmTaskProcessing__ApiParameters__clusters: ""
+
+  # SSH Task Execution
+  # Used by the core_remote, linux_file_touch and linux_rm task actions.
+  # Authentication is key-based only. Set either the key contents
+  # (DefaultPrivateKey) or a path to a mounted key file (DefaultPrivateKeyPath);
+  # tasks may also supply their own PrivateKey parameter. SSH tasks fail with
+  # "No SSH private key configured" until one of these is provided.
+  Ssh__DefaultPrivateKey: ""
+  Ssh__DefaultPrivateKeyPath: ""
+  Ssh__DefaultPrivateKeyPassphrase: ""
+  Ssh__CommandTimeoutSeconds: 60
+
+  # Email Task Execution
+  # Used by the send_email task action. Email tasks fail until SmtpHost is set.
+  Email__SmtpHost: ""
+  Email__SmtpPort: 587
+  Email__UseStartTls: true
+  Email__SmtpUsername: ""
+  Email__SmtpPassword: ""
+  Email__DefaultFromAddress: ""
+  Email__AcceptAllCertificates: false
 
   Files__LocalDirectory: "/tmp/"
 
@@ -200,15 +220,3 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: steamfitter-api
-
-  Email__SmtpHost: ""
-  Email__SmtpPort: 0
-  Email__UseStartTls: false
-  Email__SmtpUsername: ""
-  Email__SmtpPassword: ""
-  Email__DefaultFromAddress: ""
-  Email__AcceptAllCertificates: false
-  Ssh__DefaultPrivateKey: ""
-  Ssh__DefaultPrivateKeyPath: ""
-  Ssh__DefaultPrivateKeyPassphrase: ""
-  Ssh__CommandTimeoutSeconds: 0
