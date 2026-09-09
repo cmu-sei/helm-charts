@@ -43,7 +43,7 @@ The [Crucible](https://cmu-sei.github.io/crucible/) project provides a framework
 | [player](charts/player/) | Virtual environment collaboration platform | [README](charts/player/README.md) |
 | [alloy](charts/alloy/) | Event orchestration and simulation launcher | [README](charts/alloy/README.md) |
 | [caster](charts/caster/) | Infrastructure-as-code deployment with Terraform/OpenTofu | [README](charts/caster/README.md) |
-| [steamfitter](charts/steamfitter/) | Scenario automation with StackStorm integration | [README](charts/steamfitter/README.md) |
+| [steamfitter](charts/steamfitter/) | Scenario task automation on virtual machines | [README](charts/steamfitter/README.md) |
 | [topomojo](charts/topomojo/) | Virtual machine lab environment manager | [README](charts/topomojo/README.md) |
 | [gameboard](charts/gameboard/) | Cybersecurity game design and competition platform | [README](charts/gameboard/README.md) |
 | [blueprint](charts/blueprint/) | Master Scenario Event List (MSEL) planning | [README](charts/blueprint/README.md) |
@@ -71,7 +71,6 @@ The [Crucible](https://cmu-sei.github.io/crucible/) project provides a framework
 | [mattermost-team-edition](charts/mattermost-team-edition/) | Team collaboration platform |
 | [mkdocs-material](charts/mkdocs-material/) | Documentation site generator |
 | [osticket](charts/osticket/) | Support ticket system |
-| [stackstorm](charts/stackstorm/) | Event-driven automation platform |
 | [statesman](charts/statesman/) | State management service |
 | [staticweb](charts/staticweb/) | Static website hosting |
 | [webmail](charts/webmail/) | Web-based email client |

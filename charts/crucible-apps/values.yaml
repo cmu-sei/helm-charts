@@ -929,11 +929,6 @@ steamfitter:
       # Client Settings for other Crucible services
       ClientSettings__urls__playerApi: https://{{ .Values.global.domain }}/player
       ClientSettings__urls__vmApi: https://{{ .Values.global.domain }}/vm
-      # Stackstorm Configuration (placeholder for local development)
-      VmTaskProcessing__ApiType: st2
-      VmTaskProcessing__ApiUsername: "st2admin"
-      # VmTaskProcessing__ApiPassword: ""
-      VmTaskProcessing__ApiBaseUrl: "https://stackstorm.local"
       # Optional: Trust a custom CA certificate
       # Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
       # Uncomment and adjust paths to match your certificateMap configuration

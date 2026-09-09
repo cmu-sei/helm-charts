@@ -1,11 +1,11 @@
 # Steamfitter Helm Chart
 
-[Steamfitter](https://cmu-sei.github.io/crucible/steamfitter/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables the organization and execution of scenario tasks on virtual machines. It automates workflows and executes commands using [StackStorm](https://stackstorm.com/) as its automation engine.
+[Steamfitter](https://cmu-sei.github.io/crucible/steamfitter/) is the [Crucible](https://cmu-sei.github.io/crucible/) application that enables the organization and execution of scenario tasks on virtual machines.
 
 Steamfitter manages scenario-based automation by:
 - Organizing tasks into scenarios and sessions
 - Scheduling task execution on VMs
-- Integrating with [StackStorm](https://stackstorm.com/) for workflow automation
+- Executing VM operations through the Crucible [VM API](https://github.com/cmu-sei/vm.Api), and commands over SSH and email directly
 - Coordinating with [Player](https://github.com/cmu-sei/Player.Api) for VM and team information
 
 This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/steamfitter.api) and [UI](https://github.com/cmu-sei/steamfitter.ui) components.
@@ -16,8 +16,10 @@ This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/s
 - Helm 3.0+
 - PostgreSQL database with `uuid-ossp` extension installed
 - Identity provider (e.g., [Keycloak](https://www.keycloak.org/)) for OAuth2/OIDC authentication
-- [StackStorm](https://stackstorm.com/) instance for task execution
-- Crucible [Player](https://github.com/cmu-sei/Player.Api) and [VM API](https://github.com/cmu-sei/vm.Api) instances
+- Crucible [Player](https://github.com/cmu-sei/Player.Api) instance
+- Crucible [VM API](https://github.com/cmu-sei/vm.Api) **3.8.11 or later**. Steamfitter API 3.10.0 executes all VM operations through the VM API, and the guest process, guest file, snapshot and Proxmox endpoints it depends on were introduced in VM API 3.8.11. The [player](../player/) chart ships a compatible version.
+- An SMTP relay, if any scenario uses `send_email` tasks (see [Email Task Execution](#email-task-execution))
+- An SSH private key, if any scenario uses `core_remote`, `linux_file_touch` or `linux_rm` tasks (see [SSH Task Execution](#ssh-task-execution))
 
 ## Installation
 
@@ -25,6 +27,36 @@ This Helm chart deploys Steamfitter with both [API](https://github.com/cmu-sei/s
 helm repo add sei https://cmu-sei.github.io/helm-charts
 helm install steamfitter sei/steamfitter -f values.yaml
 ```
+
+## Upgrading to chart 1.9.0 (Steamfitter API 3.10.0)
+
+Steamfitter API 3.10.0 removes the StackStorm dependency. VM operations now go through the Crucible [VM API](https://github.com/cmu-sei/vm.Api), and SSH and email tasks are executed directly by the Steamfitter API. **This is a breaking change for existing deployments.** Review the following before upgrading.
+
+**Settings removed.** Delete these from your values file; they are no longer read:
+
+- `VmTaskProcessing__ApiType`
+- `VmTaskProcessing__ApiUsername`
+- `VmTaskProcessing__ApiPassword`
+- `VmTaskProcessing__ApiBaseUrl`
+- `VmTaskProcessing__ApiParameters__clusters`
+
+**Settings to add.** Configure [SSH Task Execution](#ssh-task-execution) and [Email Task Execution](#email-task-execution) if your scenarios use those task actions. Both fail until configured — SSH needs a private key, email needs an SMTP host.
+
+**VM API version.** VM API 3.8.11 or later is required. See [Prerequisites](#prerequisites).
+
+**Database migration.** The `RemoveStackstormApiUrl` migration rewrites existing `tasks` and `results` rows, remapping `api_url` from `stackstorm` to `vm`, `ssh` or `email` based on each row's action. It runs automatically on startup because the chart sets `Database__AutoMigrate: true`. Back up the database first.
+
+**Task actions removed.** These actions no longer exist and existing scenarios using them will fail after the upgrade:
+
+| Removed action | Behavior after upgrade |
+|---------|-------------|
+| `vm_create_from_template` | Task fails; `Vm Action ... has not been implemented` is logged |
+| `vm_hw_remove` | Task fails; `Vm Action ... has not been implemented` is logged |
+| `az_vm_shell_script`, `az_get_vms`, `az_vm_power_off`, `az_vm_power_on` | The migration does not remap these, so `api_url` stays `stackstorm` and execution throws `NotImplementedException` |
+
+Audit your scenarios for these actions before upgrading. Azure task support is expected to return once the equivalent operations are available in the VM API.
+
+**New actions.** `vm_snapshot_create`, `vm_snapshot_revert` and `vm_snapshot_delete` are now available, along with Proxmox support for VM actions alongside vSphere. No chart configuration is required for either; the provider is resolved per VM through the VM API.
 
 ## Steamfitter API Configuration
 
@@ -173,15 +205,10 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 | `ResourceOwnerAuthorization__ClientSecret` | Resource owner client secret | `""` |
 | `ResourceOwnerAuthorization__TokenExpirationBufferSeconds` | Token expiration buffer | `900` |
 
-### StackStorm Integration
+### VM Task Processing
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `VmTaskProcessing__ApiType` | Task processing API type | `st2` |
-| `VmTaskProcessing__ApiUsername` | StackStorm username | `st2admin` |
-| `VmTaskProcessing__ApiPassword` | StackStorm password | `password` |
-| `VmTaskProcessing__ApiBaseUrl` | StackStorm API URL | `https://stackstorm.example.com` |
-| `VmTaskProcessing__ApiSettings__clusters` | vSphere cluster names (comma-separated) | `cluster1,cluster2` |
 | `VmTaskProcessing__VmListUpdateIntervalMinutes` | VM list update interval | `5` |
 | `VmTaskProcessing__HealthCheckSeconds` | Health check interval | `30` |
 | `VmTaskProcessing__HealthCheckTimeoutSeconds` | Health check timeout | `90` |
@@ -189,12 +216,51 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 | `VmTaskProcessing__TaskProcessMaxWaitSeconds` | Task processing max wait | `120` |
 | `VmTaskProcessing__ExpirationCheckSeconds` | Expiration check interval | `30` |
 
-**StackStorm Setup**
-1. Deploy StackStorm instance
-2. Create service account with API access
-3. Configure workflows for task execution
+### SSH Task Execution
 
-See the [StackStorm](https://docs.stackstorm.com/) documentation for more information.
+The `core_remote`, `linux_file_touch` and `linux_rm` task actions are executed directly by the Steamfitter API over SSH, rather than through the VM API.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Ssh__DefaultPrivateKey` | Default SSH private key contents (PEM) | `"-----BEGIN OPENSSH PRIVATE KEY-----\n..."` |
+| `Ssh__DefaultPrivateKeyPath` | Path to a mounted default SSH private key file | `/etc/steamfitter/ssh/id_ed25519` |
+| `Ssh__DefaultPrivateKeyPassphrase` | Passphrase for the default private key, if encrypted | `""` |
+| `Ssh__CommandTimeoutSeconds` | Connection and command timeout in seconds | `60` |
+
+Authentication is key-based only; there is no password option. A key is resolved in this order:
+
+1. The `PrivateKey` parameter on the individual task
+2. `Ssh__DefaultPrivateKey`
+3. `Ssh__DefaultPrivateKeyPath`
+
+If none is set, SSH tasks fail with `No SSH private key configured`. Target hosts default to port 22 unless the task supplies a port.
+
+Prefer mounting the key rather than inlining it. All `steamfitter-api.env` values are written to a Kubernetes Secret, but a key supplied through `extraEnvFrom` (see [Extra Environment Sources](#extra-environment-sources)) keeps it out of your values file:
+
+```yaml
+steamfitter-api:
+  extraEnvFrom:
+    - secretRef:
+        name: steamfitter-ssh-key # provides Ssh__DefaultPrivateKey
+```
+
+Do not set `Ssh__CommandTimeoutSeconds` to `0`. The value is applied to both the connection and command timeout, so a zero value causes every SSH task to time out immediately.
+
+### Email Task Execution
+
+The `send_email` task action is executed directly by the Steamfitter API through an SMTP relay.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `Email__SmtpHost` | SMTP server hostname. Email tasks fail until this is set | `smtp.example.com` |
+| `Email__SmtpPort` | SMTP server port | `587` |
+| `Email__UseStartTls` | Use STARTTLS when the server advertises it | `true` |
+| `Email__SmtpUsername` | SMTP username. Leave empty for an unauthenticated relay | `""` |
+| `Email__SmtpPassword` | SMTP password | `""` |
+| `Email__DefaultFromAddress` | From address used when a task does not specify one | `steamfitter@example.com` |
+| `Email__AcceptAllCertificates` | Skip SMTP TLS certificate validation. Do not enable in production | `false` |
+
+Leaving `Email__SmtpPort` at `0` lets the SMTP client pick a default port (25), which is rarely what you want — set the port explicitly.
 
 ### Health Probes
 
@@ -383,17 +449,24 @@ steamfitter-ui:
 
 ## Troubleshooting
 
-### StackStorm Connection Issues
-- Verify StackStorm URL is accessible from Steamfitter pod
-- Check StackStorm credentials
-- Test connection: `curl -u st2admin:password https://stackstorm.example.com/api`
-
 ### Task Execution Failures
-- Verify StackStorm workflows are installed
 - Check VM API integration is working
 - Ensure service account has VM API permissions
-- Review StackStorm execution logs
-- Verify StackStorm cluster names are correct (if specified)
+- Verify the target VMs are powered on and reachable
+- Review the Steamfitter API pod logs for task execution errors
+- `Vm Action ... has not been implemented` means the task uses an action removed in 3.10.0; see [Upgrading](#upgrading-to-chart-190-steamfitter-api-3100)
+
+### SSH Task Failures
+- `No SSH private key configured` means neither `Ssh__DefaultPrivateKey` nor `Ssh__DefaultPrivateKeyPath` is set and the task supplied no `PrivateKey`
+- Timeouts on every host usually mean `Ssh__CommandTimeoutSeconds` is `0`; set it to a positive value
+- Per-host errors are captured in the task result output, prefixed with the host name
+- Verify the API pod can reach the target hosts on the SSH port and that the key is authorized for the task's username
+
+### Email Task Failures
+- `Email:SmtpHost is not configured` means `Email__SmtpHost` is unset
+- Verify `Email__SmtpPort` is correct for your relay; `0` falls back to port 25
+- For TLS handshake errors, confirm `Email__UseStartTls` matches what the relay expects, and trust the relay's CA via `certificateMap` (see [Certificate Trust](#certificate-trust)) rather than enabling `Email__AcceptAllCertificates`
+- Ensure `Email__DefaultFromAddress` is set, or that each task supplies a from address the relay will accept
 
 ### Integration Issues
 - Verify Player and VM API URLs are accessible
@@ -405,18 +478,16 @@ steamfitter-ui:
 - Ensure `uuid-ossp` extension is installed
 - Check connection string credentials
 
-## StackStorm Integration
+## Task Execution
 
-Steamfitter relies on StackStorm for executing commands on VMs. Typical workflow:
+Typical workflow:
 
 1. Steamfitter creates a scenario with scheduled tasks
-2. At execution time, tasks are submitted to StackStorm
-3. StackStorm workflows execute commands on target VMs
-4. Results are returned to Steamfitter for tracking
+2. At execution time, VM operations (power, snapshot, guest file and process actions) are submitted to the Crucible [VM API](https://github.com/cmu-sei/vm.Api); SSH and email tasks are executed directly by the Steamfitter API
+3. Results are returned to Steamfitter for tracking
 
 ## References
 
 - [Steamfitter Documentation](https://cmu-sei.github.io/crucible/steamfitter/)
 - [Steamfitter API Repository](https://github.com/cmu-sei/Steamfitter.Api)
 - [Steamfitter UI Repository](https://github.com/cmu-sei/Steamfitter.Ui)
-- [StackStorm Documentation](https://docs.stackstorm.com/)
