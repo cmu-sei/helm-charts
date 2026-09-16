@@ -112,13 +112,13 @@ spec:
             - mountPath: /mnt/tm
               name: {{ include "topomojo-api.name" . }}-vol
               subPath: {{ include "topomojo-api.fullname" . }}
-          {{- if .Values.health }}
-          {{- toYaml .Values.health | nindent 10 }}
-          {{- end }}
           {{- if (include "topomojo-api.seedSecret" .) }}
             - mountPath: /seed/seed-data.json
               name: {{ include "topomojo-api.name" . }}-seed
               subPath: {{ default "seedData" .Values.seedData.existingSeedDataSecretKey }}
+          {{- end }}
+          {{- if .Values.health }}
+          {{- toYaml .Values.health | nindent 10 }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
