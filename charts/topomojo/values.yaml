@@ -50,12 +50,12 @@ topomojo-api:
     # livenessProbe:
     #   initialDelaySeconds: 10
     #   httpGet:
-    #     path: /api/healthz
+    #     path: /api/health/version
     #     port: http
     # startupProbe:
     #   initialDelaySeconds: 30
     #   httpGet:
-    #     path: /api/healthz
+    #     path: /api/health/version
     #     port: http
     #   failureThreshold: 9
     #   periodSeconds: 10
