@@ -7966,6 +7966,19 @@ entries:
     version: 0.1.0
   topomojo:
   - apiVersion: v2
+    created: "2026-09-16T20:30:03.480409755Z"
+    description: TopoMojo is a simple lab builder and player.
+    digest: 03ae0726a3f7398834b16941bc1735ea2f39cc480110e6c4c6eed51eee225765
+    home: https://cmu-sei.github.io/crucible/topomojo
+    name: topomojo
+    sources:
+    - https://github.com/cmu-sei/TopoMojo
+    - https://github.com/cmu-sei/TopoMojo-ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/topomojo-0.10.3/topomojo-0.10.3.tgz
+    version: 0.10.3
+  - apiVersion: v2
     created: "2026-09-16T18:08:52.385051269Z"
     description: TopoMojo is a simple lab builder and player.
     digest: 6bb989bba7c86cc4a2afcd3da562abee364d22e8a7a5e1f2aff578a01221ea87
@@ -8710,4 +8723,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-09-16T18:08:52.385847921Z"
+generated: "2026-09-16T20:30:03.481485131Z"
