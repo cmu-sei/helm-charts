@@ -2,14 +2,14 @@ apiVersion: v2
 name: crucible-apps
 description: Crucible framework application deployment - A comprehensive cybersecurity training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint, CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
 type: application
-version: 0.3.6
+version: 0.3.7
 home: https://cmu-sei.github.io/crucible/
 
 dependencies:
   # Crucible Applications
   - name: alloy
     repository: https://cmu-sei.github.io/helm-charts
-    version: 1.8.5
+    version: 1.8.6
     condition: alloy.enabled
 
   - name: blueprint
@@ -39,21 +39,21 @@ dependencies:
 
   - name: player
     repository: https://cmu-sei.github.io/helm-charts
-    version: 1.11.0
+    version: 1.12.0
     condition: player.enabled
 
   - name: steamfitter
     repository: https://cmu-sei.github.io/helm-charts
-    version: 1.8.3
+    version: 1.9.0
     condition: steamfitter.enabled
 
   - name: topomojo
     repository: https://cmu-sei.github.io/helm-charts
-    version: 0.10.0
+    version: 0.10.3
     condition: topomojo.enabled
 
   # Moodle LMS
   - name: moodle
     repository: https://cmu-sei.github.io/helm-charts
-    version: 0.2.7
+    version: 0.3.0
     condition: moodle.enabled
