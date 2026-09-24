@@ -256,11 +256,16 @@ env:
   # such datastore to mount (VMware Cloud on AWS), and no iso volume is needed.
   #
   # Both modes use one datastore layout: "[<DsName>] <BaseFolder>/<viewId>/<scopeId>/<file>.iso", written
-  # to every enabled host in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
+  # once per ISO destination in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
   # the directory that surfaces at "[<DsName>] <BaseFolder>" or uploads succeed and then list empty.
   # See the ISO Upload section of the player chart README.
   Vsphere__IsoRoot: "/app/isos/player"
   Vsphere__IsoUploadViaApi: false
+  # API mode: share ungrouped vCenters; explicit Hosts__N__IsoStorageGroup values override this.
+  # Each group must reach the same physical ISO directory through its own DsName/BaseFolder.
+  Vsphere__IsoStorageShared: false
+  # Vsphere__Hosts__0__IsoStorageGroup: "east"
+  # Vsphere__Hosts__1__IsoStorageGroup: "east"
   Vsphere__Username: ""
   Vsphere__Password: ""
   Vsphere__DsName: ""
