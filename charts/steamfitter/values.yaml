@@ -82,10 +82,10 @@ steamfitter-api:
       # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /(api|swagger|hubs)
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /(api|swagger|hubs)
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -222,6 +222,7 @@ steamfitter-api:
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: steamfitter-api
 
+    VmTaskProcessing__HttpTimeoutSeconds: 0
 steamfitter-ui:
   image:
     repository: cmusei/steamfitter-ui
@@ -275,10 +276,10 @@ steamfitter-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
