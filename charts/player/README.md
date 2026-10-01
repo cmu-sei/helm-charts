@@ -71,6 +71,20 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 | `ClaimsTransformation__EnableCaching` | Enable claims caching | `true` |
 | `ClaimsTransformation__CacheExpirationSeconds` | Claims cache expiration in seconds | `60` |
 
+#### Identity Attributes
+
+Player API can copy configured access-token claims into stored user identity attributes. Player UI displays these attributes as columns in the administration Users table, using the definitions returned by the API. Configure them under `player-api.env`; the UI requires no additional setting.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ClaimsTransformation__UserAttributes__0__Key` | Unique key used to store the attribute | `organization` |
+| `ClaimsTransformation__UserAttributes__0__Name` | Column heading shown in Player UI | `Organization` |
+| `ClaimsTransformation__UserAttributes__0__ClaimPath` | Access-token claim name or dot-separated path into a JSON claim | `organization` or `attributes.organization` |
+
+The default attribute list is empty. Use consecutive indexes (`0`, `1`, etc.) for additional attributes. All three fields are required; incomplete definitions and duplicate keys are ignored. For a claim with multiple values, the API uses the first value.
+
+Configure your OIDC/OAuth2 identity provider to include the corresponding claims in access tokens issued to Player. Attributes synchronize when the API processes the user's authenticated requests, subject to claims caching; existing users are not all synchronized at deployment time.
+
 ### Logging
 
 | Setting | Description | Example |
@@ -429,10 +443,10 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 | `Vsphere__Hosts__*__Username` | vCenter username | `player-account@vsphere.local` |
 | `Vsphere__Hosts__*__Password` | vCenter password | `password` |
 | `Vsphere__Hosts__*__DsName` | Datastore name for file storage. Also the datastore ISOs are written to and browsed on — see [ISO Upload](#iso-upload) | `nfs-player` |
+| `Vsphere__Hosts__*__IsoStorageGroup` | Optional ISO destination group; overrides `Vsphere__IsoStorageShared`. Members must reach the same physical ISO directory | Unset |
 | `Vsphere__Hosts__*__BaseFolder` | Folder within datastore. Also the root of the ISO layout — see [ISO Upload](#iso-upload) | `player` |
 | `Vsphere__Timeout` | vSphere timeout | `30` |
 | `Vsphere__ConnectionRetryIntervalSeconds` | vSphere connection retry interval | `60` |
-| `Vsphere__ConnectionRefreshIntervalMinutes` | vSphere connection refresh interval | `20` |
 | `Vsphere__LoadCacheAfterMinutes` | vSphere load cache delay | `5` |
 | `Vsphere__ConnectionTimeoutSeconds` | vSphere connection timeout | `90` |
 | `Vsphere__LogConsoleAccess` | Log console access | `false` |
@@ -443,6 +457,7 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 | `Vsphere__GuestFileTransferTimeoutMinutes` | Guest file transfer timeout in minutes | `3` |
 | `Vsphere__TaskTimeoutMinutes` | vSphere task timeout in minutes | `10` |
 | `Vsphere__TaskInfoUnavailableTimeoutSeconds` | Time to wait for unavailable vSphere task information | `30` |
+| `Vsphere__TaskPollIntervalMilliseconds` | Poll interval for vCenter tasks or guest processes awaited by an API request; separate from the background task poll intervals | `1000` |
 | `Vsphere__GuestProcessTempPath` | Temporary directory used for guest process files | `""` |
 | `Vsphere__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
 
@@ -450,6 +465,8 @@ VM API supports connection to multiple vSphere instances. Use the following sett
 - Requires a privileged vCenter user for file operations
 - Datastore should be NFS for ease of access
 - Files live under `[<DsName>] <BaseFolder>/` on each host's own datastore
+
+VM API uses a vSphere PropertyCollector watcher to initialize VM state and receive changes. The obsolete `Vsphere__ConnectionRefreshIntervalMinutes` setting should be removed from deployment overrides. `Vsphere__ConnectionRetryIntervalSeconds` controls connection retries.
 
 vSphere ISO support is configured separately — see [ISO Upload](#iso-upload) for `Vsphere__IsoRoot` and `Vsphere__IsoUploadViaApi`.
 
@@ -517,6 +534,7 @@ Every ISO upload runs through the same pipeline before it reaches a hypervisor:
 |-----------|-------------|---------|
 | `Vsphere__IsoRoot` | Directory ISOs are written to. Must be an export that is also a vCenter NFS datastore **and** whose contents surface at exactly `[<DsName>] <BaseFolder>` — see below | `"/app/isos/player"` |
 | `Vsphere__IsoUploadViaApi` | Stream ISOs to the datastore through vSphere instead of writing to `IsoRoot` | `false` |
+| `Vsphere__IsoStorageShared` | In API mode, ungrouped vCenters share one ISO destination, with fallback between connected members | `false` |
 
 *Proxmox:*
 
@@ -543,7 +561,7 @@ bytes get there:
 [<Vsphere__Hosts__*__DsName>] <Vsphere__Hosts__*__BaseFolder>/<viewId>/<scopeId>/<filename>.iso
 ```
 
-In API mode the ISO is pushed to **every enabled, connected host**, each through its own `DsName` and
+In API mode the ISO is pushed **once per ISO destination**, using a connected member’s own `DsName` and
 `BaseFolder`, and the destination folder is created if it does not exist. In directory mode the same tree
 is written locally under `Vsphere__IsoRoot`.
 
@@ -557,8 +575,64 @@ because the two then name the same directory.
 Proxmox storage is a flat namespace, so an ISO's View or team is encoded into its filename using
 `Proxmox__IsoScopeSeparator`. Changing that value hides ISOs uploaded under the previous one.
 
-On vSphere, uploads and deletes fan out across all enabled, connected hosts; if some hosts fail the
-operation still reports success along with a failed-host count.
+#### ISO Storage Groups
+
+In vSphere API mode (`Vsphere:IsoUploadViaApi: true`), uploads and deletes run once per
+configured ISO destination. A destination can be reached through several vCenters: the API tries
+connected members in configuration order and stops after one succeeds. Different destinations run
+in parallel. Each member keeps its own `DsName` and `BaseFolder`; group membership declares that
+these paths reach the **same physical ISO directory**. There is no automatic discovery.
+
+| Setting | Default | Behavior |
+|---|---|---|
+| `Vsphere:IsoStorageShared` | `false` | Put hosts without an explicit group into one shared destination |
+| `Vsphere:Hosts[n]:IsoStorageGroup` | Unset | Explicit destination group; overrides the global default |
+
+Group names are trimmed and case-sensitive; blank means unassigned. Missing or blank
+`IsoStorageShared` means false. With sharing off, every unassigned vCenter is a separate destination.
+Explicit groups are separate from the implicit shared group, regardless of their names.
+
+For **all vCenters sharing one ISO directory**, keep existing host settings and add:
+
+~~~json
+{ "Vsphere": { "IsoUploadViaApi": true, "IsoStorageShared": true } }
+~~~
+
+For **multiple storage groups**, leave `IsoStorageShared` false and assign the same
+`IsoStorageGroup` to hosts that share each directory. For example, hosts 0 and 1 can have
+`"east"`, while hosts 2 and 3 have `"west"`. An ungrouped host gets its own destination.
+
+For **shared storage with exceptions**, set `IsoStorageShared` true and give each separate
+storage destination an explicit group. These environment variables share unassigned hosts and
+put host 10 in its own destination (additional hosts with `separate-isos` would join that group):
+
+~~~text
+Vsphere__IsoUploadViaApi=true
+Vsphere__IsoStorageShared=true
+Vsphere__Hosts__10__IsoStorageGroup=separate-isos
+~~~
+
+Disabled hosts and hosts without addresses are excluded. A required destination whose members are
+all disconnected still reports failure. A failed attempt falls back to the next connected member;
+uploads restart from the beginning of the staged file. Known disconnected members are skipped
+immediately, but an unresponsive attempt can delay fallback until the existing operation timeout
+expires. Cancelling the request stops further attempts. A missing file counts as a successful delete.
+
+Cancellation stops waiting for SOAP inventory lookups and directory creation, but does
+not stop calls already running in vCenter. A directory can be created after the request is cancelled.
+
+Configure each vCenter address only once. Duplicate addresses are unsupported.
+
+Successful fallback is a successful destination, not a partial failure. The legacy response fields
+`TotalHostCount` and `FailedHostCount` count destinations **per scope**, not vCenters or retry
+attempts. Partial success is reported when some destinations succeed; if none succeed on any
+provider, the operation fails. Attempt details and group names appear only in server logs.
+Previously, disconnected independent vCenters could be omitted from writes; they now count as
+failed destinations. Existing healthy installations keep one write per host unless grouping is enabled.
+
+Grouping only affects API writes. Listing and mounting continue through each VM's vCenter, and
+local `IsoRoot` writes are unchanged. No database migration is needed. Restart the API after changing
+these deployment settings.
 
 #### ISO Storage (Optional)
 
@@ -683,6 +757,27 @@ Grant at least one to a role before the delete actions appear. The matching `Upl
 | `CorsPolicy__SupportsCredentials` | CORS supports credentials | `true` |
 
 **Note:** Additional origins can be added using the pattern `CorsPolicy__Origins__2`, `CorsPolicy__Origins__3`, etc.
+
+### VM API xAPI Activity Tracking
+
+VM API can queue xAPI statements for VM console sessions, VM actions, and ISO operations and deliver them to a Learning Record Store (LRS). Configure this independently of Player API's xAPI settings under `vm-api.env`.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `XApiOptions__Enabled` | Enable VM activity tracking and statement delivery | `false` |
+| `XApiOptions__Endpoint` | LRS xAPI base URL; the worker appends `/statements` | `""` |
+| `XApiOptions__Username` | LRS HTTP Basic authentication username; supply through a Secret | Unset |
+| `XApiOptions__Password` | LRS HTTP Basic authentication password; supply through a Secret | Unset |
+| `XApiOptions__IssuerUrl` | Identity-provider issuer URL used to identify the actor's account | `""` |
+| `XApiOptions__Platform` | Platform name included in statement context | `Player VM` |
+| `XApiOptions__ApiUrl` | Canonical VM API URL including `/api`, used to build activity IDs | `""` |
+| `XApiOptions__PlayerApiUrl` | Canonical Player API URL including `/api`, used to identify the parent view | `""` |
+| `XApiOptions__RetentionDays` | Retention period for completed or failed queued statements | `7` |
+| `XApiOptions__ProcessingDelaySeconds` | Delay between queue-processing passes | `5` |
+
+Tracking requires `Enabled: true` and non-empty `Endpoint`, `Username`, `Password`, `ApiUrl`, and `PlayerApiUrl`. Set `IssuerUrl` to the OIDC issuer for consistent actor account IDs. The API stores queued statements in its existing database; no separate queue service is required.
+
+When using the umbrella chart, place these overrides under `player.vm-api`; URLs hosted on subpaths must include those subpaths, such as `https://crucible.example.com/vm/api` and `https://crucible.example.com/player/api`.
 
 ### Proxmox Configuration
 

@@ -296,10 +296,18 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://alloy.example.com/auth-callback-silent.html` |
 | `AppTitle` | Browser/application title | `Alloy` |
 | `AppTopBarText` | Text displayed in the UI header | `Alloy` |
-| `AppTopBarHexColor` | Hex color for the header background | `#b00` |
+| `AppTopBarHexColor` | Hex color for the header background | `#006B6D` |
+| `AppTopBarHexTextColor` | Hex color for the header text | `#FFFFFF` |
+| `AppLightModePrimaryHexColor` | Primary action color in light mode | `#006B6D` |
+| `AppLightModePrimaryHexTextColor` | Text color on primary actions in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary action color in dark mode | `#66A6A7` |
+| `AppDarkModePrimaryHexTextColor` | Text color on primary actions in dark mode | `#000000` |
 | `PlayerUIAddress` | Player UI URL for cross-navigation | `https://player.example.com` |
+| `CasterUIAddress` | Caster UI base URL for workspace links in event error details | `https://caster.example.com` |
 | `UseLocalAuthStorage` | Persist auth state in local storage | `true` |
 | `PollingIntervalMS` | Polling interval in milliseconds | `"3500"` (commented out) |
+
+Configure these UI settings under `alloy-ui.settingsYaml`. Include the hosting subpath in `CasterUIAddress` when applicable (for example, `https://crucible.example.com/caster`).
 
 ### Shared Settings ConfigMap
 

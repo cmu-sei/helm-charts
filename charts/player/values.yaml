@@ -163,6 +163,15 @@ player-api:
 
     ClaimsTransformation__EnableCaching: true
     ClaimsTransformation__CacheExpirationSeconds: 60
+    # Optional identity attributes shown as columns in Player UI's Users table.
+    # Configure your identity provider to include these claims in the access token.
+    # Add entries with consecutive indexes; Key, Name, and ClaimPath are all required.
+    # ClaimsTransformation__UserAttributes__0__Key: "organization"
+    # ClaimsTransformation__UserAttributes__0__Name: "Organization"
+    # ClaimsTransformation__UserAttributes__0__ClaimPath: "organization"
+    # ClaimsTransformation__UserAttributes__1__Key: "department"
+    # ClaimsTransformation__UserAttributes__1__Name: "Department"
+    # ClaimsTransformation__UserAttributes__1__ClaimPath: "attributes.department"
 
     Notifications__UserIconUrl: "/assets/img/SP_Icon_User.png"
     Notifications__SystemIconUrl: "/assets/img/SP_Icon_Alert.png"
@@ -647,18 +656,22 @@ vm-api:
     # such datastore to mount (VMware Cloud on AWS), and no iso volume is needed.
     #
     # Both modes use one datastore layout: "[<DsName>] <BaseFolder>/<viewId>/<scopeId>/<file>.iso", written
-    # to every enabled host in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
+    # once per ISO destination in API mode. Listing browses the datastore in BOTH modes, so IsoRoot has to be
     # the directory that surfaces at "[<DsName>] <BaseFolder>" or uploads succeed and then list empty.
     # See the ISO Upload section of the player chart README.
     Vsphere__IsoRoot: "/app/isos/player"
     Vsphere__IsoUploadViaApi: false
+    # API mode: share ungrouped vCenters; explicit Hosts__N__IsoStorageGroup values override this.
+    # Each group must reach the same physical ISO directory through its own DsName/BaseFolder.
+    Vsphere__IsoStorageShared: false
+    # Vsphere__Hosts__0__IsoStorageGroup: "east"
+    # Vsphere__Hosts__1__IsoStorageGroup: "east"
     Vsphere__Username: ""
     Vsphere__Password: ""
     Vsphere__DsName: ""
     Vsphere__BaseFolder: "player"
     Vsphere__Timeout: 30
     Vsphere__ConnectionRetryIntervalSeconds: 60
-    Vsphere__ConnectionRefreshIntervalMinutes: 20
     Vsphere__LoadCacheAfterMinutes: 5
     Vsphere__ConnectionTimeoutSeconds: 90
     Vsphere__LogConsoleAccess: false
@@ -689,8 +702,25 @@ vm-api:
     Vsphere__GuestFileTransferTimeoutMinutes: 3
     Vsphere__TaskTimeoutMinutes: 10
     Vsphere__TaskInfoUnavailableTimeoutSeconds: 30
+    # Poll interval for vCenter tasks and guest processes awaited by an API request.
+    Vsphere__TaskPollIntervalMilliseconds: 1000
     Vsphere__GuestProcessTempPath: ""
     Vsphere__GuestProcessDefaultTimeoutSeconds: 300
+
+    # Optional xAPI activity tracking. Endpoint is the LRS base URL (without /statements).
+    # ApiUrl and PlayerApiUrl identify activities; include each application's /api path.
+    # Supply Username and Password through existingSecret or extraEnvFrom.
+    XApiOptions__Enabled: false
+    XApiOptions__Endpoint: ""
+    # XApiOptions__Username: ""
+    # XApiOptions__Password: ""
+    XApiOptions__IssuerUrl: ""
+    XApiOptions__Platform: "Player VM"
+    XApiOptions__ApiUrl: ""
+    XApiOptions__PlayerApiUrl: ""
+    XApiOptions__RetentionDays: 7
+    XApiOptions__ProcessingDelaySeconds: 5
+
     # Proxmox VE. Can be configured alongside vSphere in the same instance.
     Proxmox__Enabled: false
     Proxmox__Host: ""
