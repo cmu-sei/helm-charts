@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   alloy:
   - apiVersion: v2
+    created: "2026-10-01T16:51:57.416201091Z"
+    description: Alloy enables users to launch on-demand events or join instances
+      of already-running simulations.
+    digest: b242994f61faa3b0da1f0500a479405ab6d42c66b353d901683bd82e6e001d99
+    home: https://cmu-sei.github.io/crucible/alloy/
+    name: alloy
+    sources:
+    - https://github.com/cmu-sei/Alloy.Api
+    - https://github.com/cmu-sei/Alloy.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/alloy-1.8.7/alloy-1.8.7.tgz
+    version: 1.8.7
+  - apiVersion: v2
     created: "2026-08-25T12:36:12.229849388Z"
     description: Alloy enables users to launch on-demand events or join instances
       of already-running simulations.
@@ -1394,6 +1408,19 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/buckets-0.1.1/buckets-0.1.1.tgz
     version: 0.1.1
   caster:
+  - apiVersion: v2
+    created: "2026-10-01T16:51:57.609873798Z"
+    description: Caster enables the coded design and deployment of cyber topologies.
+    digest: e8d731341639e3c973fb2d26647af45e601d8912c99bc0d08f8bc946282e4b0b
+    home: https://cmu-sei.github.io/crucible/caster/
+    name: caster
+    sources:
+    - https://github.com/cmu-sei/Caster.Api/
+    - https://github.com/cmu-sei/Caster.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/caster-1.9.7/caster-1.9.7.tgz
+    version: 1.9.7
   - apiVersion: v2
     created: "2026-07-29T15:10:44.460412237Z"
     description: Caster enables the coded design and deployment of cyber topologies.
@@ -6247,6 +6274,23 @@ entries:
     version: 1.17.5
   player:
   - apiVersion: v2
+    created: "2026-10-01T16:51:57.854953437Z"
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: d0c4aa763382872ab31285b6962958f3d88d051fdc370e6ccd403a35f707f2c1
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.13.0/player-1.13.0.tgz
+    version: 1.13.0
+  - apiVersion: v2
     created: "2026-08-20T14:36:25.398768615Z"
     description: Player is a window into virtual environments - enabling assignment
       of team membership and customization of responsive, browser-based user interfaces.
@@ -8776,4 +8820,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-09-22T13:00:42.571873871Z"
+generated: "2026-10-01T16:51:57.855999481Z"
