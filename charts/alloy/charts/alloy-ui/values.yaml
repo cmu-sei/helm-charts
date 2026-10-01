@@ -50,10 +50,10 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -91,6 +91,11 @@ sharedSettingsConfigMap: ""
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml:
+  # AppLightModePrimaryHexColor: ""
+  # AppLightModePrimaryHexTextColor: ""
+  # AppDarkModePrimaryHexColor: ""
+  # AppDarkModePrimaryHexTextColor: ""
+  # CasterUIAddress: ""
   # ApiUrl: https://alloy.example.com
   # OIDCSettings:
   #   authority: https://identity.example.com/
@@ -118,7 +123,9 @@ settingsYaml:
   #   enabled: true
 
 ## settings is stringified json that gets included as appsettings.Production.json
-settings: "{}"
+settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\"\
+  : \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\"\
+  : \"\", \"CasterUIAddress\": \"\"}"
 # settings: '{
 #   "ApiUrl": "http://localhost:4402",
 #   "OIDCSettings": {

@@ -82,10 +82,10 @@ alloy-api:
       # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /(api|swagger|hubs)
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /(api|swagger|hubs)
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -143,7 +143,8 @@ alloy-api:
     Authorization__Authority: ""
     Authorization__AuthorizationUrl: ""
     Authorization__TokenUrl: ""
-    Authorization__AuthorizationScope: "alloy-api player-api caster-api steamfitter-api vm-api"
+    Authorization__AuthorizationScope: "alloy-api player-api caster-api steamfitter-api
+      vm-api"
     Authorization__ClientId: alloy-api-dev
     Authorization__ClientName: "Alloy API"
     Authorization__ClientSecret: ""
@@ -154,7 +155,8 @@ alloy-api:
     ResourceOwnerAuthorization__ClientSecret: ""
     ResourceOwnerAuthorization__UserName: ""
     ResourceOwnerAuthorization__Password: ""
-    ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api vm-api"
+    ResourceOwnerAuthorization__Scope: "alloy-api player-api caster-api steamfitter-api
+      vm-api"
     ResourceOwnerAuthorization__TokenExpirationBufferSeconds: 900
 
     ClientSettings__BackgroundTimerIntervalSeconds: 60
@@ -248,10 +250,10 @@ alloy-ui:
     className: ""
     annotations: {}
     hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -289,6 +291,11 @@ alloy-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
+    # AppLightModePrimaryHexColor: ""
+    # AppLightModePrimaryHexTextColor: ""
+    # AppDarkModePrimaryHexColor: ""
+    # AppDarkModePrimaryHexTextColor: ""
+    # CasterUIAddress: ""
     # ApiUrl: https://alloy.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -316,7 +323,9 @@ alloy-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{}"
+  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\"\
+    : \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\"\
+    : \"\", \"CasterUIAddress\": \"\"}"
   # settings: '{
   #   "ApiUrl": "http://localhost:4402",
   #   "OIDCSettings": {
