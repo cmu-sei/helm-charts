@@ -98,10 +98,10 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /(notifications|hubs|api|swagger)
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /(notifications|hubs|api|swagger)
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -130,8 +130,8 @@ consoleIngress:
           proxy_ssl_session_reuse on;
       }
   hosts:
-    - host: chart-example.local
-      paths: []
+  - host: chart-example.local
+    paths: []
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -267,7 +267,6 @@ env:
   Vsphere__BaseFolder: "player"
   Vsphere__Timeout: 30
   Vsphere__ConnectionRetryIntervalSeconds: 60
-  Vsphere__ConnectionRefreshIntervalMinutes: 20
   Vsphere__LoadCacheAfterMinutes: 5
   Vsphere__ConnectionTimeoutSeconds: 90
   Vsphere__LogConsoleAccess: false
@@ -323,3 +322,15 @@ env:
   Proxmox__IsoUploadViaApi: false
   Proxmox__IsoRoot: ""
   Proxmox__IsoScopeSeparator: "__"
+  Vsphere__IsoStorageShared: false
+  Vsphere__TaskPollIntervalMilliseconds: 0
+  XApiOptions__Enabled: false
+  XApiOptions__Endpoint: ""
+  XApiOptions__Username: ""
+  XApiOptions__Password: ""
+  XApiOptions__IssuerUrl: ""
+  XApiOptions__Platform: ""
+  XApiOptions__ApiUrl: ""
+  XApiOptions__PlayerApiUrl: ""
+  XApiOptions__RetentionDays: 0
+  XApiOptions__ProcessingDelaySeconds: 0
