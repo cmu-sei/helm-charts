@@ -272,7 +272,6 @@ env:
   Vsphere__BaseFolder: "player"
   Vsphere__Timeout: 30
   Vsphere__ConnectionRetryIntervalSeconds: 60
-  Vsphere__ConnectionRefreshIntervalMinutes: 20
   Vsphere__LoadCacheAfterMinutes: 5
   Vsphere__ConnectionTimeoutSeconds: 90
   Vsphere__LogConsoleAccess: false
@@ -303,8 +302,25 @@ env:
   Vsphere__GuestFileTransferTimeoutMinutes: 3
   Vsphere__TaskTimeoutMinutes: 10
   Vsphere__TaskInfoUnavailableTimeoutSeconds: 30
+  # Poll interval for vCenter tasks and guest processes awaited by an API request.
+  Vsphere__TaskPollIntervalMilliseconds: 1000
   Vsphere__GuestProcessTempPath: ""
   Vsphere__GuestProcessDefaultTimeoutSeconds: 300
+
+  # Optional xAPI activity tracking. Endpoint is the LRS base URL (without /statements).
+  # ApiUrl and PlayerApiUrl identify activities; include each application's /api path.
+  # Supply Username and Password through existingSecret or extraEnvFrom.
+  XApiOptions__Enabled: false
+  XApiOptions__Endpoint: ""
+  # XApiOptions__Username: ""
+  # XApiOptions__Password: ""
+  XApiOptions__IssuerUrl: ""
+  XApiOptions__Platform: "Player VM"
+  XApiOptions__ApiUrl: ""
+  XApiOptions__PlayerApiUrl: ""
+  XApiOptions__RetentionDays: 7
+  XApiOptions__ProcessingDelaySeconds: 5
+
   # Proxmox VE. Can be configured alongside vSphere in the same instance.
   Proxmox__Enabled: false
   Proxmox__Host: ""

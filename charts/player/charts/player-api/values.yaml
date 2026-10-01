@@ -162,6 +162,15 @@ env:
 
   ClaimsTransformation__EnableCaching: true
   ClaimsTransformation__CacheExpirationSeconds: 60
+  # Optional identity attributes shown as columns in Player UI's Users table.
+  # Configure your identity provider to include these claims in the access token.
+  # Add entries with consecutive indexes; Key, Name, and ClaimPath are all required.
+  # ClaimsTransformation__UserAttributes__0__Key: "organization"
+  # ClaimsTransformation__UserAttributes__0__Name: "Organization"
+  # ClaimsTransformation__UserAttributes__0__ClaimPath: "organization"
+  # ClaimsTransformation__UserAttributes__1__Key: "department"
+  # ClaimsTransformation__UserAttributes__1__Name: "Department"
+  # ClaimsTransformation__UserAttributes__1__ClaimPath: "attributes.department"
 
   Notifications__UserIconUrl: "/assets/img/SP_Icon_User.png"
   Notifications__SystemIconUrl: "/assets/img/SP_Icon_Alert.png"

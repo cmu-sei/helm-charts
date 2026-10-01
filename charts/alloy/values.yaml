@@ -301,8 +301,14 @@ alloy-ui:
     #   silent_redirect_uri: https://alloy.example.com/auth-callback-silent.html
     # AppTitle: Alloy
     # AppTopBarText: Alloy
-    # AppTopBarHexColor: "#0c918d"
+    # AppTopBarHexColor: "#006B6D"
+    # AppTopBarHexTextColor: "#FFFFFF"
+    # AppLightModePrimaryHexColor: "#006B6D"
+    # AppLightModePrimaryHexTextColor: "#FFFFFF"
+    # AppDarkModePrimaryHexColor: "#66A6A7"
+    # AppDarkModePrimaryHexTextColor: "#000000"
     # PlayerUIAddress: https://player.example.com
+    # CasterUIAddress: https://caster.example.com
     # PollingIntervalMS: "3500"
     # UseLocalAuthStorage: true
     # HeaderBarSettings:
@@ -331,8 +337,14 @@ alloy-ui:
   #   },
   #   "AppTitle": "Alloy",
   #   "AppTopBarText": "Alloy",
-  #   "AppTopBarHexColor": "#0c918d",
+  #   "AppTopBarHexColor": "#006B6D",
+  #   "AppTopBarHexTextColor": "#FFFFFF",
+  #   "AppLightModePrimaryHexColor": "#006B6D",
+  #   "AppLightModePrimaryHexTextColor": "#FFFFFF",
+  #   "AppDarkModePrimaryHexColor": "#66A6A7",
+  #   "AppDarkModePrimaryHexTextColor": "#000000",
   #   "PlayerUIAddress": "http://localhost:4301",
+  #   "CasterUIAddress": "https://caster.example.com",
   #   "PollingIntervalMS": "3500",
   #   "UseLocalAuthStorage": true,
   #   "HeaderBarSettings": {
