@@ -81,10 +81,10 @@ ingress:
     # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/use-regex: "true"
   hosts:
-  - host: chart-example.local
-    paths:
-    - path: /(api|swagger|hubs)
-      pathType: ImplementationSpecific
+    - host: chart-example.local
+      paths:
+        - path: /(api|swagger|hubs)
+          pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
