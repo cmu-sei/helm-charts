@@ -150,7 +150,6 @@ alloy:
       "AppTitle": "Alloy",
       "AppTopBarText": "Alloy",
       "PlayerUIAddress": "https://{{ .Values.global.domain }}/player",
-      "CasterUIAddress": "https://{{ .Values.global.domain }}/caster",
       "UseLocalAuthStorage": true
       }'
 
