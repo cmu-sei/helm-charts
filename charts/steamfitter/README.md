@@ -215,6 +215,7 @@ Steamfitter needs to communicate to the Crucible [VM API](https://github.com/cmu
 | `VmTaskProcessing__TaskProcessIntervalMilliseconds` | Task processing interval | `5000` |
 | `VmTaskProcessing__TaskProcessMaxWaitSeconds` | Task processing max wait | `120` |
 | `VmTaskProcessing__ExpirationCheckSeconds` | Expiration check interval | `30` |
+| `VmTaskProcessing__HttpTimeoutSeconds` | HTTP task request timeout in seconds. Keep below `TaskProcessMaxWaitSeconds`; `0` falls back to the .NET default of 100 | `90` |
 
 ### SSH Task Execution
 
