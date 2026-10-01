@@ -307,7 +307,7 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `UseLocalAuthStorage` | Persist auth state in local storage | `true` |
 | `PollingIntervalMS` | Polling interval in milliseconds | `"3500"` (commented out) |
 
-Configure these UI settings under `alloy-ui.settingsYaml`. Include the hosting subpath in `CasterUIAddress` when applicable (for example, `https://crucible.example.com/caster`). The umbrella chart sets this address from `global.domain`.
+Configure these UI settings under `alloy-ui.settingsYaml`. Include the hosting subpath in `CasterUIAddress` when applicable (for example, `https://crucible.example.com/caster`).
 
 ### Shared Settings ConfigMap
 
