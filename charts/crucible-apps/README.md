@@ -4,8 +4,6 @@ This Helm chart deploys the [Crucible](https://cmu-sei.github.io/crucible/) plat
 
 ## Overview
 
-See the [Player configuration guide](../player/README.md#identity-attributes) for identity attributes and [VM API xAPI settings](../player/README.md#vm-api-xapi-activity-tracking), and the [Alloy UI configuration guide](../alloy/README.md#alloy-ui-configuration) for theme colors and Caster links.
-
 The crucible-apps chart can be deployed with:
 
 - **crucible-infra chart** - provides PostgreSQL, ingress controller, NFS storage provisioner, and pre-created NFS PVCs
