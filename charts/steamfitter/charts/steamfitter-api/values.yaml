@@ -182,6 +182,7 @@ env:
   VmTaskProcessing__TaskProcessIntervalMilliseconds: 5000
   VmTaskProcessing__TaskProcessMaxWaitSeconds: 120
   VmTaskProcessing__ExpirationCheckSeconds: 30
+  VmTaskProcessing__HttpTimeoutSeconds: 90
 
   # SSH Task Execution
   # Used by the core_remote, linux_file_touch and linux_rm task actions.
@@ -220,4 +221,3 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: steamfitter-api
-  VmTaskProcessing__HttpTimeoutSeconds: 0
