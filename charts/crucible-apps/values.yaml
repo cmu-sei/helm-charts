@@ -208,18 +208,22 @@ blueprint:
       Authorization__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
       Authorization__AuthorizationUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth"
       Authorization__TokenUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/token"
-      Authorization__AuthorizationScope: "openid blueprint player player-vm cite gallery steamfitter"
+      Authorization__AuthorizationScope: "openid blueprint player player-vm cite gallery steamfitter caster"
       Authorization__ClientId: blueprint.api
       Authorization__ClientName: "Blueprint API"
       # Resource Owner Authorization for service account
       ResourceOwnerAuthorization__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
       ResourceOwnerAuthorization__ClientId: blueprint.admin
-      ResourceOwnerAuthorization__Scope: "openid profile blueprint player player-vm cite gallery steamfitter"
+      ResourceOwnerAuthorization__Scope: "openid profile blueprint player player-vm cite gallery steamfitter caster"
       # Client Settings for other Crucible services
       ClientSettings__CiteApiUrl: https://{{ .Values.global.domain }}/cite
       ClientSettings__GalleryApiUrl: https://{{ .Values.global.domain }}/gallery
       ClientSettings__PlayerApiUrl: https://{{ .Values.global.domain }}/player
       ClientSettings__SteamfitterApiUrl: https://{{ .Values.global.domain }}/steamfitter
+      ClientSettings__CasterApiUrl: https://{{ .Values.global.domain }}/caster
+      # UI addresses for the Player application URL placeholders {casterUrl} and {vmUrl}
+      ClientSettings__CasterUiUrl: https://{{ .Values.global.domain }}/caster
+      ClientSettings__VmUiUrl: https://{{ .Values.global.domain }}/vm
       # Database settings
       Database__AutoMigrate: true
       Database__DevModeRecreate: false
@@ -246,13 +250,15 @@ blueprint:
       ApiUrl: https://{{ .Values.global.domain }}/blueprint
       GalleryApiUrl: https://{{ .Values.global.domain }}/gallery
       PlayerUrl: https://{{ .Values.global.domain }}/player
+      CasterUrl: https://{{ .Values.global.domain }}/caster
+      VmUrl: https://{{ .Values.global.domain }}/vm
       OIDCSettings:
         authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
         client_id: blueprint.ui
         redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback
         post_logout_redirect_uri: https://{{ .Values.global.domain }}/blueprint
         response_type: code
-        scope: openid profile blueprint player player-vm cite gallery steamfitter
+        scope: openid profile blueprint player player-vm cite gallery steamfitter caster
         automaticSilentRenew: true
         silent_redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback-silent.html
       AppTitle: Blueprint
