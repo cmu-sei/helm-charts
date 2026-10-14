@@ -101,6 +101,13 @@ settingsYaml:
   #   scope: openid profile email caster-api
   #   automaticSilentRenew: true
   #   silent_redirect_uri: https://caster.example.com/auth-callback-silent.html
+  # AppTopBarText: Caster
+  # AppTopBarHexColor: "#E9831C"
+  # AppTopBarHexTextColor: "#FFFFFF"
+  # AppLightModePrimaryHexColor: "#E9831C"
+  # AppLightModePrimaryHexTextColor: "#FFFFFF"
+  # AppDarkModePrimaryHexColor: "#E9831C"
+  # AppDarkModePrimaryHexTextColor: "#FFFFFF"
   # UseLocalAuthStorage: true
   # HeaderBarSettings:
   #   banner_background_color: "#d40000ff"
@@ -126,6 +133,13 @@ settings: "{}"
 #     "automaticSilentRenew": true,
 #     "silent_redirect_uri": "https://caster.example.com/auth-callback-silent.html"
 #   },
+#   "AppTopBarText": "Caster",
+#   "AppTopBarHexColor": "#E9831C",
+#   "AppTopBarHexTextColor": "#FFFFFF",
+#   "AppLightModePrimaryHexColor": "#E9831C",
+#   "AppLightModePrimaryHexTextColor": "#FFFFFF",
+#   "AppDarkModePrimaryHexColor": "#E9831C",
+#   "AppDarkModePrimaryHexTextColor": "#FFFFFF",
 #   "UseLocalAuthStorage": true,
 #   "HeaderBarSettings": {
 #     "banner_background_color": "#d40000ff",
