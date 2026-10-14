@@ -132,6 +132,12 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__GitlabApiUrl` | GitLab API endpoint for state projects | `https://gitlab.example.com/api/v4/` |
 | `Terraform__GitlabToken` | GitLab access token with `api` scope | `glpat-xxxxxxxxxxxxxxxxxxxx` |
 | `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
+| `Terraform__ModuleSources__0__Name` | Name of a plain git module source; prefixes the path of every module found in it. Required for the source to be used | `"crucible-modules"` |
+| `Terraform__ModuleSources__0__Description` | Description shown in the Designer for modules that have none of their own | `"Crucible vSphere module catalog"` |
+| `Terraform__ModuleSources__0__Provider` | Module source provider | `"Git"` (default) |
+| `Terraform__ModuleSources__0__Url` | Clone URL, used verbatim by git and in the generated `source = "git::<Url>?ref=<tag>"`. Required for the source to be used | `"https://git.example.com/your-org/terraform-modules.git"` |
+| `Terraform__ModuleSources__0__Layout` | `Root` treats the repository as one module; `Subdirectories` treats each immediate subdirectory containing `variables.tf.json` or `outputs.tf.json` as its own module | `"Root"` (default) |
+| `Terraform__ModuleSourceTimeoutSeconds` | Seconds any single git command against a module source may run before it is killed. `0` or less disables the timeout | `120` (default) |
 | `Terraform__PluginDirectory` | Optional path containing pre-staged providers (set to `""` when using `terraformrc`) | `""` |
 | `Terraform__BinaryPath` | Terraform binary path | `"/terraform/binaries"` |
 | `Terraform__PluginCache` | Terraform plugin cache path | `"/terraform/plugin-cache"` |
@@ -177,6 +183,23 @@ custom V1Job spec.
 | `Terraform__KubernetesJobs__JobTemplateYaml` | Inline V1Job YAML string to use as the job template | `""` |
 
 > **GitLab prerequisites:** create a dedicated group for Caster projects, generate a token with `api` scope, and confirm the token has access to the group.
+
+#### Git Module Sources
+
+In addition to (or instead of) a GitLab group, Caster can discover Terraform modules in any plain git repository listed under `Terraform__ModuleSources`. The GitLab settings and module sources are independent; configuring either, both, or neither is valid, and existing GitLab-only deployments need no changes.
+
+- Module versions come from git tags. Variables and outputs are read from `variables.tf.json` and `outputs.tf.json` in each module root.
+- With `Layout: Subdirectories`, modules are addressed as `git::<Url>//<subdir>?ref=<tag>`. A plain tag (`v1.0.0`) versions every module; a tag of the form `<subdir>/<version>` (`network-segment/v1.2.0`) versions only that module, so modules can be released separately.
+- https sources authenticate through [`gitcredentials`](#git-credentials). `file://` and public https URLs need no credentials.
+- A source missing `Name` or `Url` is ignored rather than failing startup.
+
+```yaml
+caster-api:
+  env:
+    Terraform__ModuleSources__0__Name: "crucible-modules"
+    Terraform__ModuleSources__0__Url: "https://git.example.com/your-org/terraform-modules.git"
+    Terraform__ModuleSources__0__Layout: "Subdirectories"
+```
 
 #### Terraform Installation
 
@@ -253,7 +276,7 @@ Use `caster-api.certificateMap` to mount CA certificates required for Azure or o
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `gitcredentials` | Credential helper entry written to `/app/.git-credentials` for Git operations | `https://git-access-token:glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.example.com` |
+| `gitcredentials` | Credential helper entry written to `/app/.git-credentials` for Git operations, including cloning https [module sources](#git-module-sources) | `https://git-access-token:glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.example.com` |
 
 ### File Version Management
 
@@ -454,6 +477,13 @@ Use `settingsYaml` to configure settings for the Angular UI application. Alterna
 | `OIDCSettings.scope` | Space-delimited scopes requested during login | `openid profile email caster-api` |
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://caster.example.com/auth-callback-silent.html` |
+| `AppTopBarText` | Text displayed in the UI header and browser title | `Caster` |
+| `AppTopBarHexColor` | Hex color for the header background | `#E9831C` |
+| `AppTopBarHexTextColor` | Hex color for the header text | `#FFFFFF` |
+| `AppLightModePrimaryHexColor` | Primary action color in light mode | `#E9831C` |
+| `AppLightModePrimaryHexTextColor` | Text color on primary actions in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary action color in dark mode | `#E9831C` |
+| `AppDarkModePrimaryHexTextColor` | Text color on primary actions in dark mode | `#FFFFFF` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
 
 ### Shared Settings ConfigMap
@@ -553,6 +583,13 @@ caster-ui:
 - Ensure the GitLab token includes the `api` scope and has access to the target group.
 - Confirm `Terraform__GitlabGroupId` matches the GitLab group where projects are created.
 - Check the `gitcredentials` value for correct formatting (`https://user:token@gitlab...`).
+
+### Git Module Source Issues
+- Confirm each entry under `Terraform__ModuleSources` has both `Name` and `Url`; incomplete entries are silently skipped.
+- Verify the pod can reach the repository: `git ls-remote <Url>` from inside the caster-api container.
+- For private https repositories, ensure `gitcredentials` contains an entry for the repository host.
+- Modules only appear for tagged versions, and only in roots containing `variables.tf.json` or `outputs.tf.json`.
+- If git commands are killed before completing on a slow server, raise `Terraform__ModuleSourceTimeoutSeconds`.
 
 ### vSphere Connection Failures
 - Confirm `VSPHERE_SERVER` is reachable from the pod.

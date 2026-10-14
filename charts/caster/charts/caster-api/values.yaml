@@ -119,7 +119,8 @@ storage:
 # the configMap name here
 certificateMap: ""
 
-# Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token
+# Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token.
+# Also used to authenticate https Terraform__ModuleSources.
 # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
 # Example:
 # gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
@@ -246,6 +247,18 @@ env:
   Terraform__GitlabApiUrl: ""
   Terraform__GitlabToken: ""
   Terraform__GitlabGroupId: ""
+  # Plain git repositories to discover Terraform modules in, independent of the Gitlab settings above.
+  # Versions come from tags; variables and outputs from variables.tf.json and outputs.tf.json.
+  # https sources authenticate through gitcredentials; file:// and public https need nothing.
+  # Layout "Root" (default) treats the repo as one module; "Subdirectories" treats each
+  # immediate subdirectory as a module, versioned by plain tags or "<subdir>/<version>" tags.
+  # Terraform__ModuleSources__0__Name: "crucible-modules"
+  # Terraform__ModuleSources__0__Description: "Crucible vSphere module catalog"
+  # Terraform__ModuleSources__0__Provider: "Git"
+  # Terraform__ModuleSources__0__Url: "https://git.example.com/your-org/terraform-modules.git"
+  # Terraform__ModuleSources__0__Layout: "Subdirectories"
+  # Seconds any single git command against a module source may run. 0 or less disables the timeout.
+  # Terraform__ModuleSourceTimeoutSeconds: 120
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
   Terraform__StateRetryIntervalSeconds: 5
@@ -302,4 +315,3 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: caster-api
-  Terraform__ModuleSourceTimeoutSeconds: 0
