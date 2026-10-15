@@ -102,6 +102,11 @@ spec:
             - mountPath: /app/.git-credentials
               subPath: .git-credentials
               name: {{ include "caster-api.fullname" . }}-gitcredentials
+            {{- if .Values.gitcredentials }}
+            - mountPath: /app/.gitconfig
+              subPath: .gitconfig
+              name: {{ include "caster-api.fullname" . }}-gitconfig
+            {{- end }}
             {{- if .Values.terraformrc.enabled }}
             - mountPath: /app/.terraformrc
               subPath: .terraformrc
@@ -142,6 +147,11 @@ spec:
         - name: {{ include "caster-api.fullname" . }}-gitcredentials
           configMap:
             name: {{ include "caster-api.fullname" . }}-gitcredentials
+        {{- if .Values.gitcredentials }}
+        - name: {{ include "caster-api.fullname" . }}-gitconfig
+          configMap:
+            name: {{ include "caster-api.fullname" . }}-gitconfig
+        {{- end }}
         {{- if .Values.terraformrc.enabled }}
         - name: {{ include "caster-api.fullname" . }}-terraformrc
           configMap:
