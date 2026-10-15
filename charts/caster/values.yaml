@@ -120,11 +120,15 @@ caster-api:
   # the configMap name here
   certificateMap: ""
 
-  # Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token.
-  # Also used to authenticate https Terraform__ModuleSources.
-  # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
+  # Credentials for https git hosts, one https://USER:TOKEN@HOST line per host
+  # (git-credential-store format; percent-encode reserved characters in TOKEN).
+  # Mounted at /app/.git-credentials and read through a chart-generated
+  # /app/.gitconfig, in the caster-api pod and in Kubernetes job pods. Used for
+  # Gitlab, https Terraform__ModuleSources, and git:: module sources at terraform init.
   # Example:
-  # gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
+  # gitcredentials: |
+  #   https://caster:TOKEN@git.example.com
+  #   https://git-access-token:TOKEN@gitlab.example.com
   gitcredentials: ""
 
   command: ["./Caster.Api"]
@@ -250,7 +254,8 @@ caster-api:
     Terraform__GitlabGroupId: ""
     # Plain git repositories to discover Terraform modules in, independent of the Gitlab settings above.
     # Versions come from tags; variables and outputs from variables.tf.json and outputs.tf.json.
-    # https sources authenticate through gitcredentials; file:// and public https need nothing.
+    # https sources authenticate through gitcredentials, in the API pod and job pods alike;
+    # file:// and public https need nothing.
     # Layout "Root" (default) treats the repo as one module; "Subdirectories" treats each
     # immediate subdirectory as a module, versioned by plain tags or "<subdir>/<version>" tags.
     # Terraform__ModuleSources__0__Name: "crucible-modules"
