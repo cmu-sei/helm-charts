@@ -5,16 +5,3 @@ metadata:
   name: {{ include "caster-api.fullname" . }}-gitcredentials
 data:
   .git-credentials: {{ .Values.gitcredentials | quote }}
-{{- if .Values.gitcredentials }}
----
-# GIT_CONFIG_SYSTEM points here. The helper answers only "get", so git never
-# tries to write the read-only credentials mount back after a successful login.
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "caster-api.fullname" . }}-gitconfig
-data:
-  .gitconfig: |
-    [credential]
-      helper = "!f() { test \"$1\" = get && exec git credential-store --file=/app/.git-credentials get; }; f"
-{{- end }}
