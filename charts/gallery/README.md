@@ -230,6 +230,10 @@ Use `settingsYaml` to configure the Angular UI application. The table below high
 | `AppTitle` | Browser/application title | `Gallery` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#008740` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#00A34D` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 | `AppTopBarText` | Banner text displayed in the top bar | `Gallery - Exercise Information Sharing` |
 | `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
 | `OIDCSettings.authority` | OIDC authority URL | `https://identity.example.com/` |

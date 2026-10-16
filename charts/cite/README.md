@@ -250,6 +250,10 @@ Use ``settingsYaml` to configure the Angular UI application.
 | `AppTitle` | Browser/application title | `CITE` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#E81717` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#EF5A5A` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 | `AppTopBarText` | Banner text displayed in the top bar | `CITE - Collaborative Incident Threat Evaluator` |
 | `DefaultScoringModelId` | Optional ID to pre-select a scoring model | `` |
 | `DefaultEvaluationId` | Optional ID to pre-select an evaluation | `` |

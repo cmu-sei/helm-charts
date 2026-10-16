@@ -177,13 +177,17 @@ blueprint-api:
     # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: blueprint-api
-    ClientSettings__CasterApiUrl: ""
-    ClientSettings__CasterUiUrl: ""
-    ClientSettings__VmUiUrl: ""
-    ClientSettings__CasterCheckIntervalSeconds: 0
-    ClientSettings__CasterPlanMaxWaitMinutes: 0
-    ClientSettings__CasterApplyMaxWaitMinutes: 0
-    ClientSettings__CasterDestroyMaxWaitMinutes: 0
+
+    # Caster integration. Set the URLs to use Caster; the timing values show the defaults.
+    # ClientSettings__CasterApiUrl: https://caster.example.com/api/
+    # ClientSettings__CasterUiUrl: https://caster.example.com
+    # ClientSettings__VmUiUrl: https://vm.example.com
+    # Seconds between Caster run status checks
+    # ClientSettings__CasterCheckIntervalSeconds: 10
+    # Minutes to wait for a Caster plan, apply, or destroy to finish
+    # ClientSettings__CasterPlanMaxWaitMinutes: 15
+    # ClientSettings__CasterApplyMaxWaitMinutes: 120
+    # ClientSettings__CasterDestroyMaxWaitMinutes: 60
 
 blueprint-ui:
   image:
@@ -279,12 +283,12 @@ blueprint-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    # CasterUrl: ""
-    # VmUrl: ""
-    # AppLightModePrimaryHexColor: ""
-    # AppLightModePrimaryHexTextColor: ""
-    # AppDarkModePrimaryHexColor: ""
-    # AppDarkModePrimaryHexTextColor: ""
+    # CasterUrl: https://caster.example.com
+    # VmUrl: https://vm.example.com
+    # AppLightModePrimaryHexColor: "#0078AF"
+    # AppLightModePrimaryHexTextColor: "#FFFFFF"
+    # AppDarkModePrimaryHexColor: "#00A3EE"
+    # AppDarkModePrimaryHexTextColor: "#000000"
     # ApiUrl: https://blueprint.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -312,7 +316,7 @@ blueprint-ui:
     #   enabled: false
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{\"CasterUrl\": \"\", \"VmUrl\": \"\", \"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://blueprint.example.com",
   #   "OIDCSettings": {
