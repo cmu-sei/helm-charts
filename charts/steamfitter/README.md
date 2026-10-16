@@ -385,6 +385,10 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
 | `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://steamfitter.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#B1282F` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#DD676D` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 
 ### Shared Settings ConfigMap
 

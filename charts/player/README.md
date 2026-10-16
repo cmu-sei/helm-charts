@@ -331,6 +331,10 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `UseLocalAuthStorage`        | Whether authentication state is stored locally in browser   | `true`                                             |
 | `NotificationsSettings.url`  | URL for receiving notifications                             | `https://player.example.com/hubs`                  |
 | `NotificationsSettings.number_to_display` | Number of items in the notification area       | `4`                                                |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#3B62A5` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#6A8DCA` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 
 
 ## VM API Configuration
@@ -883,6 +887,10 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.automaticSilentRenew` | Enables automatic token renewal                | `true`                                            |
 | `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://vm.example.com/auth-callback-silent.html`    |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                            |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#3B62A5` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#6A8DCA` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 
 
 ### Console UI Configuration
@@ -906,6 +914,10 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 | `OIDCSettings.silent_redirect_uri`  | URI for silent token renewal callbacks         | `https://console.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Whether authentication state is stored locally in browser    | `true`                                              |
 | `VmResolutionOptions` | List of width/height configurations for allowable display resolutions | `- width: 1920`<br>`  height: 1200`<br>`- width: 16280`<br>`  height: 1024` |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#3B62A5` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#6A8DCA` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 
 ### PasteSpeeds
 

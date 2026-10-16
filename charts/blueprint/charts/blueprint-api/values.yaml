@@ -176,10 +176,15 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: blueprint-api
-  ClientSettings__CasterApiUrl: ""
+
+  # Caster integration
+  # Base URL for the Caster API. Leave unset unless using Caster; an empty value breaks the MSEL endpoints.
+  # ClientSettings__CasterApiUrl: https://caster.example.com/api/
   ClientSettings__CasterUiUrl: ""
   ClientSettings__VmUiUrl: ""
-  ClientSettings__CasterCheckIntervalSeconds: 0
-  ClientSettings__CasterPlanMaxWaitMinutes: 0
-  ClientSettings__CasterApplyMaxWaitMinutes: 0
-  ClientSettings__CasterDestroyMaxWaitMinutes: 0
+  # Seconds between Caster run status checks
+  ClientSettings__CasterCheckIntervalSeconds: 10
+  # Minutes to wait for a Caster plan, apply, or destroy to finish
+  ClientSettings__CasterPlanMaxWaitMinutes: 15
+  ClientSettings__CasterApplyMaxWaitMinutes: 120
+  ClientSettings__CasterDestroyMaxWaitMinutes: 60

@@ -91,12 +91,12 @@ sharedSettingsConfigMap: ""
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml:
-  # CasterUrl: ""
-  # VmUrl: ""
-  # AppLightModePrimaryHexColor: ""
-  # AppLightModePrimaryHexTextColor: ""
-  # AppDarkModePrimaryHexColor: ""
-  # AppDarkModePrimaryHexTextColor: ""
+  # CasterUrl: https://caster.example.com
+  # VmUrl: https://vm.example.com
+  # AppLightModePrimaryHexColor: "#0078AF"
+  # AppLightModePrimaryHexTextColor: "#FFFFFF"
+  # AppDarkModePrimaryHexColor: "#00A3EE"
+  # AppDarkModePrimaryHexTextColor: "#000000"
   # ApiUrl: https://blueprint.example.com
   # OIDCSettings:
   #   authority: https://identity.example.com/
@@ -124,7 +124,7 @@ settingsYaml:
   #   enabled: false
 
 ## settings is stringified json that gets included as appsettings.Production.json
-settings: "{\"CasterUrl\": \"\", \"VmUrl\": \"\", \"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+settings: "{}"
 # settings: '{
 #   "ApiUrl": "https://blueprint.example.com",
 #   "OIDCSettings": {

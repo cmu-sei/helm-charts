@@ -96,6 +96,20 @@ Blueprint API supports sending xAPI statements to a Learning Record Store (LRS) 
 | `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI statement processing | `10` |
 | `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing cycles | `30` |
 
+### Caster Integration
+
+Blueprint can deploy infrastructure for an event through Caster. The URLs default to `localhost` and must be set to use Caster. Leave `ClientSettings__CasterApiUrl` unset unless using Caster: an empty value is not a valid URL and breaks the MSEL endpoints. The timing values default to the examples shown.
+
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `ClientSettings__CasterApiUrl` | Base URL for the Caster API | `https://caster.example.com/api/` |
+| `ClientSettings__CasterUiUrl` | Base URL for the Caster UI, used in Player application links | `https://caster.example.com` |
+| `ClientSettings__VmUiUrl` | Base URL for the VM UI, used in Player application links | `https://vm.example.com` |
+| `ClientSettings__CasterCheckIntervalSeconds` | Seconds between Caster run status checks | `10` |
+| `ClientSettings__CasterPlanMaxWaitMinutes` | Minutes to wait for a Caster plan to finish | `15` |
+| `ClientSettings__CasterApplyMaxWaitMinutes` | Minutes to wait for a Caster apply to finish | `120` |
+| `ClientSettings__CasterDestroyMaxWaitMinutes` | Minutes to wait for a Caster destroy to finish | `60` |
+
 ### Claims Transformation
 
 | Setting | Description | Example |
@@ -243,9 +257,15 @@ Use `settingsYaml` to configure the Angular UI application. Nested keys in the t
 | `OIDCSettings.automaticSilentRenew` | Enables background token renewal | `true` |
 | `OIDCSettings.silent_redirect_uri` | URI for silent token renewal callbacks | `https://blueprint.example.com/auth-callback-silent.html` |
 | `UseLocalAuthStorage` | Persist auth state in browser local storage | `true` |
+| `CasterUrl` | Base URL for the Caster UI, used in Player application links | `https://caster.example.com` |
+| `VmUrl` | Base URL for the VM UI, used in Player application links | `https://vm.example.com` |
 | `AppTitle` | Browser/application title | `Blueprint` |
 | `AppTopBarHexColor` | Hex color for the top bar background | `#2d69b4` |
 | `AppTopBarHexTextColor` | Hex color for the top bar text | `#FFFFFF` |
+| `AppLightModePrimaryHexColor` | Primary color in light mode. Defaults to the app's brand color | `#0078AF` |
+| `AppLightModePrimaryHexTextColor` | Text color on the primary color in light mode | `#FFFFFF` |
+| `AppDarkModePrimaryHexColor` | Primary color in dark mode. Falls back to the light mode value | `#00A3EE` |
+| `AppDarkModePrimaryHexTextColor` | Text color on the primary color in dark mode. Falls back to the light mode value | `#000000` |
 | `AppTopBarText` | Banner text displayed in the top bar | `Blueprint - Exercise Planning` |
 | `AppTopBarImage` | Path to the banner image | `/assets/img/monitor-dashboard-white.png` |
 | `HeaderBarSettings.banner_background_color` | Banner background color | `"#d40000ff"` |

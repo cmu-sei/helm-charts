@@ -332,10 +332,10 @@ player-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    # AppLightModePrimaryHexColor: ""
-    # AppLightModePrimaryHexTextColor: ""
-    # AppDarkModePrimaryHexColor: ""
-    # AppDarkModePrimaryHexTextColor: ""
+    # AppLightModePrimaryHexColor: "#3B62A5"
+    # AppLightModePrimaryHexTextColor: "#FFFFFF"
+    # AppDarkModePrimaryHexColor: "#6A8DCA"
+    # AppDarkModePrimaryHexTextColor: "#000000"
     # ApiUrl: https://player.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -366,7 +366,7 @@ player-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://player.example.com",
   #   "OIDCSettings": {
@@ -843,10 +843,10 @@ vm-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    # AppLightModePrimaryHexColor: ""
-    # AppLightModePrimaryHexTextColor: ""
-    # AppDarkModePrimaryHexColor: ""
-    # AppDarkModePrimaryHexTextColor: ""
+    # AppLightModePrimaryHexColor: "#3B62A5"
+    # AppLightModePrimaryHexTextColor: "#FFFFFF"
+    # AppDarkModePrimaryHexColor: "#6A8DCA"
+    # AppDarkModePrimaryHexTextColor: "#000000"
     # ApiUrl: https://vm.example.com/api
     # DeployApiUrl: ""
     # ApiPlayerUrl: https://player.example.com/api
@@ -873,7 +873,7 @@ vm-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+  settings: "{}"
   # settings: '{
   #   "ApiUrl": "https://vm.example.com/api",
   #   "DeployApiUrl": "",
@@ -997,10 +997,10 @@ console-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
-    # AppLightModePrimaryHexColor: ""
-    # AppLightModePrimaryHexTextColor: ""
-    # AppDarkModePrimaryHexColor: ""
-    # AppDarkModePrimaryHexTextColor: ""
+    # AppLightModePrimaryHexColor: "#3B62A5"
+    # AppLightModePrimaryHexTextColor: "#FFFFFF"
+    # AppDarkModePrimaryHexColor: "#6A8DCA"
+    # AppDarkModePrimaryHexTextColor: "#000000"
     # ConsoleApiUrl: https://vm.example.com/api/
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -1061,7 +1061,7 @@ console-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+  settings: "{}"
   # settings: '{
   #   "ConsoleApiUrl": "https://vm.example.com/api/",
   #   "OIDCSettings": {

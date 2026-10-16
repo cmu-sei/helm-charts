@@ -91,10 +91,10 @@ sharedSettingsConfigMap: ""
 
 ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
 settingsYaml:
-  # AppLightModePrimaryHexColor: ""
-  # AppLightModePrimaryHexTextColor: ""
-  # AppDarkModePrimaryHexColor: ""
-  # AppDarkModePrimaryHexTextColor: ""
+  # AppLightModePrimaryHexColor: "#B1282F"
+  # AppLightModePrimaryHexTextColor: "#FFFFFF"
+  # AppDarkModePrimaryHexColor: "#DD676D"
+  # AppDarkModePrimaryHexTextColor: "#000000"
   # ApiUrl: https://steamfitter.example.com
   # VmApiUrl: https://vm.example.com
   # ApiPlayerUrl: https://player.example.com
@@ -119,7 +119,7 @@ settingsYaml:
   #   enabled: false
 
 ## settings is stringified json that gets included as appsettings.Production.json
-settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
+settings: "{}"
 # settings: '{
 #   "ApiUrl": "https://steamfitter.example.com",
 #   "VmApiUrl": "https://vm.example.com",
