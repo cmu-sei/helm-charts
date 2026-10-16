@@ -278,6 +278,10 @@ cite-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
+    # AppLightModePrimaryHexColor: ""
+    # AppLightModePrimaryHexTextColor: ""
+    # AppDarkModePrimaryHexColor: ""
+    # AppDarkModePrimaryHexTextColor: ""
     # ApiUrl: https://cite.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -308,7 +312,7 @@ cite-ui:
     #   enabled: false
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{}"
+  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
   # settings: '{
   #   "ApiUrl": "https://cite.example.com",
   #   "OIDCSettings": {
