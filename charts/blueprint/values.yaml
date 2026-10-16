@@ -279,6 +279,12 @@ blueprint-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
+    # CasterUrl: ""
+    # VmUrl: ""
+    # AppLightModePrimaryHexColor: ""
+    # AppLightModePrimaryHexTextColor: ""
+    # AppDarkModePrimaryHexColor: ""
+    # AppDarkModePrimaryHexTextColor: ""
     # ApiUrl: https://blueprint.example.com
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -306,7 +312,7 @@ blueprint-ui:
     #   enabled: false
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{}"
+  settings: "{\"CasterUrl\": \"\", \"VmUrl\": \"\", \"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
   # settings: '{
   #   "ApiUrl": "https://blueprint.example.com",
   #   "OIDCSettings": {
