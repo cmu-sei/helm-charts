@@ -191,6 +191,7 @@ In addition to (or instead of) a GitLab group, Caster can discover Terraform mod
 - Module versions come from git tags. Variables and outputs are read from `variables.tf.json` and `outputs.tf.json` in each module root.
 - With `Layout: Subdirectories`, modules are addressed as `git::<Url>//<subdir>?ref=<tag>`. A plain tag (`v1.0.0`) versions every module; a tag of the form `<subdir>/<version>` (`network-segment/v1.2.0`) versions only that module, so modules can be released separately.
 - https sources authenticate through [`gitcredentials`](#git-credentials). `file://` and public https URLs need no credentials.
+- The same credentials cover `terraform init`, which fetches each module from its `git::` address. That includes Kubernetes job pods; see [Git Credentials](#git-credentials).
 - A source missing `Name` or `Url` is ignored rather than failing startup.
 
 ```yaml
@@ -276,7 +277,35 @@ Use `caster-api.certificateMap` to mount CA certificates required for Azure or o
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `gitcredentials` | Credential helper entry written to `/app/.git-credentials` for Git operations, including cloning https [module sources](#git-module-sources) | `https://git-access-token:glpat-xxxxxxxxxxxxxxxxxxxx@gitlab.example.com` |
+| `gitcredentials` | gitconfig content, mounted at `/app/.git-credentials` and read by git as its system config. Used by every git operation: GitLab, https [module sources](#git-module-sources), and `git::` module sources fetched by `terraform init` | see below |
+
+```yaml
+caster-api:
+  gitcredentials: |
+    [url "https://oauth2:TOKEN@git.example.com/"]
+      insteadOf = https://git.example.com/
+    [url "https://git-access-token:TOKEN@gitlab.example.com/"]
+      insteadOf = https://gitlab.example.com/
+```
+
+- When `gitcredentials` is set, the chart sets `GIT_CONFIG_SYSTEM` to `/app/.git-credentials`, so the value must be valid gitconfig. A bare `https://USER:TOKEN@HOST` line, as used by git-credential-store, makes every git command fail with `fatal: bad config line 1`.
+- Each `url` section rewrites only the host it names; other hosts are unaffected. Percent-encode reserved characters in the token (`@` as `%40`, `:` as `%3A`, `/` as `%2F`).
+- The username is ignored by most token-based hosts but must be non-empty. A token that only clones needs read access to the repositories (GitLab `read_repository`, Forgejo/Gitea `read:repository`); the GitLab source itself still needs `api`.
+- The value is stored in a ConfigMap. To keep the token in a Secret instead, leave `gitcredentials` empty and configure git through environment variables in `existingSecret` or [`extraEnvFrom`](#extra-environment-sources). The helper is scoped to one host, reads the token from the environment, and reaches job pods the same way as `GIT_CONFIG_SYSTEM` below:
+
+  ```yaml
+  GIT_CONFIG_COUNT: "1"
+  GIT_CONFIG_KEY_0: "credential.https://git.example.com.helper"
+  GIT_CONFIG_VALUE_0: '!f() { test "$1" = get && echo username=caster && echo password=$CASTER_GIT_TOKEN; }; f'
+  CASTER_GIT_TOKEN: "TOKEN"
+  ```
+
+**Kubernetes job mode.** With `Terraform__KubernetesJobs__Enabled: "true"`, `terraform init` runs in the job pod, so it needs the same credentials. The chart adds the `gitcredentials` ConfigMap to `Terraform__KubernetesJobs__ConfigMaps`, mounting it at the same path in the job pod. `GIT_CONFIG_SYSTEM` reaches the job through environment inheritance:
+
+- With `Terraform__EnvironmentVariables__InheritAll: "true"` (the chart default), nothing else is needed.
+- With `InheritAll: "false"`, pass it explicitly, either as a case-sensitive regex such as `Terraform__EnvironmentVariables__Inherit__0: "^GIT_CONFIG_SYSTEM$"` (`"^(GIT_CONFIG_|CASTER_GIT_TOKEN$)"` for the Secret variant), or as `Terraform__EnvironmentVariables__Direct__GIT_CONFIG_SYSTEM: "/app/.git-credentials"`.
+- The job image needs git and `sh`. The default `hashicorp/terraform` images include both.
+- A custom `JobTemplateFile` or `JobTemplateYaml` does not need its own git credentials; the chart's ConfigMaps and environment are added to it.
 
 ### File Version Management
 
@@ -582,12 +611,14 @@ caster-ui:
 - Test connectivity manually: `curl -H "PRIVATE-TOKEN: $TOKEN" $GITLAB_API_URL/groups/$GROUP_ID`.
 - Ensure the GitLab token includes the `api` scope and has access to the target group.
 - Confirm `Terraform__GitlabGroupId` matches the GitLab group where projects are created.
-- Check the `gitcredentials` value for correct formatting (`https://user:token@gitlab...`).
+- Check that `gitcredentials` is gitconfig content (a `[url "https://user:token@gitlab.example.com/"]` section with `insteadOf`), not a bare credential URL.
 
 ### Git Module Source Issues
 - Confirm each entry under `Terraform__ModuleSources` has both `Name` and `Url`; incomplete entries are silently skipped.
 - Verify the pod can reach the repository: `git ls-remote <Url>` from inside the caster-api container.
 - For private https repositories, ensure `gitcredentials` contains an entry for the repository host.
+- `fatal: bad config line 1 in file /app/.git-credentials` means `gitcredentials` holds a credential URL rather than gitconfig. Rewrite it as `url`/`insteadOf` sections (see [Git Credentials](#git-credentials)).
+- If discovery works but `terraform init` fails to clone in job mode, check that `GIT_CONFIG_SYSTEM` is set in the job pod (see [Kubernetes job mode](#git-credentials)).
 - Modules only appear for tagged versions, and only in roots containing `variables.tf.json` or `outputs.tf.json`.
 - If git commands are killed before completing on a slow server, raise `Terraform__ModuleSourceTimeoutSeconds`.
 

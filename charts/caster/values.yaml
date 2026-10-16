@@ -120,11 +120,15 @@ caster-api:
   # the configMap name here
   certificateMap: ""
 
-  # Gets placed in /app/.git-credentials to allow immediate Gitlab access via access token.
-  # Also used to authenticate https Terraform__ModuleSources.
-  # Replace TOKEN with an access token created in Gitlab, and update the Gitlab URL
-  # Example:
-  # gitcredentials: "https://git-access-token:TOKEN@gitlab.example.com"
+  # gitconfig content, mounted at /app/.git-credentials and read by git as its system
+  # config (GIT_CONFIG_SYSTEM) in the caster-api pod and in Kubernetes job pods.
+  # Used for Gitlab, https Terraform__ModuleSources, and git:: module sources at terraform init.
+  # This is gitconfig, not a credential-store line: a bare https://USER:TOKEN@HOST
+  # value makes every git command fail with "bad config line 1".
+  # Example (one url section per host):
+  # gitcredentials: |
+  #   [url "https://oauth2:TOKEN@gitlab.example.com/"]
+  #     insteadOf = https://gitlab.example.com/
   gitcredentials: ""
 
   command: ["./Caster.Api"]
