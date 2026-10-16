@@ -98,7 +98,7 @@ Blueprint API supports sending xAPI statements to a Learning Record Store (LRS) 
 
 ### Caster Integration
 
-Blueprint can deploy infrastructure for an event through Caster. The URLs default to `localhost` and must be set to use Caster. The timing values default to the examples shown.
+Blueprint can deploy infrastructure for an event through Caster. The URLs default to `localhost` and must be set to use Caster. Leave `ClientSettings__CasterApiUrl` unset unless using Caster: an empty value is not a valid URL and breaks the MSEL endpoints. The timing values default to the examples shown.
 
 | Setting | Description | Example |
 |---------|-------------|---------|

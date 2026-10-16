@@ -178,16 +178,17 @@ blueprint-api:
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: blueprint-api
 
-    # Caster integration. Set the URLs to use Caster; the timing values show the defaults.
+    # Caster integration
+    # Base URL for the Caster API. Leave unset unless using Caster; an empty value breaks the MSEL endpoints.
     # ClientSettings__CasterApiUrl: https://caster.example.com/api/
-    # ClientSettings__CasterUiUrl: https://caster.example.com
-    # ClientSettings__VmUiUrl: https://vm.example.com
+    ClientSettings__CasterUiUrl: ""
+    ClientSettings__VmUiUrl: ""
     # Seconds between Caster run status checks
-    # ClientSettings__CasterCheckIntervalSeconds: 10
+    ClientSettings__CasterCheckIntervalSeconds: 10
     # Minutes to wait for a Caster plan, apply, or destroy to finish
-    # ClientSettings__CasterPlanMaxWaitMinutes: 15
-    # ClientSettings__CasterApplyMaxWaitMinutes: 120
-    # ClientSettings__CasterDestroyMaxWaitMinutes: 60
+    ClientSettings__CasterPlanMaxWaitMinutes: 15
+    ClientSettings__CasterApplyMaxWaitMinutes: 120
+    ClientSettings__CasterDestroyMaxWaitMinutes: 60
 
 blueprint-ui:
   image:
