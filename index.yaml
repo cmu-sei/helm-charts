@@ -1409,6 +1409,19 @@ entries:
     version: 0.1.1
   caster:
   - apiVersion: v2
+    created: "2026-10-16T18:23:03.952322577Z"
+    description: Caster enables the coded design and deployment of cyber topologies.
+    digest: be6d0a07b03d764e25c25be2c122f17226a435fc4a5b9fc42f58e46a91f3f632
+    home: https://cmu-sei.github.io/crucible/caster/
+    name: caster
+    sources:
+    - https://github.com/cmu-sei/Caster.Api/
+    - https://github.com/cmu-sei/Caster.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/caster-1.10.1/caster-1.10.1.tgz
+    version: 1.10.1
+  - apiVersion: v2
     created: "2026-10-14T17:55:20.097092527Z"
     description: Caster enables the coded design and deployment of cyber topologies.
     digest: 273bb1692d44438add8cc86d92d570c76e42e05bd46fd8ebcffefb9b64c2fc2b
@@ -9006,4 +9019,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-14T17:55:20.097830227Z"
+generated: "2026-10-16T18:23:03.953118333Z"
