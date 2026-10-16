@@ -997,6 +997,10 @@ console-ui:
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
   settingsYaml:
+    # AppLightModePrimaryHexColor: ""
+    # AppLightModePrimaryHexTextColor: ""
+    # AppDarkModePrimaryHexColor: ""
+    # AppDarkModePrimaryHexTextColor: ""
     # ConsoleApiUrl: https://vm.example.com/api/
     # OIDCSettings:
     #   authority: https://identity.example.com/
@@ -1057,7 +1061,7 @@ console-ui:
     #   enabled: true
 
   ## settings is stringified json that gets included as appsettings.Production.json
-  settings: "{}"
+  settings: "{\"AppLightModePrimaryHexColor\": \"\", \"AppLightModePrimaryHexTextColor\": \"\", \"AppDarkModePrimaryHexColor\": \"\", \"AppDarkModePrimaryHexTextColor\": \"\"}"
   # settings: '{
   #   "ConsoleApiUrl": "https://vm.example.com/api/",
   #   "OIDCSettings": {
