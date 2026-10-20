@@ -6459,6 +6459,20 @@ entries:
     version: 0.1.0
   moodle:
   - apiVersion: v2
+    appVersion: 5.2.4
+    created: "2026-10-20T18:31:34.547202264Z"
+    description: Moodle is an open source Learning Management System.
+    digest: 0c8cb99af2e652ff74a5ee6e406bfd3f399d19f76bbd139e85108dca6acbe110
+    home: https://moodle.org/
+    name: moodle
+    sources:
+    - https://github.com/moodle/moodle
+    - https://github.com/erseco/alpine-moodle
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/moodle-0.3.1/moodle-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v2
     appVersion: 5.2.2
     created: "2026-09-01T13:21:21.325018632Z"
     description: Moodle is an open source Learning Management System.
@@ -9306,4 +9320,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-20T12:28:06.173059685Z"
+generated: "2026-10-20T18:31:34.548143564Z"
