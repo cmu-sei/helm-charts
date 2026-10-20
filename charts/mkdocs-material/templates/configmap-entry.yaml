@@ -100,6 +100,9 @@ data:
     fi
 
     if [ -n "$DOCS_GIT_BRANCH" ]; then
+        ## A ref that is a tag (or a tag that was moved) only exists locally once fetched;
+        ## the fetch further down runs only for branches.
+        execute_git_command "git fetch --tags --force origin"
         execute_git_command "git checkout ${DOCS_GIT_BRANCH}"
         echo "${GIT_OUTPUT} ${GIT_OUTPUT_ERR}" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
