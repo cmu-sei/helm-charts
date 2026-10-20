@@ -6269,6 +6269,16 @@ entries:
   mkdocs-material:
   - apiVersion: v2
     appVersion: 9.6.14
+    created: "2026-10-20T12:28:06.172171699Z"
+    description: Material for MkDocs is a static site generator for technical documentation
+    digest: c3631f30b0439b17a14957ed52d395d007b545e454b228dc62da249ecf3e8878
+    name: mkdocs-material
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/mkdocs-material-0.2.17/mkdocs-material-0.2.17.tgz
+    version: 0.2.17
+  - apiVersion: v2
+    appVersion: 9.6.14
     created: "2026-06-26T13:00:32.872794037Z"
     description: Material for MkDocs is a static site generator for technical documentation
     digest: 86e73a7c325977f02826f09bda06f776cbadf3c3e0f9b08dbd65737188645d9e
@@ -9296,4 +9306,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-16T20:02:55.457181366Z"
+generated: "2026-10-20T12:28:06.173059685Z"
