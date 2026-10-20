@@ -17,8 +17,9 @@ data:
     # avoid shell expansion issues.
     #
     # On failure, cleans out all git state for the next
-    # call to this script and exits with zero to allow
-    # later retries.
+    # call to this script and exits with GIT_FAILURE_EXIT_CODE:
+    # zero by default to allow later retries, non-zero when
+    # failOnGitError is set.
     # Arguments:
     #   git command string
     # Returns:
@@ -40,13 +41,32 @@ data:
           rm -f "/docs/.dirty"
           cd /git
           find . -mindepth 1 -delete
-          exit 0
+          exit "$GIT_FAILURE_EXIT_CODE"
         fi
         echo "$GIT_OUTPUT"
         echo "$GIT_OUTPUT_ERR"
     }
 
+    # Zero by default, so a failed pull does not block a rollout. failOnGitError
+    # makes it non-zero: the init container is retried and the pod is not Ready
+    # while it would serve a stale checkout.
+    GIT_FAILURE_EXIT_CODE=0
+    if [ "$DOCS_GIT_FAIL_ON_ERROR" = "true" ]; then
+        GIT_FAILURE_EXIT_CODE=1
+    fi
+
     update-ca-certificates
+
+    # The Deployment's init container and the CronJob share this checkout, and a
+    # release can start several of them at once (a rollout plus a restart from a
+    # ConfigMap change). Unserialized, one deletes the tree while another clones
+    # into it, and on NFS-backed volumes the survivors hit "Stale file handle".
+    # mkdocs-build.sh takes the same lock. Held until the script exits.
+    exec 9>/docs/.update.lock
+    if ! flock -w 600 9; then
+        echo "Timed out waiting for another git-pull or build to finish."
+        exit "$GIT_FAILURE_EXIT_CODE"
+    fi
 
     # HOME may be read-only, which breaks `git config --global`
     # (credential storage lock error). Point it at a writable dir.
@@ -100,6 +120,9 @@ data:
     fi
 
     if [ -n "$DOCS_GIT_BRANCH" ]; then
+        ## A ref that is a tag (or a tag that was moved) only exists locally once fetched;
+        ## the fetch further down runs only for branches.
+        execute_git_command "git fetch --tags --force origin"
         execute_git_command "git checkout ${DOCS_GIT_BRANCH}"
         echo "${GIT_OUTPUT} ${GIT_OUTPUT_ERR}" | grep "Switch*" > /dev/null 2>&1
         if [ "$?" -eq "0" ]; then
@@ -155,6 +178,21 @@ data:
 
   mkdocs-build.sh: |-
     #!/bin/sh
+
+    # Serialize with git-pull.sh and other builds. Otherwise a pull can reset /git
+    # under a running build, or a build can remove the .dirty flag a newer pull
+    # just set, and the site stays stale. On timeout .dirty is left for the next run.
+    # BusyBox flock in this image has no -w, so poll with -n.
+    exec 9>/docs/.update.lock
+    lock_wait=0
+    until flock -n 9; do
+        lock_wait=$((lock_wait + 1))
+        if [ "$lock_wait" -ge 600 ]; then
+            echo "Timed out waiting for another git-pull or build to finish."
+            exit 0
+        fi
+        sleep 1
+    done
 
     if [ -f "/docs/.dirty" ]; then
 

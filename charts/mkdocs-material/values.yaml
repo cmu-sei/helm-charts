@@ -151,6 +151,12 @@ gitPath: ""
 ## pollInterval sets minutes between git pull
 pollInterval: 5
 
+## failOnGitError makes git-pull.sh exit non-zero when a git command fails or it
+## times out waiting for another pull, so the pod is not Ready on a stale site.
+## Off by default: a failing init container also stalls a rollout until git is
+## reachable again.
+failOnGitError: false
+
 # cacert - add custom CA certificate in-line
 # cacert: |-
 #   -----BEGIN CERTIFICATE-----

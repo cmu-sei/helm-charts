@@ -82,6 +82,8 @@ Subpath prefix value to use for pvc mount points
       value: {{ tpl .Values.giturl . }}
     - name: DOCS_GIT_BRANCH
       value: {{ tpl .Values.gitbranch . }}
+    - name: DOCS_GIT_FAIL_ON_ERROR
+      value: {{ default "false" .Values.failOnGitError | toString | quote }}
   {{- if .Values.gitCredentialsSecret }}
     - name: DOCS_GIT_CRED_FILE
       value: {{ default ".git-credentials" .Values.gitCredentialsSecretKey }}
