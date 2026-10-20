@@ -15,7 +15,7 @@ imagePullSecrets: []
 image:
   registry: ""
   repository: erseco/alpine-moodle
-  tag: v5.2.2
+  tag: v5.2.4
   digest: "" # If set, also set image.tag: the chart reads the 5.0/5.1 web-root layout from the tag, not the digest
   pullPolicy: IfNotPresent
 
