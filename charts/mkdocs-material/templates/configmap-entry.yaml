@@ -17,8 +17,9 @@ data:
     # avoid shell expansion issues.
     #
     # On failure, cleans out all git state for the next
-    # call to this script and exits with zero to allow
-    # later retries.
+    # call to this script and exits with GIT_FAILURE_EXIT_CODE:
+    # zero by default to allow later retries, non-zero when
+    # failOnGitError is set.
     # Arguments:
     #   git command string
     # Returns:
@@ -40,11 +41,19 @@ data:
           rm -f "/docs/.dirty"
           cd /git
           find . -mindepth 1 -delete
-          exit 0
+          exit "$GIT_FAILURE_EXIT_CODE"
         fi
         echo "$GIT_OUTPUT"
         echo "$GIT_OUTPUT_ERR"
     }
+
+    # Zero by default, so a failed pull does not block a rollout. failOnGitError
+    # makes it non-zero: the init container is retried and the pod is not Ready
+    # while it would serve a stale checkout.
+    GIT_FAILURE_EXIT_CODE=0
+    if [ "$DOCS_GIT_FAIL_ON_ERROR" = "true" ]; then
+        GIT_FAILURE_EXIT_CODE=1
+    fi
 
     update-ca-certificates
 
@@ -56,7 +65,7 @@ data:
     exec 9>/docs/.update.lock
     if ! flock -w 600 9; then
         echo "Timed out waiting for another git-pull or build to finish."
-        exit 0
+        exit "$GIT_FAILURE_EXIT_CODE"
     fi
 
     # HOME may be read-only, which breaks `git config --global`

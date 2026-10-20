@@ -21,6 +21,7 @@ If both `storage.existing` and `storage.size` are both empty, an [emptyDir](http
 | `giturl` | URL of an MkDocs Git repository | `""` |
 | `branch` | Git branch that contains repository to publish | `""` |
 | `pollInterval` | Delay between git pull (minutes) | `5` |
+| `failOnGitError` | Exit non-zero when a git pull fails, so the pod is not Ready on a stale site (stalls rollouts while git is unreachable) | `false` |
 | `cacert` | Custom CA certificate to trust for Git server | `nil` |
 | `mkdocs` | YAML configuration for MkDocs (static mode) | `{}` |
 | `files` | Dictionary of text files (usually Markdown) to include as a configmap (static mode) | `{}` |
