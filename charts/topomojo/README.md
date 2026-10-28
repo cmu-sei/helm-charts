@@ -161,11 +161,11 @@ unset (the default is `false`) and behavior is unchanged.
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `Core__DefaultGamespaceMinutes` | Default gamespace duration in minutes | `120` |
-| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `2` |
-| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `0` |
-| `Core__DefaultTemplateLimit` | Max VMs per workspace | `3` |
-| `Core__DefaultUserScope` | Default scope assigned to new users for gamespace access | `everyone` |
-| `Core__ReplicaLimit` | Maximum number of replicas allowed per gamespace | `5` |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per new user (0=unlimited) | `0` |
+| `Core__DefaultWorkspaceLimit` | Max workspaces a new user can create (0=none; Creator role and above aren't limited) | `0` |
+| `Core__DefaultTemplateLimit` | Max templates per workspace created by a user below the Creator role | `3` |
+| `Core__DefaultUserScope` | Scope added to every user's scope when matching workspace audiences, so a workspace audience with this value is open to all users | `everyone` |
+| `Core__ReplicaLimit` | Maximum **Replicas** value on a template | `5` |
 | `Core__GameEngineIsoFolder` | Folder name within the ISO store used by the game engine | `static` |
 | `Core__LaunchUrl` | URL path used for gamespace launch links | `/lp` |
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
