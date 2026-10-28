@@ -171,6 +171,19 @@ unset (the default is `false`) and behavior is unchanged.
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
 | `Core__AllowUnprivilegedVmReconfigure` | Allow unprivileged users to set VM networks to reserved network segments | `false` |
 
+#### Janitor Settings
+
+The Janitor cleans up idle workspace VMs and reports stale workspaces. A workspace counts as *published* when its audience isn't empty. Durations use a number and a unit, such as `12h`, `1d`, `1w`, or `1y`.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Core__Expirations__DryRun` | Report idle workspace VMs without deleting them. Set to `false` to let the Janitor delete them. Stale workspaces are always report-only. | `true` |
+| `Core__Expirations__IdleWorkspaceVmsExpiration` | Delete workspace VMs idle longer than this. Saved template disks aren't affected. | `1d` |
+| `Core__Expirations__UnpublishedWorkspaceTimeout` | Report unpublished workspaces idle longer than this | `1w` |
+| `Core__Expirations__InactiveWorkspaceExpiration` | Report published workspaces with no launches for longer than this | `1y` |
+
+> **Note:** The sample `appsettings.conf` in the TopoMojo repository lists `Core__Expirations__UnpublishedWorkspacesExpiration` and `Core__Expirations__InactiveWorkspacesExpiration`. TopoMojo ignores those names; use the names above.
+
 ### OpenAPI/Swagger
 
 | Setting | Description | Example |
