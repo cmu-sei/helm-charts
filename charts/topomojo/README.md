@@ -170,6 +170,7 @@ unset (the default is `false`) and behavior is unchanged.
 | `Core__LaunchUrl` | URL path used for gamespace launch links | `/lp` |
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
 | `Core__AllowUnprivilegedVmReconfigure` | Allow unprivileged users to set VM networks to reserved network segments | `false` |
+| `Core__AllowPrivilegedNetworkIsolationExemption` | On vSphere, let Builders connect a VM to any hypervisor network, not only the workspace's networks and the shared networks | `false` |
 
 #### Janitor Settings
 

@@ -129,6 +129,7 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | Setting | Description | Example |
 |---------|-------------|---------|
 | `Terraform__DefaultVersion` | Default Terraform/OpenTofu version used for plans | `1.5.7` |
+| `Terraform__MaxParallelism` | Upper limit for a workspace's or directory's **Parallelism**; values must be less than this. Default `25` | `25` |
 | `Terraform__GitlabApiUrl` | GitLab API endpoint for state projects | `https://gitlab.example.com/api/v4/` |
 | `Terraform__GitlabToken` | GitLab access token with `api` scope | `glpat-xxxxxxxxxxxxxxxxxxxx` |
 | `Terraform__GitlabGroupId` | GitLab group ID that will hold Terraform modules | `42` |
