@@ -161,9 +161,9 @@ unset (the default is `false`) and behavior is unchanged.
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `Core__DefaultGamespaceMinutes` | Default gamespace duration in minutes | `120` |
-| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per new user (0=unlimited) | `0` |
-| `Core__DefaultWorkspaceLimit` | Max workspaces a new user can create (0=none; Creator role and above aren't limited) | `0` |
-| `Core__DefaultTemplateLimit` | Max templates per workspace created by a user below the Creator role | `3` |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces, set on each user when TopoMojo creates them (0=unlimited). Changing it doesn't affect existing users; edit their limit in the admin Users tab. | `0` |
+| `Core__DefaultWorkspaceLimit` | Max workspaces a user can create, set on each user when TopoMojo creates them (0=none; Creator role and above aren't limited). Changing it doesn't affect existing users; edit their limit in the admin Users tab. | `0` |
+| `Core__DefaultTemplateLimit` | Max templates per workspace, set on each workspace when a user below the Creator role creates it. Changing it doesn't affect existing workspaces; edit their limit in the admin Workspaces tab. | `3` |
 | `Core__DefaultUserScope` | Scope added to every user's scope when matching workspace audiences, so a workspace audience with this value is open to all users | `everyone` |
 | `Core__ReplicaLimit` | Maximum **Replicas** value on a template | `5` |
 | `Core__GameEngineIsoFolder` | Folder name within the ISO store used by the game engine | `static` |
@@ -178,12 +178,10 @@ The Janitor cleans up idle workspace VMs and reports stale workspaces. A workspa
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `Core__Expirations__DryRun` | Report idle workspace VMs without deleting them. Set to `false` to let the Janitor delete them. Stale workspaces are always report-only. | `true` |
-| `Core__Expirations__IdleWorkspaceVmsExpiration` | Delete workspace VMs idle longer than this. Saved template disks aren't affected. | `1d` |
+| `Core__Expirations__DryRun` | Report idle workspace VMs without removing them. Set to `false` to let the Janitor remove them. Stale workspaces are always report-only. | `true` |
+| `Core__Expirations__IdleWorkspaceVmsExpiration` | Remove workspace VMs idle longer than this. Only the deployed VMs are removed; the workspace's templates and saved disks aren't affected. | `1d` |
 | `Core__Expirations__UnpublishedWorkspaceTimeout` | Report unpublished workspaces idle longer than this | `1w` |
 | `Core__Expirations__InactiveWorkspaceExpiration` | Report published workspaces with no launches for longer than this | `1y` |
-
-> **Note:** The sample `appsettings.conf` in the TopoMojo repository lists `Core__Expirations__UnpublishedWorkspacesExpiration` and `Core__Expirations__InactiveWorkspacesExpiration`. TopoMojo ignores those names; use the names above.
 
 ### OpenAPI/Swagger
 
