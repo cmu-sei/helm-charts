@@ -7947,6 +7947,20 @@ entries:
     version: 0.1.1
   steamfitter:
   - apiVersion: v2
+    created: "2026-10-29T19:09:01.525371502Z"
+    description: Steamfitter enables the organization and execution of scenario tasks
+      on virtual machines.
+    digest: 8b5131deb00fdbea0a972a18d5e4c9c33ce849984a1da8f88acf33c122e08d1a
+    home: https://cmu-sei.github.io/crucible/steamfitter
+    name: steamfitter
+    sources:
+    - https://github.com/cmu-sei/steamfitter.api
+    - https://github.com/cmu-sei/steamfitter.ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/steamfitter-1.10.0/steamfitter-1.10.0.tgz
+    version: 1.10.0
+  - apiVersion: v2
     created: "2026-10-16T20:02:55.455896994Z"
     description: Steamfitter enables the organization and execution of scenario tasks
       on virtual machines.
@@ -9320,4 +9334,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-20T18:31:34.548143564Z"
+generated: "2026-10-29T19:09:01.85585777Z"
