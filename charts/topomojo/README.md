@@ -161,15 +161,27 @@ unset (the default is `false`) and behavior is unchanged.
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `Core__DefaultGamespaceMinutes` | Default gamespace duration in minutes | `120` |
-| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces per user | `2` |
-| `Core__DefaultWorkspaceLimit` | Max workspaces per user (0=unlimited) | `0` |
-| `Core__DefaultTemplateLimit` | Max VMs per workspace | `3` |
-| `Core__DefaultUserScope` | Default scope assigned to new users for gamespace access | `everyone` |
-| `Core__ReplicaLimit` | Maximum number of replicas allowed per gamespace | `5` |
+| `Core__DefaultGamespaceLimit` | Max concurrent gamespaces, set on each user when TopoMojo creates them (0=unlimited). Changing it doesn't affect existing users; edit their limit in the admin Users tab. | `0` |
+| `Core__DefaultWorkspaceLimit` | Max workspaces a user can create, set on each user when TopoMojo creates them (0=none; Creator role and above aren't limited). Changing it doesn't affect existing users; edit their limit in the admin Users tab. | `0` |
+| `Core__DefaultTemplateLimit` | Max templates per workspace, set on each workspace when a user below the Creator role creates it. Changing it doesn't affect existing workspaces; edit their limit in the admin Workspaces tab. | `3` |
+| `Core__DefaultUserScope` | Scope added to every user's scope when matching workspace audiences, so a workspace audience with this value is open to all users | `everyone` |
+| `Core__ReplicaLimit` | Maximum **Replicas** value on a template | `5` |
 | `Core__GameEngineIsoFolder` | Folder name within the ISO store used by the game engine | `static` |
 | `Core__LaunchUrl` | URL path used for gamespace launch links | `/lp` |
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
 | `Core__AllowUnprivilegedVmReconfigure` | Allow unprivileged users to set VM networks to reserved network segments | `false` |
+| `Core__AllowPrivilegedNetworkIsolationExemption` | On vSphere, let Builders connect a VM to any hypervisor network, not only the workspace's networks and the shared networks | `false` |
+
+#### Janitor Settings
+
+The Janitor cleans up idle workspace VMs and reports stale workspaces. A workspace counts as *published* when its audience isn't empty. Durations use a number and a unit, such as `12h`, `1d`, `1w`, or `1y`.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Core__Expirations__DryRun` | Report idle workspace VMs without removing them. Set to `false` to let the Janitor remove them. Stale workspaces are always report-only. | `true` |
+| `Core__Expirations__IdleWorkspaceVmsExpiration` | Remove workspace VMs idle longer than this. Only the deployed VMs are removed; the workspace's templates and saved disks aren't affected. | `1d` |
+| `Core__Expirations__UnpublishedWorkspaceTimeout` | Report unpublished workspaces idle longer than this | `1w` |
+| `Core__Expirations__InactiveWorkspaceExpiration` | Report published workspaces with no launches for longer than this | `1y` |
 
 ### OpenAPI/Swagger
 
