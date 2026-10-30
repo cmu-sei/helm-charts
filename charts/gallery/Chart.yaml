@@ -3,8 +3,15 @@ name: gallery
 description: Gallery enables participants to review cyber incident data by source
   type.
 type: application
-version: 1.14.0
+version: 1.14.1
 home: https://cmu-sei.github.io/crucible/gallery/
 sources:
 - https://github.com/cmu-sei/Gallery.Api/
 - https://github.com/cmu-sei/Gallery.Ui/
+dependencies:
+- name: gallery-api
+  version: "*"
+  repository: file://charts/gallery-api
+- name: gallery-ui
+  version: "*"
+  repository: file://charts/gallery-ui

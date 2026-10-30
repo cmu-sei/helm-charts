@@ -3,8 +3,15 @@ name: alloy
 description: Alloy enables users to launch on-demand events or join instances of already-running
   simulations.
 type: application
-version: 1.10.0
+version: 1.10.1
 home: https://cmu-sei.github.io/crucible/alloy/
 sources:
 - https://github.com/cmu-sei/Alloy.Api
 - https://github.com/cmu-sei/Alloy.Ui
+dependencies:
+- name: alloy-api
+  version: "*"
+  repository: file://charts/alloy-api
+- name: alloy-ui
+  version: "*"
+  repository: file://charts/alloy-ui

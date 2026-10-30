@@ -1,0 +1,5 @@
+# Values for CI (helm lint and helm template). The chart has no default
+# database credential, so name a secret that would hold one.
+moodle:
+  database:
+    existingSecret: moodle-db

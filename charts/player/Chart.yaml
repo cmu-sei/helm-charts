@@ -3,7 +3,7 @@ name: player
 description: Player is a window into virtual environments - enabling assignment of
   team membership and customization of responsive, browser-based user interfaces.
 type: application
-version: 1.16.1
+version: 1.16.2
 home: https://cmu-sei.github.io/crucible/player
 sources:
 - https://github.com/cmu-sei/Player.Api
@@ -11,3 +11,19 @@ sources:
 - https://github.com/cmu-sei/Vm.Api
 - https://github.com/cmu-sei/Vm.Ui
 - https://github.com/cmu-sei/Console.Ui
+dependencies:
+- name: console-ui
+  version: "*"
+  repository: file://charts/console-ui
+- name: player-api
+  version: "*"
+  repository: file://charts/player-api
+- name: player-ui
+  version: "*"
+  repository: file://charts/player-ui
+- name: vm-api
+  version: "*"
+  repository: file://charts/vm-api
+- name: vm-ui
+  version: "*"
+  repository: file://charts/vm-ui
