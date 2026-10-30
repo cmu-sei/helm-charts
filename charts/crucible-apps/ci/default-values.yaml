@@ -1,0 +1,13 @@
+# Values for CI (helm lint and helm template). Moodle requires a database
+# host, credentials, and OIDC settings that this chart leaves empty for the
+# deployment to supply, so fill them with placeholders.
+global:
+  domain: crucible.example.com
+moodle:
+  moodle:
+    database:
+      host: postgresql
+      existingSecret: moodle-db
+    oidc:
+      discoveryUrl: https://crucible.example.com/keycloak/realms/crucible/.well-known/openid-configuration
+      existingSecret: moodle-oidc
