@@ -186,6 +186,7 @@ env:
   FileUpload__allowedExtensions__5: ".docx"
   FileUpload__allowedExtensions__6: ".gif"
   FileUpload__allowedExtensions__7: ".txt"
+  FileUpload__allowedExtensions__8: ".svg"
 
   # Basic seed data to jumpstart deployment
   # This is a placeholder and needs to be updated for a new install.
