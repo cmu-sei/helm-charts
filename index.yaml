@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   alloy:
   - apiVersion: v2
+    created: "2026-10-30T16:32:22.444473083Z"
+    description: Alloy enables users to launch on-demand events or join instances
+      of already-running simulations.
+    digest: 4e9a52d0dd42297ab9a85d94c1ee254bf6e16d622a031bb294933553a026b4f9
+    home: https://cmu-sei.github.io/crucible/alloy/
+    name: alloy
+    sources:
+    - https://github.com/cmu-sei/Alloy.Api
+    - https://github.com/cmu-sei/Alloy.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/alloy-1.10.0/alloy-1.10.0.tgz
+    version: 1.10.0
+  - apiVersion: v2
     created: "2026-10-16T19:10:25.768766569Z"
     description: Alloy enables users to launch on-demand events or join instances
       of already-running simulations.
@@ -9334,4 +9348,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-29T19:09:01.85585777Z"
+generated: "2026-10-30T16:32:22.445986731Z"
