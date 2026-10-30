@@ -1,7 +1,14 @@
 apiVersion: v2
 name: identity
 type: application
-version: 0.2.4
+version: 0.2.5
 sources:
   - https://github.com/cmu-sei/identity
   - https://github.com/cmu-sei/identity-ui
+dependencies:
+- name: identity-api
+  version: "*"
+  repository: file://charts/identity-api
+- name: identity-ui
+  version: "*"
+  repository: file://charts/identity-ui

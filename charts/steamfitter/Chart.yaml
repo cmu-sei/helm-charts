@@ -3,8 +3,15 @@ name: steamfitter
 description: Steamfitter enables the organization and execution of scenario tasks
   on virtual machines.
 type: application
-version: 1.10.0
+version: 1.10.1
 home: https://cmu-sei.github.io/crucible/steamfitter
 sources:
 - https://github.com/cmu-sei/steamfitter.api
 - https://github.com/cmu-sei/steamfitter.ui
+dependencies:
+- name: steamfitter-api
+  version: "*"
+  repository: file://charts/steamfitter-api
+- name: steamfitter-ui
+  version: "*"
+  repository: file://charts/steamfitter-ui

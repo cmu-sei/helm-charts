@@ -1,0 +1,4 @@
+# Patterns to ignore when building packages.
+# Packaged copies of the sub-charts in charts/, built by
+# `helm dependency update`. The unpacked sub-charts are used instead.
+*.tgz

@@ -3,8 +3,15 @@ name: blueprint
 description: Blueprint enables collaborative creation and visualization of a Master
   Scenario Event List (MSEL) for an exercise.
 type: application
-version: 1.12.1
+version: 1.12.2
 home: https://cmu-sei.github.io/crucible/blueprint/
 sources:
 - https://github.com/cmu-sei/Blueprint.Api
 - https://github.com/cmu-sei/Blueprint.Ui
+dependencies:
+- name: blueprint-api
+  version: "*"
+  repository: file://charts/blueprint-api
+- name: blueprint-ui
+  version: "*"
+  repository: file://charts/blueprint-ui
