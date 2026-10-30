@@ -4818,6 +4818,20 @@ entries:
     version: 0.1.0
   gallery:
   - apiVersion: v2
+    created: "2026-10-30T17:13:41.350253788Z"
+    description: Gallery enables participants to review cyber incident data by source
+      type.
+    digest: b34fc8ddd13d5f54c8c57ae414a5845ae917396c6f7a77f42eca2194cd2aefcc
+    home: https://cmu-sei.github.io/crucible/gallery/
+    name: gallery
+    sources:
+    - https://github.com/cmu-sei/Gallery.Api/
+    - https://github.com/cmu-sei/Gallery.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gallery-1.13.0/gallery-1.13.0.tgz
+    version: 1.13.0
+  - apiVersion: v2
     created: "2026-10-16T20:02:55.030687583Z"
     description: Gallery enables participants to review cyber incident data by source
       type.
@@ -9376,4 +9390,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-30T17:09:01.285401306Z"
+generated: "2026-10-30T17:13:41.352532967Z"
