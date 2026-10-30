@@ -393,10 +393,11 @@ topomojo-ui:
   # faviconsUrl: "https://some.url/favs.tgz"
 
   ## settings is stringified json that gets included as assets/settings.json
-  settings: ""
+  settings: "{\"brandColor\": \"\"}"
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-  settingsYaml: {}
+  settingsYaml:
+    # brandColor: ""
     # appname: TopoMojo
     # docsUrl: https://cmu-sei.github.io/crucible/topomojo
     # disableExternalLinks: true
