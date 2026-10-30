@@ -133,6 +133,15 @@ Alloy’s background worker coordinates event lifecycles and Caster operations. 
 | `ClientSettings__ApiClientLaunchFailureMaxRetries` | Max retries for event launch failures | `10` |
 | `ClientSettings__ApiClientEndFailureMaxRetries` | Max retries for event end failures | `10` |
 
+### Player Access for Caster's Terraform Provider
+
+When Alloy launches an event, it copies the template's Player view without the team members, so the account Caster's Terraform provider signs in as has no access to the copy. List that account here and Alloy adds it to each copy's admin team (a team whose role grants all permissions, or else one with `ManageView`). Without it, the account needs the `ManageViews` and `ViewVms` system permissions in Player, which reach every view.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ClientSettings__ClonedViewServiceUserIds__0` | Player user ID added to every view Alloy copies. Add `__1`, `__2` and so on for more accounts. | unset |
+| `ClientSettings__ClonedViewServiceTeamRoleId` | Player team role ID. When set, the accounts join the team with this role instead of the admin team; a view with no such team fails to launch. | unset |
+
 ### Miscellaneous Settings
 
 | Setting | Description | Example |
