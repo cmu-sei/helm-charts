@@ -9,6 +9,9 @@
 #
 # Charts with remote dependencies have them fetched with `helm dependency build`,
 # so the dependency repositories must already be added with `helm repo add`.
+# The build skips refreshing the repository indexes (re-downloading every index
+# for every chart is slow), so they must be current: `helm repo add` fetches
+# them, or run `helm repo update` if they were added a while ago.
 #
 # If a chart has ci/*-values.yaml files, the chart is linted and rendered once
 # per file instead of with its default values (the chart-testing convention).
@@ -45,7 +48,7 @@ for chart_dir in $charts; do
     # Fetch remote dependencies. Local sub-charts (file:// or no repository)
     # are already present in the chart's charts/ directory.
     if grep -qE '^\s*repository:\s*"?(https?|oci)://' "$chart_dir/Chart.yaml"; then
-        if ! helm dependency build "$chart_dir"; then
+        if ! helm dependency build --skip-refresh "$chart_dir"; then
             echo "::error file=$chart_dir/Chart.yaml::helm dependency build failed for $chart_dir"
             chart_failed=true
         fi
