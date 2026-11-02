@@ -19,7 +19,7 @@ dependencies:
   version: 0.7.0
 - name: player
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.18.1
+  version: 1.18.2
 - name: steamfitter
   repository: https://cmu-sei.github.io/helm-charts
   version: 1.11.0
@@ -29,5 +29,5 @@ dependencies:
 - name: moodle
   repository: https://cmu-sei.github.io/helm-charts
   version: 0.3.1
-digest: sha256:3d0ac62355e434edc12f0fb48084b4db344c3a356da97233ff20402c1d8d6913
-generated: "2026-11-02T14:22:43.694807407Z"
+digest: sha256:65e6d7ee299d92ebd9313fb840569096da270658f5ada57ff7f7277f46089207
+generated: "2026-11-02T14:25:33.058980958Z"

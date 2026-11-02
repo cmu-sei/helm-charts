@@ -39,7 +39,7 @@ dependencies:
 
   - name: player
     repository: https://cmu-sei.github.io/helm-charts
-    version: 1.18.1
+    version: 1.18.2
     condition: player.enabled
 
   - name: steamfitter
