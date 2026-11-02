@@ -3710,6 +3710,59 @@ entries:
     version: 0.0.1
   crucible-apps:
   - apiVersion: v2
+    created: "2026-11-02T14:28:07.921072845Z"
+    dependencies:
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.1
+    - condition: blueprint.enabled
+      name: blueprint
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: caster.enabled
+      name: caster
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: cite.enabled
+      name: cite
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.12.0
+    - condition: gallery.enabled
+      name: gallery
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: gameboard.enabled
+      name: gameboard
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.7.0
+    - condition: player.enabled
+      name: player
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.18.2
+    - condition: steamfitter.enabled
+      name: steamfitter
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: topomojo.enabled
+      name: topomojo
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.12.0
+    - condition: moodle.enabled
+      name: moodle
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.3.1
+    description: Crucible framework application deployment - A comprehensive cybersecurity
+      training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint,
+      CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
+    digest: e90d9c02b4cb7b690f31e81a97ca250f449eb4388cdb89ea577e345e09a0831b
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-apps
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-apps-0.3.11/crucible-apps-0.3.11.tgz
+    version: 0.3.11
+  - apiVersion: v2
     created: "2026-10-14T14:11:45.922827452Z"
     dependencies:
     - condition: alloy.enabled
@@ -9628,4 +9681,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-02T14:23:55.333577012Z"
+generated: "2026-11-02T14:28:07.92193017Z"
