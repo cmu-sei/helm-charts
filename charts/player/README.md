@@ -161,6 +161,7 @@ Add CORS origins to allow bidirectional communication between Player and the int
 | `FileUpload__allowedExtensions__5` | Allowed file extension | `.docx` |
 | `FileUpload__allowedExtensions__6` | Allowed file extension | `.gif` |
 | `FileUpload__allowedExtensions__7` | Allowed file extension | `.txt` |
+| `FileUpload__allowedExtensions__8` | Allowed file extension; VM UI 3.10.0+ can draw a VM Map on an uploaded SVG | `.svg` |
 
 ### Seed Data
 Optionally bootstrap roles, permissions, and users:
