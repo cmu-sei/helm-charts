@@ -163,6 +163,38 @@ Control forwarding and security response headers for the API.
 |---------|-------------|---------|
 | `Logging__MinimumLogLevel` | Minimum log level for the application (`Trace`, `Debug`, `Information`, `Warning`, `Error`, `Critical`) | `Information` |
 
+### OpenTelemetry
+
+Gameboard API is wired with [Crucible.Common.ServiceDefaults](https://github.com/cmu-sei/crucible-common-dotnet/tree/main/src/Crucible.Common.ServiceDefaults), which auto-enables [OpenTelemetry](https://opentelemetry.io/) logs/traces/metrics. Configure the OTLP exporter endpoint and service name for Gameboard to send OTLP to an OpenTelemetry Collector (e.g., [Otel Collector](https://opentelemetry.io/docs/collector/) or [Grafana Alloy](https://grafana.com/docs/alloy/latest/)):
+
+```yaml
+gameboard-api:
+  env:
+    # This can be a kubernetes service address if the collector is running in the cluster
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+    # Optional: force HTTP instead of the default gRPC protocol
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # Optional: override the service name reported to collectors
+    # OTEL_SERVICE_NAME: gameboard-api
+
+    # These settings toggle ServiceDefaults configurations for Otel
+    # The values listed here are the defaults
+    # OpenTelemetry__AddAlwaysOnTracingSampler: false
+    # OpenTelemetry__AddConsoleExporter: false
+    # OpenTelemetry__AddPrometheusExporter: false
+    # OpenTelemetry__IncludeDefaultActivitySources: true
+    # OpenTelemetry__IncludeDefaultMeters: true
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `OpenTelemetry__AddAlwaysOnTracingSampler` | Always sample every trace (useful for development; not recommended in high-traffic production) | `false` |
+| `OpenTelemetry__AddConsoleExporter` | Export traces and metrics to stdout in addition to the OTLP endpoint | `false` |
+| `OpenTelemetry__AddPrometheusExporter` | Expose a `/metrics` scrape endpoint for Prometheus | `false` |
+| `OpenTelemetry__IncludeDefaultActivitySources` | Register the default ASP.NET Core, HttpClient, and EF Core activity sources | `true` |
+| `OpenTelemetry__IncludeDefaultMeters` | Register the default ASP.NET Core, HttpClient, and runtime meters | `true` |
+
 ### Existing Secret
 
 Reference a Kubernetes Secret whose key/value pairs will be injected as environment variables into the API container. This is the simplest way to supply sensitive configuration (e.g., database passwords) from a pre-existing secret.
