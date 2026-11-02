@@ -293,6 +293,8 @@ topomojo-api:
     # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     # Optional: override the service name reported to collectors
     # OTEL_SERVICE_NAME: topomojo-api
+    Core__Expirations__UnpublishedWorkspaceTimeout: ""
+    Core__Expirations__InactiveWorkspaceExpiration: ""
 
   ## Create a seed data file based on the contents of an existing secret
   ## or by values that support templating via the tpl function.
@@ -391,10 +393,11 @@ topomojo-ui:
   # faviconsUrl: "https://some.url/favs.tgz"
 
   ## settings is stringified json that gets included as assets/settings.json
-  settings: ""
+  settings: "{\"brandColor\": \"\"}"
 
   ## assets/settings.json content in yaml form. Takes precedence over settings: value when populated.
-  settingsYaml: {}
+  settingsYaml:
+    # brandColor: ""
     # appname: TopoMojo
     # docsUrl: https://cmu-sei.github.io/crucible/topomojo
     # disableExternalLinks: true
