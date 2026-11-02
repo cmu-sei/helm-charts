@@ -185,6 +185,20 @@ gameboard-api:
     ####################################################
     # Logging__MinimumLogLevel: Information
 
+    ####################################################
+    ## OPENTELEMETRY
+    ####################################################
+    ## Gameboard uses Crucible.Common.ServiceDefaults to emit OpenTelemetry logs/traces/metrics.
+    # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    # OTEL_SERVICE_NAME: gameboard-api
+    ## These settings toggle ServiceDefaults configurations for Otel (values shown are the defaults)
+    # OpenTelemetry__AddAlwaysOnTracingSampler: false
+    # OpenTelemetry__AddConsoleExporter: false
+    # OpenTelemetry__AddPrometheusExporter: false
+    # OpenTelemetry__IncludeDefaultActivitySources: true
+    # OpenTelemetry__IncludeDefaultMeters: true
+
     #########################################
     ### OAUTH
     #########################################
