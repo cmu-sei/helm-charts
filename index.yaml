@@ -5513,6 +5513,20 @@ entries:
     version: 1.1.0
   gameboard:
   - apiVersion: v2
+    created: "2026-11-02T14:20:56.454753332Z"
+    description: Gameboard provides a competition-ready user interface for running
+      cybersecurity games and challenges.
+    digest: e941175d9d8f0372f9d00357ad568958e31971f9da50ff48356fca8c0db8365a
+    home: https://cmu-sei.github.io/crucible/gameboard/
+    name: gameboard
+    sources:
+    - https://github.com/cmu-sei/Gameboard/
+    - https://github.com/cmu-sei/Gameboard-Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gameboard-0.7.0/gameboard-0.7.0.tgz
+    version: 0.7.0
+  - apiVersion: v2
     created: "2026-06-03T16:40:15.755575017Z"
     description: Gameboard provides a competition-ready user interface for running
       cybersecurity games and challenges.
@@ -9597,4 +9611,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-02T13:43:34.968903222Z"
+generated: "2026-11-02T14:20:56.455283696Z"
