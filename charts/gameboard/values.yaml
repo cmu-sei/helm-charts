@@ -120,7 +120,12 @@ gameboard-api:
   # Config app settings with environment vars.
   # Those most likely needing values are listed. For others,
   # see https://github.com/cmu-sei/gameboard/blob/main/src/Gameboard.Api/appsettings.conf
-  env: {}
+  env:
+    OpenTelemetry__AddAlwaysOnTracingSampler: ""
+    OpenTelemetry__AddConsoleExporter: ""
+    OpenTelemetry__AddPrometheusExporter: ""
+    OpenTelemetry__IncludeDefaultActivitySources: ""
+    OpenTelemetry__IncludeDefaultMeters: ""
     ####################################################
     ## CORE (behavior)
     ####################################################
