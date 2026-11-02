@@ -1,33 +1,33 @@
 dependencies:
 - name: alloy
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.8.7
+  version: 1.10.1
 - name: blueprint
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.10.10
+  version: 1.14.0
 - name: caster
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.9.7
+  version: 1.11.0
 - name: cite
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.10.6
+  version: 1.12.0
 - name: gallery
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.10.7
+  version: 1.14.0
 - name: gameboard
   repository: https://cmu-sei.github.io/helm-charts
-  version: 0.6.0
+  version: 0.7.0
 - name: player
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.13.0
+  version: 1.18.2
 - name: steamfitter
   repository: https://cmu-sei.github.io/helm-charts
-  version: 1.9.1
+  version: 1.11.0
 - name: topomojo
   repository: https://cmu-sei.github.io/helm-charts
-  version: 0.10.3
+  version: 0.12.0
 - name: moodle
   repository: https://cmu-sei.github.io/helm-charts
-  version: 0.3.0
-digest: sha256:0cd2e42e3cb8293027041c5a15c65d5fcd43328755127b83ee9c8e43b17040e3
-generated: "2026-10-14T14:00:48.613539673Z"
+  version: 0.3.1
+digest: sha256:65e6d7ee299d92ebd9313fb840569096da270658f5ada57ff7f7277f46089207
+generated: "2026-11-02T14:25:33.058980958Z"
