@@ -2,6 +2,27 @@ apiVersion: v1
 entries:
   alloy:
   - apiVersion: v2
+    created: "2026-11-02T17:56:13.566302599Z"
+    dependencies:
+    - name: alloy-api
+      repository: file://charts/alloy-api
+      version: '*'
+    - name: alloy-ui
+      repository: file://charts/alloy-ui
+      version: '*'
+    description: Alloy enables users to launch on-demand events or join instances
+      of already-running simulations.
+    digest: 62ddbf7f4300d0a424cfd53e22df0b99a3645cd0a1b97ac35cd9d52748a4525c
+    home: https://cmu-sei.github.io/crucible/alloy/
+    name: alloy
+    sources:
+    - https://github.com/cmu-sei/Alloy.Api
+    - https://github.com/cmu-sei/Alloy.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/alloy-1.10.2/alloy-1.10.2.tgz
+    version: 1.10.2
+  - apiVersion: v2
     created: "2026-11-02T13:43:34.967796173Z"
     description: Alloy enables users to launch on-demand events or join instances
       of already-running simulations.
@@ -672,6 +693,27 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/authhoc-0.1.0/authhoc-0.1.0.tgz
     version: 0.1.0
   blueprint:
+  - apiVersion: v2
+    created: "2026-11-02T17:56:13.706617183Z"
+    dependencies:
+    - name: blueprint-api
+      repository: file://charts/blueprint-api
+      version: '*'
+    - name: blueprint-ui
+      repository: file://charts/blueprint-ui
+      version: '*'
+    description: Blueprint enables collaborative creation and visualization of a Master
+      Scenario Event List (MSEL) for an exercise.
+    digest: 7b8895f4320b27dbfcee7e8c8239ed07188515e469b46a6e6272b48cc11c7c27
+    home: https://cmu-sei.github.io/crucible/blueprint/
+    name: blueprint
+    sources:
+    - https://github.com/cmu-sei/Blueprint.Api
+    - https://github.com/cmu-sei/Blueprint.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/blueprint-1.14.1/blueprint-1.14.1.tgz
+    version: 1.14.1
   - apiVersion: v2
     created: "2026-10-30T18:18:56.532841953Z"
     description: Blueprint enables collaborative creation and visualization of a Master
@@ -1535,6 +1577,26 @@ entries:
     version: 0.1.1
   caster:
   - apiVersion: v2
+    created: "2026-11-02T17:56:13.834949396Z"
+    dependencies:
+    - name: caster-api
+      repository: file://charts/caster-api
+      version: '*'
+    - name: caster-ui
+      repository: file://charts/caster-ui
+      version: '*'
+    description: Caster enables the coded design and deployment of cyber topologies.
+    digest: 4157b576c2df85b7a911c9a8c190767a61f72bbee8d8c8290d2f2946af9e8db2
+    home: https://cmu-sei.github.io/crucible/caster/
+    name: caster
+    sources:
+    - https://github.com/cmu-sei/Caster.Api/
+    - https://github.com/cmu-sei/Caster.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/caster-1.11.1/caster-1.11.1.tgz
+    version: 1.11.1
+  - apiVersion: v2
     created: "2026-10-30T18:51:41.92867993Z"
     description: Caster enables the coded design and deployment of cyber topologies.
     digest: 6a1fe4b776b5e93bdba5317a484e96c48df627e70cd7ee27369604247b979e30
@@ -2290,6 +2352,27 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/caster-ui-0.1.0/caster-ui-0.1.0.tgz
     version: 0.1.0
   cite:
+  - apiVersion: v2
+    created: "2026-11-02T17:56:13.99204268Z"
+    dependencies:
+    - name: cite-api
+      repository: file://charts/cite-api
+      version: '*'
+    - name: cite-ui
+      repository: file://charts/cite-ui
+      version: '*'
+    description: CITE enables participants from different organizations to evaluate,
+      score, and comment on cyber incidents.
+    digest: 3339129f2d76dc56c206d55b4dde3a37adada580a72b335b16044e24404b5d55
+    home: https://cmu-sei.github.io/crucible/cite/
+    name: cite
+    sources:
+    - https://github.com/cmu-sei/cite.Api
+    - https://github.com/cmu-sei/cite.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/cite-1.12.1/cite-1.12.1.tgz
+    version: 1.12.1
   - apiVersion: v2
     created: "2026-10-30T17:09:01.28434037Z"
     description: CITE enables participants from different organizations to evaluate,
@@ -3710,6 +3793,59 @@ entries:
     version: 0.0.1
   crucible-apps:
   - apiVersion: v2
+    created: "2026-11-02T17:56:14.187498965Z"
+    dependencies:
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.1
+    - condition: blueprint.enabled
+      name: blueprint
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: caster.enabled
+      name: caster
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: cite.enabled
+      name: cite
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.12.0
+    - condition: gallery.enabled
+      name: gallery
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: gameboard.enabled
+      name: gameboard
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.7.0
+    - condition: player.enabled
+      name: player
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.18.2
+    - condition: steamfitter.enabled
+      name: steamfitter
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: topomojo.enabled
+      name: topomojo
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.12.0
+    - condition: moodle.enabled
+      name: moodle
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.3.1
+    description: Crucible framework application deployment - A comprehensive cybersecurity
+      training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint,
+      CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
+    digest: f76f52cc6d4536b2097fc532c9576777a094c547bfb7308e8e81771df9a52a63
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-apps
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-apps-0.3.12/crucible-apps-0.3.12.tgz
+    version: 0.3.12
+  - apiVersion: v2
     created: "2026-11-02T14:28:07.921072845Z"
     dependencies:
     - condition: alloy.enabled
@@ -4939,6 +5075,27 @@ entries:
     version: 0.1.0
   gallery:
   - apiVersion: v2
+    created: "2026-11-02T17:56:14.354540204Z"
+    dependencies:
+    - name: gallery-api
+      repository: file://charts/gallery-api
+      version: '*'
+    - name: gallery-ui
+      repository: file://charts/gallery-ui
+      version: '*'
+    description: Gallery enables participants to review cyber incident data by source
+      type.
+    digest: 5acb0ce3681a61d7148990bc76f42fc2170ea17a286ab8c36c532258fc469b55
+    home: https://cmu-sei.github.io/crucible/gallery/
+    name: gallery
+    sources:
+    - https://github.com/cmu-sei/Gallery.Api/
+    - https://github.com/cmu-sei/Gallery.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gallery-1.14.1/gallery-1.14.1.tgz
+    version: 1.14.1
+  - apiVersion: v2
     created: "2026-10-30T17:16:45.069813001Z"
     description: Gallery enables participants to review cyber incident data by source
       type.
@@ -5566,6 +5723,27 @@ entries:
     version: 1.1.0
   gameboard:
   - apiVersion: v2
+    created: "2026-11-02T17:56:14.537212387Z"
+    dependencies:
+    - name: gameboard-api
+      repository: file://charts/gameboard-api
+      version: '*'
+    - name: gameboard-ui
+      repository: file://charts/gameboard-ui
+      version: '*'
+    description: Gameboard provides a competition-ready user interface for running
+      cybersecurity games and challenges.
+    digest: 9bc9a9edeb60f915962bca2083a592d43052d36efc2b6e5766983f1b9d07cd2a
+    home: https://cmu-sei.github.io/crucible/gameboard/
+    name: gameboard
+    sources:
+    - https://github.com/cmu-sei/Gameboard/
+    - https://github.com/cmu-sei/Gameboard-Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gameboard-0.7.1/gameboard-0.7.1.tgz
+    version: 0.7.1
+  - apiVersion: v2
     created: "2026-11-02T14:20:56.454753332Z"
     description: Gameboard provides a competition-ready user interface for running
       cybersecurity games and challenges.
@@ -6064,6 +6242,24 @@ entries:
     version: 0.1.0
   identity:
   - apiVersion: v2
+    created: "2026-11-02T17:56:14.67955033Z"
+    dependencies:
+    - name: identity-api
+      repository: file://charts/identity-api
+      version: '*'
+    - name: identity-ui
+      repository: file://charts/identity-ui
+      version: '*'
+    digest: 3a26419bd649d550d72fec87c03141ef76d877a4e24b374896a90bad28c8562a
+    name: identity
+    sources:
+    - https://github.com/cmu-sei/identity
+    - https://github.com/cmu-sei/identity-ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/identity-0.2.5/identity-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
     created: "2026-06-03T16:40:15.955471174Z"
     digest: 2a296db873db8055da394020a1162db5668c884490eb80e640cd7ec1e2be67c5
     name: identity
@@ -6393,6 +6589,29 @@ entries:
   mattermost-team-edition:
   - apiVersion: v1
     appVersion: 5.25.7
+    created: "2026-11-02T17:56:14.806033839Z"
+    description: Mattermost Team Edition server.
+    digest: 2b904f60b1844a47e4b5ec735b68a1f30a999f9b48b080a13d2204d44f04e28d
+    home: https://mattermost.com
+    icon: http://www.mattermost.org/wp-content/uploads/2016/04/icon.png
+    keywords:
+    - mattermost
+    - communication
+    - team collaboration
+    maintainers:
+    - email: carlos@mattermost.com
+      name: cpanato
+    - email: joram@mattermost.com
+      name: jwilander
+    name: mattermost-team-edition
+    sources:
+    - https://github.com/mattermost/mattermost-server
+    - https://github.com/mattermost/mattermost-helm
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/mattermost-team-edition-3.13.3/mattermost-team-edition-3.13.3.tgz
+    version: 3.13.3
+  - apiVersion: v1
+    appVersion: 5.25.7
     created: "2026-06-03T16:40:16.25718412Z"
     description: Mattermost Team Edition server.
     digest: 5a9bb72350b349d3013512cb5c48ccb9b0f171cbce3b2398c0427e6d9d150dc2
@@ -6665,6 +6884,20 @@ entries:
   moodle:
   - apiVersion: v2
     appVersion: 5.2.4
+    created: "2026-11-02T17:56:14.973065913Z"
+    description: Moodle is an open source Learning Management System.
+    digest: 49d9caae772ba168947d0b5c1a5262622defc862b7bbd379bb32313e5640b3b1
+    home: https://moodle.org/
+    name: moodle
+    sources:
+    - https://github.com/moodle/moodle
+    - https://github.com/erseco/alpine-moodle
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/moodle-0.3.2/moodle-0.3.2.tgz
+    version: 0.3.2
+  - apiVersion: v2
+    appVersion: 5.2.4
     created: "2026-10-20T18:31:34.547202264Z"
     description: Moodle is an open source Learning Management System.
     digest: 0c8cb99af2e652ff74a5ee6e406bfd3f399d19f76bbd139e85108dca6acbe110
@@ -6854,6 +7087,39 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/osticket-1.17.5/osticket-1.17.5.tgz
     version: 1.17.5
   player:
+  - apiVersion: v2
+    created: "2026-11-02T17:56:15.119280538Z"
+    dependencies:
+    - name: console-ui
+      repository: file://charts/console-ui
+      version: '*'
+    - name: player-api
+      repository: file://charts/player-api
+      version: '*'
+    - name: player-ui
+      repository: file://charts/player-ui
+      version: '*'
+    - name: vm-api
+      repository: file://charts/vm-api
+      version: '*'
+    - name: vm-ui
+      repository: file://charts/vm-ui
+      version: '*'
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: 2317033774e4318fe8fb4478d0c76278dfb2199cfda3469e7e4a452d58c54083
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.18.3/player-1.18.3.tgz
+    version: 1.18.3
   - apiVersion: v2
     created: "2026-11-02T14:23:55.332682318Z"
     description: Player is a window into virtual environments - enabling assignment
@@ -8254,6 +8520,27 @@ entries:
     version: 0.1.1
   steamfitter:
   - apiVersion: v2
+    created: "2026-11-02T17:56:15.247912939Z"
+    dependencies:
+    - name: steamfitter-api
+      repository: file://charts/steamfitter-api
+      version: '*'
+    - name: steamfitter-ui
+      repository: file://charts/steamfitter-ui
+      version: '*'
+    description: Steamfitter enables the organization and execution of scenario tasks
+      on virtual machines.
+    digest: d255d274b457bf1699a217bd705ec98d01ec075c281fa498be445dfa91157c2d
+    home: https://cmu-sei.github.io/crucible/steamfitter
+    name: steamfitter
+    sources:
+    - https://github.com/cmu-sei/steamfitter.api
+    - https://github.com/cmu-sei/steamfitter.ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/steamfitter-1.11.1/steamfitter-1.11.1.tgz
+    version: 1.11.1
+  - apiVersion: v2
     created: "2026-10-30T18:11:54.981324162Z"
     description: Steamfitter enables the organization and execution of scenario tasks
       on virtual machines.
@@ -8897,6 +9184,26 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/steamfitter-ui-0.1.0/steamfitter-ui-0.1.0.tgz
     version: 0.1.0
   topomojo:
+  - apiVersion: v2
+    created: "2026-11-02T17:56:15.396012489Z"
+    dependencies:
+    - name: topomojo-api
+      repository: file://charts/topomojo-api
+      version: '*'
+    - name: topomojo-ui
+      repository: file://charts/topomojo-ui
+      version: '*'
+    description: TopoMojo is a simple lab builder and player.
+    digest: 0d6ab9542ff538f4fe3dcbe5c10aa16e547202c695867f72241c975625f3874d
+    home: https://cmu-sei.github.io/crucible/topomojo
+    name: topomojo
+    sources:
+    - https://github.com/cmu-sei/TopoMojo
+    - https://github.com/cmu-sei/TopoMojo-ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/topomojo-0.12.1/topomojo-0.12.1.tgz
+    version: 0.12.1
   - apiVersion: v2
     created: "2026-10-30T19:42:56.107291147Z"
     description: TopoMojo is a simple lab builder and player.
@@ -9663,6 +9970,25 @@ entries:
     version: 0.1.0
   webmail:
   - apiVersion: v2
+    created: "2026-11-02T17:56:15.523767955Z"
+    dependencies:
+    - name: dovecot
+      repository: file://charts/dovecot
+      version: '*'
+    - name: postfix
+      repository: file://charts/postfix
+      version: '*'
+    - name: roundcube
+      repository: file://charts/roundcube
+      version: '*'
+    description: A Helm chart for Kubernetes
+    digest: ad9e15d4ca70ad1f718d26f2205e0bb4cbc85f876561d0cb1068a9f287a3ad93
+    name: webmail
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.2/webmail-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2026-06-03T16:40:22.555639748Z"
     description: A Helm chart for Kubernetes
     digest: 03933e1e752c80196f9d5e9f87b4900baf637512d69a6bc52b2d637de5b8dfb0
@@ -9681,4 +10007,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-02T14:28:07.92193017Z"
+generated: "2026-11-02T17:56:15.525809554Z"
