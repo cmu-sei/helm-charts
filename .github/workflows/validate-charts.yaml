@@ -24,6 +24,35 @@ jobs:
         run: |
           .github/scripts/check-chart-versions.sh "origin/${{ github.base_ref }}"
 
+  lint:
+    name: Helm Lint and Template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: "latest"
+
+      - name: Add dependency Helm repos
+        run: |
+          helm repo add sei https://cmu-sei.github.io/helm-charts
+          helm repo add kvaps https://kvaps.github.io/charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add runix https://helm.runix.net
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+
+      - name: Lint and template changed charts
+        run: |
+          .github/scripts/lint-charts.sh "origin/${{ github.base_ref }}"
+
   values-sync:
     name: Parent/Child Values Sync
     runs-on: ubuntu-latest
