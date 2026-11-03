@@ -146,7 +146,67 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__OutputSaveInterval` | Terraform output save interval | `5000` |
 | `Terraform__StateRetryCount` | Terraform state retry count | `12` |
 | `Terraform__StateRetryIntervalSeconds` | Terraform state retry interval | `5` |
-| `Terraform__EnvironmentVariables__InheritAll` | Inherit all environment variables | `"true"` |
+| `Terraform__EnvironmentVariables__InheritAll` | Pass every API environment variable (except secrets) to every run, including the API's own credentials. See [Run Environment](#run-environment) | `"false"` (default) |
+| `Terraform__EnvironmentVariables__Inherit__0` | Case-sensitive regex of API environment variables runs inherit when `InheritAll` is `"false"` | `"^(HTTPS?_PROXY\|NO_PROXY)$"` |
+| `Terraform__EnvironmentVariables__Direct__<NAME>` | A variable every run gets, with this value | `Terraform__EnvironmentVariables__Direct__VSPHERE_ALLOW_UNVERIFIED_SSL: "false"` |
+| `Terraform__Secrets__Patterns__0` | Regex naming the API environment variables that hold secrets for [Environment Sets](#environment-sets) | `"^CASTER_SECRET_"` (default) |
+
+#### Run Environment
+
+Terraform runs no longer get every API environment variable: `Terraform__EnvironmentVariables__InheritAll` defaults to `"false"` (it was `"true"` before chart 1.12.0). The API's environment holds its database connection string, OIDC client secret and GitLab token, which every run could read with `InheritAll` on.
+
+The chart passes the variables it sets itself to runs through `Direct`, so `gitcredentials` (`GIT_CONFIG_SYSTEM`), `certificateMap` (`SSL_CERT_DIR`) and `terraformrc` (`TF_CLI_CONFIG_FILE`) keep working. In process mode, Caster always passes the API's `PATH` and `HOME`. Anything else runs relied on inheriting must now be listed:
+
+- Provider credentials: move them to `CASTER_SECRET_*` variables and give them to projects with [Environment Sets](#environment-sets).
+- Non-secret settings (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `VSPHERE_SERVER`, ...): an `Inherit` regex such as `"^(HTTPS?_PROXY|NO_PROXY)$"`, or a `Direct` value.
+- The Secret variant of git credentials (`GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n`, `GIT_CONFIG_VALUE_n`, `CASTER_GIT_TOKEN`): `Inherit__0: "^(GIT_CONFIG_|CASTER_GIT_TOKEN$)"`.
+
+Setting `InheritAll` back to `"true"` restores the old behaviour, except that secrets are still held back.
+
+#### Environment Sets
+
+Environment Sets keep credentials out of Terraform files. Give the API credentials as environment variables whose names match `Terraform__Secrets__Patterns__0` (default `^CASTER_SECRET_`), from a Kubernetes Secret through `existingSecret` or [`extraEnvFrom`](#extra-environment-sources):
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: caster-credentials
+stringData:
+  CASTER_SECRET_VSPHERE_PASSWORD: "PASSWORD"
+  CASTER_SECRET_AWS_SECRET_ACCESS_KEY: "SECRET"
+```
+
+```yaml
+caster-api:
+  extraEnvFrom:
+    - secretRef:
+        name: caster-credentials
+```
+
+A secret never reaches a run through `Inherit` or `InheritAll`. Admins holding `ManageEnvironmentSets` group secrets and plain values into Environment Sets under Administration and assign them to projects; only a project's sets reach its runs, as environment variables (`VSPHERE_PASSWORD`) or Terraform variables (`TF_VAR_vsphere_password`). Caster never shows a secret's value and masks it in run output.
+
+To ship a set with the deployment, seed it in `env`. A seeded set is created at startup only if no set has its name, is never changed afterwards, and is not assigned to any project:
+
+```yaml
+caster-api:
+  env:
+    SeedData__EnvironmentSets__0__Name: "vSphere"
+    SeedData__EnvironmentSets__0__Entries__0__TargetName: "VSPHERE_SERVER"
+    SeedData__EnvironmentSets__0__Entries__0__Value: "vcenter.example.com"
+    SeedData__EnvironmentSets__0__Entries__1__TargetName: "VSPHERE_PASSWORD"
+    SeedData__EnvironmentSets__0__Entries__1__ValueSource: "Secret"
+    SeedData__EnvironmentSets__0__Entries__1__SecretName: "CASTER_SECRET_VSPHERE_PASSWORD"
+```
+
+Entries default to `Kind: EnvironmentVariable` (use `TerraformVariable` for `TF_VAR_`) and `ValueSource: Plain`. A seed names secret sources, never values. A mistake in any seed stops the API at startup with errors naming the set and entry.
+
+- Anchor every pattern (`^`), and never write one that matches the API's own settings (`ConnectionStrings__*`, `Authorization__*`, `Terraform__GitlabToken`): a pattern decides what admins can hand to projects.
+- Every API replica must have the same secrets.
+- Editors of a project can read its sets' secrets through their Terraform. Assign a set only to projects whose editors may hold its credentials.
+- In Kubernetes job mode the values are plain environment variables in each Job spec. Keep the jobs namespace admin-only.
+
+See [Environment Sets](https://github.com/cmu-sei/Caster.Api/blob/main/docs/EnvironmentSets.md) in Caster.Api for the full security model.
 
 #### Kubernetes Jobs
 
@@ -292,7 +352,7 @@ caster-api:
 - When `gitcredentials` is set, the chart sets `GIT_CONFIG_SYSTEM` to `/app/.git-credentials`, so the value must be valid gitconfig. A bare `https://USER:TOKEN@HOST` line, as used by git-credential-store, makes every git command fail with `fatal: bad config line 1`.
 - Each `url` section rewrites only the host it names; other hosts are unaffected. Percent-encode reserved characters in the token (`@` as `%40`, `:` as `%3A`, `/` as `%2F`).
 - The username is ignored by most token-based hosts but must be non-empty. A token that only clones needs read access to the repositories (GitLab `read_repository`, Forgejo/Gitea `read:repository`); the GitLab source itself still needs `api`.
-- The value is stored in a ConfigMap. To keep the token in a Secret instead, leave `gitcredentials` empty and configure git through environment variables in `existingSecret` or [`extraEnvFrom`](#extra-environment-sources). The helper is scoped to one host, reads the token from the environment, and reaches job pods the same way as `GIT_CONFIG_SYSTEM` below:
+- The value is stored in a ConfigMap. To keep the token in a Secret instead, leave `gitcredentials` empty and configure git through environment variables in `existingSecret` or [`extraEnvFrom`](#extra-environment-sources). The helper is scoped to one host and reads the token from the environment; see the Secret variant under Kubernetes job mode below for passing it to runs:
 
   ```yaml
   GIT_CONFIG_COUNT: "1"
@@ -301,10 +361,9 @@ caster-api:
   CASTER_GIT_TOKEN: "TOKEN"
   ```
 
-**Kubernetes job mode.** With `Terraform__KubernetesJobs__Enabled: "true"`, `terraform init` runs in the job pod, so it needs the same credentials. The chart adds the `gitcredentials` ConfigMap to `Terraform__KubernetesJobs__ConfigMaps`, mounting it at the same path in the job pod. `GIT_CONFIG_SYSTEM` reaches the job through environment inheritance:
+**Kubernetes job mode.** With `Terraform__KubernetesJobs__Enabled: "true"`, `terraform init` runs in the job pod, so it needs the same credentials. The chart adds the `gitcredentials` ConfigMap to `Terraform__KubernetesJobs__ConfigMaps`, mounting it at the same path in the job pod, and passes `GIT_CONFIG_SYSTEM` to runs as `Terraform__EnvironmentVariables__Direct__GIT_CONFIG_SYSTEM`, so nothing else is needed.
 
-- With `Terraform__EnvironmentVariables__InheritAll: "true"` (the chart default), nothing else is needed.
-- With `InheritAll: "false"`, pass it explicitly, either as a case-sensitive regex such as `Terraform__EnvironmentVariables__Inherit__0: "^GIT_CONFIG_SYSTEM$"` (`"^(GIT_CONFIG_|CASTER_GIT_TOKEN$)"` for the Secret variant), or as `Terraform__EnvironmentVariables__Direct__GIT_CONFIG_SYSTEM: "/app/.git-credentials"`.
+- The Secret variant's variables must be inherited explicitly: `Terraform__EnvironmentVariables__Inherit__0: "^(GIT_CONFIG_|CASTER_GIT_TOKEN$)"` (case-sensitive), or `InheritAll: "true"`.
 - The job image needs git and `sh`. The default `hashicorp/terraform` images include both.
 - A custom `JobTemplateFile` or `JobTemplateYaml` does not need its own git credentials; the chart's ConfigMaps and environment are added to it.
 
