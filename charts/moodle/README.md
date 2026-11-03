@@ -206,10 +206,6 @@ Configure Moodle to use an OIDC-compliant identity provider (IdP) for OAuth2 aut
 | `moodle.oidc.disableCurlSecurityBlockedHosts` | Disable Moodle CURL security for internal provider communication                                | `true`                                |
 | `moodle.oidc.waitTimeout`                     | Total time to wait for discovery endpoint (seconds)                                             | `300`                                 |
 | `moodle.oidc.waitInterval`                    | Delay between readiness checks (seconds)                                                        | `5`                                   |
-| `moodle.oidc.caCert.existingSecret`           | Secret containing a custom CA certificate                                                       | `""`                                  |
-| `moodle.oidc.caCert.existingConfigMap`        | ConfigMap containing a custom CA certificate                                                    | `""`                                  |
-| `moodle.oidc.caCert.key`                      | Key in the secret/configmap for the CA certificate                                              | `ca.crt`                              |
-| `moodle.oidc.caCert.path`                     | Mount path inside the container for the CA certificate                                          | `/opt/sei/certs/oidc-ca.crt`          |
 
 #### Example: Keycloak
 
@@ -334,7 +330,26 @@ After deploying with OIDC integration enabled:
   - The redirect URI matches exactly what is registered with the provider
   - The client secret is correct
   - The provider domain is accessible from both Moodle pods and user browsers
-  - Moodle trusts the TLS certificate used by the provider (use `caCert` for custom CAs)
+  - Moodle trusts the TLS certificate used by the provider (for a private CA, see [Custom CA Bundle](#custom-ca-bundle))
+
+### Custom CA Bundle
+
+PHP's curl and OpenSSL in the Alpine image trust one file, `/etc/ssl/certs/ca-certificates.crt`. The OIDC setup, plugin downloads, and plugins that verify TLS (the Crucible plugins, or anything using `core\http_client`) all check against it. Moodle core's own `\curl` class skips certificate verification unless a caller turns it on. When the OIDC provider, a plugin URL, an internal service a plugin calls, or an outbound proxy presents a certificate from a private CA, mount a bundle over that file with `caBundle`.
+
+The bundle replaces the image's own, so it must hold the public roots as well as the private CA. Build it from the image you deploy:
+
+```bash
+docker run --rm --entrypoint cat erseco/alpine-moodle:v5.2.4 /etc/ssl/certs/ca-certificates.crt > ca-certificates.crt
+cat my-private-ca.crt >> ca-certificates.crt
+kubectl create configmap moodle-ca-bundle -n <namespace> --from-file=ca-certificates.crt
+```
+
+```yaml
+caBundle:
+  existingConfigMap: moodle-ca-bundle
+```
+
+The mounted file no longer follows the image, so rebuild it when you change `image.tag`.
 
 ### Plugins and Site Settings
 
@@ -353,7 +368,7 @@ These are the keys through which a real deployment is expressed: the plugin tree
 | `moodle.config.<c>.<s>`         | A value may be `{existingSecret, key}` instead of a literal, for a sensitive value | —       |
 | `moodle.preConfigureCommands`   | Shell commands run before Moodle installation and upgrade                          | `""`    |
 | `moodle.postConfigureCommands`  | Shell commands run after Moodle installation and upgrade                           | `""`    |
-| `caBundle.existingConfigMap`    | ConfigMap mounted over `/etc/ssl/certs/ca-certificates.crt`; empty mounts nothing   | `""`    |
+| `caBundle.existingConfigMap`    | ConfigMap mounted over `/etc/ssl/certs/ca-certificates.crt`; see [Custom CA Bundle](#custom-ca-bundle) | `""`    |
 | `caBundle.existingSecret`       | Secret mounted over the same path                                                  | `""`    |
 | `caBundle.key`                  | Key in that ConfigMap or Secret                                                    | `ca-certificates.crt` |
 

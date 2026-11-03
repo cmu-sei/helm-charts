@@ -37,11 +37,6 @@
 {{- $caBundleKey := $caBundle.key | default "ca-certificates.crt" }}
 {{- $oidcClientId := tpl ($oidc.clientId | default "") . }}
 {{- $oidcName := tpl ($oidc.name | default "") . }}
-{{- $oidcCaCert := $oidc.caCert | default dict }}
-{{- $oidcCaCertMount := or $oidcCaCert.existingSecret $oidcCaCert.existingConfigMap }}
-{{- $oidcCaCertEnabled := or $oidcCaCertMount $oidcCaCert.path }}
-{{- $oidcCaCertPath := $oidcCaCert.path | default "/opt/sei/certs/oidc-ca.crt" }}
-{{- $oidcCaCertKey := $oidcCaCert.key | default "ca.crt" }}
 {{- $oidcExistingSecretKey := tpl ($oidc.existingSecretKey | default "client-secret") $ }}
 apiVersion: apps/v1
 kind: Deployment
@@ -539,10 +534,6 @@ spec:
               value: {{ join " " $oidc.userFieldMappings | quote }}
             - name: OIDC_DISABLE_CURL_SECURITY
               value: {{ $oidc.disableCurlSecurityBlockedHosts | quote }}
-            {{- if $oidcCaCertEnabled }}
-            - name: OIDC_CA_CERT_PATH
-              value: {{ tpl $oidcCaCertPath $ | quote }}
-            {{- end }}
             {{- if $oidc.iconUrl }}
             - name: OIDC_ICON_URL
               value: {{ tpl $oidc.iconUrl $ | quote }}
@@ -700,12 +691,6 @@ spec:
               mountPath: /opt/sei/preset
               readOnly: true
             {{- end }}
-            {{- if and $oidc.enabled $oidcCaCertMount }}
-            - name: oidc-ca-cert
-              mountPath: {{ tpl $oidcCaCertPath $ | quote }}
-              subPath: {{ tpl $oidcCaCertKey $ | quote }}
-              readOnly: true
-            {{- end }}
             {{- if $caBundleMount }}
             - name: ca-bundle
               mountPath: /etc/ssl/certs/ca-certificates.crt
@@ -809,22 +794,6 @@ spec:
             items:
               - key: {{ $presetKey }}
                 path: {{ $presetKey }}
-        {{- end }}
-        {{- if and $oidc.enabled $oidcCaCertMount }}
-        - name: oidc-ca-cert
-          {{- if $oidcCaCert.existingSecret }}
-          secret:
-            secretName: {{ tpl $oidcCaCert.existingSecret $ }}
-            items:
-              - key: {{ tpl $oidcCaCertKey $ }}
-                path: {{ tpl $oidcCaCertKey $ }}
-          {{- else if $oidcCaCert.existingConfigMap }}
-          configMap:
-            name: {{ tpl $oidcCaCert.existingConfigMap $ }}
-            items:
-              - key: {{ tpl $oidcCaCertKey $ }}
-                path: {{ tpl $oidcCaCertKey $ }}
-          {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
         {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumes "context" $) | nindent 8 }}

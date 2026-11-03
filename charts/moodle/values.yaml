@@ -19,9 +19,11 @@ image:
   digest: "" # If set, also set image.tag: the chart reads the 5.0/5.1 web-root layout from the tag, not the digest
   pullPolicy: IfNotPresent
 
-## CA bundle mounted over /etc/ssl/certs/ca-certificates.crt when outbound TLS is intercepted.
-## Optional: leave both sources empty and nothing is mounted. Set one only if a proxy re-signs
-## outbound HTTPS, or plugin downloads fail with 'unable to get local issuer certificate'.
+## CA bundle mounted over /etc/ssl/certs/ca-certificates.crt, the file PHP's curl and OpenSSL
+## read on Alpine, in the web server, cron and every setup script alike. Optional: leave both
+## sources empty and nothing is mounted. Set one when a proxy re-signs outbound HTTPS, or when a
+## service Moodle calls (the OIDC provider, a plugin URL) uses a private CA. The file replaces
+## the image's bundle, so it must hold the public roots as well as the private CA.
 caBundle:
   existingConfigMap: ""
   existingSecret: ""
@@ -107,12 +109,6 @@ moodle:
     ## OIDC provider readiness wait configuration (seconds)
     waitTimeout: 300
     waitInterval: 5
-    ## Custom CA certificate for OIDC provider HTTPS (optional)
-    caCert:
-      existingSecret: "" ## Secret containing the CA certificate
-      existingConfigMap: "" ## ConfigMap containing the CA certificate
-      key: "ca.crt"
-      path: "/opt/sei/certs/oidc-ca.crt" ## Where the certificate is mounted, ignored when no file is there
 
   ## PHP/Upload Limits Configuration
   php:
