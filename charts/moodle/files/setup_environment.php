@@ -13,6 +13,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 list($options, $unrecognized) = cli_get_params([
     'step' => null,
     'file' => '',
+    'skipped' => '',
     'secretsfile' => '',
 
     // OAuth2 options
@@ -464,7 +465,16 @@ function set_configs($options) {
 }
 
 function enable_plugins($options) {
+    // Optional plugins place_plugins.php could not fetch this boot. One still listed but back on disk is enabled as usual.
+    $skipped = [];
+    if ($options['skipped'] !== '' && is_readable($options['skipped'])) {
+        $skipped = json_decode((string)file_get_contents($options['skipped']), true) ?: [];
+    }
     foreach (load_json($options['file']) as $component => $enabled) {
+        if (in_array($component, $skipped, true) && core_component::get_component_directory($component) === null) {
+            echo "WARNING: {$component} is optional and was not placed this boot, so it is not enabled or disabled\n";
+            continue;
+        }
         list($plugintype, $pluginname) = core_component::normalize_component($component);
         $class = core_plugin_manager::resolve_plugininfo_class($plugintype);
         $want = (bool)$enabled;

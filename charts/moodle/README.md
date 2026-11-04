@@ -392,16 +392,20 @@ moodle:
 
 A `moodle.config` value that is a map names a Secret rather than holding the value: the chart passes it to the container from that Secret, so it never appears in `values.yaml` or in any rendered manifest. Use it for an API key, token, password or any other sensitive value. It must carry exactly `existingSecret` and `key`.
 
-| Field     | Effect                                                                      |
-| --------- | --------------------------------------------------------------------------- |
-| `name`    | Floats; resolved from the Moodle plugins directory at every pod start        |
-| `url`     | Fetches from a URL you give instead of the Moodle plugins directory          |
-| `version` | Pins the version and acts as a cache key; a tree already at it is left alone |
+| Field      | Effect                                                                      |
+| ---------- | --------------------------------------------------------------------------- |
+| `name`     | Floats; resolved from the Moodle plugins directory at every pod start        |
+| `url`      | Fetches from a URL you give instead of the Moodle plugins directory          |
+| `version`  | Pins the version and acts as a cache key; a tree already at it is left alone |
+| `optional` | `true` lets the pod start without the plugin when it can't be fetched or found in the cache |
 
 **Important:**
 
 - `url` and `version` are not substitutes, so declare both when you set `url`; changing either re-fetches the plugin
 - Plugins are re-fetched on every pod start unless the code tree is on a volume that outlives the pod: a named PVC at one replica, in either dirroot mode
+- When a fetch fails, the chart tries, in order: the tree already on disk (floating plugins only); the last archive it placed, cached in `moodledata/.chart-plugin-cache`; skipping the plugin if it is `optional: true`. Otherwise the pod does not start. The cache needs a dataroot that outlives the pod (`persistence.moodledata.type: persistentVolumeClaim`); the default `emptyDir` survives only container restarts
+- An optional plugin skipped this way is left out of `moodle.enabledPlugins` for that boot. If it was installed before, Moodle lists it as missing from disk and its activities fail until a later boot places it. Mark optional only a plugin no other declared plugin depends on
+- A bad archive (wrong component, wrong version, not a zip) stops the pod even for an optional plugin, because the values are wrong rather than the source being down
 - A version pin binds the parent plugin, never its subplugins
 - `moodle.plugins` resolves no dependencies and never removes, so declare every plugin a declared plugin requires
 - Removing an entry drops the code and leaves the database rows; finish with `uninstall_plugins.php`, never `--purge-missing`
@@ -481,7 +485,7 @@ moodle:
 **Important:**
 
 - The image writes `pathtophp`, `pathtodu`, `enableblogs`, the `smtp*` settings, `noreplyaddress` and `emailsubjectprefix` on every boot, from its own defaults when you set nothing, so `smtphosts` becomes `smtp.gmail.com:587`. Set `moodle.smtp` or `moodle.config`, which the chart applies afterwards
-- Every pod start with N declared plugins is N network fetches with no cache
+- Every pod start with N declared plugins is N network fetches. The cache in `moodledata/.chart-plugin-cache` is used only when a fetch fails, never instead of one
 
 **Important:** a failed upgrade leaves `climaintenance.html` in `moodledata`, and every pod then serves 503 while looking healthy. Delete the file to recover.
 

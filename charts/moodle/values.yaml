@@ -157,6 +157,12 @@ moodle:
   ##       url: https://example.org/moodle-plugins/qtype_mojomatch_2026060800.zip
   ##       version: "2026060800"
   ##
+  ## A failed fetch falls back, in order, to: the tree already on disk (floating plugins only);
+  ## the last archive placed, cached in moodledata/.chart-plugin-cache (lost with an emptyDir
+  ## dataroot when the pod is replaced); skipping the plugin if it is marked optional: true.
+  ## Anything else stops the pod. Mark optional only a plugin no other plugin depends on.
+  ##     - {name: block_example, url: https://plugins.example.org/block_example.zip, version: "2026010100", optional: true}
+  ##
   ## The list installs, it never removes. Deleting an entry drops the code and leaves
   ## the database rows. Finish a removal by hand, never with --purge-missing:
   ##   php admin/cli/uninstall_plugins.php --plugins=<component> --run

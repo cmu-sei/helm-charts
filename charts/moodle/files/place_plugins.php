@@ -17,11 +17,17 @@ function info($message) {
     fwrite(STDOUT, "$message\n");
 }
 
-$options = getopt('', ['root:', 'file:']);
+// A source could not be reached or did not answer with a usable archive. The caller decides
+// whether a cached copy, an optional skip or a failed boot follows.
+class fetch_failed extends Exception {
+}
+
+$options = getopt('', ['root:', 'file:', 'cache:']);
 $root = rtrim($options['root'] ?? '', '/');
 $file = $options['file'] ?? '';
+$cache = rtrim($options['cache'] ?? '', '/');
 if ($root === '' || $file === '') {
-    fwrite(STDERR, "Usage: place_plugins.php --root=<moodle tree> --file=<plugins.json>\n");
+    fwrite(STDERR, "Usage: place_plugins.php --root=<moodle tree> --file=<plugins.json> [--cache=<dir>]\n");
     exit(1);
 }
 if (!is_dir($root)) {
@@ -157,7 +163,7 @@ function http_get($component, $url, $tofile = null) {
             return $result;
         }
         if ($attempt >= $attempts) {
-            fail($component, "GET $url failed (HTTP $status): $error");
+            throw new fetch_failed("GET $url failed (HTTP $status): $error");
         }
         info("$component: GET $url failed (HTTP $status): $error, retrying");
         sleep(5 * $attempt);
@@ -185,17 +191,77 @@ function query_pluginfo($component, $query) {
     $url = 'https://download.moodle.org/api/1.3/pluginfo.php?' . $query;
     $decoded = json_decode(http_get($component, $url), true);
     if (!is_array($decoded) || ($decoded['status'] ?? '') !== 'OK') {
-        fail($component, "pluginfo API did not return OK for $url");
+        throw new fetch_failed("pluginfo API did not return OK for $url");
     }
     $version = $decoded['pluginfo']['version'] ?? null;
     if (empty($version['downloadurl'])) {
-        fail($component, "pluginfo API returned no downloadurl for $url");
+        throw new fetch_failed("pluginfo API returned no downloadurl for $url");
     }
     return [
         'downloadurl' => $version['downloadurl'],
         'downloadmd5' => $version['downloadmd5'] ?? null,
         'version'     => (string)($version['version'] ?? ''),
     ];
+}
+
+// The cache holds the last archive placed for each declaration, so a source that is down
+// at boot does not stop the pod. It is best effort: nothing here fails the run.
+function cache_key($component, $url, $version, $branch) {
+    return $component . '-' . substr(hash('sha256', json_encode([$url, $version, $branch])), 0, 16);
+}
+
+function cache_lookup($cache, $component, $key) {
+    if ($cache === '') {
+        return null;
+    }
+    $zip = "$cache/$key.zip";
+    $meta = json_decode((string)@file_get_contents("$cache/$key.json"), true);
+    if (!is_array($meta) || !is_file($zip)) {
+        return null;
+    }
+    if (hash_file('sha256', $zip) !== ($meta['sha256'] ?? '')) {
+        info("$component: cached copy $zip does not match its checksum, ignoring it");
+        return null;
+    }
+    return $zip;
+}
+
+function cache_store($cache, $component, $key, $zip, $meta) {
+    if ($cache === '') {
+        return;
+    }
+    if (!is_dir($cache) && !@mkdir($cache, 0755, true)) {
+        info("$component: warning: cannot create plugin cache $cache, not caching");
+        return;
+    }
+    // Written under a private name and renamed, so a pod sharing the dataroot never reads half a file.
+    $tmp = "$cache/.$key." . getmypid() . '.tmp';
+    $meta['sha256'] = hash_file('sha256', $zip);
+    if (!@copy($zip, $tmp) || @file_put_contents("$tmp.json", json_encode($meta) . "\n") === false
+            || !@rename($tmp, "$cache/$key.zip") || !@rename("$tmp.json", "$cache/$key.json")) {
+        @unlink($tmp);
+        @unlink("$tmp.json");
+        info("$component: warning: cannot write to plugin cache $cache, not caching");
+        return;
+    }
+    info("$component cached as $cache/$key.zip");
+}
+
+// Drop entries no current declaration uses, and temp files a killed run left behind.
+function cache_prune($cache, $keep) {
+    if ($cache === '' || !is_dir($cache)) {
+        return;
+    }
+    foreach ((glob("$cache/*.{zip,json}", GLOB_BRACE) ?: []) as $path) {
+        if (!in_array(pathinfo($path, PATHINFO_FILENAME), $keep, true)) {
+            @unlink($path);
+        }
+    }
+    foreach ((glob("$cache/.*.tmp*") ?: []) as $path) {
+        if (filemtime($path) < time() - 3600) {
+            @unlink($path);
+        }
+    }
 }
 
 function rm_rf($path) {
@@ -234,6 +300,9 @@ register_shutdown_function(function () use ($staging) {
 });
 
 $realroot = realpath($root);
+$apibranch = $branch === '' ? '' : branch_to_api_format($branch);
+$keep = [];
+$skipped = [];
 
 foreach ($plugins as $index => $entry) {
     if (!is_array($entry) || empty($entry['name'])) {
@@ -242,6 +311,14 @@ foreach ($plugins as $index => $entry) {
     $component = (string)$entry['name'];
     $url       = isset($entry['url']) ? trim((string)$entry['url']) : '';
     $version   = isset($entry['version']) ? trim((string)$entry['version']) : '';
+    $optional  = $entry['optional'] ?? false;
+    if (!is_bool($optional)) {
+        fail($component, 'optional must be true or false');
+    }
+    $floats = ($url === '' && $version === '');
+    // A floating plugin follows the Moodle branch, so a cached copy for another branch is not reused.
+    $key = cache_key($component, $url, $version, $floats ? $apibranch : '');
+    $keep[] = $key;
 
     if (!preg_match('/^([a-z][a-z0-9]*)_([a-z][a-z0-9_]*)$/', $component, $split)) {
         fail($component, 'name must be <plugintype>_<pluginname>, lowercase');
@@ -271,36 +348,59 @@ foreach ($plugins as $index => $entry) {
         info("$component is on disk at $version but its url changed, replacing");
     }
 
-    if ($url !== '') {
-        $downloadurl = $url;
-        $md5 = null;
-    } else if ($version !== '') {
-        $resolved = query_pluginfo($component, 'plugin=' . rawurlencode("$component@$version"));
-        $downloadurl = $resolved['downloadurl'];
-        $md5 = $resolved['downloadmd5'];
-    } else {
-        if ($branch === '') {
-            fail($component, "no version pinned and \$branch could not be read from $versionfile");
-        }
-        $apibranch = branch_to_api_format($branch);
-        $resolved = query_pluginfo($component, 'plugin=' . rawurlencode($component) . '&branch=' . rawurlencode($apibranch) . '&minversion=0');
-        if ($disk !== null && bccomp_str($disk, $resolved['version']) === 0) {
-            info("$component floats and the disk already holds {$resolved['version']} on branch $apibranch, skipping");
-            continue;
-        }
-        $downloadurl = $resolved['downloadurl'];
-        $md5 = $resolved['downloadmd5'];
-        info("$component floats: resolved to version {$resolved['version']} on branch $apibranch");
+    if ($floats && $branch === '') {
+        fail($component, "no version pinned and \$branch could not be read from $versionfile");
     }
 
     $zip = "$staging/$component.zip";
-    info("$component <- $downloadurl");
-    http_get($component, $downloadurl, $zip);
+    $fromcache = false;
+    try {
+        if ($url !== '') {
+            $downloadurl = $url;
+            $md5 = null;
+        } else if ($version !== '') {
+            $resolved = query_pluginfo($component, 'plugin=' . rawurlencode("$component@$version"));
+            $downloadurl = $resolved['downloadurl'];
+            $md5 = $resolved['downloadmd5'];
+        } else {
+            $resolved = query_pluginfo($component, 'plugin=' . rawurlencode($component) . '&branch=' . rawurlencode($apibranch) . '&minversion=0');
+            if ($disk !== null && bccomp_str($disk, $resolved['version']) === 0) {
+                info("$component floats and the disk already holds {$resolved['version']} on branch $apibranch, skipping");
+                continue;
+            }
+            $downloadurl = $resolved['downloadurl'];
+            $md5 = $resolved['downloadmd5'];
+            info("$component floats: resolved to version {$resolved['version']} on branch $apibranch");
+        }
 
-    if ($md5 !== null && $md5 !== '') {
-        $actual = md5_file($zip);
-        if ($actual !== $md5) {
-            fail($component, "checksum mismatch: expected $md5, got $actual");
+        info("$component <- $downloadurl");
+        http_get($component, $downloadurl, $zip);
+
+        if ($md5 !== null && $md5 !== '') {
+            $actual = md5_file($zip);
+            if ($actual !== $md5) {
+                throw new fetch_failed("checksum mismatch: expected $md5, got $actual");
+            }
+        }
+    } catch (fetch_failed $e) {
+        if ($floats && $disk !== null) {
+            // Any version satisfies a floating declaration, so the tree already there serves.
+            info("$component: warning: {$e->getMessage()}; keeping version $disk already on disk");
+            continue;
+        }
+        $cached = cache_lookup($cache, $component, $key);
+        if ($cached !== null) {
+            info("$component: warning: {$e->getMessage()}; placing the cached copy $cached");
+            if (!@copy($cached, $zip)) {
+                fail($component, "cannot copy the cached copy $cached into $zip");
+            }
+            $fromcache = true;
+        } else if ($optional) {
+            info("$component: warning: {$e->getMessage()}; optional and not cached, so it is skipped this boot");
+            $skipped[] = $component;
+            continue;
+        } else {
+            fail($component, $e->getMessage() . ($cache === '' ? '' : ', and there is no cached copy in ' . $cache));
         }
     }
 
@@ -311,14 +411,13 @@ foreach ($plugins as $index => $entry) {
     }
     $archive = new ZipArchive();
     if ($archive->open($zip) !== true) {
-        fail($component, "cannot open the downloaded archive as a zip");
+        fail($component, "cannot open the " . ($fromcache ? 'cached' : 'downloaded') . " archive as a zip");
     }
     if (!$archive->extractTo($extract)) {
         $archive->close();
         fail($component, "cannot extract the archive into $extract");
     }
     $archive->close();
-    @unlink($zip);
 
     $tops = array_values(array_diff(scandir($extract), ['.', '..']));
     if (count($tops) !== 1 || !is_dir("$extract/$tops[0]")) {
@@ -351,10 +450,25 @@ foreach ($plugins as $index => $entry) {
         fail($component, "moodle.plugins declares version $version and the archive is $placed");
     }
     @file_put_contents("$target/" . SOURCE_MARKER, json_encode(['url' => $url, 'version' => $placed]) . "\n");
-    info("$component placed at $target (version $placed)");
+    info("$component placed at $target (version $placed" . ($fromcache ? ', from the cache' : '') . ')');
+    if (!$fromcache) {
+        cache_store($cache, $component, $key, $zip, ['component' => $component, 'url' => $url, 'version' => $placed]);
+    }
+    @unlink($zip);
 }
 
-info('all declared plugins are on disk');
+cache_prune($cache, $keep);
+
+// setup_environment.php reads this so enabledPlugins does not fail on a plugin skipped above.
+$skippedfile = "$root/.chart-plugins-skipped.json";
+if (@file_put_contents($skippedfile, json_encode($skipped) . "\n") === false && $skipped) {
+    fail('-', "cannot write $skippedfile");
+}
+if ($skipped) {
+    info('declared plugins are on disk except optional ' . implode(', ', $skipped));
+} else {
+    info('all declared plugins are on disk');
+}
 exit(0);
 
 // Compare two Moodle version stamps as numeric strings of possibly unequal length.

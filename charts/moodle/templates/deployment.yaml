@@ -246,6 +246,9 @@ spec:
 
               php /opt/sei/custom-scripts/place_plugins.php \
                   --root="$DST" --file=/opt/sei/custom-scripts/plugins.json
+                  {{- if ($persistence.moodledata | default dict).enabled }} \
+                  --cache=/var/www/moodledata/.chart-plugin-cache
+                  {{- end }}
               {{- end }}
               {{- if $oidc.enabled }}
 
@@ -263,6 +266,15 @@ spec:
             - name: config
               mountPath: /opt/sei/config
               readOnly: true
+            {{- $seedData := $persistence.moodledata | default dict }}
+            {{- if and $moodle.plugins $seedData.enabled }}
+            # Only for the plugin cache, which outlives the seeded tree.
+            - name: moodledata
+              mountPath: /var/www/moodledata
+              {{- if $seedData.subPath }}
+              subPath: {{ $seedData.subPath }}
+              {{- end }}
+            {{- end }}
             {{- if $scripts }}
             - name: chart-scripts
               mountPath: /opt/sei/custom-scripts
@@ -494,7 +506,7 @@ spec:
                 {{- end }}
                 {{- if $moodle.enabledPlugins }}
                 # System: Enable Moodle plugins
-                php /opt/sei/custom-scripts/setup_environment.php --step=enable_plugins --file=/opt/sei/custom-scripts/enabled-plugins.json
+                php /opt/sei/custom-scripts/setup_environment.php --step=enable_plugins --file=/opt/sei/custom-scripts/enabled-plugins.json --skipped=/var/www/html/.chart-plugins-skipped.json
                 {{- end }}
                 {{- if $moodle.postConfigureCommands }}
                 # User: Custom post-configure commands

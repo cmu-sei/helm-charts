@@ -675,6 +675,9 @@ Validate required values for Moodle deployment
 {{- if and $plugin.version (not (regexMatch "^[0-9]+$" $version)) }}
 {{- fail (printf "ERROR: moodle.plugins[%d].version '%s' is not a Moodle version stamp, and the plugins directory resolves an unrecognised one to the oldest release it has.\n  Example: version: 2026042006" $index $version) }}
 {{- end }}
+{{- if and (hasKey $plugin "optional") (not (kindIs "bool" $plugin.optional)) }}
+{{- fail (printf "ERROR: moodle.plugins[%d].optional is %s, not a boolean, and a quoted \"false\" would read as true.\n  Example: optional: true" $index ($plugin.optional | toString)) }}
+{{- end }}
 {{- end }}
 
 {{/* Validate Plugin Registration */}}
