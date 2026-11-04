@@ -157,7 +157,7 @@ spec:
       {{- end }}
       {{- $vpWanted := ternary $volPerm.enabled true (hasKey $volPerm "enabled") }}
       {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol) }}
-      {{- if or .Values.initContainers $codeVolume $needsChown }}
+      {{- if or .Values.initContainers $codeVolume $needsChown $caBundleMount }}
       initContainers:
         {{- if $needsChown }}
         - name: volume-permissions
@@ -190,6 +190,35 @@ spec:
             - name: moodle
               mountPath: /var/www/html
             {{- end }}
+        {{- end }}
+        {{- if $caBundleMount }}
+        # The image's own bundle plus caBundle, so the public roots follow image.tag.
+        - name: ca-bundle
+          image: {{ include "moodle.image" . }}
+          imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
+          {{- if $containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit $containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -e
+              extra=/opt/sei/ca-extra/{{ $caBundleKey }}
+              if ! grep -q -e '-----BEGIN CERTIFICATE-----' "$extra"; then
+                echo "[ERROR] caBundle key {{ $caBundleKey }} holds no PEM certificate" >&2
+                exit 1
+              fi
+              { cat /etc/ssl/certs/ca-certificates.crt; echo; cat "$extra"; } > /ca-bundle/ca-certificates.crt
+              echo "[ca-bundle] image bundle plus {{ $caBundleKey }}: $(grep -c -e '-----BEGIN CERTIFICATE-----' /ca-bundle/ca-certificates.crt) certificates"
+          volumeMounts:
+            - name: ca-extra
+              mountPath: /opt/sei/ca-extra
+              readOnly: true
+            - name: ca-bundle
+              mountPath: /ca-bundle
         {{- end }}
         {{- if $codeVolume }}
         - name: seed-dirroot
@@ -296,7 +325,7 @@ spec:
             {{- if $caBundleMount }}
             - name: ca-bundle
               mountPath: /etc/ssl/certs/ca-certificates.crt
-              subPath: {{ $caBundleKey }}
+              subPath: ca-certificates.crt
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
@@ -725,7 +754,7 @@ spec:
             {{- if $caBundleMount }}
             - name: ca-bundle
               mountPath: /etc/ssl/certs/ca-certificates.crt
-              subPath: {{ $caBundleKey }}
+              subPath: ca-certificates.crt
               readOnly: true
             {{- end }}
             {{- if $.Values.extraVolumeMounts }}
@@ -787,7 +816,7 @@ spec:
         {{- end }}
         {{- end }}
         {{- if $caBundleMount }}
-        - name: ca-bundle
+        - name: ca-extra
           {{- if $caBundle.existingSecret }}
           secret:
             secretName: {{ tpl $caBundle.existingSecret $ }}
@@ -801,6 +830,9 @@ spec:
               - key: {{ $caBundleKey }}
                 path: {{ $caBundleKey }}
           {{- end }}
+        - name: ca-bundle
+          emptyDir:
+            sizeLimit: 10Mi
         {{- end }}
         {{- if $scripts }}
         - name: chart-scripts

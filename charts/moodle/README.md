@@ -334,22 +334,20 @@ After deploying with OIDC integration enabled:
 
 ### Custom CA Bundle
 
-PHP's curl and OpenSSL in the Alpine image trust one file, `/etc/ssl/certs/ca-certificates.crt`. The OIDC setup, plugin downloads, and plugins that verify TLS (the Crucible plugins, or anything using `core\http_client`) all check against it. Moodle core's own `\curl` class skips certificate verification unless a caller turns it on. When the OIDC provider, a plugin URL, an internal service a plugin calls, or an outbound proxy presents a certificate from a private CA, mount a bundle over that file with `caBundle`.
+PHP's curl and OpenSSL in the Alpine image trust one file, `/etc/ssl/certs/ca-certificates.crt`. The OIDC setup, plugin downloads, and plugins that verify TLS (the Crucible plugins, or anything using `core\http_client`) all check against it. Moodle core's own `\curl` class skips certificate verification unless a caller turns it on. When the OIDC provider, Alloy or another Crucible app, a plugin URL, or an outbound proxy presents a certificate from a private CA, give that CA to `caBundle`.
 
-The bundle replaces the image's own, so it must hold the public roots as well as the private CA. Build it from the image you deploy:
+Put only your CA certificates in the ConfigMap or Secret. One key may hold several PEM certificates, intermediates included:
 
 ```bash
-docker run --rm --entrypoint cat erseco/alpine-moodle:v5.2.4 /etc/ssl/certs/ca-certificates.crt > ca-certificates.crt
-cat my-private-ca.crt >> ca-certificates.crt
-kubectl create configmap moodle-ca-bundle -n <namespace> --from-file=ca-certificates.crt
+kubectl create configmap moodle-ca -n <namespace> --from-file=ca-certificates.crt=my-private-ca.crt
 ```
 
 ```yaml
 caBundle:
-  existingConfigMap: moodle-ca-bundle
+  existingConfigMap: moodle-ca
 ```
 
-The mounted file no longer follows the image, so rebuild it when you change `image.tag`.
+At every pod start the `ca-bundle` init container writes the image's own `/etc/ssl/certs/ca-certificates.crt` followed by your certificates into a per-pod `emptyDir`, and mounts the result over that path in the plugin-seeding and main containers. Public sites stay trusted, and the public roots follow `image.tag`. A key with no PEM certificate stops the pod at that init container. A full bundle built for chart 0.3 still works; its public roots just appear twice.
 
 ### Plugins and Site Settings
 
@@ -368,8 +366,8 @@ These are the keys through which a real deployment is expressed: the plugin tree
 | `moodle.config.<c>.<s>`         | A value may be `{existingSecret, key}` instead of a literal, for a sensitive value | —       |
 | `moodle.preConfigureCommands`   | Shell commands run before Moodle installation and upgrade                          | `""`    |
 | `moodle.postConfigureCommands`  | Shell commands run after Moodle installation and upgrade                           | `""`    |
-| `caBundle.existingConfigMap`    | ConfigMap mounted over `/etc/ssl/certs/ca-certificates.crt`; see [Custom CA Bundle](#custom-ca-bundle) | `""`    |
-| `caBundle.existingSecret`       | Secret mounted over the same path                                                  | `""`    |
+| `caBundle.existingConfigMap`    | ConfigMap of private CA certificates added to the image's bundle; see [Custom CA Bundle](#custom-ca-bundle) | `""`    |
+| `caBundle.existingSecret`       | Secret holding them instead                                                        | `""`    |
 | `caBundle.key`                  | Key in that ConfigMap or Secret                                                    | `ca-certificates.crt` |
 
 **Example:**

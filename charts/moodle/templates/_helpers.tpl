@@ -330,7 +330,7 @@ Validate required values for Moodle deployment
 
 {{/* Validate Removed OIDC CA Certificate */}}
 {{- if ($moodle.oidc | default dict).caCert }}
-{{- fail "ERROR: moodle.oidc.caCert was removed in chart 0.4.0. It reached only the OIDC setup script. Plugin downloads, and plugins that verify TLS such as the Crucible ones, read /etc/ssl/certs/ca-certificates.crt and never trusted it.\n  Either:\n  1. Put the provider's CA, with the public roots, in a ConfigMap or Secret, name it in caBundle, and remove moodle.oidc.caCert\n  2. Remove moodle.oidc.caCert if the provider's certificate already chains to a public root" }}
+{{- fail "ERROR: moodle.oidc.caCert was removed in chart 0.4.0. It reached only the OIDC setup script. Plugin downloads, and plugins that verify TLS such as the Crucible ones, read /etc/ssl/certs/ca-certificates.crt and never trusted it.\n  Either:\n  1. Put the provider's CA in a ConfigMap or Secret, name it in caBundle, and remove moodle.oidc.caCert. The chart adds it to the image's bundle\n  2. Remove moodle.oidc.caCert if the provider's certificate already chains to a public root" }}
 {{- end }}
 
 {{/* Validate Preset Source */}}

@@ -1138,10 +1138,10 @@ moodle:
         - "email:email"
         - "sub:idnumber"
       disableCurlSecurityBlockedHosts: true
-  ## Optional: CA bundle for a private CA (self-signed certificates, or a proxy such as Zscaler)
-  ## Mounted over /etc/ssl/certs/ca-certificates.crt, the file PHP reads, so it replaces the image's
-  ## bundle: it must hold the public roots plus your CA, not your CA alone. Create the ConfigMap
-  ## first; the moodle chart README ("Custom CA Bundle") shows how to build it.
+  ## Optional: private CA certificates (self-signed certificates, or a proxy such as Zscaler)
+  ## Moodle chart 0.4 and later add the ConfigMap's certificates to the image's bundle, so your
+  ## CA alone is enough. Chart 0.3, the version Chart.yaml pins today, mounts the file in place of the
+  ## image's bundle, so there it must hold the public roots plus your CA. Create it first.
   # caBundle:
   #   existingConfigMap: "moodle-ca-bundle"
   #   key: "ca-certificates.crt"
