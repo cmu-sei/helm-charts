@@ -403,8 +403,10 @@ A `moodle.config` value that is a map names a Secret rather than holding the val
 
 - `url` and `version` are not substitutes, so declare both when you set `url`; changing either re-fetches the plugin
 - Plugins are re-fetched on every pod start unless the code tree is on a volume that outlives the pod: a named PVC at one replica, in either dirroot mode
-- When a fetch fails, the chart tries, in order: the tree already on disk (floating plugins only); the last archive it placed, cached in `moodledata/.chart-plugin-cache`; skipping the plugin if it is `optional: true`. Otherwise the pod does not start. The cache needs a dataroot that outlives the pod (`persistence.moodledata.type: persistentVolumeClaim`); the default `emptyDir` survives only container restarts
-- An optional plugin skipped this way is left out of `moodle.enabledPlugins` for that boot. If it was installed before, Moodle lists it as missing from disk and its activities fail until a later boot places it. Mark optional only a plugin no other declared plugin depends on
+- When a fetch fails, the chart tries, in order: the tree already on disk (floating plugins only); the last archive it placed, from the plugin cache; skipping the plugin if it is `optional: true`. Otherwise the pod does not start
+- The plugin cache lives in `moodledata/.chart-plugin-cache`, so on the default `emptyDir` dataroot it does not outlive the pod. Set `persistence.plugincache.enabled: true` to give it its own claim (`ReadWriteMany` above one pod). It keeps, per declared plugin, the archive the current values use and the one before it, so a pod still on the previous values during a rollout keeps a fallback; plugins no longer declared are dropped
+- `optional: true` covers a plugin the site has not installed yet. One already installed that cannot be fetched or found in the cache stops the boot after the install or upgrade step, rather than serve with its code missing. A skipped plugin is left out of `moodle.enabledPlugins` for that boot
+- A declared plugin whose `$plugin->dependencies` names a skipped one is skipped too when it is optional, and stops the boot when it is not. So does a plugin whose type is a subplugin type only a skipped plugin could have declared
 - A bad archive (wrong component, wrong version, not a zip) stops the pod even for an optional plugin, because the values are wrong rather than the source being down
 - A version pin binds the parent plugin, never its subplugins
 - `moodle.plugins` resolves no dependencies and never removes, so declare every plugin a declared plugin requires
@@ -485,7 +487,7 @@ moodle:
 **Important:**
 
 - The image writes `pathtophp`, `pathtodu`, `enableblogs`, the `smtp*` settings, `noreplyaddress` and `emailsubjectprefix` on every boot, from its own defaults when you set nothing, so `smtphosts` becomes `smtp.gmail.com:587`. Set `moodle.smtp` or `moodle.config`, which the chart applies afterwards
-- Every pod start with N declared plugins is N network fetches. The cache in `moodledata/.chart-plugin-cache` is used only when a fetch fails, never instead of one
+- Every pod start with N declared plugins is N network fetches. The plugin cache is used only when a fetch fails, never instead of one
 
 **Important:** a failed upgrade leaves `climaintenance.html` in `moodledata`, and every pod then serves 503 while looking healthy. Delete the file to recover.
 

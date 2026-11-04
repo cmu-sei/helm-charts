@@ -150,7 +150,7 @@ upgrade_moodle() {
 {{- if and .moodle.plugins (not .codeVolume) }}
 php /opt/sei/custom-scripts/place_plugins.php \
     --root=/var/www/html --file=/opt/sei/custom-scripts/plugins.json \
-    --cache=/var/www/moodledata/.chart-plugin-cache
+    --cache={{ .pluginCacheDir }}
 {{- end }}
 {{- if and .oidc.enabled (not .codeVolume) }}
 cp /opt/sei/custom-scripts/key.svg {{ .webRoot }}/pix/key.svg

@@ -237,6 +237,7 @@ function cache_store($cache, $component, $key, $zip, $meta) {
     // Written under a private name and renamed, so a pod sharing the dataroot never reads half a file.
     $tmp = "$cache/.$key." . getmypid() . '.tmp';
     $meta['sha256'] = hash_file('sha256', $zip);
+    $meta['stored'] = time();
     if (!@copy($zip, $tmp) || @file_put_contents("$tmp.json", json_encode($meta) . "\n") === false
             || !@rename($tmp, "$cache/$key.zip") || !@rename("$tmp.json", "$cache/$key.json")) {
         @unlink($tmp);
@@ -247,21 +248,61 @@ function cache_store($cache, $component, $key, $zip, $meta) {
     info("$component cached as $cache/$key.zip");
 }
 
-// Drop entries no current declaration uses, and temp files a killed run left behind.
-function cache_prune($cache, $keep) {
+// Per declared plugin, keep the entry its current declaration uses and the one stored most
+// recently before it, so a pod still on the previous values during a rollout keeps a fallback.
+// Entries of plugins no longer declared, and files a killed run left behind, go.
+function cache_prune($cache, $current) {
     if ($cache === '' || !is_dir($cache)) {
         return;
     }
-    foreach ((glob("$cache/*.{zip,json}", GLOB_BRACE) ?: []) as $path) {
-        if (!in_array(pathinfo($path, PATHINFO_FILENAME), $keep, true)) {
+    $previous = [];
+    foreach ((glob("$cache/*.json") ?: []) as $path) {
+        $key = pathinfo($path, PATHINFO_FILENAME);
+        $meta = json_decode((string)@file_get_contents($path), true);
+        $component = is_array($meta) ? ($meta['component'] ?? '') : '';
+        if (!isset($current[$component])) {
+            @unlink($path);
+            @unlink("$cache/$key.zip");
+        } else if ($current[$component] !== $key) {
+            $previous[$component][$key] = (int)($meta['stored'] ?? 0);
+        }
+    }
+    foreach ($previous as $entries) {
+        arsort($entries);
+        foreach (array_slice(array_keys($entries), 1) as $key) {
+            @unlink("$cache/$key.json");
+            @unlink("$cache/$key.zip");
+        }
+    }
+    $stale = time() - 3600;
+    foreach ((glob("$cache/*.zip") ?: []) as $path) {
+        if (!is_file(substr($path, 0, -4) . '.json') && filemtime($path) < $stale) {
             @unlink($path);
         }
     }
     foreach ((glob("$cache/.*.tmp*") ?: []) as $path) {
-        if (filemtime($path) < time() - 3600) {
+        if (filemtime($path) < $stale) {
             @unlink($path);
         }
     }
+}
+
+// $plugin->dependencies from a plugin's version.php. The file is plain PHP, so it is
+// evaluated with the constants Moodle would have defined; one that still fails yields none.
+function plugin_dependencies($dir) {
+    foreach (['MOODLE_INTERNAL' => true, 'MATURITY_ALPHA' => 50, 'MATURITY_BETA' => 100,
+            'MATURITY_RC' => 150, 'MATURITY_STABLE' => 200, 'ANY_VERSION' => 'any'] as $name => $value) {
+        if (!defined($name)) {
+            define($name, $value);
+        }
+    }
+    $plugin = new stdClass();
+    try {
+        include "$dir/version.php";
+    } catch (Throwable $e) {
+        return [];
+    }
+    return is_array($plugin->dependencies ?? null) ? array_keys($plugin->dependencies) : [];
 }
 
 function rm_rf($path) {
@@ -301,7 +342,9 @@ register_shutdown_function(function () use ($staging) {
 
 $realroot = realpath($root);
 $apibranch = $branch === '' ? '' : branch_to_api_format($branch);
-$keep = [];
+$current = [];
+$targets = [];
+$optionals = [];
 $skipped = [];
 
 foreach ($plugins as $index => $entry) {
@@ -318,7 +361,8 @@ foreach ($plugins as $index => $entry) {
     $floats = ($url === '' && $version === '');
     // A floating plugin follows the Moodle branch, so a cached copy for another branch is not reused.
     $key = cache_key($component, $url, $version, $floats ? $apibranch : '');
-    $keep[] = $key;
+    $current[$component] = $key;
+    $optionals[$component] = $optional;
 
     if (!preg_match('/^([a-z][a-z0-9]*)_([a-z][a-z0-9_]*)$/', $component, $split)) {
         fail($component, 'name must be <plugintype>_<pluginname>, lowercase');
@@ -326,10 +370,21 @@ foreach ($plugins as $index => $entry) {
     [, $type, $shortname] = $split;
 
     $typeroot = $types[$type] ?? resolve_subplugin_type($type, $types);
+    if ($typeroot === null && $skipped) {
+        // The owner of a subplugin type may be an optional plugin skipped above.
+        $why = "plugin type '$type' is unknown, and optional " . implode(', ', $skipped) . ' was skipped, which may declare it';
+        if (!$optional) {
+            fail($component, $why);
+        }
+        info("$component: warning: $why; optional, so it is skipped this boot");
+        $skipped[] = $component;
+        continue;
+    }
     if ($typeroot === null) {
         fail($component, "unknown plugin type '$type': not in lib/components.json and not declared as a subplugin type by any installed plugin");
     }
     $target = "$typeroot/$shortname";
+    $targets[$component] = $target;
 
     $parent = nearest_existing(dirname($target));
     if ($parent === false || strpos($parent . '/', $realroot . '/') !== 0) {
@@ -457,7 +512,33 @@ foreach ($plugins as $index => $entry) {
     @unlink($zip);
 }
 
-cache_prune($cache, $keep);
+// A plugin requiring one that is absent cannot install or upgrade, so it is skipped too when it
+// is optional, and the boot stops here, with the reason, when it is not.
+do {
+    $changed = false;
+    $absent = array_values(array_filter($skipped, function ($c) use ($targets) {
+        return !isset($targets[$c]) || ondisk_version($targets[$c]) === null;
+    }));
+    foreach ($targets as $component => $target) {
+        if (in_array($component, $skipped, true) || ondisk_version($target) === null) {
+            continue;
+        }
+        $missing = array_values(array_intersect(plugin_dependencies($target), $absent));
+        if (!$missing) {
+            continue;
+        }
+        $why = 'depends on optional ' . implode(', ', $missing) . ', which was skipped';
+        if (!$optionals[$component]) {
+            fail($component, "$why. Make its source reachable, or mark $component optional too");
+        }
+        info("$component: warning: $why; optional, so it is removed and skipped this boot");
+        rm_rf($target);
+        $skipped[] = $component;
+        $changed = true;
+    }
+} while ($changed);
+
+cache_prune($cache, $current);
 
 // setup_environment.php reads this so enabledPlugins does not fail on a plugin skipped above.
 $skippedfile = "$root/.chart-plugins-skipped.json";

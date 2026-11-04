@@ -19,7 +19,7 @@
 {{- if $moodle.config }}
 {{- $configSplit = fromYaml (include "moodle.config.split" $) }}
 {{- end }}
-{{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
+{{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.plugins $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
 {{- $multiPod := or (gt (.Values.replicaCount | default 1 | int) 1) $autoscaling.enabled }}
 {{- $rollingUpdate := eq ((.Values.updateStrategy | default dict).type | default "RollingUpdate") "RollingUpdate" }}
 {{- $maxPods := ternary ($autoscaling.maxReplicas | default 3 | int) (.Values.replicaCount | default 1 | int) (eq ($autoscaling.enabled | default false) true) }}
@@ -35,6 +35,12 @@
 {{- $caBundle := .Values.caBundle | default dict }}
 {{- $caBundleMount := or $caBundle.existingSecret $caBundle.existingConfigMap }}
 {{- $caBundleKey := $caBundle.key | default "ca-certificates.crt" }}
+{{/* The plugin cache: its own volume when persistence.plugincache is on, else inside dataroot.
+     The seed init container has no dataroot unless one is mounted, so it may have no cache. */}}
+{{- $pluginCache := $persistence.plugincache | default dict }}
+{{- $seedData := $persistence.moodledata | default dict }}
+{{- $pluginCacheDir := ternary ($pluginCache.mountPath | default "/var/www/plugin-cache") "/var/www/moodledata/.chart-plugin-cache" (eq ($pluginCache.enabled | default false) true) }}
+{{- $seedCache := and $moodle.plugins (or $pluginCache.enabled $seedData.enabled) }}
 {{- $oidcClientId := tpl ($oidc.clientId | default "") . }}
 {{- $oidcName := tpl ($oidc.name | default "") . }}
 {{- $oidcExistingSecretKey := tpl ($oidc.existingSecretKey | default "client-secret") $ }}
@@ -246,8 +252,8 @@ spec:
 
               php /opt/sei/custom-scripts/place_plugins.php \
                   --root="$DST" --file=/opt/sei/custom-scripts/plugins.json
-                  {{- if ($persistence.moodledata | default dict).enabled }} \
-                  --cache=/var/www/moodledata/.chart-plugin-cache
+                  {{- if $seedCache }} \
+                  --cache={{ $pluginCacheDir }}
                   {{- end }}
               {{- end }}
               {{- if $oidc.enabled }}
@@ -266,14 +272,21 @@ spec:
             - name: config
               mountPath: /opt/sei/config
               readOnly: true
-            {{- $seedData := $persistence.moodledata | default dict }}
-            {{- if and $moodle.plugins $seedData.enabled }}
+            {{- if $seedCache }}
             # Only for the plugin cache, which outlives the seeded tree.
+            {{- if $pluginCache.enabled }}
+            - name: plugincache
+              mountPath: {{ $pluginCacheDir }}
+              {{- if $pluginCache.subPath }}
+              subPath: {{ $pluginCache.subPath }}
+              {{- end }}
+            {{- else }}
             - name: moodledata
               mountPath: /var/www/moodledata
               {{- if $seedData.subPath }}
               subPath: {{ $seedData.subPath }}
               {{- end }}
+            {{- end }}
             {{- end }}
             {{- if $scripts }}
             - name: chart-scripts
@@ -467,7 +480,7 @@ spec:
             - name: SYNC_MOODLE_CODE
               value: "never"
             {{- end }}
-            {{- $preCtx := dict "Values" .Values "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "codeVolume" $codeVolume "maxPods" $maxPods "moodle" $moodle "multiPod" $multiPod "oidc" $oidc "redis" $redis "secretConfig" $secretConfig "webRoot" $webRoot }}
+            {{- $preCtx := dict "Values" .Values "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "codeVolume" $codeVolume "maxPods" $maxPods "moodle" $moodle "multiPod" $multiPod "oidc" $oidc "pluginCacheDir" $pluginCacheDir "redis" $redis "secretConfig" $secretConfig "webRoot" $webRoot }}
             - name: PRE_CONFIGURE_COMMANDS
               value: |
                 {{- tpl (.Files.Get "files/pre-configure.sh") $preCtx | nindent 16 }}
@@ -486,6 +499,10 @@ spec:
                 update_or_add_config_value "\$CFG->session_redis_database" "{{ $redis.database | int }}"
                 {{- end }}
                 {{- end }}
+                {{- end }}
+                {{- if $moodle.plugins }}
+                # System: Refuse to serve without an installed plugin that could not be fetched
+                php /opt/sei/custom-scripts/setup_environment.php --step=check_skipped --skipped=/var/www/html/.chart-plugins-skipped.json
                 {{- end }}
                 {{- if $redis.host }}
                 # System: keep this release's Redis keys apart from others
@@ -676,6 +693,8 @@ spec:
             {{- $defaultMountPath = "/var/www/html" }}
             {{- else if eq $key "localcache" }}
             {{- $defaultMountPath = "/var/www/moodledata/localcache" }}
+            {{- else if eq $key "plugincache" }}
+            {{- $defaultMountPath = "/var/www/plugin-cache" }}
             {{- end }}
             - name: {{ $key }}
               mountPath: {{ $value.mountPath | default $defaultMountPath }}

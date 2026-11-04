@@ -64,6 +64,10 @@ switch ($options['step']) {
         enable_plugins($options);
         break;
 
+    case 'check_skipped':
+        check_skipped($options);
+        break;
+
     case 'set_cache_prefix':
         set_cache_prefix($options);
         break;
@@ -462,6 +466,27 @@ function set_configs($options) {
             echo "Set {$plugin}/{$name}\n";
         }
     }
+}
+
+// optional means the site may run without the plugin, not that a site using it may lose it: one
+// already installed but not placed this boot leaves its activities broken, so the boot stops.
+function check_skipped($options) {
+    if ($options['skipped'] === '' || !is_readable($options['skipped'])) {
+        return;
+    }
+    $lost = [];
+    foreach ((json_decode((string)file_get_contents($options['skipped']), true) ?: []) as $component) {
+        $installed = get_config($component, 'version');
+        if ($installed !== false && core_component::get_component_directory($component) === null) {
+            $lost[] = "{$component} (installed at {$installed})";
+        }
+    }
+    if ($lost) {
+        cli_error("Optional plugin(s) could not be fetched and are already installed: " . implode(', ', $lost) . ".\n"
+            . "  The site would serve with their code missing. Make the source reachable, or keep the\n"
+            . "  plugin cache on a volume that outlives the pod (persistence.plugincache).");
+    }
+    echo "No installed plugin is missing\n";
 }
 
 function enable_plugins($options) {

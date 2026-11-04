@@ -471,9 +471,9 @@ Validate required values for Moodle deployment
 {{- fail (printf "ERROR: persistence.%s.name is required when type is 'secret'" $name) }}
 {{- end }}
 {{- end }}
-{{- $knownKeys := list "moodledata" "moodle" "localcache" }}
+{{- $knownKeys := list "moodledata" "moodle" "localcache" "plugincache" }}
 {{- if and (not $config.mountPath) (not (has $name $knownKeys)) }}
-{{- fail (printf "ERROR: persistence.%s.mountPath is required for custom volume names.\n  Standard volumes (moodledata, moodle, localcache) have default mount paths." $name) }}
+{{- fail (printf "ERROR: persistence.%s.mountPath is required for custom volume names.\n  Standard volumes (moodledata, moodle, localcache, plugincache) have default mount paths." $name) }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -554,6 +554,10 @@ Validate required values for Moodle deployment
 {{- if eq ($moodledata.accessMode | default "") "ReadWriteOnce" }}
 {{- fail "ERROR: replicaCount > 1 with persistence.moodledata.accessMode=ReadWriteOnce. dataroot must be shared; use ReadWriteMany." }}
 {{- end }}
+{{- end }}
+{{- $pluginCacheVol := $persistence.plugincache | default dict }}
+{{- if and $multiPod $pluginCacheVol.enabled (eq ($pluginCacheVol.type | default "persistentVolumeClaim") "persistentVolumeClaim") (ne ($pluginCacheVol.accessMode | default "ReadWriteOnce") "ReadWriteMany") }}
+{{- fail "ERROR: replicaCount > 1 (or autoscaling.enabled) with persistence.plugincache on a ReadWriteOnce claim.\n  Every pod mounts the plugin cache, and a ReadWriteOnce claim attaches to one node, so pods scheduled elsewhere never start.\n  Either:\n  1. Set persistence.plugincache.accessMode=ReadWriteMany\n  2. Set persistence.plugincache.enabled=false to keep the cache inside the shared dataroot" }}
 {{- end }}
 
 {{/* Validate Rollout Dataroot */}}
