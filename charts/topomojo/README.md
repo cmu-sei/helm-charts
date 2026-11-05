@@ -171,6 +171,8 @@ unset (the default is `false`) and behavior is unchanged.
 | `Core__DocPath` | Server-relative path where workspace document assets are served from | `wwwroot/docs` |
 | `Core__AllowUnprivilegedVmReconfigure` | Allow unprivileged users to set VM networks to reserved network segments | `false` |
 | `Core__AllowPrivilegedNetworkIsolationExemption` | On vSphere, let Builders connect a VM to any hypervisor network, not only the workspace's networks and the shared networks | `false` |
+| `Core__EnableTemplateSources` | Show admins the **Disks** tab, which lists the disks (vSphere) or template VMs (Proxmox) a template can deploy from. On vSphere it searches the whole disk store each time the tab loads. | `false` |
+| `Core__AllowManagerWorkspaceDownload` | Let workspace managers who aren't admins download their own workspaces from the workspace **Settings** tab. The package includes the Detail of the stock and parent templates the workspace uses, which is otherwise admin-only. Admins can always download. | `false` |
 
 #### Janitor Settings
 
