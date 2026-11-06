@@ -206,10 +206,6 @@ Configure Moodle to use an OIDC-compliant identity provider (IdP) for OAuth2 aut
 | `moodle.oidc.disableCurlSecurityBlockedHosts` | Disable Moodle CURL security for internal provider communication                                | `true`                                |
 | `moodle.oidc.waitTimeout`                     | Total time to wait for discovery endpoint (seconds)                                             | `300`                                 |
 | `moodle.oidc.waitInterval`                    | Delay between readiness checks (seconds)                                                        | `5`                                   |
-| `moodle.oidc.caCert.existingSecret`           | Secret containing a custom CA certificate                                                       | `""`                                  |
-| `moodle.oidc.caCert.existingConfigMap`        | ConfigMap containing a custom CA certificate                                                    | `""`                                  |
-| `moodle.oidc.caCert.key`                      | Key in the secret/configmap for the CA certificate                                              | `ca.crt`                              |
-| `moodle.oidc.caCert.path`                     | Mount path inside the container for the CA certificate                                          | `/opt/sei/certs/oidc-ca.crt`          |
 
 #### Example: Keycloak
 
@@ -334,7 +330,24 @@ After deploying with OIDC integration enabled:
   - The redirect URI matches exactly what is registered with the provider
   - The client secret is correct
   - The provider domain is accessible from both Moodle pods and user browsers
-  - Moodle trusts the TLS certificate used by the provider (use `caCert` for custom CAs)
+  - Moodle trusts the TLS certificate used by the provider (for a private CA, see [Custom CA Bundle](#custom-ca-bundle))
+
+### Custom CA Bundle
+
+PHP's curl and OpenSSL in the Alpine image trust one file, `/etc/ssl/certs/ca-certificates.crt`. The OIDC setup, plugin downloads, and plugins that verify TLS (the Crucible plugins, or anything using `core\http_client`) all check against it. Moodle core's own `\curl` class skips certificate verification unless a caller turns it on. When the OIDC provider, Alloy or another Crucible app, a plugin URL, or an outbound proxy presents a certificate from a private CA, give that CA to `caBundle`.
+
+Put only your CA certificates in the ConfigMap or Secret. One key may hold several PEM certificates, intermediates included:
+
+```bash
+kubectl create configmap moodle-ca -n <namespace> --from-file=ca-certificates.crt=my-private-ca.crt
+```
+
+```yaml
+caBundle:
+  existingConfigMap: moodle-ca
+```
+
+At every pod start the `ca-bundle` init container writes the image's own `/etc/ssl/certs/ca-certificates.crt` followed by your certificates into a per-pod `emptyDir`, and mounts the result over that path in the plugin-seeding and main containers. Public sites stay trusted, and the public roots follow `image.tag`. A key with no PEM certificate stops the pod at that init container. A full bundle built for chart 0.3 still works; its public roots just appear twice.
 
 ### Plugins and Site Settings
 
@@ -353,8 +366,8 @@ These are the keys through which a real deployment is expressed: the plugin tree
 | `moodle.config.<c>.<s>`         | A value may be `{existingSecret, key}` instead of a literal, for a sensitive value | —       |
 | `moodle.preConfigureCommands`   | Shell commands run before Moodle installation and upgrade                          | `""`    |
 | `moodle.postConfigureCommands`  | Shell commands run after Moodle installation and upgrade                           | `""`    |
-| `caBundle.existingConfigMap`    | ConfigMap mounted over `/etc/ssl/certs/ca-certificates.crt`; empty mounts nothing   | `""`    |
-| `caBundle.existingSecret`       | Secret mounted over the same path                                                  | `""`    |
+| `caBundle.existingConfigMap`    | ConfigMap of private CA certificates added to the image's bundle; see [Custom CA Bundle](#custom-ca-bundle) | `""`    |
+| `caBundle.existingSecret`       | Secret holding them instead                                                        | `""`    |
 | `caBundle.key`                  | Key in that ConfigMap or Secret                                                    | `ca-certificates.crt` |
 
 **Example:**
@@ -377,16 +390,22 @@ moodle:
 
 A `moodle.config` value that is a map names a Secret rather than holding the value: the chart passes it to the container from that Secret, so it never appears in `values.yaml` or in any rendered manifest. Use it for an API key, token, password or any other sensitive value. It must carry exactly `existingSecret` and `key`.
 
-| Field     | Effect                                                                      |
-| --------- | --------------------------------------------------------------------------- |
-| `name`    | Floats; resolved from the Moodle plugins directory at every pod start        |
-| `url`     | Fetches from a URL you give instead of the Moodle plugins directory          |
-| `version` | Pins the version and acts as a cache key; a tree already at it is left alone |
+| Field      | Effect                                                                      |
+| ---------- | --------------------------------------------------------------------------- |
+| `name`     | Floats; resolved from the Moodle plugins directory at every pod start        |
+| `url`      | Fetches from a URL you give instead of the Moodle plugins directory          |
+| `version`  | Pins the version and acts as a cache key; a tree already at it is left alone |
+| `optional` | `true` lets the pod start without the plugin when it can't be fetched or found in the cache |
 
 **Important:**
 
 - `url` and `version` are not substitutes, so declare both when you set `url`; changing either re-fetches the plugin
 - Plugins are re-fetched on every pod start unless the code tree is on a volume that outlives the pod: a named PVC at one replica, in either dirroot mode
+- When a fetch fails, the chart tries, in order: the tree already on disk (floating plugins only); the last archive it placed, from the plugin cache; skipping the plugin if it is `optional: true`. Otherwise the pod does not start
+- The plugin cache lives in `moodledata/.chart-plugin-cache`, so on the default `emptyDir` dataroot it does not outlive the pod. Set `persistence.plugincache.enabled: true` to give it its own claim (`ReadWriteMany` above one pod). It keeps, per declared plugin, the archive the current values use and the one before it, so a pod still on the previous values during a rollout keeps a fallback; plugins no longer declared are dropped
+- `optional: true` covers a plugin the site has not installed yet. One already installed that cannot be fetched or found in the cache stops the boot after the install or upgrade step, rather than serve with its code missing. A skipped plugin is left out of `moodle.enabledPlugins` for that boot
+- A declared plugin whose `$plugin->dependencies` names a skipped one is skipped too when it is optional, and stops the boot when it is not. So does a plugin whose type is a subplugin type only a skipped plugin could have declared
+- A bad archive (wrong component, wrong version, not a zip) stops the pod even for an optional plugin, because the values are wrong rather than the source being down
 - A version pin binds the parent plugin, never its subplugins
 - `moodle.plugins` resolves no dependencies and never removes, so declare every plugin a declared plugin requires
 - Removing an entry drops the code and leaves the database rows; finish with `uninstall_plugins.php`, never `--purge-missing`
@@ -466,7 +485,7 @@ moodle:
 **Important:**
 
 - The image writes `pathtophp`, `pathtodu`, `enableblogs`, the `smtp*` settings, `noreplyaddress` and `emailsubjectprefix` on every boot, from its own defaults when you set nothing, so `smtphosts` becomes `smtp.gmail.com:587`. Set `moodle.smtp` or `moodle.config`, which the chart applies afterwards
-- Every pod start with N declared plugins is N network fetches with no cache
+- Every pod start with N declared plugins is N network fetches. The plugin cache is used only when a fetch fails, never instead of one
 
 **Important:** a failed upgrade leaves `climaintenance.html` in `moodledata`, and every pod then serves 503 while looking healthy. Delete the file to recover.
 

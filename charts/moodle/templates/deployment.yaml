@@ -19,7 +19,7 @@
 {{- if $moodle.config }}
 {{- $configSplit = fromYaml (include "moodle.config.split" $) }}
 {{- end }}
-{{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
+{{- $postConfigure := or $oidc.enabled $moodle.postConfigureCommands $moodle.config $moodle.plugins $moodle.enabledPlugins $presetWanted (not $codeVolume) ($moodle.redis | default dict).host }}
 {{- $multiPod := or (gt (.Values.replicaCount | default 1 | int) 1) $autoscaling.enabled }}
 {{- $rollingUpdate := eq ((.Values.updateStrategy | default dict).type | default "RollingUpdate") "RollingUpdate" }}
 {{- $maxPods := ternary ($autoscaling.maxReplicas | default 3 | int) (.Values.replicaCount | default 1 | int) (eq ($autoscaling.enabled | default false) true) }}
@@ -35,13 +35,14 @@
 {{- $caBundle := .Values.caBundle | default dict }}
 {{- $caBundleMount := or $caBundle.existingSecret $caBundle.existingConfigMap }}
 {{- $caBundleKey := $caBundle.key | default "ca-certificates.crt" }}
+{{/* The plugin cache: its own volume when persistence.plugincache is on, else inside dataroot.
+     The seed init container has no dataroot unless one is mounted, so it may have no cache. */}}
+{{- $pluginCache := $persistence.plugincache | default dict }}
+{{- $seedData := $persistence.moodledata | default dict }}
+{{- $pluginCacheDir := ternary ($pluginCache.mountPath | default "/var/www/plugin-cache") "/var/www/moodledata/.chart-plugin-cache" (eq ($pluginCache.enabled | default false) true) }}
+{{- $seedCache := and $moodle.plugins (or $pluginCache.enabled $seedData.enabled) }}
 {{- $oidcClientId := tpl ($oidc.clientId | default "") . }}
 {{- $oidcName := tpl ($oidc.name | default "") . }}
-{{- $oidcCaCert := $oidc.caCert | default dict }}
-{{- $oidcCaCertMount := or $oidcCaCert.existingSecret $oidcCaCert.existingConfigMap }}
-{{- $oidcCaCertEnabled := or $oidcCaCertMount $oidcCaCert.path }}
-{{- $oidcCaCertPath := $oidcCaCert.path | default "/opt/sei/certs/oidc-ca.crt" }}
-{{- $oidcCaCertKey := $oidcCaCert.key | default "ca.crt" }}
 {{- $oidcExistingSecretKey := tpl ($oidc.existingSecretKey | default "client-secret") $ }}
 apiVersion: apps/v1
 kind: Deployment
@@ -156,7 +157,7 @@ spec:
       {{- end }}
       {{- $vpWanted := ternary $volPerm.enabled true (hasKey $volPerm "enabled") }}
       {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol) }}
-      {{- if or .Values.initContainers $codeVolume $needsChown }}
+      {{- if or .Values.initContainers $codeVolume $needsChown $caBundleMount }}
       initContainers:
         {{- if $needsChown }}
         - name: volume-permissions
@@ -189,6 +190,35 @@ spec:
             - name: moodle
               mountPath: /var/www/html
             {{- end }}
+        {{- end }}
+        {{- if $caBundleMount }}
+        # The image's own bundle plus caBundle, so the public roots follow image.tag.
+        - name: ca-bundle
+          image: {{ include "moodle.image" . }}
+          imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
+          {{- if $containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit $containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -e
+              extra=/opt/sei/ca-extra/{{ $caBundleKey }}
+              if ! grep -q -e '-----BEGIN CERTIFICATE-----' "$extra"; then
+                echo "[ERROR] caBundle key {{ $caBundleKey }} holds no PEM certificate" >&2
+                exit 1
+              fi
+              { cat /etc/ssl/certs/ca-certificates.crt; echo; cat "$extra"; } > /ca-bundle/ca-certificates.crt
+              echo "[ca-bundle] image bundle plus {{ $caBundleKey }}: $(grep -c -e '-----BEGIN CERTIFICATE-----' /ca-bundle/ca-certificates.crt) certificates"
+          volumeMounts:
+            - name: ca-extra
+              mountPath: /opt/sei/ca-extra
+              readOnly: true
+            - name: ca-bundle
+              mountPath: /ca-bundle
         {{- end }}
         {{- if $codeVolume }}
         - name: seed-dirroot
@@ -251,6 +281,9 @@ spec:
 
               php /opt/sei/custom-scripts/place_plugins.php \
                   --root="$DST" --file=/opt/sei/custom-scripts/plugins.json
+                  {{- if $seedCache }} \
+                  --cache={{ $pluginCacheDir }}
+                  {{- end }}
               {{- end }}
               {{- if $oidc.enabled }}
 
@@ -268,6 +301,22 @@ spec:
             - name: config
               mountPath: /opt/sei/config
               readOnly: true
+            {{- if $seedCache }}
+            # Only for the plugin cache, which outlives the seeded tree.
+            {{- if $pluginCache.enabled }}
+            - name: plugincache
+              mountPath: {{ $pluginCacheDir }}
+              {{- if $pluginCache.subPath }}
+              subPath: {{ $pluginCache.subPath }}
+              {{- end }}
+            {{- else }}
+            - name: moodledata
+              mountPath: /var/www/moodledata
+              {{- if $seedData.subPath }}
+              subPath: {{ $seedData.subPath }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
             {{- if $scripts }}
             - name: chart-scripts
               mountPath: /opt/sei/custom-scripts
@@ -276,7 +325,7 @@ spec:
             {{- if $caBundleMount }}
             - name: ca-bundle
               mountPath: /etc/ssl/certs/ca-certificates.crt
-              subPath: {{ $caBundleKey }}
+              subPath: ca-certificates.crt
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
@@ -460,7 +509,7 @@ spec:
             - name: SYNC_MOODLE_CODE
               value: "never"
             {{- end }}
-            {{- $preCtx := dict "Values" .Values "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "codeVolume" $codeVolume "maxPods" $maxPods "moodle" $moodle "multiPod" $multiPod "oidc" $oidc "redis" $redis "secretConfig" $secretConfig "webRoot" $webRoot }}
+            {{- $preCtx := dict "Values" .Values "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "codeVolume" $codeVolume "maxPods" $maxPods "moodle" $moodle "multiPod" $multiPod "oidc" $oidc "pluginCacheDir" $pluginCacheDir "redis" $redis "secretConfig" $secretConfig "webRoot" $webRoot }}
             - name: PRE_CONFIGURE_COMMANDS
               value: |
                 {{- tpl (.Files.Get "files/pre-configure.sh") $preCtx | nindent 16 }}
@@ -479,6 +528,10 @@ spec:
                 update_or_add_config_value "\$CFG->session_redis_database" "{{ $redis.database | int }}"
                 {{- end }}
                 {{- end }}
+                {{- end }}
+                {{- if $moodle.plugins }}
+                # System: Refuse to serve without an installed plugin that could not be fetched
+                php /opt/sei/custom-scripts/setup_environment.php --step=check_skipped --skipped=/var/www/html/.chart-plugins-skipped.json
                 {{- end }}
                 {{- if $redis.host }}
                 # System: keep this release's Redis keys apart from others
@@ -499,7 +552,7 @@ spec:
                 {{- end }}
                 {{- if $moodle.enabledPlugins }}
                 # System: Enable Moodle plugins
-                php /opt/sei/custom-scripts/setup_environment.php --step=enable_plugins --file=/opt/sei/custom-scripts/enabled-plugins.json
+                php /opt/sei/custom-scripts/setup_environment.php --step=enable_plugins --file=/opt/sei/custom-scripts/enabled-plugins.json --skipped=/var/www/html/.chart-plugins-skipped.json
                 {{- end }}
                 {{- if $moodle.postConfigureCommands }}
                 # User: Custom post-configure commands
@@ -539,10 +592,6 @@ spec:
               value: {{ join " " $oidc.userFieldMappings | quote }}
             - name: OIDC_DISABLE_CURL_SECURITY
               value: {{ $oidc.disableCurlSecurityBlockedHosts | quote }}
-            {{- if $oidcCaCertEnabled }}
-            - name: OIDC_CA_CERT_PATH
-              value: {{ tpl $oidcCaCertPath $ | quote }}
-            {{- end }}
             {{- if $oidc.iconUrl }}
             - name: OIDC_ICON_URL
               value: {{ tpl $oidc.iconUrl $ | quote }}
@@ -673,6 +722,8 @@ spec:
             {{- $defaultMountPath = "/var/www/html" }}
             {{- else if eq $key "localcache" }}
             {{- $defaultMountPath = "/var/www/moodledata/localcache" }}
+            {{- else if eq $key "plugincache" }}
+            {{- $defaultMountPath = "/var/www/plugin-cache" }}
             {{- end }}
             - name: {{ $key }}
               mountPath: {{ $value.mountPath | default $defaultMountPath }}
@@ -700,16 +751,10 @@ spec:
               mountPath: /opt/sei/preset
               readOnly: true
             {{- end }}
-            {{- if and $oidc.enabled $oidcCaCertMount }}
-            - name: oidc-ca-cert
-              mountPath: {{ tpl $oidcCaCertPath $ | quote }}
-              subPath: {{ tpl $oidcCaCertKey $ | quote }}
-              readOnly: true
-            {{- end }}
             {{- if $caBundleMount }}
             - name: ca-bundle
               mountPath: /etc/ssl/certs/ca-certificates.crt
-              subPath: {{ $caBundleKey }}
+              subPath: ca-certificates.crt
               readOnly: true
             {{- end }}
             {{- if $.Values.extraVolumeMounts }}
@@ -771,7 +816,7 @@ spec:
         {{- end }}
         {{- end }}
         {{- if $caBundleMount }}
-        - name: ca-bundle
+        - name: ca-extra
           {{- if $caBundle.existingSecret }}
           secret:
             secretName: {{ tpl $caBundle.existingSecret $ }}
@@ -785,6 +830,9 @@ spec:
               - key: {{ $caBundleKey }}
                 path: {{ $caBundleKey }}
           {{- end }}
+        - name: ca-bundle
+          emptyDir:
+            sizeLimit: 10Mi
         {{- end }}
         {{- if $scripts }}
         - name: chart-scripts
@@ -809,22 +857,6 @@ spec:
             items:
               - key: {{ $presetKey }}
                 path: {{ $presetKey }}
-        {{- end }}
-        {{- if and $oidc.enabled $oidcCaCertMount }}
-        - name: oidc-ca-cert
-          {{- if $oidcCaCert.existingSecret }}
-          secret:
-            secretName: {{ tpl $oidcCaCert.existingSecret $ }}
-            items:
-              - key: {{ tpl $oidcCaCertKey $ }}
-                path: {{ tpl $oidcCaCertKey $ }}
-          {{- else if $oidcCaCert.existingConfigMap }}
-          configMap:
-            name: {{ tpl $oidcCaCert.existingConfigMap $ }}
-            items:
-              - key: {{ tpl $oidcCaCertKey $ }}
-                path: {{ tpl $oidcCaCertKey $ }}
-          {{- end }}
         {{- end }}
         {{- if $.Values.extraVolumes }}
         {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumes "context" $) | nindent 8 }}
