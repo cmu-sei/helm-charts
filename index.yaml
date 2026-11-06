@@ -3793,6 +3793,59 @@ entries:
     version: 0.0.1
   crucible-apps:
   - apiVersion: v2
+    created: "2026-11-06T19:41:11.625941571Z"
+    dependencies:
+    - condition: alloy.enabled
+      name: alloy
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.10.1
+    - condition: blueprint.enabled
+      name: blueprint
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: caster.enabled
+      name: caster
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: cite.enabled
+      name: cite
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.12.0
+    - condition: gallery.enabled
+      name: gallery
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.14.0
+    - condition: gameboard.enabled
+      name: gameboard
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.7.0
+    - condition: player.enabled
+      name: player
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.18.2
+    - condition: steamfitter.enabled
+      name: steamfitter
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 1.11.0
+    - condition: topomojo.enabled
+      name: topomojo
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.12.0
+    - condition: moodle.enabled
+      name: moodle
+      repository: https://cmu-sei.github.io/helm-charts
+      version: 0.3.1
+    description: Crucible framework application deployment - A comprehensive cybersecurity
+      training and exercise platform with Keycloak, Player, Caster, Alloy, Blueprint,
+      CITE, Gallery, Gameboard, Steamfitter, TopoMojo, and Moodle
+    digest: 37067f63463335b8a6990370c4b4d82780e8cdda5860ccd07bda563022683d46
+    home: https://cmu-sei.github.io/crucible/
+    name: crucible-apps
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/crucible-apps-0.3.13/crucible-apps-0.3.13.tgz
+    version: 0.3.13
+  - apiVersion: v2
     created: "2026-11-02T17:56:14.187498965Z"
     dependencies:
     - condition: alloy.enabled
@@ -6882,6 +6935,20 @@ entries:
     - https://github.com/cmu-sei/helm-charts/releases/download/mkdocs-material-0.1.0/mkdocs-material-0.1.0.tgz
     version: 0.1.0
   moodle:
+  - apiVersion: v2
+    appVersion: 5.2.4
+    created: "2026-11-06T19:41:11.785800316Z"
+    description: Moodle is an open source Learning Management System.
+    digest: 63ede29cb5e4bd619c61b158468ee50726135a498f135ed3a4613b3e779b56ed
+    home: https://moodle.org/
+    name: moodle
+    sources:
+    - https://github.com/moodle/moodle
+    - https://github.com/erseco/alpine-moodle
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/moodle-0.4.0/moodle-0.4.0.tgz
+    version: 0.4.0
   - apiVersion: v2
     appVersion: 5.2.4
     created: "2026-11-02T17:56:14.973065913Z"
@@ -10027,4 +10094,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-05T15:05:43.353338207Z"
+generated: "2026-11-06T19:41:11.786734052Z"
