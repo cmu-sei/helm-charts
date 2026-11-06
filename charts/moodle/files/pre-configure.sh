@@ -172,6 +172,10 @@ final_configurations() {
   echo "[OVERRIDE] final_configurations() skipped";
   return 0;
 }
+protect_config_files() {
+  echo "[OVERRIDE] protect_config_files() skipped";
+  return 0;
+}
 {{- end }}
 install_database() {
   echo "Installing database...";
