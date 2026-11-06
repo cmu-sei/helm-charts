@@ -584,6 +584,8 @@ When enabled, an init container seeds the code volume from the image before the 
 - `moodle.plugins` resolves no dependencies, so declare every plugin a declared plugin requires, and theirs in turn
 - Removing an entry removes the code from the next fresh dirroot and leaves every database row in place
 - Finish a removal with `admin/cli/uninstall_plugins.php --plugins=<component> --run`, never with `--purge-missing`
+- The image's `protect_config_files()` step, which runs `chmod 444` on `config.php` at every boot, is skipped: the file is on the read-only mount at 0444 already, and the `chmod` would fail and stop the boot
+- The chart's `config.php` sets `$CFG->routerconfigured` only when the image pointed nginx at `r.php` on that boot (Moodle 5.1 and later), the same condition the image uses. A `config.php` you supply through `readOnlyDirroot.secret.name` must set it itself, or Moodle's status page reports that the router is not configured; the boot log names it as drift
 
 **⚠️ The two PVC options do not behave the same:**
 

@@ -159,6 +159,10 @@ cp /opt/sei/custom-scripts/key.svg {{ .webRoot }}/pix/key.svg
 # Override functions that try modifying read-only dirroot
 update_or_add_config_value() {
   setting=$(printf '%s' "$1" | sed 's/.*[^a-z0-9_]\([a-z0-9_][a-z0-9_]*\)[^a-z0-9_]*$/\1/');
+  # The image declares the router only once nginx routes to r.php; config.php reads this flag.
+  if [ "$setting" = "routerconfigured" ] && [ "$2" = "true" ]; then
+    : > /tmp/.chart-router-configured;
+  fi
   if [ -z "$2" ]; then
     echo "[OVERRIDE] $1 is deliberately absent";
   elif grep -q -e "\$CFG->$setting" -e "[\"']$setting[\"'] *=>" /var/www/html/config.php 2>/dev/null; then
@@ -170,6 +174,12 @@ update_or_add_config_value() {
 }
 final_configurations() {
   echo "[OVERRIDE] final_configurations() skipped";
+  return 0;
+}
+# The image chmods config.php to 0444 at every boot. Here it sits on the read-only dirroot
+# mount, seeded at 0444, so the chmod can only fail and would stop the boot.
+protect_config_files() {
+  echo "[OVERRIDE] protect_config_files() skipped: config.php is read-only already";
   return 0;
 }
 {{- end }}
