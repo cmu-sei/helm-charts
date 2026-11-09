@@ -284,6 +284,17 @@ caster-api:
     # settings (ConnectionStrings__*, Authorization__*, Terraform__GitlabToken).
     Terraform__Secrets__Patterns__0: "^CASTER_SECRET_"
 
+    # Infrastructure inventory: lists a hypervisor's templates, ISOs, networks, datastores and
+    # hosts in Caster. Settings under Infrastructure__ never reach Terraform runs; a run gets a
+    # connection's settings only through Environment Set connection entries. Supply the
+    # password or token through existingSecret or extraEnvFrom, e.g.
+    # Infrastructure__Connections__0__ApiToken. See the chart README.
+    # Infrastructure__Connections__0__Name: "lab-proxmox"
+    # Infrastructure__Connections__0__Provider: "proxmox"
+    # Infrastructure__Connections__0__Url: "https://pve.example.com:8006"
+    # Infrastructure__Connections__0__IsoLocations__0: "iso-stock"
+    # Infrastructure__Connections__0__Inventory__Enabled: "true"
+
     # Enable to execute Runs as k8s jobs
     Terraform__KubernetesJobs__Enabled: "false"
     Terraform__KubernetesJobs__Namespace: "default"

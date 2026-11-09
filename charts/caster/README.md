@@ -208,6 +208,36 @@ Entries default to `Kind: EnvironmentVariable` (use `TerraformVariable` for `TF_
 
 See [Environment Sets](https://github.com/cmu-sei/Caster.Api/blob/main/docs/EnvironmentSets.md) in Caster.Api for the full security model.
 
+#### Infrastructure Inventory
+
+Caster can list what is on the hypervisors it deploys to (VM templates, content library items, ISOs, networks, datastores and hosts) in each project's Infrastructure panel. Each hypervisor is a connection under `Infrastructure__Connections__<n>__`, set in `env`, with its credential in a Kubernetes Secret:
+
+```yaml
+caster-api:
+  env:
+    Infrastructure__Connections__0__Name: "lab-vcenter"
+    Infrastructure__Connections__0__Provider: "vsphere"
+    Infrastructure__Connections__0__Url: "https://vcenter.example.com"
+    Infrastructure__Connections__0__Username: "caster@vsphere.local"
+    Infrastructure__Connections__0__IsoLocations__0: "[iso-datastore] stock"
+    Infrastructure__Connections__0__Datacenters__0: "DC1"
+    Infrastructure__Connections__0__Inventory__Enabled: "true"
+    # Inventory__RefreshMinutes, and Inventory__Resources__<kind>__Enabled/Locations/Include/Exclude
+    # for VmTemplates, Isos, Networks, Datastores, ContentLibraries and Hosts.
+  extraEnvFrom:
+    - secretRef:
+        name: caster-infrastructure # Infrastructure__Connections__0__Password
+```
+
+For Proxmox, set `Provider: "proxmox"`, the `Url` with its port (`https://pve.example.com:8006`), and `ApiToken` (`user@realm!tokenid=secret`) in the Secret.
+
+- `Name` is how everything else refers to the connection; renaming it makes those references show as missing.
+- Viewing every connection needs `ViewInfrastructure`. A project's members see only the connections assigned to the project, which needs `ManageInfrastructure` to do.
+- Connection settings never reach Terraform runs, whatever `InheritAll` and `Inherit` say. A run gets a connection's settings only through an Environment Set whose entries read them (`ValueSource: Connection`, `ConnectionName`, `ConnectionField`), so the credential is configured once.
+- A setting the API can't use (an invalid filter regex, for example) marks that connection as misconfigured and it isn't read; the API still starts.
+
+See [Infrastructure Inventory](https://github.com/cmu-sei/Caster.Api/blob/main/docs/Inventory.md) in Caster.Api for every setting.
+
 #### Kubernetes Jobs
 
 | Setting | Description | Example |
