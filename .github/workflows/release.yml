@@ -9,12 +9,18 @@ on:
 permissions:
   contents: write
 
+# Queue releases instead of running them side by side: two chart-releaser runs
+# pushing index.yaml to gh-pages at once would race.
+concurrency:
+  group: chart-release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # chart-releaser requires full history to detect version changes
           fetch-depth: 0
@@ -27,7 +33,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v5
         with:
-          version: "latest"
+          version: "v4.3.1"
 
       - name: Add dependency Helm repos
         run: |
