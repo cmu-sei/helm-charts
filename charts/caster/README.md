@@ -210,7 +210,7 @@ See [Environment Sets](https://github.com/cmu-sei/Caster.Api/blob/main/docs/Envi
 
 #### Infrastructure Inventory
 
-Caster can list what is on the hypervisors it deploys to (VM templates, content library items, ISOs, networks, datastores and hosts) in each project's Infrastructure panel. Each hypervisor is a connection under `Infrastructure__Connections__<n>__`, set in `env`, with its credential in a Kubernetes Secret:
+Caster can list what is on the hypervisors it deploys to (VM templates, content library items, ISOs, networks, datastores and hosts) in each project's Inventory panel. Each hypervisor is a connection under `Infrastructure__Connections__<n>__`, set in `env`, with its credential in a Kubernetes Secret:
 
 ```yaml
 caster-api:
