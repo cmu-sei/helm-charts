@@ -149,7 +149,8 @@ upgrade_moodle() {
 }
 {{- if and .moodle.plugins (not .codeVolume) }}
 php /opt/sei/custom-scripts/place_plugins.php \
-    --root=/var/www/html --file=/opt/sei/custom-scripts/plugins.json
+    --root=/var/www/html --file=/opt/sei/custom-scripts/plugins.json \
+    --cache={{ .pluginCacheDir }}
 {{- end }}
 {{- if and .oidc.enabled (not .codeVolume) }}
 cp /opt/sei/custom-scripts/key.svg {{ .webRoot }}/pix/key.svg
@@ -169,6 +170,10 @@ update_or_add_config_value() {
 }
 final_configurations() {
   echo "[OVERRIDE] final_configurations() skipped";
+  return 0;
+}
+protect_config_files() {
+  echo "[OVERRIDE] protect_config_files() skipped";
   return 0;
 }
 {{- end }}

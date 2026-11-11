@@ -13,6 +13,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 list($options, $unrecognized) = cli_get_params([
     'step' => null,
     'file' => '',
+    'skipped' => '',
     'secretsfile' => '',
 
     // OAuth2 options
@@ -61,6 +62,10 @@ switch ($options['step']) {
 
     case 'enable_plugins':
         enable_plugins($options);
+        break;
+
+    case 'check_skipped':
+        check_skipped($options);
         break;
 
     case 'set_cache_prefix':
@@ -463,8 +468,38 @@ function set_configs($options) {
     }
 }
 
+// optional means the site may run without the plugin, not that a site using it may lose it: one
+// already installed but not placed this boot leaves its activities broken, so the boot stops.
+function check_skipped($options) {
+    if ($options['skipped'] === '' || !is_readable($options['skipped'])) {
+        return;
+    }
+    $lost = [];
+    foreach ((json_decode((string)file_get_contents($options['skipped']), true) ?: []) as $component) {
+        $installed = get_config($component, 'version');
+        if ($installed !== false && core_component::get_component_directory($component) === null) {
+            $lost[] = "{$component} (installed at {$installed})";
+        }
+    }
+    if ($lost) {
+        cli_error("Optional plugin(s) could not be fetched and are already installed: " . implode(', ', $lost) . ".\n"
+            . "  The site would serve with their code missing. Make the source reachable, or keep the\n"
+            . "  plugin cache on a volume that outlives the pod (persistence.plugincache).");
+    }
+    echo "No installed plugin is missing\n";
+}
+
 function enable_plugins($options) {
+    // Optional plugins place_plugins.php could not fetch this boot. One still listed but back on disk is enabled as usual.
+    $skipped = [];
+    if ($options['skipped'] !== '' && is_readable($options['skipped'])) {
+        $skipped = json_decode((string)file_get_contents($options['skipped']), true) ?: [];
+    }
     foreach (load_json($options['file']) as $component => $enabled) {
+        if (in_array($component, $skipped, true) && core_component::get_component_directory($component) === null) {
+            echo "WARNING: {$component} is optional and was not placed this boot, so it is not enabled or disabled\n";
+            continue;
+        }
         list($plugintype, $pluginname) = core_component::normalize_component($component);
         $class = core_plugin_manager::resolve_plugininfo_class($plugintype);
         $want = (bool)$enabled;
