@@ -150,6 +150,7 @@ The preferred way to integrate Caster with [Player](https://cmu-sei.github.io/cr
 | `Terraform__EnvironmentVariables__Inherit__0` | Case-sensitive regex of API environment variables runs inherit when `InheritAll` is `"false"` | `"^(HTTPS?_PROXY\|NO_PROXY)$"` |
 | `Terraform__EnvironmentVariables__Direct__<NAME>` | A variable every run gets, with this value | `Terraform__EnvironmentVariables__Direct__VSPHERE_ALLOW_UNVERIFIED_SSL: "false"` |
 | `Terraform__Secrets__Patterns__0` | Regex naming the API environment variables that hold secrets for [Environment Sets](#environment-sets) | `"^CASTER_SECRET_"` (default) |
+| `Terraform__Secrets__MinimumMaskedLength` | The shortest secret a run accepts; a run with a shorter one fails before Terraform starts, as masking a short value would corrupt run output | `8` (default) |
 
 #### Run Environment
 
@@ -184,7 +185,7 @@ caster-api:
         name: caster-credentials
 ```
 
-A secret never reaches a run through `Inherit` or `InheritAll`. Admins holding `ManageEnvironmentSets` group secrets and plain values into Environment Sets under Administration and assign them to projects; only a project's sets reach its runs, as environment variables (`VSPHERE_PASSWORD`) or Terraform variables (`TF_VAR_vsphere_password`). Caster never shows a secret's value and masks it in run output.
+A secret never reaches a run through `Inherit` or `InheritAll`. Admins holding `ManageEnvironmentSets` group secrets and plain values into Environment Sets under Administration and assign them to projects or project groups; only a project's sets, and its group's, reach its runs, as environment variables (`VSPHERE_PASSWORD`) or Terraform variables (`TF_VAR_vsphere_password`). Caster never shows a secret's value and masks it in run output.
 
 To ship a set with the deployment, seed it in `env`. A seeded set is created at startup only if no set has its name, is never changed afterwards, and is not assigned to any project:
 
@@ -232,7 +233,7 @@ caster-api:
 For Proxmox, set `Provider: "proxmox"`, the `Url` with its port (`https://pve.example.com:8006`), and `ApiToken` (`user@realm!tokenid=secret`) in the Secret.
 
 - `Name` is how everything else refers to the connection; renaming it makes those references show as missing.
-- Viewing every connection needs `ViewInfrastructure`. A project's members see only the connections assigned to the project, which needs `ManageInfrastructure` to do.
+- Viewing every connection needs `ViewInfrastructure`. A project's members see only the connections assigned to the project or its project group, which needs `ManageInfrastructure` to do.
 - Connection settings never reach Terraform runs, whatever `InheritAll` and `Inherit` say. A run gets a connection's settings only through an Environment Set whose entries read them (`ValueSource: Connection`, `ConnectionName`, `ConnectionField`), so the credential is configured once.
 - A setting the API can't use (an invalid filter regex, for example) marks that connection as misconfigured and it isn't read; the API still starts.
 
