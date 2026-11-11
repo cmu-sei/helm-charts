@@ -204,7 +204,6 @@ Entries default to `Kind: EnvironmentVariable` (use `TerraformVariable` for `TF_
 
 - Anchor every pattern (`^`), and never write one that matches the API's own settings (`ConnectionStrings__*`, `Authorization__*`, `Terraform__GitlabToken`): a pattern decides what admins can hand to projects.
 - Every API replica must have the same secrets.
-- Editors of a project can read its sets' secrets through their Terraform. Assign a set only to projects whose editors may hold its credentials.
 - In Kubernetes job mode the values are plain environment variables in each Job spec. Keep the jobs namespace admin-only.
 
 See [Environment Sets](https://github.com/cmu-sei/Caster.Api/blob/main/docs/EnvironmentSets.md) in Caster.Api for the full security model.
