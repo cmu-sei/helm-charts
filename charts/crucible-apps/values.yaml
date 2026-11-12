@@ -13,6 +13,40 @@ global:
     className: ""
     # Common annotations applied to all ingress resources (optional)
     annotations: {}
+  # Database connections for the Crucible APIs. Applies to every connection
+  # string this chart builds from an <app>.<app>-api.database block below
+  # (Keycloak and Moodle are configured separately).
+  #
+  # Each app's connection string gets, in order of precedence (later wins):
+  #   1. Application Name=<app>-api (labels its connections in pg_stat_activity)
+  #      and Maximum Pool Size=<app>.<app>-api.database.maxPoolSize
+  #   2. global.database.connectionParameters
+  #   3. <app>.<app>-api.database.connectionParameters
+  # Set a key to "" in a later layer to drop it and use the Npgsql default.
+  #
+  # Pool sizing: Npgsql opens up to Maximum Pool Size connections per pod
+  # (default 100), so without a cap the APIs together can ask for far more
+  # connections than PostgreSQL allows, and requests then fail with "53300:
+  # remaining connection slots are reserved". The defaults fit a stock
+  # PostgreSQL (max_connections 100) with room left for Keycloak and Moodle:
+  # CITE, Gallery, and Player 12 per pod; VM API, Blueprint, and Gameboard 8;
+  # Alloy, Caster, Steamfitter, and TopoMojo 5; VM usage logging 3. That is 83
+  # in all with one replica each. Keep the sum of maxPoolSize x replicas, plus
+  # Keycloak and Moodle, below the server's max_connections. For a big
+  # deployment, raise max_connections on the server and then raise the busy
+  # apps' maxPoolSize. The crucible-infra chart's CNPG cluster runs with
+  # PostgreSQL's default of 100 and has no max_connections setting yet.
+  # "Maximum Pool Size: 10" here caps every app at 10.
+  database:
+    # Npgsql connection-string parameters added to every app connection string.
+    # Keys are Npgsql keywords: https://www.npgsql.org/doc/connection-string-parameters.html
+    connectionParameters:
+      # Close pooled connections idle for this many seconds (Npgsql default:
+      # 300), so connections opened for a burst go back to the server quickly
+      Connection Idle Lifetime: 60
+      # Seconds to wait for a connection, including waiting for a free one in
+      # the app's pool (Npgsql default: 15), so a burst queues instead of failing
+      Timeout: 30
 
 # Deploy Keycloak IdP (via Keycloak Operator)
 # https://www.keycloak.org/operator/installation
@@ -91,6 +125,13 @@ alloy:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 5
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     # This secret contains the postgres connection string and OAuth credentials
     existingSecret: "{{ .Release.Name }}-alloy-api-custom"
     # Values placed into the {{ .Release.Name }}-alloy-api-custom secret
@@ -192,6 +233,13 @@ blueprint:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 8
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-blueprint-api-custom"
     # Values placed into the {{ .Release.Name }}-blueprint-api-custom secret
     resourceOwnerAuthorization:
@@ -309,6 +357,13 @@ caster:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 5
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-caster-api-custom"
     # Values placed into the {{ .Release.Name }}-caster-api-custom secret
     client:
@@ -408,6 +463,13 @@ cite:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 12
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-cite-api-custom"
     env:
       PathBase: /cite
@@ -494,6 +556,13 @@ gallery:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 12
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-gallery-api-custom"
     env:
       PathBase: /gallery
@@ -582,6 +651,13 @@ gameboard:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 8
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-gameboard-api-custom"
     # IMPORTANT: Configure the game engine (TopoMojo) client secret
     # This should come from an external secret store in production
@@ -683,6 +759,13 @@ player:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 12
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-player-api-custom"
     env:
       PathBase: /player
@@ -775,6 +858,21 @@ player:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 8
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
+      # VM usage logging (VmUsageLogging__PostgreSQL) connects to its own
+      # database (player_vm_logging) with the server and credentials above, in
+      # a separate pool. It takes global.database.connectionParameters and the
+      # keys below, not the vm-api connectionParameters above. Its default
+      # Application Name is vm-api-usage-logging.
+      usageLogging:
+        maxPoolSize: 3
+        connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-vm-api-custom"
     env:
       PathBase: /vm
@@ -909,6 +1007,13 @@ steamfitter:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 5
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-steamfitter-api-custom"
     # Values placed into the {{ .Release.Name }}-steamfitter-api-custom secret
     resourceOwnerAuthorization:
@@ -1010,6 +1115,13 @@ topomojo:
       usernameKey: "username"
       # Key in the secret containing the password
       passwordKey: "password"
+      # Most connections each pod opens to this database (Npgsql Maximum Pool
+      # Size). See global.database for sizing; "" uses the Npgsql default (100).
+      maxPoolSize: 5
+      # Npgsql connection-string parameters for this app only. Each key replaces
+      # the same key from maxPoolSize, global.database.connectionParameters, or
+      # the default Application Name; set a key to "" to drop it.
+      connectionParameters: {}
     existingSecret: "{{ .Release.Name }}-topomojo-api-custom"
     env:
       PathBase: /topomojo
