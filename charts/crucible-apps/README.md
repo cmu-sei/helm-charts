@@ -473,6 +473,8 @@ Parameters are layered, and a later layer replaces the same key from an earlier 
 
 Keys are matched ignoring case and spaces, and common Npgsql synonyms count as the same key (`MaxPoolSize` is `Maximum Pool Size`, `Host` is `Server`), so a key never appears twice. A key can also replace one of the built-in parameters (`Server`, `Port`, `Database`, `Username`, `Password`, `SSL Mode`, `Trust Server Certificate`). Set a key to `""` to drop it and use the Npgsql default. Values containing `;` are quoted. VM usage logging uses its own database and pool: it takes layers 1 and 2 and `usageLogging.connectionParameters`, not the VM API's `connectionParameters`, and its default `Application Name` is `vm-api-usage-logging`.
 
+To supply a full connection string yourself, set it in the app's `env` (`ConnectionStrings__PostgreSQL`, `Database__ConnectionString` for Gameboard and TopoMojo, or `VmUsageLogging__PostgreSQL` for VM usage logging). The chart then leaves that key out of the `<release>-<app>-api-custom` secret, so your string reaches the app as given, with none of the parameters above added. Include `Maximum Pool Size` and the other parameters in it yourself.
+
 The defaults fit a stock PostgreSQL (`max_connections` 100) with room left for Keycloak and Moodle: with one replica of each app, the pools can grow to 83 connections in all. Keep the sum of `maxPoolSize` × replicas, plus Keycloak and Moodle, below the server's `max_connections`. For a big deployment, raise `max_connections` on the server, then raise `maxPoolSize` for the busy apps. The [crucible-infra](../crucible-infra) chart's CNPG cluster runs with PostgreSQL's default `max_connections` of 100 and has no setting to change it yet.
 
 ```yaml

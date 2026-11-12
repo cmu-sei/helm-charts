@@ -15,7 +15,9 @@ global:
     annotations: {}
   # Database connections for the Crucible APIs. Applies to every connection
   # string this chart builds from an <app>.<app>-api.database block below
-  # (Keycloak and Moodle are configured separately).
+  # (Keycloak and Moodle are configured separately). A full connection string
+  # set in an app's env instead (ConnectionStrings__PostgreSQL, or
+  # Database__ConnectionString for Gameboard and TopoMojo) is used as given.
   #
   # Each app's connection string gets, in order of precedence (later wins):
   #   1. Application Name=<app>-api (labels its connections in pg_stat_activity)
