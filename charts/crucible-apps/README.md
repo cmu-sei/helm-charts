@@ -456,11 +456,14 @@ The chart builds each Crucible API's PostgreSQL connection string from its `<app
 
 Parameters are layered, and a later layer replaces the same key from an earlier one:
 
-1. `Application Name=<app>-api` and `Maximum Pool Size=<maxPoolSize>`
+1. `Application Name=<app>-api`
 2. `global.database.connectionParameters`
-3. `<app>.<app>-api.database.connectionParameters`
+3. `Maximum Pool Size=<maxPoolSize>`, unless the app's `maxPoolSize` is `""`
+4. `<app>.<app>-api.database.connectionParameters`
 
-Keys are matched ignoring case and spaces, and common Npgsql synonyms count as the same key (`MaxPoolSize` is `Maximum Pool Size`, `Host` is `Server`), so a key never appears twice. A key can also replace one of the built-in parameters (`Server`, `Port`, `Database`, `Username`, `Password`, `SSL Mode`, `Trust Server Certificate`). Set a key to `""` to drop it and use the Npgsql default. Values containing `;` are quoted. VM usage logging uses its own database and pool: it takes layers 1 and 2 and `usageLogging.connectionParameters`, not the VM API's `connectionParameters`, and its default `Application Name` is `vm-api-usage-logging`.
+So an app's `maxPoolSize` wins over a `Maximum Pool Size` in `global.database.connectionParameters`, which applies only to apps whose `maxPoolSize` is `""`.
+
+Keys are matched ignoring case and spaces, and common Npgsql synonyms count as the same key (`MaxPoolSize` is `Maximum Pool Size`, `Host` is `Server`), so a key never appears twice. A key can also replace one of the built-in parameters (`Server`, `Port`, `Database`, `Username`, `Password`, `SSL Mode`, `Trust Server Certificate`). Set a key to `""` to drop it and use the Npgsql default. Values containing `;` are quoted. VM usage logging uses its own database and pool: it takes layers 1 and 2, then `usageLogging.maxPoolSize` and `usageLogging.connectionParameters`, not the VM API's `connectionParameters`, and its default `Application Name` is `vm-api-usage-logging`.
 
 To supply a full connection string yourself, set it in the app's `env` (`ConnectionStrings__PostgreSQL`, `Database__ConnectionString` for Gameboard and TopoMojo, or `VmUsageLogging__PostgreSQL` for VM usage logging). The chart then leaves that key out of the `<release>-<app>-api-custom` secret, so your string reaches the app as given, with none of the parameters above added. Include `Maximum Pool Size` and the other parameters in it yourself.
 

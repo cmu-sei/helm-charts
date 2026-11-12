@@ -21,9 +21,9 @@ global:
   #
   # Each app's connection string gets, in order of precedence (later wins):
   #   1. Application Name=<app>-api (labels its connections in pg_stat_activity)
-  #      and Maximum Pool Size=<app>.<app>-api.database.maxPoolSize
   #   2. global.database.connectionParameters
-  #   3. <app>.<app>-api.database.connectionParameters
+  #   3. Maximum Pool Size=<app>.<app>-api.database.maxPoolSize, unless ""
+  #   4. <app>.<app>-api.database.connectionParameters
   # Set a key to "" in a later layer to drop it and use the Npgsql default.
   #
   # Pool sizing: Npgsql opens up to Maximum Pool Size connections per pod
