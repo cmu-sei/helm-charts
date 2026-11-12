@@ -182,11 +182,6 @@ global:
   domain: crucible.example.com
   ingress:
     className: nginx
-  postgresql:
-    serviceName: "crucible-infra-postgresql"
-    secretName: "crucible-infra-postgresql"
-    usernameKey: "username"
-    passwordKey: "password"
 
 keycloak:
   externalDatabase:
@@ -194,6 +189,9 @@ keycloak:
     existingSecret: "crucible-infra-postgresql"
     existingSecretUserKey: "username"
     existingSecretPasswordKey: "password"
+
+# Set each app's database (<app>.<app>-api.database) to your PostgreSQL server;
+# see PostgreSQL Connection Settings
 
 # Optional: Auto-generate realm with OIDC secrets
 # keycloak:
@@ -271,13 +269,6 @@ global:
   domain: crucible.example.com
   ingress:
     className: nginx
-  postgresql:
-    # AWS RDS example
-    serviceName: "my-db.abc123.us-east-1.rds.amazonaws.com"
-    port: 5432
-    secretName: "postgres-credentials"
-    usernameKey: "username"
-    passwordKey: "password"
 
 keycloak:
   externalDatabase:
@@ -285,6 +276,9 @@ keycloak:
     existingSecret: "postgres-credentials"
     existingSecretUserKey: "username"
     existingSecretPasswordKey: "password"
+
+# Set each app's database (<app>.<app>-api.database) to your PostgreSQL server;
+# see PostgreSQL Connection Settings
 
 alloy:
   alloy-api:
@@ -408,35 +402,30 @@ kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.pas
 
 ### PostgreSQL Connection Settings
 
-Configure connection to your PostgreSQL database.
+Each Crucible API reads its database settings from `<app>.<app>-api.database` (for example `cite.cite-api.database`, `player.vm-api.database`). The chart builds the app's connection string from them and stores it in the `<release>-<app>-api-custom` secret.
 
-| Parameter                       | Description                         | Default    | Required |
-| ------------------------------- | ----------------------------------- | ---------- | -------- |
-| `global.postgresql.serviceName` | PostgreSQL service name or hostname | `""`       | **Yes**  |
-| `global.postgresql.port`        | PostgreSQL port                     | `5432`     | No       |
-| `global.postgresql.secretName`  | Secret containing credentials       | `""`       | **Yes**  |
-| `global.postgresql.usernameKey` | Key in secret containing username   | `username` | No       |
-| `global.postgresql.passwordKey` | Key in secret containing password   | `password` | No       |
+| Parameter                                 | Description                                                                                                   | Default            | Required |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ | -------- |
+| `<app>.<app>-api.database.host`           | PostgreSQL service name or hostname                                                                           | `""`               | **Yes**  |
+| `<app>.<app>-api.database.port`           | PostgreSQL port                                                                                               | `5432`             | No       |
+| `<app>.<app>-api.database.name`           | Database name                                                                                                 | The app's database | No       |
+| `<app>.<app>-api.database.existingSecret` | Secret containing credentials, read at install time. Without it the user is `postgres` with a random password | `""`               | **Yes**  |
+| `<app>.<app>-api.database.usernameKey`    | Key in secret containing username                                                                             | `username`         | No       |
+| `<app>.<app>-api.database.passwordKey`    | Key in secret containing password                                                                             | `password`         | No       |
 
-**Examples:**
+**Example:**
 
 ```yaml
-# Using crucible-infra chart
-global:
-  postgresql:
-    serviceName: "crucible-infra-postgresql"
-    secretName: "crucible-infra-postgresql"
-    usernameKey: "username"
-    passwordKey: "password"
-
-# Using external PostgreSQL
-global:
-  postgresql:
-    serviceName: "postgres.example.com"
-    port: 5432
-    secretName: "external-postgres-secret"
-    usernameKey: "username"
-    passwordKey: "password"
+# Every app connects to the same server with the same credentials
+cite:
+  cite-api:
+    database: &db
+      host: "postgres.example.com"
+      existingSecret: "postgres-credentials"
+gallery:
+  gallery-api:
+    database: *db
+# ...and so on for each enabled app
 ```
 
 **Creating the credentials secret:**
