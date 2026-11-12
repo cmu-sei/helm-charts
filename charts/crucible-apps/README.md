@@ -473,14 +473,13 @@ The defaults fit a stock PostgreSQL (`max_connections` 100) with room left for K
 global:
   database:
     connectionParameters:
-      Maximum Pool Size: 10 # cap every app at 10 per pod
       Timeout: 60 # replaces the default of 30
 
 cite:
   cite-api:
     database:
+      maxPoolSize: 16 # up from 12: 87 connections in all, still under 100
       connectionParameters:
-        Maximum Pool Size: 40 # CITE only, replaces the global cap
         SSL Mode: Require # replaces the built-in SSL Mode=Prefer
         Connection Idle Lifetime: "" # back to the Npgsql default (300)
 ```

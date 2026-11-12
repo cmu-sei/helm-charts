@@ -38,7 +38,8 @@ global:
   # deployment, raise max_connections on the server and then raise the busy
   # apps' maxPoolSize. The crucible-infra chart's CNPG cluster runs with
   # PostgreSQL's default of 100 and has no max_connections setting yet.
-  # "Maximum Pool Size: 10" here caps every app at 10.
+  # A Maximum Pool Size in connectionParameters below applies only to apps
+  # whose maxPoolSize is ""; to resize an app, set its maxPoolSize.
   database:
     # Npgsql connection-string parameters added to every app connection string.
     # Keys are Npgsql keywords: https://www.npgsql.org/doc/connection-string-parameters.html
