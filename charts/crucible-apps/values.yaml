@@ -30,11 +30,12 @@ global:
   # (default 100), so without a cap the APIs together can ask for far more
   # connections than PostgreSQL allows, and requests then fail with "53300:
   # remaining connection slots are reserved". The defaults fit a stock
-  # PostgreSQL (max_connections 100) with room left for Keycloak and Moodle:
-  # CITE, Gallery, and Player 12 per pod; VM API, Blueprint, and Gameboard 8;
-  # Alloy, Caster, Steamfitter, and TopoMojo 5; VM usage logging 3. That is 83
-  # in all with one replica each. Keep the sum of maxPoolSize x replicas, plus
-  # Keycloak and Moodle, below the server's max_connections. For a big
+  # PostgreSQL (max_connections 100): CITE, Gallery, and Player 12 per pod;
+  # VM API, Blueprint, and Gameboard 8; Alloy, Caster, Steamfitter, and
+  # TopoMojo 5; VM usage logging 3. That is 83 in all with one replica each.
+  # Keep the sum of maxPoolSize x replicas, plus Keycloak's and Moodle's
+  # connections, below the server's max_connections. Keycloak's own pool can
+  # grow to 100 by default (db-pool-max-size), so size it too. For a big
   # deployment, raise max_connections on the server and then raise the busy
   # apps' maxPoolSize. The crucible-infra chart's CNPG cluster runs with
   # PostgreSQL's default of 100 and has no max_connections setting yet.

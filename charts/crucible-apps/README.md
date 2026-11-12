@@ -325,6 +325,10 @@ helm install crucible-apps sei/crucible-apps -f my-values.yaml
 - An ingress controller (nginx, traefik, etc.)
 - Persistent storage (StorageClass for PVCs)
 
+## Upgrading to chart 0.4.0
+
+Chart 0.4.0 caps each Crucible API's database connection pool (see [Database Connection Parameters](#database-connection-parameters)). Before, each pod could open up to Npgsql's default of 100 connections; now each opens 5 to 12. If you already raised PostgreSQL's `max_connections` to handle a busy deployment (for example, a large Gameboard, TopoMojo, or Caster site), set `<app>.<app>-api.database.maxPoolSize` for those apps before upgrading. A pool that is too small shows up in the app's logs as `The connection pool has been exhausted` once a request has waited the 30-second `Timeout` for a connection.
+
 ## Configuration
 
 ### Global Settings
@@ -467,7 +471,7 @@ Keys are matched ignoring case and spaces, and common Npgsql synonyms count as t
 
 To supply a full connection string yourself, set it in the app's `env` (`ConnectionStrings__PostgreSQL`, `Database__ConnectionString` for Gameboard and TopoMojo, or `VmUsageLogging__PostgreSQL` for VM usage logging). The chart then leaves that key out of the `<release>-<app>-api-custom` secret, so your string reaches the app as given, with none of the parameters above added. Include `Maximum Pool Size` and the other parameters in it yourself.
 
-The defaults fit a stock PostgreSQL (`max_connections` 100) with room left for Keycloak and Moodle: with one replica of each app, the pools can grow to 83 connections in all. Keep the sum of `maxPoolSize` × replicas, plus Keycloak and Moodle, below the server's `max_connections`. For a big deployment, raise `max_connections` on the server, then raise `maxPoolSize` for the busy apps. The [crucible-infra](../crucible-infra) chart's CNPG cluster runs with PostgreSQL's default `max_connections` of 100 and has no setting to change it yet.
+The defaults fit a stock PostgreSQL (`max_connections` 100): with one replica of each app, the pools can grow to 83 connections in all. Keep the sum of `maxPoolSize` × replicas, plus Keycloak's and Moodle's connections, below the server's `max_connections`. Keycloak's own connection pool can grow to 100 by default (`db-pool-max-size`), so size it too. For a big deployment, raise `max_connections` on the server, then raise `maxPoolSize` for the busy apps. The [crucible-infra](../crucible-infra) chart's CNPG cluster runs with PostgreSQL's default `max_connections` of 100 and has no setting to change it yet.
 
 ```yaml
 global:
