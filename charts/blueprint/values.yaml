@@ -162,6 +162,8 @@ blueprint-api:
     XApiOptions__RetentionDays: 7
     XApiOptions__ProcessingTimeoutMinutes: 10
     XApiOptions__ProcessingDelaySeconds: 30
+    # Most LRS statements the Assessor View reads per registration; paging stops there with a warning
+    XApiOptions__MaxStatementsPerRegistration: 5000
 
     # Open Telemetry
     # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
@@ -189,8 +191,8 @@ blueprint-api:
     ClientSettings__CasterPlanMaxWaitMinutes: 15
     ClientSettings__CasterApplyMaxWaitMinutes: 120
     ClientSettings__CasterDestroyMaxWaitMinutes: 60
-    ClientSettings__SteamfitterStartCheckSeconds: 0
-    XApiOptions__MaxStatementsPerRegistration: 0
+    # Seconds between checks for pushed MSELs whose Steamfitter scenario starts at the MSEL start time
+    ClientSettings__SteamfitterStartCheckSeconds: 30
 
 blueprint-ui:
   image:

@@ -733,9 +733,16 @@ vm-api:
     Proxmox__Token: ""
     Proxmox__ValidateCertificate: true
     Proxmox__StateRefreshIntervalSeconds: 5
+    # How often to read each Vm's snapshot and IP state, beside the power-state passes so they never
+    # wait on it. 0 or less reads again as soon as the last read has finished.
+    Proxmox__GuestStateRefreshIntervalSeconds: 30
+    # How many Vms that read runs for at once
+    Proxmox__GuestStateParallelism: 8
     Proxmox__CheckTaskProgressIntervalMilliseconds: 5000
     Proxmox__ReCheckTaskProgressIntervalMilliseconds: 1000
     Proxmox__FileUploadMaxBytes: 61440
+    # How long to wait on a guest-agent query (ping, network interfaces) before treating it as unanswered
+    Proxmox__GuestAgentTimeoutMilliseconds: 2000
     Proxmox__GuestProcessPollMs: 500
     Proxmox__GuestProcessDefaultTimeoutSeconds: 300
     # View/team-scoped ISO storage. Set IsoStorage to turn Proxmox ISO support on; clear it to turn it off.
@@ -749,9 +756,6 @@ vm-api:
     Proxmox__IsoUploadViaApi: false
     Proxmox__IsoRoot: ""
     Proxmox__IsoScopeSeparator: "__"
-    Proxmox__GuestStateRefreshIntervalSeconds: 0
-    Proxmox__GuestStateParallelism: 0
-    Proxmox__GuestAgentTimeoutMilliseconds: 0
 
 vm-ui:
   image:
