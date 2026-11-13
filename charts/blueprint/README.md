@@ -95,6 +95,7 @@ Blueprint API supports sending xAPI statements to a Learning Record Store (LRS) 
 | `XApiOptions__RetentionDays` | Number of days to retain processed xAPI records | `7` |
 | `XApiOptions__ProcessingTimeoutMinutes` | Timeout in minutes for xAPI statement processing | `10` |
 | `XApiOptions__ProcessingDelaySeconds` | Delay in seconds between xAPI processing cycles | `30` |
+| `XApiOptions__MaxStatementsPerRegistration` | Most LRS statements the Assessor View reads per registration; paging stops there with a warning | `5000` |
 
 ### Caster Integration
 
@@ -109,6 +110,12 @@ Blueprint can deploy infrastructure for an event through Caster. The URLs defaul
 | `ClientSettings__CasterPlanMaxWaitMinutes` | Minutes to wait for a Caster plan to finish | `15` |
 | `ClientSettings__CasterApplyMaxWaitMinutes` | Minutes to wait for a Caster apply to finish | `120` |
 | `ClientSettings__CasterDestroyMaxWaitMinutes` | Minutes to wait for a Caster destroy to finish | `60` |
+
+### Steamfitter Integration
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `ClientSettings__SteamfitterStartCheckSeconds` | Seconds between checks for pushed MSELs whose Steamfitter scenario is set to start at the MSEL start time | `30` |
 
 ### Claims Transformation
 
