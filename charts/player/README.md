@@ -796,9 +796,12 @@ VM API supports Proxmox VE as an alternative to vSphere. Authentication uses a P
 | `Proxmox__Token` | API token, in the format `PVEAPIToken=USER@REALM!TOKENID=UUID` | `""` |
 | `Proxmox__ValidateCertificate` | Validate the Proxmox host's TLS certificate | `true` |
 | `Proxmox__StateRefreshIntervalSeconds` | How often VM power state is reconciled from Proxmox cluster resources. Values below `1` are clamped to `1` | `5` |
+| `Proxmox__GuestStateRefreshIntervalSeconds` | How often each VM's snapshot and IP state is read, beside the power-state passes. `0` or less reads again as soon as the last read has finished | `30` |
+| `Proxmox__GuestStateParallelism` | How many VMs that read runs for at once. Values below `1` are clamped to `1` | `8` |
 | `Proxmox__CheckTaskProgressIntervalMilliseconds` | Cluster task poll interval while no task is pending | `5000` |
 | `Proxmox__ReCheckTaskProgressIntervalMilliseconds` | Cluster task poll interval while a task is still running | `1000` |
-| `Proxmox__FileUploadMaxBytes` | Maximum guest file upload payload in bytes | `61440` |
+| `Proxmox__FileUploadMaxBytes` | Maximum guest file upload size in bytes. Capped at `46080` (45 KB): the file is sent base64-encoded and PVE's file write takes at most 61440 characters | `61440` |
+| `Proxmox__GuestAgentTimeoutMilliseconds` | How long to wait on a guest-agent query (ping, network interfaces) before treating it as unanswered | `2000` |
 | `Proxmox__GuestProcessPollMs` | Guest process status polling interval in milliseconds | `500` |
 | `Proxmox__GuestProcessDefaultTimeoutSeconds` | Default guest process timeout in seconds | `300` |
 
