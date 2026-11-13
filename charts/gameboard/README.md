@@ -313,7 +313,38 @@ Use `settingsYaml` to configure settings for the Angular UI application.
 
 | Setting | Description | Example |
 |---------|-------------|----------|
-| `consoleForgeConfig.defaultConsoleType` | VM console type based on the hypervisor used by the Game Engine (`vmware` or `vnc` for Proxmox consoles) | `vnc` |
+| `consoleForgeConfig.defaultConsoleClientType` | VM console type based on the hypervisor used by the Game Engine (`vmware` or `vnc` for Proxmox consoles) | `vnc` |
+
+### Classification Banner
+
+As of [Gameboard UI version 3.36.0](https://github.com/cmu-sei/gameboard-ui/releases/tag/3.36.0), Gameboard can show the same classification banner as the other Crucible apps, configured with `HeaderBarSettings`. The banner is off unless `enabled` is `true` and `classification_text` or `message_text` is set. It isn't shown when Gameboard is embedded in an iframe.
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `HeaderBarSettings.enabled` | Show or hide the classification banner | `false` |
+| `HeaderBarSettings.banner_background_color` | Background color of the banner (hex with alpha) | `#d40000ff` |
+| `HeaderBarSettings.classification_text` | Classification label displayed in the banner | `""` |
+| `HeaderBarSettings.classification_text_color` | Color of the classification label text | `#ffffff` |
+| `HeaderBarSettings.classification_text_fontsize` | Font size (px) of the classification label | `"22"` |
+| `HeaderBarSettings.message_text` | Secondary message text displayed in the banner | `""` |
+| `HeaderBarSettings.message_text_color` | Color of the secondary message text | `#ffffff` |
+| `HeaderBarSettings.message_text_fontsize` | Font size (px) of the secondary message text | `"18"` |
+
+Example:
+
+```yaml
+gameboard-ui:
+  settingsYaml:
+    HeaderBarSettings:
+      enabled: true
+      banner_background_color: "#007a33ff"
+      classification_text: "UNCLASSIFIED // FOR TRAINING USE ONLY"
+      classification_text_color: "#ffffff"
+      classification_text_fontsize: "14"
+      message_text: "Example Message"
+      message_text_color: "#ffffff"
+      message_text_fontsize: "14"
+```
 
 ### Ingress
 
