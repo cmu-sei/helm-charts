@@ -2,15 +2,15 @@ apiVersion: v2
 name: caster
 description: Caster enables the coded design and deployment of cyber topologies.
 type: application
-version: 1.11.1
+version: 1.12.0
 home: https://cmu-sei.github.io/crucible/caster/
 sources:
 - https://github.com/cmu-sei/Caster.Api/
 - https://github.com/cmu-sei/Caster.Ui/
 dependencies:
 - name: caster-api
-  version: "*"
+  version: '*'
   repository: file://charts/caster-api
 - name: caster-ui
-  version: "*"
+  version: '*'
   repository: file://charts/caster-ui
