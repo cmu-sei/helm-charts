@@ -319,3 +319,6 @@ env:
   # OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   # Optional: override the service name reported to collectors
   # OTEL_SERVICE_NAME: caster-api
+  Terraform__GenerateTopology: false
+  Terraform__Secrets__Patterns__0: ""
+  Terraform__Secrets__MinimumMaskedLength: 0
