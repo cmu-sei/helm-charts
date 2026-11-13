@@ -736,6 +736,27 @@ entries:
     version: 0.1.0
   blueprint:
   - apiVersion: v2
+    created: "2026-11-13T18:13:40.056096706Z"
+    dependencies:
+    - name: blueprint-api
+      repository: file://charts/blueprint-api
+      version: '*'
+    - name: blueprint-ui
+      repository: file://charts/blueprint-ui
+      version: '*'
+    description: Blueprint enables collaborative creation and visualization of a Master
+      Scenario Event List (MSEL) for an exercise.
+    digest: da95c68c29f9824897320dcdbc02869879dec342e525d0a95fca2c4cbd134c23
+    home: https://cmu-sei.github.io/crucible/blueprint/
+    name: blueprint
+    sources:
+    - https://github.com/cmu-sei/Blueprint.Api
+    - https://github.com/cmu-sei/Blueprint.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/blueprint-1.16.1/blueprint-1.16.1.tgz
+    version: 1.16.1
+  - apiVersion: v2
     created: "2026-11-13T14:21:30.174846182Z"
     dependencies:
     - name: blueprint-api
@@ -7357,6 +7378,39 @@ entries:
     version: 1.17.5
   player:
   - apiVersion: v2
+    created: "2026-11-13T18:13:40.241966401Z"
+    dependencies:
+    - name: console-ui
+      repository: file://charts/console-ui
+      version: '*'
+    - name: player-api
+      repository: file://charts/player-api
+      version: '*'
+    - name: player-ui
+      repository: file://charts/player-ui
+      version: '*'
+    - name: vm-api
+      repository: file://charts/vm-api
+      version: '*'
+    - name: vm-ui
+      repository: file://charts/vm-ui
+      version: '*'
+    description: Player is a window into virtual environments - enabling assignment
+      of team membership and customization of responsive, browser-based user interfaces.
+    digest: 71e113e11b384fdfc6b46a18885b162cf2de99bcfeede61ee362017d1cc1b76b
+    home: https://cmu-sei.github.io/crucible/player
+    name: player
+    sources:
+    - https://github.com/cmu-sei/Player.Api
+    - https://github.com/cmu-sei/Player.Ui
+    - https://github.com/cmu-sei/Vm.Api
+    - https://github.com/cmu-sei/Vm.Ui
+    - https://github.com/cmu-sei/Console.Ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/player-1.21.3/player-1.21.3.tgz
+    version: 1.21.3
+  - apiVersion: v2
     created: "2026-11-13T16:59:15.614866402Z"
     dependencies:
     - name: console-ui
@@ -10543,4 +10597,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-13T16:59:15.616041638Z"
+generated: "2026-11-13T18:13:40.243362866Z"
