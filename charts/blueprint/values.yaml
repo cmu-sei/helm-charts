@@ -189,6 +189,8 @@ blueprint-api:
     ClientSettings__CasterPlanMaxWaitMinutes: 15
     ClientSettings__CasterApplyMaxWaitMinutes: 120
     ClientSettings__CasterDestroyMaxWaitMinutes: 60
+    ClientSettings__SteamfitterStartCheckSeconds: 0
+    XApiOptions__MaxStatementsPerRegistration: 0
 
 blueprint-ui:
   image:
