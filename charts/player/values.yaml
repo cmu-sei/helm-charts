@@ -749,6 +749,9 @@ vm-api:
     Proxmox__IsoUploadViaApi: false
     Proxmox__IsoRoot: ""
     Proxmox__IsoScopeSeparator: "__"
+    Proxmox__GuestStateRefreshIntervalSeconds: 0
+    Proxmox__GuestStateParallelism: 0
+    Proxmox__GuestAgentTimeoutMilliseconds: 0
 
 vm-ui:
   image:
