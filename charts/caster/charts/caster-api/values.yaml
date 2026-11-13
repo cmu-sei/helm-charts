@@ -266,6 +266,9 @@ env:
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
   Terraform__StateRetryIntervalSeconds: 5
+  # Read each successful plan's machines and networks for the Topology view: one extra
+  # "terraform show -json" per plan (one more pod when Runs execute as k8s jobs).
+  Terraform__GenerateTopology: "true"
   # Environment variables Terraform runs get from the API container.
   # InheritAll "true" passes every one of them to every run, including the API's own
   # database connection string, OIDC client secret and GitLab token. Leave it "false"
@@ -282,6 +285,9 @@ env:
   # CASTER_SECRET_VSPHERE_PASSWORD. Anchor patterns, and never match the API's own
   # settings (ConnectionStrings__*, Authorization__*, Terraform__GitlabToken).
   Terraform__Secrets__Patterns__0: "^CASTER_SECRET_"
+  # A secret shorter than this fails the run before Terraform starts: masking a short value
+  # would also replace ordinary output and corrupt what Caster reads from Terraform.
+  Terraform__Secrets__MinimumMaskedLength: 8
 
   # Infrastructure inventory: lists a hypervisor's templates, ISOs, networks, datastores and
   # hosts in Caster. Settings under Infrastructure__ never reach Terraform runs; a run gets a

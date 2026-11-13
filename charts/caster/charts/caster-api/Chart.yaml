@@ -2,4 +2,4 @@ apiVersion: v2
 name: caster-api
 type: application
 version: 1.9.0
-appVersion: 3.7.1
+appVersion: 3.8.0
