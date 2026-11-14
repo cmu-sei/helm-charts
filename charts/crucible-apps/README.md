@@ -182,11 +182,6 @@ global:
   domain: crucible.example.com
   ingress:
     className: nginx
-  postgresql:
-    serviceName: "crucible-infra-postgresql"
-    secretName: "crucible-infra-postgresql"
-    usernameKey: "username"
-    passwordKey: "password"
 
 keycloak:
   externalDatabase:
@@ -194,6 +189,9 @@ keycloak:
     existingSecret: "crucible-infra-postgresql"
     existingSecretUserKey: "username"
     existingSecretPasswordKey: "password"
+
+# Set each app's database (<app>.<app>-api.database) to your PostgreSQL server;
+# see PostgreSQL Connection Settings
 
 # Optional: Auto-generate realm with OIDC secrets
 # keycloak:
@@ -271,13 +269,6 @@ global:
   domain: crucible.example.com
   ingress:
     className: nginx
-  postgresql:
-    # AWS RDS example
-    serviceName: "my-db.abc123.us-east-1.rds.amazonaws.com"
-    port: 5432
-    secretName: "postgres-credentials"
-    usernameKey: "username"
-    passwordKey: "password"
 
 keycloak:
   externalDatabase:
@@ -285,6 +276,9 @@ keycloak:
     existingSecret: "postgres-credentials"
     existingSecretUserKey: "username"
     existingSecretPasswordKey: "password"
+
+# Set each app's database (<app>.<app>-api.database) to your PostgreSQL server;
+# see PostgreSQL Connection Settings
 
 alloy:
   alloy-api:
@@ -330,6 +324,10 @@ helm install crucible-apps sei/crucible-apps -f my-values.yaml
 
 - An ingress controller (nginx, traefik, etc.)
 - Persistent storage (StorageClass for PVCs)
+
+## Upgrading to chart 0.4.0
+
+Chart 0.4.0 caps each Crucible API's database connection pool (see [Database Connection Parameters](#database-connection-parameters)). Before, each pod could open up to Npgsql's default of 100 connections; now each opens 5 to 12. If you already raised PostgreSQL's `max_connections` to handle a busy deployment (for example, a large Gameboard, TopoMojo, or Caster site), set `<app>.<app>-api.database.maxPoolSize` for those apps before upgrading. A pool that is too small shows up in the app's logs as `The connection pool has been exhausted` once a request has waited the 30-second `Timeout` for a connection.
 
 ## Configuration
 
@@ -408,35 +406,30 @@ kubectl get secret <release-name>-keycloak-initial-admin -o jsonpath='{.data.pas
 
 ### PostgreSQL Connection Settings
 
-Configure connection to your PostgreSQL database.
+Each Crucible API reads its database settings from `<app>.<app>-api.database` (for example `cite.cite-api.database`, `player.vm-api.database`). The chart builds the app's connection string from them and stores it in the `<release>-<app>-api-custom` secret.
 
-| Parameter                       | Description                         | Default    | Required |
-| ------------------------------- | ----------------------------------- | ---------- | -------- |
-| `global.postgresql.serviceName` | PostgreSQL service name or hostname | `""`       | **Yes**  |
-| `global.postgresql.port`        | PostgreSQL port                     | `5432`     | No       |
-| `global.postgresql.secretName`  | Secret containing credentials       | `""`       | **Yes**  |
-| `global.postgresql.usernameKey` | Key in secret containing username   | `username` | No       |
-| `global.postgresql.passwordKey` | Key in secret containing password   | `password` | No       |
+| Parameter                                 | Description                                                                                                   | Default            | Required |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ | -------- |
+| `<app>.<app>-api.database.host`           | PostgreSQL service name or hostname                                                                           | `""`               | **Yes**  |
+| `<app>.<app>-api.database.port`           | PostgreSQL port                                                                                               | `5432`             | No       |
+| `<app>.<app>-api.database.name`           | Database name                                                                                                 | The app's database | No       |
+| `<app>.<app>-api.database.existingSecret` | Secret containing credentials, read at install time. Without it the user is `postgres` with a random password | `""`               | **Yes**  |
+| `<app>.<app>-api.database.usernameKey`    | Key in secret containing username                                                                             | `username`         | No       |
+| `<app>.<app>-api.database.passwordKey`    | Key in secret containing password                                                                             | `password`         | No       |
 
-**Examples:**
+**Example:**
 
 ```yaml
-# Using crucible-infra chart
-global:
-  postgresql:
-    serviceName: "crucible-infra-postgresql"
-    secretName: "crucible-infra-postgresql"
-    usernameKey: "username"
-    passwordKey: "password"
-
-# Using external PostgreSQL
-global:
-  postgresql:
-    serviceName: "postgres.example.com"
-    port: 5432
-    secretName: "external-postgres-secret"
-    usernameKey: "username"
-    passwordKey: "password"
+# Every app connects to the same server with the same credentials
+cite:
+  cite-api:
+    database: &db
+      host: "postgres.example.com"
+      existingSecret: "postgres-credentials"
+gallery:
+  gallery-api:
+    database: *db
+# ...and so on for each enabled app
 ```
 
 **Creating the credentials secret:**
@@ -446,6 +439,53 @@ global:
 kubectl create secret generic postgres-credentials \
   --from-literal=username='postgres' \
   --from-literal=password='your-secure-password'
+```
+
+### Database Connection Parameters
+
+The chart builds each Crucible API's PostgreSQL connection string from its `<app>.<app>-api.database` values and adds [Npgsql connection-string parameters](https://www.npgsql.org/doc/connection-string-parameters.html) so the APIs share one PostgreSQL server safely:
+
+- `Maximum Pool Size` caps the connections each pod opens. The Npgsql default is 100 per pod, so with no cap the APIs together can open far more connections than PostgreSQL allows, and requests fail with `53300: remaining connection slots are reserved`.
+- `Connection Idle Lifetime=60` closes pooled connections idle for 60 seconds (the Npgsql default is 300), so connections opened for a burst go back to the server quickly.
+- `Timeout=30` waits up to 30 seconds for a connection, including for a free one in a full pool (the Npgsql default is 15), so a burst queues in the app instead of failing.
+- `Application Name=<app>-api` labels each app's connections in `pg_stat_activity`.
+
+| Parameter                                                  | Description                                                             | Default                                                                                                                            |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `global.database.connectionParameters`                     | Npgsql parameters added to every app connection string                  | `{"Connection Idle Lifetime": 60, "Timeout": 30}`                                                                                  |
+| `<app>.<app>-api.database.maxPoolSize`                     | `Maximum Pool Size` for the app. `""` uses the Npgsql default (100)     | `12` for CITE, Gallery, and Player API; `8` for VM API, Blueprint, and Gameboard; `5` for Alloy, Caster, Steamfitter, and TopoMojo |
+| `<app>.<app>-api.database.connectionParameters`            | Npgsql parameters for the app only                                      | `{}`                                                                                                                               |
+| `player.vm-api.database.usageLogging.maxPoolSize`          | `Maximum Pool Size` for VM usage logging (`VmUsageLogging__PostgreSQL`) | `3`                                                                                                                                |
+| `player.vm-api.database.usageLogging.connectionParameters` | Npgsql parameters for VM usage logging only                             | `{}`                                                                                                                               |
+
+Parameters are layered, and a later layer replaces the same key from an earlier one:
+
+1. `Application Name=<app>-api`
+2. `global.database.connectionParameters`
+3. `Maximum Pool Size=<maxPoolSize>`, unless the app's `maxPoolSize` is `""`
+4. `<app>.<app>-api.database.connectionParameters`
+
+So an app's `maxPoolSize` wins over a `Maximum Pool Size` in `global.database.connectionParameters`, which applies only to apps whose `maxPoolSize` is `""`.
+
+Keys are matched ignoring case and spaces, and common Npgsql synonyms count as the same key (`MaxPoolSize` is `Maximum Pool Size`, `Host` is `Server`), so a key never appears twice. A key can also replace one of the built-in parameters (`Server`, `Port`, `Database`, `Username`, `Password`, `SSL Mode`, `Trust Server Certificate`). Set a key to `""` to drop it and use the Npgsql default. Values containing `;`, a quote, or leading or trailing spaces are quoted. VM usage logging uses its own database and pool: it takes layers 1 and 2, then `usageLogging.maxPoolSize` and `usageLogging.connectionParameters`, not the VM API's `connectionParameters`, and its default `Application Name` is `vm-api-usage-logging`.
+
+To supply a full connection string yourself, set it in the app's `env` (`ConnectionStrings__PostgreSQL`, `Database__ConnectionString` for Gameboard and TopoMojo, or `VmUsageLogging__PostgreSQL` for VM usage logging). The chart then leaves that key out of the `<release>-<app>-api-custom` secret, so your string reaches the app as given, with none of the parameters above added. Include `Maximum Pool Size` and the other parameters in it yourself.
+
+The defaults fit a stock PostgreSQL (`max_connections` 100): with one replica of each app, the pools can grow to 83 connections in all. Keep the sum of `maxPoolSize` × replicas, plus Keycloak's and Moodle's connections, below the server's `max_connections`. Keycloak's own connection pool can grow to 100 by default (`db-pool-max-size`), so size it too. For a big deployment, raise `max_connections` on the server, then raise `maxPoolSize` for the busy apps. The [crucible-infra](../crucible-infra) chart's CNPG cluster runs with PostgreSQL's default `max_connections` of 100 and has no setting to change it yet.
+
+```yaml
+global:
+  database:
+    connectionParameters:
+      Timeout: 60 # replaces the default of 30
+
+cite:
+  cite-api:
+    database:
+      maxPoolSize: 16 # up from 12: 87 connections in all, still under 100
+      connectionParameters:
+        SSL Mode: Require # replaces the built-in SSL Mode=Prefer
+        Connection Idle Lifetime: "" # back to the Npgsql default (300)
 ```
 
 ### Application-Specific Secrets
