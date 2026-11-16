@@ -580,7 +580,7 @@ vm-api:
   extraVolumeMounts: ""
   extraVolumes: ""
 
-  command: ["dotnet", "Player.Vm.Api.dll"]
+  command: ["./Player.Vm.Api"]
 
   ## existingSecret references a secret already in k8s.
   ## The key/value pairs in the secret are added as environment variables.

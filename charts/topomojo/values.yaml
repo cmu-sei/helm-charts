@@ -160,13 +160,13 @@ topomojo-api:
   ## customStart overrides the default start process.  Files are mounted in `/start`
   customStart: {}
     # command: ['/bin/sh']
-    # args: ['/start/start.sh']
+    # args: ['/home/app/start/start.sh']
     # binaryFiles: {}
     # files:
     #   start.sh: |
     #     #!/bin/sh
-    #     cp /start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
-    #     cd /app && dotnet TopoMojo.Api.dll
+    #     cp /home/app/start/*.crt /usr/local/share/ca-certificates && update-ca-certificates
+    #     cd /home/app && exec ./TopoMojo.Api
     #   cacert.crt: ""
 
   ## existingSecret references a secret already in k8s. The values are saved as files in `/home/app/conf`.
