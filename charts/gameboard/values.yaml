@@ -323,7 +323,7 @@ gameboard-ui:
     #     maxDuration: 10000
     #     mimeType: 'video/webm'
     #   consoleBackgroundStyle: 'rgb(40, 40, 40)'
-    #   defaultConsoleType: vmware # or "proxmox"
+    #   defaultConsoleClientType: vmware # or "vnc" for Proxmox
     #   disabledFeatures:
     #     clipboard: false
     #     consoleScreenRecord: false
@@ -334,6 +334,15 @@ gameboard-ui:
     #   toolbar:
     #     component: ConsoleToolbarDefaultComponent
     #     disabled: false
+    # HeaderBarSettings:
+    #   enabled: false
+    #   banner_background_color: "#d40000ff"
+    #   classification_text: ""
+    #   classification_text_color: "#ffffff"
+    #   classification_text_fontsize: "22"
+    #   message_text: ""
+    #   message_text_color: "#ffffff"
+    #   message_text_fontsize: "18"
     # oidc:
     #   client_id: clientid
     #   authority: https://your.identity.authority
