@@ -648,6 +648,59 @@ Validate required values for Moodle deployment
 {{- end }}
 {{- end }}
 
+{{/* Validate Progress Deadline */}}
+{{- $startup := .Values.startupProbe | default dict }}
+{{- if and .Values.progressDeadlineSeconds $startup.enabled }}
+{{- $budget := add ($startup.initialDelaySeconds | default 0 | int) (mul ($startup.failureThreshold | default 120 | int) ($startup.periodSeconds | default 10 | int)) }}
+{{- if lt (.Values.progressDeadlineSeconds | int) $budget }}
+{{- fail (printf "ERROR: progressDeadlineSeconds=%v is below the startup probe's total budget of %v seconds (initialDelaySeconds + failureThreshold x periodSeconds).\n  The Deployment would report ProgressDeadlineExceeded while Moodle is still installing or upgrading.\n  Either:\n  1. Raise progressDeadlineSeconds above %v\n  2. Leave it empty for Kubernetes' default" .Values.progressDeadlineSeconds $budget $budget) }}
+{{- end }}
+{{- end }}
+
+{{/* Validate System Packages */}}
+{{- $sysPkgs := .Values.systemPackages | default dict }}
+{{- if and (not $sysPkgs.enabled) (or $sysPkgs.packages $sysPkgs.paths) }}
+{{- fail "ERROR: systemPackages.packages or systemPackages.paths is set while systemPackages.enabled is false, so nothing is installed.\n  Either:\n  1. Set systemPackages.enabled=true\n  2. Clear systemPackages.packages and systemPackages.paths" }}
+{{- end }}
+{{- if $sysPkgs.enabled }}
+{{- if not $sysPkgs.packages }}
+{{- fail "ERROR: systemPackages.enabled=true with an empty systemPackages.packages list.\n  Either:\n  1. List the Alpine packages to install, for example [ghostscript, icu-data-full]\n  2. Set systemPackages.enabled=false" }}
+{{- end }}
+{{- range $pkg := $sysPkgs.packages }}
+{{- if not (regexMatch "^[A-Za-z0-9][A-Za-z0-9._+~<>=-]*$" ($pkg | toString)) }}
+{{- fail (printf "ERROR: systemPackages.packages entry %q is not an Alpine package name; it may hold letters, digits and . _ + ~ < > = -, and a version constraint such as ghostscript>=10." ($pkg | toString)) }}
+{{- end }}
+{{- end }}
+{{- $sysMount := $sysPkgs.mountPath | default "/opt/system-packages" }}
+{{- $sysDirs := dict "systemPackages.mountPath" $sysMount }}
+{{- range $i, $path := ($sysPkgs.paths | default list) }}
+{{- $_ := set $sysDirs (printf "systemPackages.paths[%d]" $i) $path }}
+{{- end }}
+{{- range $name, $path := $sysDirs }}
+{{- if not (regexMatch "^/[A-Za-z0-9._/-]+$" ($path | toString)) }}
+{{- fail (printf "ERROR: %s=%q is not an absolute path.\n  Use a directory such as /usr/share/icu, with no trailing slash." $name ($path | toString)) }}
+{{- end }}
+{{- if or (hasSuffix "/" $path) (contains ".." $path) (contains "//" $path) }}
+{{- fail (printf "ERROR: %s=%q must be a clean absolute path, with no trailing slash, // or .." $name $path) }}
+{{- end }}
+{{- if or (eq $path "/var/www/html") (hasPrefix "/var/www/html/" $path) }}
+{{- fail (printf "ERROR: %s=%q lies in the code tree.\n  A mount there collides with readOnlyDirroot and the code volume, and hides every file the image ships under it." $name $path) }}
+{{- end }}
+{{- end }}
+{{- range $name, $path := $sysDirs }}
+{{- range $other, $otherPath := $sysDirs }}
+{{- if and (ne $name $other) (or (eq $path $otherPath) (hasPrefix (printf "%s/" $otherPath) $path)) }}
+{{- fail (printf "ERROR: %s=%q duplicates or nests inside %s=%q.\n  Each systemPackages path and the mountPath need a directory of their own." $name $path $other $otherPath) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $env := (.Values.extraEnvVars | default list) }}
+{{- if eq ($env.name | default "") "LD_LIBRARY_PATH" }}
+{{- fail "ERROR: extraEnvVars sets LD_LIBRARY_PATH while systemPackages.enabled=true, and the chart sets it to systemPackages.mountPath/lib.\n  Remove it from extraEnvVars, or add its directories to a package's lib/ instead." }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{/* Validate Install Arguments */}}
 {{- if not $readOnlyDirroot.enabled }}
 {{- $installArgs := dict "moodle.site.url" (tpl ($site.url | default "") .) "moodle.site.language" ($site.language | default "en") "moodle.admin.username" (tpl ($admin.username | default "admin") .) "moodle.admin.email" (tpl ($admin.email | default "admin@example.com") .) "moodle.admin.password" ($admin.password | default "") "moodle.database.type" ($database.type | default "pgsql") "moodle.database.host" (tpl ($database.host | default "") .) "moodle.database.port" ($database.port | default "5432") "moodle.database.name" (tpl ($database.name | default "") .) "moodle.database.user" (tpl ($database.user | default "") .) "moodle.database.prefix" (tpl ($database.prefix | default "mdl_") .) "moodle.database.password" ($database.password | default "") }}
@@ -798,3 +851,56 @@ Returns {plain: <config without references>, refs: [{plugin,name,secret,key,env}
 {{- end }}
 {{- toYaml (dict "plain" $plain "refs" $refs) -}}
 {{- end -}}
+
+{{/*
+The pod volume each persistence key mounts, as a map of key to volume name. Keys that resolve
+to one PersistentVolumeClaim share one pod volume, named after the first of them (moodledata,
+then the rest alphabetically): a pod with two volumes on one claim hangs kubelet's volume setup
+on some node versions, while one volume with several subPath mounts starts at once. A key
+renders its own volume exactly when it maps to itself.
+Takes: root, persistence, codeVolume.
+*/}}
+{{- define "moodle.persistence.volumeNames" -}}
+{{- $names := dict }}
+{{- $claims := dict }}
+{{- $noSubPath := dict }}
+{{- $keys := without (keys .persistence | sortAlpha) "moodledata" }}
+{{- if hasKey .persistence "moodledata" }}{{- $keys = concat (list "moodledata") $keys }}{{- end }}
+{{- range $key := $keys }}
+{{- $value := index $.persistence $key | default dict }}
+{{- $names = set $names $key $key }}
+{{- $skipped := and $.codeVolume (or (eq $key "dirroot") (eq $key "moodle")) }}
+{{- if and $value.enabled (not $skipped) (eq ($value.type | default "persistentVolumeClaim") "persistentVolumeClaim") }}
+{{- $claim := tpl ($value.existingClaim | default (printf "%s-%s" (include "moodle.fullname" $.root) $key)) $.root }}
+{{- if hasKey $claims $claim }}
+{{- $names = set $names $key (index $claims $claim) }}
+{{- if not $value.subPath }}
+{{- if hasKey $noSubPath $claim }}
+{{- fail (printf "ERROR: persistence.%s and persistence.%s resolve to the same claim %s and neither sets a subPath, so both mount the same directory.\n  Either:\n  1. Set persistence.<key>.subPath on each, to split the claim into directories\n  2. Point them at separate claims" (index $noSubPath $claim) $key $claim) }}
+{{- end }}
+{{- $noSubPath = set $noSubPath $claim $key }}
+{{- end }}
+{{- else }}
+{{- $claims = set $claims $claim $key }}
+{{- if not $value.subPath }}{{- $noSubPath = set $noSubPath $claim $key }}{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- toYaml $names }}
+{{- end }}
+
+{{/*
+extraVolumeMounts, with any mount that names a persistence key pointed at that key's pod volume.
+Takes: root, names (from moodle.persistence.volumeNames).
+*/}}
+{{- define "moodle.extraVolumeMounts" -}}
+{{- $mounts := include "moodle.tplvalues.render" (dict "value" .root.Values.extraVolumeMounts "context" .root) | fromYamlArray }}
+{{- $out := list }}
+{{- range $mount := $mounts }}
+{{- if hasKey $.names ($mount.name | default "") }}
+{{- $_ := set $mount "name" (index $.names $mount.name) }}
+{{- end }}
+{{- $out = append $out $mount }}
+{{- end }}
+{{- toYaml $out }}
+{{- end }}

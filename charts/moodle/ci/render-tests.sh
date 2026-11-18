@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Render tests for the Moodle chart: run from anywhere, needs helm and python3 with PyYAML.
+set -u
+CHART="$(cd "$(dirname "$0")/.." && pwd)"
+BASE=(-f "$CHART/ci/default-values.yaml")
+fail=0
+
+render() { helm template t "$CHART" "${BASE[@]}" "$@" 2>&1; }
+check() { # name, condition exit status
+  if [ "$2" -eq 0 ]; then echo "ok   $1"; else echo "FAIL $1"; fail=1; fi
+}
+renders() { local name=$1; shift; render "$@" >/dev/null; check "$name" $?; }
+rejects() { local name=$1 msg=$2; shift 2; local out; out=$(render "$@"); [ $? -ne 0 ] && grep -q -- "$msg" <<<"$out"; check "$name" $?; }
+count() { grep -c -- "$1" <<<"$2"; }
+
+SP=(--set systemPackages.enabled=true --set 'systemPackages.packages={ghostscript,icu-data-full}'
+    --set 'systemPackages.paths={/usr/share/icu,/usr/share/ghostscript,/etc/fonts}')
+
+# systemPackages
+out=$(render); [ "$(count system-packages "$out")" = 0 ]; check "systemPackages disabled renders nothing" $?
+out=$(render "${SP[@]}")
+grep -q 'name: system-packages' <<<"$out" && grep -q 'LD_LIBRARY_PATH' <<<"$out" \
+  && [ "$(count 'subPath: root/' "$out")" = 3 ]; check "systemPackages enabled renders init, env and one mount per path" $?
+rejects "systemPackages without enabled fails" "systemPackages.enabled is false" --set 'systemPackages.packages={ghostscript}'
+rejects "systemPackages empty packages fails" "empty systemPackages.packages" --set systemPackages.enabled=true
+rejects "systemPackages relative path fails" "not an absolute path" "${SP[@]}" --set 'systemPackages.paths={usr/share/icu}'
+rejects "systemPackages code tree path fails" "lies in the code tree" "${SP[@]}" --set 'systemPackages.paths={/var/www/html/x}'
+rejects "systemPackages duplicate path fails" "duplicates or nests" "${SP[@]}" --set 'systemPackages.paths={/etc/fonts,/etc/fonts}'
+rejects "systemPackages path equal to mountPath fails" "duplicates or nests" "${SP[@]}" --set 'systemPackages.paths={/opt/system-packages}'
+rejects "systemPackages bad package name fails" "not an Alpine package name" "${SP[@]}" --set 'systemPackages.packages={a;b}'
+rejects "systemPackages LD_LIBRARY_PATH in extraEnvVars fails" "LD_LIBRARY_PATH" "${SP[@]}" \
+  --set 'extraEnvVars[0].name=LD_LIBRARY_PATH' --set 'extraEnvVars[0].value=/x'
+
+# progressDeadlineSeconds
+out=$(render); [ "$(count progressDeadlineSeconds "$out")" = 0 ]; check "progressDeadlineSeconds unset renders no field" $?
+out=$(render --set progressDeadlineSeconds=3900); grep -q 'progressDeadlineSeconds: 3900' <<<"$out"; check "progressDeadlineSeconds set renders" $?
+rejects "progressDeadlineSeconds below probe budget fails" "below the startup probe" --set progressDeadlineSeconds=600
+
+# one pod volume per claim; existingClaim refuses the creation settings the defaults carry
+NOCREATE=()
+for k in moodle moodledata; do NOCREATE+=(--set "persistence.$k.size=null" --set "persistence.$k.storageClass=null"); done
+SHARED=(--set persistence.moodle.enabled=true --set persistence.moodle.type=persistentVolumeClaim
+        --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=moodlehtml
+        --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared
+        --set persistence.moodledata.subPath=moodledata "${NOCREATE[@]}")
+out=$(render "${SHARED[@]}")
+vols=$(python3 -c '
+import sys,yaml
+d=[x for x in yaml.safe_load_all(sys.stdin) if x and x.get("kind")=="Deployment"][0]["spec"]["template"]["spec"]
+pvc=[v["name"] for v in d["volumes"] if "persistentVolumeClaim" in v]
+mounts=[(m["name"],m.get("subPath")) for c in d["containers"] for m in c["volumeMounts"] if m["name"] in pvc]
+init=[(m["name"],m.get("subPath")) for c in d.get("initContainers",[]) if c["name"]=="volume-permissions" for m in c["volumeMounts"]]
+print(len(pvc), sorted(set(s for _,s in mounts if s)), sorted(set(n for n,_ in mounts)), init)
+' <<<"$out")
+echo "     shared claim: $vols"
+[[ "$vols" == "1 ['moodledata', 'moodlehtml'] ['moodledata'] [('moodledata', 'moodlehtml')]" ]]; check "shared claim renders one volume, both subPaths, volume-permissions on the code subPath" $?
+out=$(render --set persistence.moodle.enabled=true --set persistence.moodle.type=persistentVolumeClaim \
+  --set persistence.moodle.existingClaim=code --set persistence.moodledata.type=persistentVolumeClaim \
+  --set persistence.moodledata.existingClaim=data "${NOCREATE[@]}")
+[ "$(count 'persistentVolumeClaim:' "$out")" = 2 ]; check "separate claims still render two volumes" $?
+rejects "shared claim without subPaths fails" "neither sets a subPath" --set persistence.moodle.enabled=true \
+  --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared "${NOCREATE[@]}"
+out=$(render "${SHARED[@]}" --set 'extraVolumeMounts[0].name=moodle' --set 'extraVolumeMounts[0].mountPath=/x')
+grep -A1 -- '- mountPath: /x' <<<"$out" | grep -q 'name: moodledata$' ; check "extraVolumeMounts naming a merged key follows the shared volume" $?
+
+exit $fail

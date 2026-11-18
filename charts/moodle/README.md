@@ -349,6 +349,43 @@ caBundle:
 
 At every pod start the `ca-bundle` init container writes the image's own `/etc/ssl/certs/ca-certificates.crt` followed by your certificates into a per-pod `emptyDir`, and mounts the result over that path in the plugin-seeding and main containers. Public sites stay trusted, and the public roots follow `image.tag`. A key with no PEM certificate stops the pod at that init container. A full bundle built for chart 0.3 still works; its public roots just appear twice.
 
+### System Packages
+
+The container runs as an unprivileged user with every capability dropped, so `apk add` cannot run in it, and the default image lacks two things many sites need: full ICU locale data (it ships `icu-data-en` only, so PHP's `intl` sorts and formats dates as the root locale for every other language) and Ghostscript (assignment PDF annotation needs `pathtogs`). `systemPackages` installs Alpine packages from the image's own signed repositories at pod start, in a root init container that runs the Moodle image, and makes them visible to the Moodle container:
+
+```yaml
+systemPackages:
+  enabled: true
+  packages: [ghostscript, icu-data-full]
+  paths: [/usr/share/icu, /usr/share/ghostscript, /etc/fonts]
+moodle:
+  config:
+    core:
+      pathtogs: /opt/system-packages/bin/gs
+```
+
+| Value                         | Description                                                                                   | Default                |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | ---------------------- |
+| `systemPackages.enabled`      | Render the `system-packages` init container                                                   | `false`                |
+| `systemPackages.packages`     | Alpine package names, as `apk add` takes them                                                 | `[]`                   |
+| `systemPackages.paths`        | Image directories the packages install into, each mounted read-only over the image's own      | `[]`                   |
+| `systemPackages.mountPath`    | Where the new shared libraries (`lib/`) and executables (`bin/`) are mounted                  | `/opt/system-packages` |
+| `systemPackages.required`     | `true`: a failed `apk add` stops the pod. `false`: warn and start without the packages        | `false`                |
+| `systemPackages.resources`    | Resources for the init container                                                              | `{}`                   |
+
+How it works:
+
+- Each path is copied from the image into a per-pod `emptyDir` **before** the install, so a failed install leaves Moodle the files the image ships. This matters most for `/usr/share/icu`: ICU without its data file makes every `intl` call throw.
+- After the install, each path is copied again, and the shared libraries and executables of the packages the image lacked go to `lib/` and `bin/`. The chart sets `LD_LIBRARY_PATH` to `mountPath/lib`. It holds only libraries the image lacks, so nothing the image ships is shadowed. Setting `LD_LIBRARY_PATH` in `extraEnvVars` as well is refused.
+- `icu-data-full` replaces the data file at ICU's normal path, so no `ICU_DATA` is needed. Ghostscript finds its resources at its compiled-in `/usr/share/ghostscript` paths, so it needs no wrapper.
+
+Trade-offs:
+
+- Every pod start needs the Alpine mirror (`dl-cdn.alpinelinux.org`, or whatever `/etc/apk/repositories` names) and takes longer: for `ghostscript` plus `icu-data-full`, about 16 packages and 65 MB, roughly 15-20 seconds. With `caBundle` set, the init container trusts it too.
+- Package revisions are not pinned. An Alpine branch serves only its latest builds, so security fixes arrive on their own and two pods can differ. The packages always match the running image's Alpine release.
+
+Two related settings need no chart change. Moodle's PDF export font defaults to FreeSans, which has no Thai glyphs; set `moodle.config.core.pdfexportfont: freeserif` for sites that export Thai PDFs. OS locales are irrelevant on musl: do not install them.
+
 ### Plugins and Site Settings
 
 These are the keys through which a real deployment is expressed: the plugin trees it carries, the plugins it turns on, the settings it sets, and the two shell hooks around the image's own boot.
@@ -510,6 +547,8 @@ The following settings are specific to the Helm chart deployment and Kubernetes 
 Configure storage for Moodle data directory (user uploads, course files, etc.).
 
 **Note:** Moodle's node-local cache lives inside `moodledata` by default, which is Moodle's own default. Above one pod the chart mounts a per-pod `emptyDir` over it, because a shared local cache corrupts across pods. Set `persistence.localcache` to give it its own volume or change that volume's size.
+
+**Note:** Several keys (for example `moodle` and `moodledata`) may name the same `existingClaim`, splitting one claim by `subPath`. The chart renders one pod volume per claim, named after the first key (`moodledata`, then the rest alphabetically), and every mount of that claim uses it, including the `volume-permissions` mount and any `extraVolumeMounts` that name a key. Two volumes on one claim leave kubelet's volume setup hanging on some node versions. Keys that share a claim must set `subPath`: if two set none, the chart refuses to render.
 
 #### Using EmptyDir (Testing Only)
 
@@ -883,6 +922,7 @@ networkPolicy:
 
 - Check resource limits are sufficient
 - Verify startup probe timeout is adequate for Moodle initialization
+- Set `progressDeadlineSeconds` above the startup probe's total budget (`initialDelaySeconds + failureThreshold x periodSeconds`) when a large site's install or upgrade runs longer than Kubernetes' default 600 s, or the Deployment reports `ProgressDeadlineExceeded` (and Argo CD marks the app Degraded) while the upgrade is still running. The chart refuses a value below that budget.
 - Check for database connection limits
 - Review pod logs for errors
 - Ensure persistent storage is properly mounted
