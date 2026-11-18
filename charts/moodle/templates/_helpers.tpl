@@ -650,8 +650,14 @@ Validate required values for Moodle deployment
 
 {{/* Validate Progress Deadline */}}
 {{- $startup := .Values.startupProbe | default dict }}
-{{- if and .Values.progressDeadlineSeconds $startup.enabled }}
-{{- $budget := add ($startup.initialDelaySeconds | default 0 | int) (mul ($startup.failureThreshold | default 120 | int) ($startup.periodSeconds | default 10 | int)) }}
+{{- $custom := .Values.customStartupProbe | default dict }}
+{{- if and .Values.progressDeadlineSeconds (or $custom $startup.enabled) }}
+{{- $budget := 0 }}
+{{- if $custom }}
+{{- $budget = add ($custom.initialDelaySeconds | default 0 | int) (mul ($custom.failureThreshold | default 3 | int) ($custom.periodSeconds | default 10 | int)) }}
+{{- else }}
+{{- $budget = add ($startup.initialDelaySeconds | default 0 | int) (mul ($startup.failureThreshold | default 120 | int) ($startup.periodSeconds | default 10 | int)) }}
+{{- end }}
 {{- if lt (.Values.progressDeadlineSeconds | int) $budget }}
 {{- fail (printf "ERROR: progressDeadlineSeconds=%v is below the startup probe's total budget of %v seconds (initialDelaySeconds + failureThreshold x periodSeconds).\n  The Deployment would report ProgressDeadlineExceeded while Moodle is still installing or upgrading.\n  Either:\n  1. Raise progressDeadlineSeconds above %v\n  2. Leave it empty for Kubernetes' default" .Values.progressDeadlineSeconds $budget $budget) }}
 {{- end }}
@@ -903,4 +909,27 @@ Takes: root, names (from moodle.persistence.volumeNames).
 {{- $out = append $out $mount }}
 {{- end }}
 {{- toYaml $out }}
+{{- end }}
+
+{{/*
+User-supplied containers (initContainers, sidecars), with any volumeMount that names a persistence
+key pointed at that key's pod volume. Left as rendered when no key shares a claim.
+Takes: root, value, names (from moodle.persistence.volumeNames).
+*/}}
+{{- define "moodle.containers" -}}
+{{- $rendered := include "moodle.tplvalues.render" (dict "value" .value "context" .root) }}
+{{- $remap := false }}
+{{- range $key, $name := .names }}{{- if ne $key $name }}{{- $remap = true }}{{- end }}{{- end }}
+{{- if not $remap }}
+{{- $rendered }}
+{{- else }}
+{{- $out := list }}
+{{- range $c := ($rendered | fromYamlArray) }}
+{{- range $m := ($c.volumeMounts | default list) }}
+{{- if hasKey $.names ($m.name | default "") }}{{- $_ := set $m "name" (index $.names $m.name) }}{{- end }}
+{{- end }}
+{{- $out = append $out $c }}
+{{- end }}
+{{- toYaml $out }}
+{{- end }}
 {{- end }}

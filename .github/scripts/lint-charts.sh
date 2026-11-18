@@ -84,6 +84,15 @@ for chart_dir in $charts; do
         done
     fi
 
+    # A chart may ship render tests that assert more than a plain render can.
+    if [[ "$chart_failed" == "false" && -x "$chart_dir/ci/render-tests.sh" ]]; then
+        echo "--- render tests"
+        if ! "$chart_dir/ci/render-tests.sh"; then
+            echo "::error file=$chart_dir/ci/render-tests.sh::render tests failed for $chart_dir"
+            chart_failed=true
+        fi
+    fi
+
     echo "::endgroup::"
     [[ "$chart_failed" == "true" ]] && failed_charts+=("$chart_dir")
 done

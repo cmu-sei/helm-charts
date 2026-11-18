@@ -375,8 +375,8 @@ moodle:
 
 How it works:
 
-- Each path is copied from the image into a per-pod `emptyDir` **before** the install, so a failed install leaves Moodle the files the image ships. This matters most for `/usr/share/icu`: ICU without its data file makes every `intl` call throw.
-- After the install, each path is copied again, and the shared libraries and executables of the packages the image lacked go to `lib/` and `bin/`. The chart sets `LD_LIBRARY_PATH` to `mountPath/lib`. It holds only libraries the image lacks, so nothing the image ships is shadowed. Setting `LD_LIBRARY_PATH` in `extraEnvVars` as well is refused.
+- Each path is copied from the image into a per-pod `emptyDir` **before** the install, and a pristine copy is kept, so any failure after that point (the install or the export of its files) with `required: false` leaves Moodle the files the image ships. This matters most for `/usr/share/icu`: ICU without its data file makes every `intl` call throw.
+- After the install, each path is copied again, and the shared libraries and executables of the packages the image lacked go to `lib/` and `bin/`. The chart sets `LD_LIBRARY_PATH` to `mountPath/lib`. It holds only libraries the image lacks, so nothing the image ships is shadowed. Setting `LD_LIBRARY_PATH` in `extraEnvVars` as well is refused; one set through `extraEnvVarsCM` or `extraEnvVarsSecret` cannot be checked at render time, and the chart's own entry overrides it.
 - `icu-data-full` replaces the data file at ICU's normal path, so no `ICU_DATA` is needed. Ghostscript finds its resources at its compiled-in `/usr/share/ghostscript` paths, so it needs no wrapper.
 
 Trade-offs:

@@ -36,6 +36,11 @@ out=$(render); [ "$(count progressDeadlineSeconds "$out")" = 0 ]; check "progres
 out=$(render --set progressDeadlineSeconds=3900); grep -q 'progressDeadlineSeconds: 3900' <<<"$out"; check "progressDeadlineSeconds set renders" $?
 rejects "progressDeadlineSeconds below probe budget fails" "below the startup probe" --set progressDeadlineSeconds=600
 
+rejects "progressDeadlineSeconds below a custom startup probe fails" "below the startup probe" --set progressDeadlineSeconds=3900 \
+  --set customStartupProbe.periodSeconds=30 --set customStartupProbe.failureThreshold=200 --set customStartupProbe.httpGet.path=/ --set customStartupProbe.httpGet.port=8080
+renders "progressDeadlineSeconds above a short custom startup probe renders" --set progressDeadlineSeconds=700 \
+  --set customStartupProbe.periodSeconds=10 --set customStartupProbe.failureThreshold=60 --set customStartupProbe.httpGet.path=/ --set customStartupProbe.httpGet.port=8080
+
 # one pod volume per claim; existingClaim refuses the creation settings the defaults carry
 NOCREATE=()
 for k in moodle moodledata; do NOCREATE+=(--set "persistence.$k.size=null" --set "persistence.$k.storageClass=null"); done
@@ -63,5 +68,18 @@ rejects "shared claim without subPaths fails" "neither sets a subPath" --set per
   --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared "${NOCREATE[@]}"
 out=$(render "${SHARED[@]}" --set 'extraVolumeMounts[0].name=moodle' --set 'extraVolumeMounts[0].mountPath=/x')
 grep -A1 -- '- mountPath: /x' <<<"$out" | grep -q 'name: moodledata$' ; check "extraVolumeMounts naming a merged key follows the shared volume" $?
+
+out=$(render "${SHARED[@]}" --set 'sidecars[0].name=side' --set 'sidecars[0].image=busybox' \
+  --set 'sidecars[0].volumeMounts[0].name=moodle' --set 'sidecars[0].volumeMounts[0].mountPath=/c' \
+  --set 'initContainers[0].name=pre' --set 'initContainers[0].image=busybox' \
+  --set 'initContainers[0].volumeMounts[0].name=moodle' --set 'initContainers[0].volumeMounts[0].mountPath=/c')
+python3 -c '
+import sys,yaml
+d=[x for x in yaml.safe_load_all(sys.stdin) if x and x.get("kind")=="Deployment"][0]["spec"]["template"]["spec"]
+vols={v["name"] for v in d["volumes"]}
+cs=d["containers"]+d.get("initContainers",[])
+bad=[(c["name"],m["name"]) for c in cs for m in c.get("volumeMounts",[]) if m["name"] not in vols]
+sys.exit(1 if bad or not any(c["name"] in ("side","pre") for c in cs) else 0)' <<<"$out"
+check "every container mount, custom ones included, references an emitted volume" $?
 
 exit $fail
