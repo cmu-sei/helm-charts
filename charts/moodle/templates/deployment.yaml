@@ -359,6 +359,8 @@ spec:
             - |
               set -e
               ROOT=/pkgroot/root
+              # A restarted container finds the previous attempt's output; start clean.
+              find /pkgroot -mindepth 1 -delete
               mkdir -p "$ROOT" /pkgroot/lib /pkgroot/bin
 
               # Seed first: if the install fails, the mounts over these paths still hold the
@@ -368,22 +370,15 @@ spec:
               [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
 
-              install_packages() {
-                # Chained with &&: set -e is off inside the caller's if.
-                apk info | sort > /tmp/before &&
-                  apk add --no-cache{{ range $sysPkgs.packages }} {{ . | quote }}{{ end }} &&
-                  apk info | sort > /tmp/after
-              }
-              if ! install_packages; then
-                {{- if $sysPkgs.required }}
-                echo "[ERROR] apk add failed and systemPackages.required=true" >&2
-                exit 1
-                {{- else }}
-                echo "[WARN] apk add failed; starting without the system packages" >&2
-                exit 0
-                {{- end }}
-              fi
+              # Pristine copy, to fall back to if anything after this point fails.
+              rm -rf /tmp/orig
+              cp -a "$ROOT" /tmp/orig
 
+              # The install and export run in a child shell: set -e is ignored inside an if.
+              cat > /tmp/install.sh <<'INSTALL'
+              apk info | sort > /tmp/before
+              apk add --no-cache{{ range $sysPkgs.packages }} {{ . | quote }}{{ end }}
+              apk info | sort > /tmp/after
               {{- range $sysPkgs.paths }}
               [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
@@ -403,6 +398,18 @@ spec:
                 done < /tmp/files
               done
               echo "[system-packages] installed: $(comm -13 /tmp/before /tmp/after | tr '\n' ' ')"
+              INSTALL
+              if ! ROOT="$ROOT" sh -e /tmp/install.sh; then
+                {{- if $sysPkgs.required }}
+                echo "[ERROR] installing the system packages failed and systemPackages.required=true" >&2
+                exit 1
+                {{- else }}
+                echo "[WARN] installing the system packages failed; starting without them" >&2
+                find /pkgroot -mindepth 1 -delete
+                mkdir -p /pkgroot/lib /pkgroot/bin
+                cp -a /tmp/orig "$ROOT"
+                {{- end }}
+              fi
           {{- with $sysPkgs.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -418,7 +425,7 @@ spec:
             {{- end }}
         {{- end }}
         {{- if .Values.initContainers }}
-        {{- include "moodle.tplvalues.render" (dict "value" $.Values.initContainers "context" $) | nindent 8 }}
+        {{- include "moodle.containers" (dict "root" $ "value" $.Values.initContainers "names" $volNames) | nindent 8 }}
         {{- end }}
       {{- end }}
       containers:
@@ -861,7 +868,7 @@ spec:
             {{- include "moodle.extraVolumeMounts" (dict "root" $ "names" $volNames) | nindent 12 }}
             {{- end }}
         {{- if .Values.sidecars }}
-        {{- include "moodle.tplvalues.render" (dict "value" $.Values.sidecars "context" $) | nindent 8 }}
+        {{- include "moodle.containers" (dict "root" $ "value" $.Values.sidecars "names" $volNames) | nindent 8 }}
         {{- end }}
       volumes:
         {{- if $codeVolume }}
