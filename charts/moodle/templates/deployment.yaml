@@ -351,6 +351,7 @@ spec:
           securityContext:
             runAsUser: 0
             runAsNonRoot: false
+            allowPrivilegeEscalation: false
           command:
             - /bin/sh
             - -c
@@ -389,7 +390,8 @@ spec:
 
               # Only packages the image lacked, so nothing here shadows an image library.
               for pkg in $(comm -13 /tmp/before /tmp/after); do
-                apk info -qL "$pkg" | while read -r f; do
+                apk info -qL "$pkg" > /tmp/files
+                while read -r f; do
                   [ -f "/$f" ] || [ -L "/$f" ] || continue
                   case "$f" in
                     usr/lib/*.so*|lib/*.so*)
@@ -398,7 +400,7 @@ spec:
                     usr/bin/*)
                       cp -a "/$f" /pkgroot/bin/ ;;
                   esac
-                done
+                done < /tmp/files
               done
               echo "[system-packages] installed: $(comm -13 /tmp/before /tmp/after | tr '\n' ' ')"
           {{- with $sysPkgs.resources }}
