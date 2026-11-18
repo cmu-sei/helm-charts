@@ -413,11 +413,44 @@ readinessProbe:
 resourcesPreset: "small"
 resources: {}
 
+## Seconds the Deployment may go without progress before it reports ProgressDeadlineExceeded.
+## Empty keeps Kubernetes' default (600). Moodle's install or upgrade runs before the pod is Ready,
+## so on a large site keep this above the startup probe's total budget:
+## initialDelaySeconds + failureThreshold x periodSeconds.
+progressDeadlineSeconds: ""
+
 # Extra container ports
 extraContainerPorts: []
 
 # Init containers
 initContainers: []
+
+## Alpine packages the image lacks, installed at pod start by a root init container that runs the
+## Moodle image itself, then made visible to the Moodle container, which cannot run apk.
+## Needs the Alpine mirror at every pod start and adds seconds to it (ghostscript plus
+## icu-data-full is about 16 packages and 65 MB). Revisions are not pinned: an Alpine branch serves
+## only its latest builds, so security fixes arrive on their own and two pods can differ.
+## Example: full ICU locale data and Ghostscript for PDF annotation.
+##   systemPackages:
+##     enabled: true
+##     packages: [ghostscript, icu-data-full]
+##     paths: [/usr/share/icu, /usr/share/ghostscript, /etc/fonts]
+##   moodle:
+##     config:
+##       core:
+##         pathtogs: /opt/system-packages/bin/gs
+systemPackages:
+  enabled: false
+  packages: [] # Alpine package names, as apk add takes them
+  ## Image directories the packages install into. Each is mounted read-only over the image's own,
+  ## seeded with the image's original contents first, so a failed install changes nothing.
+  paths: []
+  ## Where the new shared libraries (lib/) and executables (bin/) are mounted. The chart sets
+  ## LD_LIBRARY_PATH to mountPath/lib; it holds only libraries the image lacks.
+  mountPath: /opt/system-packages
+  ## true: a failed apk add stops the pod. false: warn and start without the packages.
+  required: false
+  resources: {}
 
 ## Root init container that chowns a mounted code volume to the container user.
 ## Rendered only when a volume is mounted over the code tree, because storage normally
