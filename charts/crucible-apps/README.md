@@ -476,7 +476,7 @@ alloy:
 
 #### Blueprint Service Account
 
-Blueprint requires a service account to communicate with CITE, Gallery, Player, and Steamfitter.
+Blueprint requires a service account to communicate with CITE, Gallery, Player, Player VM API, and Caster.
 
 ```yaml
 blueprint:
@@ -487,6 +487,15 @@ blueprint:
       clientSecret: "" # Required: OAuth client secret from Keycloak
       userName: "" # Required: Service account username
       password: "" # Required: Service account password
+```
+
+Blueprint runs a MSEL's automation tasks itself and no longer uses Steamfitter. It encrypts the tasks' secrets (passwords, private keys, http headers) with `Automation__SecretKeys__k1` in the `blueprint-api-custom` secret. The chart generates that key and keeps it on upgrade by reading the existing secret. When the chart is rendered without cluster access (`helm template`, Argo CD), set the key yourself, or a new one is generated on every render and the stored secrets can no longer be read:
+
+```yaml
+blueprint:
+  blueprint-api:
+    automation:
+      secretKey: "" # openssl rand -base64 32
 ```
 
 #### Caster Service Account

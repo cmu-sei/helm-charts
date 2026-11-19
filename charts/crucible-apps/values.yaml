@@ -200,6 +200,12 @@ blueprint:
       clientSecret: "" # OAuth client secret from Keycloak
       userName: "" # Service account username
       password: "" # Service account password
+    # Key that encrypts automation task secrets (passwords, private keys, http headers): 32 random bytes, base64
+    # (openssl rand -base64 32). When empty, one is generated and kept on upgrade by reading the existing secret.
+    # Set it when the chart is rendered without cluster access (helm template, Argo CD), where a generated key would
+    # change on every render and the stored secrets could no longer be read.
+    automation:
+      secretKey: ""
     env:
       PathBase: /blueprint
       # CORS policy settings
@@ -208,18 +214,19 @@ blueprint:
       Authorization__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
       Authorization__AuthorizationUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth"
       Authorization__TokenUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/token"
-      Authorization__AuthorizationScope: "openid blueprint player player-vm cite gallery steamfitter caster"
+      Authorization__AuthorizationScope: "openid blueprint player player-vm cite gallery caster"
       Authorization__ClientId: blueprint.api
       Authorization__ClientName: "Blueprint API"
       # Resource Owner Authorization for service account
       ResourceOwnerAuthorization__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
       ResourceOwnerAuthorization__ClientId: blueprint.admin
-      ResourceOwnerAuthorization__Scope: "openid profile blueprint player player-vm cite gallery steamfitter caster"
+      ResourceOwnerAuthorization__Scope: "openid profile blueprint player player-vm cite gallery caster"
       # Client Settings for other Crucible services
       ClientSettings__CiteApiUrl: https://{{ .Values.global.domain }}/cite
       ClientSettings__GalleryApiUrl: https://{{ .Values.global.domain }}/gallery
       ClientSettings__PlayerApiUrl: https://{{ .Values.global.domain }}/player
-      ClientSettings__SteamfitterApiUrl: https://{{ .Values.global.domain }}/steamfitter
+      # Player VM API, for automation tasks' VM actions
+      ClientSettings__PlayerVmApiUrl: https://{{ .Values.global.domain }}/vm/
       ClientSettings__CasterApiUrl: https://{{ .Values.global.domain }}/caster
       # UI addresses for the Player application URL placeholders {casterUrl} and {vmUrl}
       ClientSettings__CasterUiUrl: https://{{ .Values.global.domain }}/caster
@@ -258,7 +265,7 @@ blueprint:
         redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback
         post_logout_redirect_uri: https://{{ .Values.global.domain }}/blueprint
         response_type: code
-        scope: openid profile blueprint player player-vm cite gallery steamfitter caster
+        scope: openid profile blueprint player player-vm cite gallery caster
         automaticSilentRenew: true
         silent_redirect_uri: https://{{ .Values.global.domain }}/blueprint/auth-callback-silent.html
       AppTitle: Blueprint
