@@ -344,7 +344,8 @@ spec:
         {{- end }}
         {{- if $sysPkgsOn }}
         # Root, because apk add needs it; the Moodle container cannot run apk. It copies only
-        # what the packages add into /pkgroot, and never touches a PVC.
+        # what the packages add into /pkgroot, and never touches a PVC. Capabilities are cut to
+        # what apk's installs of root-owned files use.
         - name: system-packages
           image: {{ include "moodle.image" . }}
           imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
@@ -352,6 +353,17 @@ spec:
             runAsUser: 0
             runAsNonRoot: false
             allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - DAC_OVERRIDE
+                - FOWNER
+                - FSETID
+                - SETFCAP
+            seccompProfile:
+              type: RuntimeDefault
           command:
             - /bin/sh
             - -c
@@ -359,6 +371,7 @@ spec:
             - |
               set -e
               ROOT=/pkgroot/root
+              ORIG=/pkgroot/.orig
               # A restarted container finds the previous attempt's output; start clean.
               find /pkgroot -mindepth 1 -delete
               mkdir -p "$ROOT" /pkgroot/lib /pkgroot/bin
@@ -370,46 +383,90 @@ spec:
               [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
 
-              # Pristine copy, to fall back to if anything after this point fails.
-              rm -rf /tmp/orig
-              cp -a "$ROOT" /tmp/orig
+              # Pristine copy, kept inside the volume so sizeLimit covers it, to fall back to
+              # if anything after this point fails.
+              cp -a "$ROOT" "$ORIG"
 
               # The install and export run in a child shell: set -e is ignored inside an if.
               cat > /tmp/install.sh <<'INSTALL'
+              {{- if $sysPkgs.repositories }}
+              printf '%s\n'{{ range $sysPkgs.repositories }} {{ . | quote }}{{ end }} > /etc/apk/repositories
+              {{- end }}
               apk info | sort > /tmp/before
+              apk info -v | sort > /tmp/before.v
               apk add --no-cache{{ range $sysPkgs.packages }} {{ . | quote }}{{ end }}
               apk info | sort > /tmp/after
+              apk info -v | sort > /tmp/after.v
+
+              # A package the image has, upgraded here, would leave the new binaries meeting the
+              # image's older libraries in the Moodle container, which only gets new packages.
+              comm -13 /tmp/before.v /tmp/after.v | sed -E 's/-[0-9][^-]*-r[0-9]+$//' | sort > /tmp/changed
+              comm -12 /tmp/before /tmp/changed > /tmp/upgraded
+              if [ -s /tmp/upgraded ]; then
+                echo "[ERROR] apk upgraded packages the image already has: $(tr '\n' ' ' < /tmp/upgraded)" >&2
+                echo "[ERROR] their new libraries would not reach the Moodle container; use a newer image.tag or a derived image" >&2
+                exit 1
+              fi
               {{- range $sysPkgs.paths }}
               [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
 
+              in_paths() {
+                case "/$1" in
+                  {{- range $sysPkgs.paths }}
+                  "{{ . }}"/*) return 0 ;;
+                  {{- end }}
+                  *) return 1 ;;
+                esac
+              }
+
               # Only packages the image lacked, so nothing here shadows an image library.
+              : > /tmp/skipped
               for pkg in $(comm -13 /tmp/before /tmp/after); do
                 apk info -qL "$pkg" > /tmp/files
                 while read -r f; do
                   [ -f "/$f" ] || [ -L "/$f" ] || continue
+                  if in_paths "$f"; then continue; fi
                   case "$f" in
                     usr/lib/*.so*|lib/*.so*)
-                      case "${f#*lib/}" in */*) continue ;; esac
-                      cp -a "/$f" /pkgroot/lib/ ;;
+                      case "${f#*lib/}" in
+                        */*) echo "$f" >> /tmp/skipped ;;
+                        *) cp -a "/$f" /pkgroot/lib/ ;;
+                      esac ;;
                     usr/bin/*)
                       cp -a "/$f" /pkgroot/bin/ ;;
+                    usr/share/doc/*|usr/share/man/*|usr/share/info/*|usr/share/licenses/*|usr/share/locale/*) ;;
+                    usr/share/bash-completion/*|usr/share/zsh/*|usr/share/fish/*|usr/share/pkgconfig/*) ;;
+                    usr/share/aclocal/*|usr/share/gtk-doc/*|usr/lib/pkgconfig/*|usr/lib/cmake/*|usr/include/*) ;;
+                    usr/lib/*.a|usr/lib/*.la|lib/apk/*|var/lib/apk/*|etc/apk/*) ;;
+                    *) echo "$f" >> /tmp/skipped ;;
                   esac
                 done < /tmp/files
               done
               echo "[system-packages] installed: $(comm -13 /tmp/before /tmp/after | tr '\n' ' ')"
+              if [ -s /tmp/skipped ]; then
+                echo "[WARN] $(wc -l < /tmp/skipped) installed files are outside lib/, bin/ and systemPackages.paths and are not available to Moodle; add their directory to systemPackages.paths if it needs them. First 25:" >&2
+                head -25 /tmp/skipped | sed 's/^/  /' >&2
+              fi
               INSTALL
-              if ! ROOT="$ROOT" sh -e /tmp/install.sh; then
+              if ROOT="$ROOT" sh -e /tmp/install.sh; then
+                rm -rf "$ORIG"
+              else
                 {{- if $sysPkgs.required }}
                 echo "[ERROR] installing the system packages failed and systemPackages.required=true" >&2
                 exit 1
                 {{- else }}
                 echo "[WARN] installing the system packages failed; starting without them" >&2
-                find /pkgroot -mindepth 1 -delete
+                find /pkgroot -mindepth 1 -maxdepth 1 ! -name .orig -exec rm -rf {} +
                 mkdir -p /pkgroot/lib /pkgroot/bin
-                cp -a /tmp/orig "$ROOT"
+                cp -a "$ORIG" "$ROOT"
+                rm -rf "$ORIG"
                 {{- end }}
               fi
+          {{- with $sysPkgs.extraEnvVars }}
+          env:
+            {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
           {{- with $sysPkgs.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -943,7 +1000,8 @@ spec:
         {{- end }}
         {{- if $sysPkgsOn }}
         - name: system-packages
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: {{ $sysPkgs.sizeLimit | default "1Gi" }}
         {{- end }}
         {{- if $scripts }}
         - name: chart-scripts
