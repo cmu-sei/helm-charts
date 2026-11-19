@@ -35,6 +35,9 @@ rejects "systemPackages LD_LIBRARY_PATH in extraEnvVars fails" "LD_LIBRARY_PATH"
 rejects "systemPackages moodledata path fails" "lies where the chart mounts" "${SP[@]}" --set 'systemPackages.paths={/var/www/moodledata}'
 rejects "systemPackages dot component fails" "clean absolute path" "${SP[@]}" --set 'systemPackages.paths={/etc/fonts,/etc/./fonts}'
 rejects "systemPackages /tmp fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/tmp}'
+rejects "systemPackages php config path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/etc/php83/conf.d}'
+rejects "systemPackages nginx path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/etc/nginx/conf.d}'
+rejects "systemPackages chart config path fails" "lies where the chart mounts" "${SP[@]}" --set 'systemPackages.paths={/opt/sei/custom-scripts}'
 rejects "systemPackages mountPath /usr/bin fails" "need whole" "${SP[@]}" --set systemPackages.mountPath=/usr/bin
 rejects "systemPackages path over an extraVolumeMounts mount fails" "overlaps the mount" "${SP[@]}" \
   --set 'extraVolumeMounts[0].name=x' --set 'extraVolumeMounts[0].mountPath=/usr/share/ghostscript'
