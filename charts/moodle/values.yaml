@@ -463,8 +463,8 @@ systemPackages:
   ## Environment for the init container only (extraEnvVars goes to the Moodle container), for
   ## example HTTP_PROXY, HTTPS_PROXY and NO_PROXY to reach the mirror through a proxy.
   extraEnvVars: []
-  ## Replaces /etc/apk/repositories in the init container: http(s) URLs or absolute paths, for a
-  ## mirror other than the image's own. Leave empty to use the image's repositories.
+  ## Replaces /etc/apk/repositories in the init container: http(s) URLs of a mirror other than the
+  ## image's own. Leave empty to use the image's repositories.
   repositories: []
   resources: {}
 

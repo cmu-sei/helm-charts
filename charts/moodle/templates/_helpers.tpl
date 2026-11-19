@@ -909,7 +909,11 @@ Takes: root, persistence, codeVolume.
 {{- if gt (len $group) 1 }}
 {{/* Keys sharing a claim are split by subPath: one with none owns the claim root, and the image's code sync (rsync --delete into the code tree) would delete the others' directories under it. */}}
 {{- range $key := $group }}
-{{- if not ((index $.persistence $key).subPath) }}
+{{- $rawSub := ((index $.persistence $key).subPath | default "" | toString) }}
+{{- if and $rawSub (not (regexMatch "^[A-Za-z0-9_][A-Za-z0-9._-]*(/[A-Za-z0-9_][A-Za-z0-9._-]*)*$" $rawSub)) }}
+{{- fail (printf "ERROR: persistence.%s.subPath %q on the shared claim %s is not a plain relative path.\n  Use directory names separated by single slashes, with no ., .. or empty components and no leading or trailing slash, so the chart can tell the directories apart: a subPath of . is the claim root, and ./a/b hides that it is inside a." $key $rawSub $claim) }}
+{{- end }}
+{{- if not $rawSub }}
 {{- fail (printf "ERROR: persistence.%s shares the claim %s with persistence.%s and sets no subPath, so it mounts the claim root and the other directories sit inside it.\n  Moodle's code sync deletes what it does not ship from the code tree, which would delete them.\n  Either:\n  1. Set persistence.<key>.subPath on every key that shares the claim\n  2. Point them at separate claims" $key $claim (without $group $key | join ", persistence.") ) }}
 {{- end }}
 {{- end }}
@@ -928,7 +932,7 @@ Takes: root, persistence, codeVolume.
 {{- $extra := list }}
 {{- if .root.Values.extraVolumes }}{{- $extra = include "moodle.tplvalues.render" (dict "value" .root.Values.extraVolumes "context" .root) | fromYamlArray }}{{- end }}
 {{- $ro := ((.root.Values.readOnlyDirroot | default dict).volume | default dict) }}
-{{- if $ro.persistentVolumeClaim }}{{- $extra = append $extra (dict "name" "readOnlyDirroot.volume" "persistentVolumeClaim" $ro.persistentVolumeClaim) }}{{- end }}
+{{- if and $ro.persistentVolumeClaim (.root.Values.readOnlyDirroot | default dict).enabled }}{{- $extra = append $extra (dict "name" "readOnlyDirroot.volume" "persistentVolumeClaim" $ro.persistentVolumeClaim) }}{{- end }}
 {{- range $vol := $extra }}
 {{- $claimName := (($vol.persistentVolumeClaim | default dict).claimName | default "") }}
 {{- if and $claimName (hasKey $groups $claimName) }}
