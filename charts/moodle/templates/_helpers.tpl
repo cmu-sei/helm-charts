@@ -658,23 +658,25 @@ Validate required values for Moodle deployment
 {{- else }}
 {{- $budget = add ($startup.initialDelaySeconds | default 0 | int) (mul ($startup.failureThreshold | default 120 | int) ($startup.periodSeconds | default 10 | int)) }}
 {{- end }}
-{{- if lt (.Values.progressDeadlineSeconds | int) $budget }}
-{{- fail (printf "ERROR: progressDeadlineSeconds=%v is below the startup probe's total budget of %v seconds (initialDelaySeconds + failureThreshold x periodSeconds).\n  The Deployment would report ProgressDeadlineExceeded while Moodle is still installing or upgrading.\n  Either:\n  1. Raise progressDeadlineSeconds above %v\n  2. Leave it empty for Kubernetes' default" .Values.progressDeadlineSeconds $budget $budget) }}
+{{- if le (.Values.progressDeadlineSeconds | int) $budget }}
+{{- fail (printf "ERROR: progressDeadlineSeconds=%v is not above the startup probe's total budget of %v seconds (initialDelaySeconds + failureThreshold x periodSeconds).\n  The Deployment would report ProgressDeadlineExceeded while Moodle is still installing or upgrading. The budget is a lower bound: image pulls, init containers (volume-permissions, seed-dirroot, system-packages) and the readiness probe count toward the deadline too, so leave margin above it.\n  Either:\n  1. Raise progressDeadlineSeconds above %v, with margin\n  2. Leave it empty for Kubernetes' default" .Values.progressDeadlineSeconds $budget $budget) }}
 {{- end }}
 {{- end }}
 
-{{/* Validate System Packages */}}
+{{/* Validate System Packages. With enabled=false the lists are ignored, so enabled works as a kill switch. */}}
 {{- $sysPkgs := .Values.systemPackages | default dict }}
-{{- if and (not $sysPkgs.enabled) (or $sysPkgs.packages $sysPkgs.paths) }}
-{{- fail "ERROR: systemPackages.packages or systemPackages.paths is set while systemPackages.enabled is false, so nothing is installed.\n  Either:\n  1. Set systemPackages.enabled=true\n  2. Clear systemPackages.packages and systemPackages.paths" }}
-{{- end }}
 {{- if $sysPkgs.enabled }}
 {{- if not $sysPkgs.packages }}
-{{- fail "ERROR: systemPackages.enabled=true with an empty systemPackages.packages list.\n  Either:\n  1. List the Alpine packages to install, for example [ghostscript, icu-data-full]\n  2. Set systemPackages.enabled=false" }}
+{{- fail "ERROR: systemPackages.enabled=true with an empty systemPackages.packages list.\n  Either:\n  1. List the Alpine packages to install, for example [icu-data-full]\n  2. Set systemPackages.enabled=false" }}
 {{- end }}
 {{- range $pkg := $sysPkgs.packages }}
 {{- if not (regexMatch "^[A-Za-z0-9][A-Za-z0-9._+~<>=-]*$" ($pkg | toString)) }}
 {{- fail (printf "ERROR: systemPackages.packages entry %q is not an Alpine package name; it may hold letters, digits and . _ + ~ < > = -, and a version constraint such as ghostscript>=10." ($pkg | toString)) }}
+{{- end }}
+{{- end }}
+{{- range $repo := ($sysPkgs.repositories | default list) }}
+{{- if not (regexMatch "^(https?://|/)[A-Za-z0-9._~:/@%+=-]+$" ($repo | toString)) }}
+{{- fail (printf "ERROR: systemPackages.repositories entry %q is not an http(s) URL or an absolute path, as /etc/apk/repositories takes." ($repo | toString)) }}
 {{- end }}
 {{- end }}
 {{- $sysMount := $sysPkgs.mountPath | default "/opt/system-packages" }}
@@ -682,15 +684,33 @@ Validate required values for Moodle deployment
 {{- range $i, $path := ($sysPkgs.paths | default list) }}
 {{- $_ := set $sysDirs (printf "systemPackages.paths[%d]" $i) $path }}
 {{- end }}
+{{/* Directories the chart or the image needs whole: a mount over them would hide or break what is there. */}}
+{{- $sysDeny := list "/" "/bin" "/dev" "/etc" "/etc/ssl" "/etc/ssl/certs" "/home" "/lib" "/opt" "/proc" "/root" "/run" "/sbin" "/sys" "/tmp" "/usr" "/usr/bin" "/usr/lib" "/usr/local" "/usr/sbin" "/usr/share" "/var" }}
+{{/* Mount points the chart or the user already uses. */}}
+{{- $sysTaken := list }}
+{{- range $name, $config := ($.Values.persistence | default dict) }}
+{{- if and $config.enabled $config.mountPath }}{{- $sysTaken = append $sysTaken $config.mountPath }}{{- end }}
+{{- end }}
+{{- if kindIs "slice" $.Values.extraVolumeMounts }}
+{{- range $m := $.Values.extraVolumeMounts }}{{- if $m.mountPath }}{{- $sysTaken = append $sysTaken $m.mountPath }}{{- end }}{{- end }}
+{{- end }}
 {{- range $name, $path := $sysDirs }}
 {{- if not (regexMatch "^/[A-Za-z0-9._/-]+$" ($path | toString)) }}
 {{- fail (printf "ERROR: %s=%q is not an absolute path.\n  Use a directory such as /usr/share/icu, with no trailing slash." $name ($path | toString)) }}
 {{- end }}
-{{- if or (hasSuffix "/" $path) (contains ".." $path) (contains "//" $path) }}
-{{- fail (printf "ERROR: %s=%q must be a clean absolute path, with no trailing slash, // or .." $name $path) }}
+{{- if or (hasSuffix "/" $path) (hasSuffix "/." $path) (contains "/./" $path) (contains ".." $path) (contains "//" $path) }}
+{{- fail (printf "ERROR: %s=%q must be a clean absolute path, with no trailing slash and no //, . or .. components." $name $path) }}
 {{- end }}
-{{- if or (eq $path "/var/www/html") (hasPrefix "/var/www/html/" $path) }}
-{{- fail (printf "ERROR: %s=%q lies in the code tree.\n  A mount there collides with readOnlyDirroot and the code volume, and hides every file the image ships under it." $name $path) }}
+{{- if has $path $sysDeny }}
+{{- fail (printf "ERROR: %s=%q is a directory the image and the chart need whole, and a read-only mount over it would break Moodle or hide the image's own files.\n  Name the specific subdirectory the packages install into, for example /usr/share/icu." $name $path) }}
+{{- end }}
+{{- if or (eq $path "/var/www") (hasPrefix "/var/www/" $path) (hasPrefix "/etc/ssl/certs/" $path) }}
+{{- fail (printf "ERROR: %s=%q lies where the chart mounts the code tree, moodledata, the plugin cache, the local cache or the CA bundle.\n  A mount there collides with those and hides what the image ships under it." $name $path) }}
+{{- end }}
+{{- range $taken := $sysTaken }}
+{{- if or (eq $path $taken) (hasPrefix (printf "%s/" $taken) $path) (hasPrefix (printf "%s/" $path) $taken) }}
+{{- fail (printf "ERROR: %s=%q overlaps the mount at %s, which persistence or extraVolumeMounts already defines." $name $path $taken) }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- range $name, $path := $sysDirs }}
@@ -700,7 +720,9 @@ Validate required values for Moodle deployment
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range $env := (.Values.extraEnvVars | default list) }}
+{{- $envVars := list }}
+{{- if .Values.extraEnvVars }}{{- $envVars = include "moodle.tplvalues.render" (dict "value" .Values.extraEnvVars "context" .) | fromYamlArray }}{{- end }}
+{{- range $env := $envVars }}
 {{- if eq ($env.name | default "") "LD_LIBRARY_PATH" }}
 {{- fail "ERROR: extraEnvVars sets LD_LIBRARY_PATH while systemPackages.enabled=true, and the chart sets it to systemPackages.mountPath/lib.\n  Remove it from extraEnvVars, or add its directories to a package's lib/ instead." }}
 {{- end }}
@@ -896,31 +918,45 @@ Takes: root, persistence, codeVolume.
 {{- end }}
 
 {{/*
-extraVolumeMounts, with any mount that names a persistence key pointed at that key's pod volume.
+Whether any persistence key was merged into another key's pod volume.
+Takes: names (from moodle.persistence.volumeNames).
+*/}}
+{{- define "moodle.persistence.remapped" -}}
+{{- $remap := false }}
+{{- range $key, $name := .names }}{{- if ne $key $name }}{{- $remap = true }}{{- end }}{{- end }}
+{{- if $remap }}true{{- end }}
+{{- end }}
+
+{{/*
+extraVolumeMounts, with any mount that names a merged persistence key pointed at that key's pod
+volume. Rendered untouched when no key was merged; emits nothing for an empty list.
 Takes: root, names (from moodle.persistence.volumeNames).
 */}}
 {{- define "moodle.extraVolumeMounts" -}}
-{{- $mounts := include "moodle.tplvalues.render" (dict "value" .root.Values.extraVolumeMounts "context" .root) | fromYamlArray }}
+{{- $rendered := include "moodle.tplvalues.render" (dict "value" .root.Values.extraVolumeMounts "context" .root) }}
+{{- if not (include "moodle.persistence.remapped" (dict "names" .names)) }}
+{{- $rendered }}
+{{- else }}
 {{- $out := list }}
-{{- range $mount := $mounts }}
+{{- range $mount := ($rendered | fromYamlArray) }}
 {{- if hasKey $.names ($mount.name | default "") }}
 {{- $_ := set $mount "name" (index $.names $mount.name) }}
 {{- end }}
 {{- $out = append $out $mount }}
 {{- end }}
-{{- toYaml $out }}
+{{- if $out }}{{- toYaml $out }}{{- end }}
+{{- end }}
 {{- end }}
 
 {{/*
-User-supplied containers (initContainers, sidecars), with any volumeMount that names a persistence
-key pointed at that key's pod volume. Left as rendered when no key shares a claim.
+User-supplied containers (initContainers, sidecars), with any volumeMount that names a merged
+persistence key pointed at that key's pod volume. Rendered untouched when no key was merged;
+emits nothing for an empty list.
 Takes: root, value, names (from moodle.persistence.volumeNames).
 */}}
 {{- define "moodle.containers" -}}
 {{- $rendered := include "moodle.tplvalues.render" (dict "value" .value "context" .root) }}
-{{- $remap := false }}
-{{- range $key, $name := .names }}{{- if ne $key $name }}{{- $remap = true }}{{- end }}{{- end }}
-{{- if not $remap }}
+{{- if not (include "moodle.persistence.remapped" (dict "names" .names)) }}
 {{- $rendered }}
 {{- else }}
 {{- $out := list }}
@@ -930,6 +966,6 @@ Takes: root, value, names (from moodle.persistence.volumeNames).
 {{- end }}
 {{- $out = append $out $c }}
 {{- end }}
-{{- toYaml $out }}
+{{- if $out }}{{- toYaml $out }}{{- end }}
 {{- end }}
 {{- end }}

@@ -21,22 +21,51 @@ out=$(render); [ "$(count system-packages "$out")" = 0 ]; check "systemPackages 
 out=$(render "${SP[@]}")
 grep -q 'name: system-packages' <<<"$out" && grep -q 'LD_LIBRARY_PATH' <<<"$out" \
   && [ "$(count 'subPath: root/' "$out")" = 3 ]; check "systemPackages enabled renders init, env and one mount per path" $?
-rejects "systemPackages without enabled fails" "systemPackages.enabled is false" --set 'systemPackages.packages={ghostscript}'
+out=$(render --set 'systemPackages.packages={ghostscript}' --set 'systemPackages.paths={/tmp}'); [ $? -eq 0 ] && [ "$(count system-packages "$out")" = 0 ]
+check "systemPackages disabled ignores its lists, so enabled=false is a kill switch" $?
 rejects "systemPackages empty packages fails" "empty systemPackages.packages" --set systemPackages.enabled=true
 rejects "systemPackages relative path fails" "not an absolute path" "${SP[@]}" --set 'systemPackages.paths={usr/share/icu}'
-rejects "systemPackages code tree path fails" "lies in the code tree" "${SP[@]}" --set 'systemPackages.paths={/var/www/html/x}'
+rejects "systemPackages code tree path fails" "lies where the chart mounts" "${SP[@]}" --set 'systemPackages.paths={/var/www/html/x}'
 rejects "systemPackages duplicate path fails" "duplicates or nests" "${SP[@]}" --set 'systemPackages.paths={/etc/fonts,/etc/fonts}'
 rejects "systemPackages path equal to mountPath fails" "duplicates or nests" "${SP[@]}" --set 'systemPackages.paths={/opt/system-packages}'
 rejects "systemPackages bad package name fails" "not an Alpine package name" "${SP[@]}" --set 'systemPackages.packages={a;b}'
 rejects "systemPackages LD_LIBRARY_PATH in extraEnvVars fails" "LD_LIBRARY_PATH" "${SP[@]}" \
   --set 'extraEnvVars[0].name=LD_LIBRARY_PATH' --set 'extraEnvVars[0].value=/x'
 
+rejects "systemPackages moodledata path fails" "lies where the chart mounts" "${SP[@]}" --set 'systemPackages.paths={/var/www/moodledata}'
+rejects "systemPackages dot component fails" "clean absolute path" "${SP[@]}" --set 'systemPackages.paths={/etc/fonts,/etc/./fonts}'
+rejects "systemPackages /tmp fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/tmp}'
+rejects "systemPackages mountPath /usr/bin fails" "need whole" "${SP[@]}" --set systemPackages.mountPath=/usr/bin
+rejects "systemPackages path over an extraVolumeMounts mount fails" "overlaps the mount" "${SP[@]}" \
+  --set 'extraVolumeMounts[0].name=x' --set 'extraVolumeMounts[0].mountPath=/usr/share/ghostscript'
+rejects "systemPackages bad repository fails" "not an http(s) URL" "${SP[@]}" --set 'systemPackages.repositories={ftp://x}'
+out=$(render "${SP[@]}" --set 'systemPackages.extraEnvVars[0].name=HTTPS_PROXY' --set 'systemPackages.extraEnvVars[0].value=http://p:3128' \
+  --set 'systemPackages.repositories={https://m.example/alpine/v3.24/main}' --set systemPackages.sizeLimit=2Gi)
+grep -q 'HTTPS_PROXY' <<<"$out" && grep -q '/etc/apk/repositories' <<<"$out" && grep -q 'sizeLimit: 2Gi' <<<"$out"
+check "systemPackages extraEnvVars, repositories and sizeLimit render" $?
+out=$(render "${SP[@]}"); grep -q 'sizeLimit: 1Gi' <<<"$out" && grep -q -- '- ALL' <<<"$out" && grep -q 'RuntimeDefault' <<<"$out"
+check "systemPackages init container drops capabilities, sets seccomp and a size limit" $?
+
+# an empty template in extraVolumeMounts, initContainers or sidecars must still render
+EMPTY=$(mktemp)
+printf '%s\n' 'extraVolumeMounts: |' '  {{- if .Values.foo }}' '  - name: x' '    mountPath: /x' '  {{- end }}' \
+  'sidecars: |' '  {{- if .Values.foo }}' '  - name: s' '    image: busybox' '  {{- end }}' > "$EMPTY"
+renders "empty extraVolumeMounts and sidecars templates render" -f "$EMPTY"
+renders "empty templates render with systemPackages on" -f "$EMPTY" "${SP[@]}"
+renders "empty templates render with a shared claim" -f "$EMPTY" --set persistence.moodle.enabled=true --set persistence.moodle.type=persistentVolumeClaim \
+  --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=a --set persistence.moodle.size=null --set persistence.moodle.storageClass=null \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=b \
+  --set persistence.moodledata.size=null --set persistence.moodledata.storageClass=null
+rm -f "$EMPTY"
+
 # progressDeadlineSeconds
 out=$(render); [ "$(count progressDeadlineSeconds "$out")" = 0 ]; check "progressDeadlineSeconds unset renders no field" $?
 out=$(render --set progressDeadlineSeconds=3900); grep -q 'progressDeadlineSeconds: 3900' <<<"$out"; check "progressDeadlineSeconds set renders" $?
-rejects "progressDeadlineSeconds below probe budget fails" "below the startup probe" --set progressDeadlineSeconds=600
+rejects "progressDeadlineSeconds below probe budget fails" "not above the startup probe" --set progressDeadlineSeconds=600
+rejects "progressDeadlineSeconds equal to probe budget fails" "not above the startup probe" --set progressDeadlineSeconds=1200
+renders "progressDeadlineSeconds above probe budget renders" --set progressDeadlineSeconds=1201
 
-rejects "progressDeadlineSeconds below a custom startup probe fails" "below the startup probe" --set progressDeadlineSeconds=3900 \
+rejects "progressDeadlineSeconds below a custom startup probe fails" "not above the startup probe" --set progressDeadlineSeconds=3900 \
   --set customStartupProbe.periodSeconds=30 --set customStartupProbe.failureThreshold=200 --set customStartupProbe.httpGet.path=/ --set customStartupProbe.httpGet.port=8080
 renders "progressDeadlineSeconds above a short custom startup probe renders" --set progressDeadlineSeconds=700 \
   --set customStartupProbe.periodSeconds=10 --set customStartupProbe.failureThreshold=60 --set customStartupProbe.httpGet.path=/ --set customStartupProbe.httpGet.port=8080
