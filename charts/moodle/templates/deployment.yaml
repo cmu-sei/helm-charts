@@ -187,7 +187,7 @@ spec:
               echo "[volperm] chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html"
               chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html
               {{- range $key, $name := $volNames }}
-              {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) (ne $name "moodle") }}
+              {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) }}
               echo "[volperm] chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}"
               chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}
               {{- end }}
@@ -207,7 +207,7 @@ spec:
               {{- end }}
             {{- /* The other keys on the same claim: kubelet creates their subPath directories owned by root. */}}
             {{- range $key, $name := $volNames }}
-            {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) (ne $name "moodle") }}
+            {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) }}
             - name: {{ $name }}
               mountPath: /shared/{{ $key }}
               subPath: {{ (index $persistence $key).subPath }}
