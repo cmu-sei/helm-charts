@@ -385,6 +385,7 @@ How it works:
 - If `apk add` upgrades a package the image already has, the new binaries would meet the image's older libraries in the Moodle container, so the install fails and the fallback applies. Use a newer `image.tag` or a derived image.
 - Installed files outside `lib/`, `bin/` and `paths` are not available to Moodle, and the init container logs the first 25 of them. Add their directory to `paths` when Moodle needs them. The `/etc/fonts` example needs `/usr/share/fontconfig` too, because its `conf.d` entries link into it, and font packages install into `/usr/share/fonts`.
 - `icu-data-full` replaces the data file at ICU's normal path, so no `ICU_DATA` is needed. Ghostscript finds its resources at its compiled-in `/usr/share/ghostscript` paths, so it needs no wrapper.
+- The init container runs as root, so a namespace that enforces the `restricted` Pod Security Standard rejects the pod at admission when `systemPackages` is on, whatever `required` says; the `baseline` profile admits it. Use a derived image there.
 - The init container keeps only the `CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `FSETID` and `SETFCAP` capabilities, with `allowPrivilegeEscalation: false` and the runtime's default seccomp profile.
 
 Trade-offs:
@@ -856,7 +857,7 @@ containerSecurityContext:
 - Drops all Linux capabilities
 - Prevents privilege escalation
 - Uses seccomp runtime default profile
-- Compatible with restricted Pod Security Standards
+- Compatible with restricted Pod Security Standards, except the opt-in `systemPackages` init container, which runs as root (see System Packages)
 - FSGroup ownership changes applied to volumes
 
 ### Network Policy
