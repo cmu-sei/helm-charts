@@ -186,6 +186,12 @@ spec:
               {{- if $moodleVol }}
               echo "[volperm] chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html"
               chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html
+              {{- range $key, $name := $volNames }}
+              {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) (ne $name "moodle") }}
+              echo "[volperm] chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}"
+              chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}
+              {{- end }}
+              {{- end }}
               {{- end }}
               echo "[volperm] done"
           volumeMounts:
@@ -199,6 +205,14 @@ spec:
               {{- with ($persistence.moodle).subPath }}
               subPath: {{ . }}
               {{- end }}
+            {{- /* The other keys on the same claim: kubelet creates their subPath directories owned by root. */}}
+            {{- range $key, $name := $volNames }}
+            {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) (ne $name "moodle") }}
+            - name: {{ $name }}
+              mountPath: /shared/{{ $key }}
+              subPath: {{ (index $persistence $key).subPath }}
+            {{- end }}
+            {{- end }}
             {{- end }}
         {{- end }}
         {{- if $caBundleMount }}
@@ -393,12 +407,15 @@ spec:
 
               # The install and export run in a child shell: set -e is ignored inside an if.
               cat > /tmp/install.sh <<'INSTALL'
+              set -o pipefail
               {{- if $sysPkgs.repositories }}
               printf '%s\n'{{ range $sysPkgs.repositories }} {{ . | quote }}{{ end }} > /etc/apk/repositories
               {{- end }}
               apk info | sort > /tmp/before
               apk info -v | sort > /tmp/before.v
+              {{- if $sysPkgs.packages }}
               apk add --no-cache{{ range $sysPkgs.packages }} {{ . | quote }}{{ end }}
+              {{- end }}
               apk info | sort > /tmp/after
               apk info -v | sort > /tmp/after.v
 
@@ -424,9 +441,18 @@ spec:
                 esac
               }
 
-              # Only packages the image lacked, so nothing here shadows an image library.
+              # Packages the install added, so nothing here shadows an image library, and the ones
+              # asked for that the image already has: their files are the image's own, so the
+              # same paths (pathtogs under mountPath/bin, for one) hold whichever image runs.
               : > /tmp/skipped
-              for pkg in $(comm -13 /tmp/before /tmp/after); do
+              comm -13 /tmp/before /tmp/after > /tmp/export
+              for want in{{ range $sysPkgs.packages }} {{ regexFind "^[A-Za-z0-9][A-Za-z0-9._+-]*" . | quote }}{{ end }}; do
+                if grep -qx -- "$want" /tmp/before; then
+                  echo "[system-packages] $want is already in the image; exporting its own files"
+                  echo "$want" >> /tmp/export
+                fi
+              done
+              for pkg in $(sort -u /tmp/export); do
                 apk info -qL "$pkg" > /tmp/files
                 while read -r f; do
                   [ -f "/$f" ] || [ -L "/$f" ] || continue
@@ -447,6 +473,24 @@ spec:
                   esac
                 done < /tmp/files
               done
+              {{- if $sysPkgs.dataPackages }}
+
+              # Data-only packages are unpacked, not installed, so a mirror that has moved past
+              # the image's exact build cannot refuse them over a version lock. Signatures are
+              # checked by apk; dependencies are not resolved; only files under paths are used.
+              mkdir -p /tmp/dl /tmp/data
+              (cd /tmp/dl && apk fetch --no-cache{{ range $sysPkgs.dataPackages }} {{ . | quote }}{{ end }})
+              for f in /tmp/dl/*.apk; do apk extract --no-cache --destination /tmp/data "$f"; done
+              {{- range $sysPkgs.paths }}
+              [ ! -d "/tmp/data{{ . }}" ] || cp -a "/tmp/data{{ . }}/." "$ROOT{{ . }}/"
+              {{- end }}
+              (cd /tmp/data && find . -type f | sed 's#^\./##') > /tmp/files
+              while read -r f; do
+                if in_paths "$f"; then continue; fi
+                echo "$f" >> /tmp/skipped
+              done < /tmp/files
+              echo "[system-packages] unpacked: {{ join " " $sysPkgs.dataPackages }}"
+              {{- end }}
               echo "[system-packages] installed: $(comm -13 /tmp/before /tmp/after | tr '\n' ' ')"
               if [ -s /tmp/skipped ]; then
                 echo "[WARN] $(wc -l < /tmp/skipped) installed files are outside lib/, bin/ and systemPackages.paths and are not available to Moodle; add their directory to systemPackages.paths if it needs them. First 25:" >&2

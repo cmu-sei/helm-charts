@@ -435,7 +435,8 @@ initContainers: []
 ## Example: full ICU locale data and Ghostscript for PDF annotation.
 ##   systemPackages:
 ##     enabled: true
-##     packages: [ghostscript, icu-data-full]
+##     packages: [ghostscript]
+##     dataPackages: [icu-data-full]
 ##     paths: [/usr/share/icu, /usr/share/ghostscript, /usr/share/fontconfig, /etc/fonts]
 ##   moodle:
 ##     config:
@@ -443,7 +444,11 @@ initContainers: []
 ##         pathtogs: /opt/system-packages/bin/gs
 systemPackages:
   enabled: false
-  packages: [] # Alpine package names, as apk add takes them
+  packages: [] # Alpine package names, as apk add takes them. A package the image already has is exported as is
+  ## Data-only Alpine packages (icu-data-full) unpacked instead of installed: no dependencies are
+  ## resolved and only files under paths are used. They survive a mirror that has moved past the
+  ## image's exact build, which apk add of icu-data-full does not (it is locked to the image's icu).
+  dataPackages: []
   ## Image directories the packages install into. Each is mounted read-only over the image's own,
   ## seeded with the image's original contents first, so a failed install changes nothing.
   paths: []
