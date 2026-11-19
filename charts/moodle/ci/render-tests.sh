@@ -36,6 +36,7 @@ rejects "systemPackages moodledata path fails" "lies where the chart mounts" "${
 rejects "systemPackages dot component fails" "clean absolute path" "${SP[@]}" --set 'systemPackages.paths={/etc/fonts,/etc/./fonts}'
 rejects "systemPackages /tmp fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/tmp}'
 rejects "systemPackages php config path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/etc/php83/conf.d}'
+rejects "systemPackages other php version config path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/etc/php84/conf.d}'
 rejects "systemPackages nginx path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/etc/nginx/conf.d}'
 rejects "systemPackages chart config path fails" "lies where the chart mounts" "${SP[@]}" --set 'systemPackages.paths={/opt/sei/custom-scripts}'
 rejects "systemPackages mountPath /usr/bin fails" "need whole" "${SP[@]}" --set systemPackages.mountPath=/usr/bin

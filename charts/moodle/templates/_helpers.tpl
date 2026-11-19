@@ -702,11 +702,11 @@ Validate required values for Moodle deployment
 {{- if or (hasSuffix "/" $path) (hasSuffix "/." $path) (contains "/./" $path) (contains ".." $path) (contains "//" $path) }}
 {{- fail (printf "ERROR: %s=%q must be a clean absolute path, with no trailing slash and no //, . or .. components." $name $path) }}
 {{- end }}
-{{- if or (has $path $sysDeny) (eq $path "/etc/php83") (hasPrefix "/etc/php83/" $path) (eq $path "/etc/nginx") (hasPrefix "/etc/nginx/" $path) }}
-{{- fail (printf "ERROR: %s=%q is a directory the image and the chart need whole, and a read-only mount over it would break Moodle or hide the image's own files.\n  Name the specific subdirectory the packages install into, for example /usr/share/icu." $name $path) }}
+{{- if or (has $path $sysDeny) (regexMatch "^/etc/php[0-9]*(/|$)" $path) (eq $path "/etc/nginx") (hasPrefix "/etc/nginx/" $path) }}
+{{- fail (printf "ERROR: %s=%q is a directory the image and the chart need whole, or that the image's entrypoint rewrites at startup (PHP and nginx configuration under /etc/php* and /etc/nginx), and a read-only mount over it would break Moodle or hide the image's own files.\n  Name the specific subdirectory the packages install into, for example /usr/share/icu." $name $path) }}
 {{- end }}
 {{- if or (eq $path "/var/www") (hasPrefix "/var/www/" $path) (hasPrefix "/etc/ssl/certs/" $path) (eq $path "/opt/sei") (hasPrefix "/opt/sei/" $path) }}
-{{- fail (printf "ERROR: %s=%q lies where the chart mounts the code tree, moodledata, the plugin cache, the local cache or the CA bundle.\n  A mount there collides with those and hides what the image ships under it." $name $path) }}
+{{- fail (printf "ERROR: %s=%q lies where the chart mounts the code tree, moodledata, the plugin cache, the local cache, the CA bundle, or its own scripts, settings and presets (/opt/sei).\n  A mount there collides with those and hides what the image ships under it." $name $path) }}
 {{- end }}
 {{- range $taken := $sysTaken }}
 {{- if or (eq $path $taken) (hasPrefix (printf "%s/" $taken) $path) (hasPrefix (printf "%s/" $path) $taken) }}
