@@ -126,6 +126,12 @@ out=$(render --set persistence.moodle.enabled=true --set persistence.moodle.type
 grep -q 'mountPath: /shared/plugincache' <<<"$out" && grep -q 'chown 65534:65534 /shared/plugincache' <<<"$out"
 check "volume-permissions chowns the other key's directory when the shared volume is named moodle" $?
 renders "a disabled readOnlyDirroot volume does not count as a claim" "${SHARED[@]}" --set readOnlyDirroot.volume.persistentVolumeClaim.claimName=shared
+renders "shared claim with a dot-prefixed subPath renders" --set persistence.moodle.enabled=true \
+  --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=.moodle \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data "${NOCREATE[@]}"
+rejects "shared claim with a .. subPath fails" "not a plain relative path" --set persistence.moodle.enabled=true \
+  --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=a/../b \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data "${NOCREATE[@]}"
 rejects "extraVolumes on a persistence claim fails" "two volumes on one claim" "${SHARED[@]}" \
   --set 'extraVolumes[0].name=backup' --set 'extraVolumes[0].persistentVolumeClaim.claimName=shared'
 out=$(render "${SHARED[@]}" --set 'extraVolumeMounts[0].name=moodle' --set 'extraVolumeMounts[0].mountPath=/x')

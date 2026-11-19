@@ -910,8 +910,8 @@ Takes: root, persistence, codeVolume.
 {{/* Keys sharing a claim are split by subPath: one with none owns the claim root, and the image's code sync (rsync --delete into the code tree) would delete the others' directories under it. */}}
 {{- range $key := $group }}
 {{- $rawSub := ((index $.persistence $key).subPath | default "" | toString) }}
-{{- if and $rawSub (not (regexMatch "^[A-Za-z0-9_][A-Za-z0-9._-]*(/[A-Za-z0-9_][A-Za-z0-9._-]*)*$" $rawSub)) }}
-{{- fail (printf "ERROR: persistence.%s.subPath %q on the shared claim %s is not a plain relative path.\n  Use directory names separated by single slashes, with no ., .. or empty components and no leading or trailing slash, so the chart can tell the directories apart: a subPath of . is the claim root, and ./a/b hides that it is inside a." $key $rawSub $claim) }}
+{{- if and $rawSub (or (not (regexMatch "^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$" $rawSub)) (has "." (splitList "/" $rawSub)) (has ".." (splitList "/" $rawSub))) }}
+{{- fail (printf "ERROR: persistence.%s.subPath %q on the shared claim %s is not a plain relative path.\n  Use directory names (a leading dot, as in .moodle, is fine) separated by single slashes, with no . or .. component, no empty component and no leading or trailing slash, so the chart can tell the directories apart: a subPath of . is the claim root, and ./a/b hides that it is inside a." $key $rawSub $claim) }}
 {{- end }}
 {{- if not $rawSub }}
 {{- fail (printf "ERROR: persistence.%s shares the claim %s with persistence.%s and sets no subPath, so it mounts the claim root and the other directories sit inside it.\n  Moodle's code sync deletes what it does not ship from the code tree, which would delete them.\n  Either:\n  1. Set persistence.<key>.subPath on every key that shares the claim\n  2. Point them at separate claims" $key $claim (without $group $key | join ", persistence.") ) }}
