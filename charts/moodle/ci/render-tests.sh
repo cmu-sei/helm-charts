@@ -43,6 +43,15 @@ rejects "systemPackages mountPath /usr/bin fails" "need whole" "${SP[@]}" --set 
 rejects "systemPackages path over an extraVolumeMounts mount fails" "overlaps the mount" "${SP[@]}" \
   --set 'extraVolumeMounts[0].name=x' --set 'extraVolumeMounts[0].mountPath=/usr/share/ghostscript'
 rejects "systemPackages bad repository fails" "not an http(s) URL" "${SP[@]}" --set 'systemPackages.repositories={ftp://x}'
+rejects "systemPackages absolute repository path fails" "not an http(s) URL" "${SP[@]}" --set 'systemPackages.repositories={/mnt/mirror/main}'
+rejects "systemPackages /var/run path fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/var/run}'
+rejects "systemPackages path under /run fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/run/x}'
+rejects "systemPackages path under /tmp fails" "need whole" "${SP[@]}" --set 'systemPackages.paths={/tmp/client_temp}'
+rejects "systemPackages path over a string extraVolumeMounts mount fails" "overlaps the mount" "${SP[@]}" \
+  --set-string 'extraVolumeMounts=- name: x
+  mountPath: /usr/share/ghostscript'
+renders "systemPackages with only dataPackages renders" --set systemPackages.enabled=true --set 'systemPackages.dataPackages={icu-data-full}' --set 'systemPackages.paths={/usr/share/icu}'
+rejects "systemPackages with neither packages nor dataPackages fails" "empty systemPackages.packages and systemPackages.dataPackages" --set systemPackages.enabled=true
 out=$(render "${SP[@]}" --set 'systemPackages.extraEnvVars[0].name=HTTPS_PROXY' --set 'systemPackages.extraEnvVars[0].value=http://p:3128' \
   --set 'systemPackages.repositories={https://m.example/alpine/v3.24/main}' --set systemPackages.sizeLimit=2Gi)
 grep -q 'HTTPS_PROXY' <<<"$out" && grep -q '/etc/apk/repositories' <<<"$out" && grep -q 'sizeLimit: 2Gi' <<<"$out"
@@ -65,7 +74,7 @@ rm -f "$EMPTY"
 # progressDeadlineSeconds
 out=$(render); [ "$(count progressDeadlineSeconds "$out")" = 0 ]; check "progressDeadlineSeconds unset renders no field" $?
 out=$(render --set progressDeadlineSeconds=3900); grep -q 'progressDeadlineSeconds: 3900' <<<"$out"; check "progressDeadlineSeconds set renders" $?
-rejects "progressDeadlineSeconds below probe budget fails" "not above the startup probe" --set progressDeadlineSeconds=600
+rejects "progressDeadlineSeconds below probe budget fails" "default of 600" --set progressDeadlineSeconds=600
 rejects "progressDeadlineSeconds equal to probe budget fails" "not above the startup probe" --set progressDeadlineSeconds=1200
 renders "progressDeadlineSeconds above probe budget renders" --set progressDeadlineSeconds=1201
 
@@ -91,14 +100,22 @@ init=[(m["name"],m.get("subPath")) for c in d.get("initContainers",[]) if c["nam
 print(len(pvc), sorted(set(s for _,s in mounts if s)), sorted(set(n for n,_ in mounts)), init)
 ' <<<"$out")
 echo "     shared claim: $vols"
-[[ "$vols" == "1 ['moodledata', 'moodlehtml'] ['moodledata'] [('moodledata', 'moodlehtml')]" ]]; check "shared claim renders one volume, both subPaths, volume-permissions on the code subPath" $?
+[[ "$vols" == "1 ['moodledata', 'moodlehtml'] ['moodledata'] [('moodledata', 'moodlehtml'), ('moodledata', 'moodledata')]" ]]; check "shared claim renders one volume, both subPaths, volume-permissions on the code subPath" $?
 out=$(render --set persistence.moodle.enabled=true --set persistence.moodle.type=persistentVolumeClaim \
   --set persistence.moodle.existingClaim=code --set persistence.moodledata.type=persistentVolumeClaim \
   --set persistence.moodledata.existingClaim=data "${NOCREATE[@]}")
 [ "$(count 'persistentVolumeClaim:' "$out")" = 2 ]; check "separate claims still render two volumes" $?
-rejects "shared claim without subPaths fails" "neither sets a subPath" --set persistence.moodle.enabled=true \
+rejects "shared claim without subPaths fails" "sets no subPath" --set persistence.moodle.enabled=true \
   --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared \
   --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared "${NOCREATE[@]}"
+rejects "shared claim with one key without a subPath fails" "sets no subPath" --set persistence.moodle.enabled=true \
+  --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data "${NOCREATE[@]}"
+rejects "shared claim with nested subPaths fails" "same as, or inside" --set persistence.moodle.enabled=true \
+  --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=data/html \
+  --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data "${NOCREATE[@]}"
+rejects "extraVolumes on a persistence claim fails" "two volumes on one claim" "${SHARED[@]}" \
+  --set 'extraVolumes[0].name=backup' --set 'extraVolumes[0].persistentVolumeClaim.claimName=shared'
 out=$(render "${SHARED[@]}" --set 'extraVolumeMounts[0].name=moodle' --set 'extraVolumeMounts[0].mountPath=/x')
 grep -A1 -- '- mountPath: /x' <<<"$out" | grep -q 'name: moodledata$' ; check "extraVolumeMounts naming a merged key follows the shared volume" $?
 

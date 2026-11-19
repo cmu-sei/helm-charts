@@ -358,7 +358,8 @@ The container runs as an unprivileged user with every capability dropped, so `ap
 ```yaml
 systemPackages:
   enabled: true
-  packages: [ghostscript, icu-data-full]
+  packages: [ghostscript]
+  dataPackages: [icu-data-full]
   paths: [/usr/share/icu, /usr/share/ghostscript, /usr/share/fontconfig, /etc/fonts]
 moodle:
   config:
@@ -370,12 +371,13 @@ moodle:
 | ------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------- |
 | `systemPackages.enabled`       | Render the `system-packages` init container. `false` ignores every other value here              | `false`                |
 | `systemPackages.packages`      | Alpine package names, as `apk add` takes them                                                    | `[]`                   |
+| `systemPackages.dataPackages`  | Data-only packages (`icu-data-full`), unpacked instead of installed; see below                   | `[]`                   |
 | `systemPackages.paths`         | Image directories the packages install into, each mounted read-only over the image's own         | `[]`                   |
 | `systemPackages.mountPath`     | Where the new shared libraries (`lib/`) and executables (`bin/`) are mounted                     | `/opt/system-packages` |
 | `systemPackages.required`      | `true`: a failed install stops the pod. `false`: warn and start without the packages             | `false`                |
 | `systemPackages.sizeLimit`     | Limit of the volume holding the packages and the copies of `paths`; past it the pod is evicted   | `1Gi`                  |
 | `systemPackages.extraEnvVars`  | Environment for the init container only, for example `HTTPS_PROXY`                               | `[]`                   |
-| `systemPackages.repositories`  | Replaces `/etc/apk/repositories` in the init container, for a mirror of your own                 | `[]`                   |
+| `systemPackages.repositories`  | Replaces `/etc/apk/repositories` in the init container: http(s) URLs of a mirror of your own     | `[]`                   |
 | `systemPackages.resources`     | Resources for the init container                                                                 | `{}`                   |
 
 How it works:
@@ -384,8 +386,10 @@ How it works:
 - After the install, each path is copied again, and the shared libraries (top level of `lib/` and `usr/lib/`) and executables (`usr/bin/`) of the packages the image lacked go to `lib/` and `bin/`. The chart sets `LD_LIBRARY_PATH` to `mountPath/lib`. It holds only libraries the image lacks, so nothing the image ships is shadowed. Setting `LD_LIBRARY_PATH` in `extraEnvVars` as well is refused; one set through `extraEnvVarsCM` or `extraEnvVarsSecret` cannot be checked at render time, and the chart's own entry overrides it.
 - If `apk add` upgrades a package the image already has, the new binaries would meet the image's older libraries in the Moodle container, so the install fails and the fallback applies. Use a newer `image.tag` or a derived image.
 - Installed files outside `lib/`, `bin/` and `paths` are not available to Moodle, and the init container logs the first 25 of them. Add their directory to `paths` when Moodle needs them. The `/etc/fonts` example needs `/usr/share/fontconfig` too, because its `conf.d` entries link into it, and font packages install into `/usr/share/fonts`.
+- **Use `dataPackages` for `icu-data-full`.** The image's `icu-libs` depends on exactly its own `icu-data` build, so once Alpine rebuilds icu, `apk add icu-data-full` is refused (`breaks: icu-libs`) and, with `required: false`, the site quietly keeps English-only ICU. `dataPackages` are fetched and unpacked (`apk fetch`, signatures checked, then `apk extract`) instead of installed, so they do not depend on the image's build: dependencies are not resolved, only files under `paths` are used, and the data file must still match the image's ICU major version (an image whose ICU moved on needs the new data under its own directory name, which `paths: [/usr/share/icu]` already covers).
+- A package in `packages` that the image already has installs nothing, so the init container exports its own files (`bin/`, `lib/`) and logs that it did. That keeps `pathtogs: /opt/system-packages/bin/gs` valid on an image that already ships Ghostscript.
 - `icu-data-full` replaces the data file at ICU's normal path, so no `ICU_DATA` is needed. Ghostscript finds its resources at its compiled-in `/usr/share/ghostscript` paths, so it needs no wrapper.
-- The init container runs as root, so a namespace that enforces the `restricted` Pod Security Standard rejects the pod at admission when `systemPackages` is on, whatever `required` says; the `baseline` profile admits it. Use a derived image there.
+- The init container runs as root, so a namespace that enforces the `restricted` Pod Security Standard rejects the pod at admission when `systemPackages` is on, whatever `required` says; the `baseline` profile admits it. Use a derived image there. The `volume-permissions` init container is root too (see Persistence).
 - The init container keeps only the `CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `FSETID` and `SETFCAP` capabilities, with `allowPrivilegeEscalation: false` and the runtime's default seccomp profile.
 
 Trade-offs:
@@ -393,7 +397,7 @@ Trade-offs:
 - Every pod start needs the Alpine mirror (`dl-cdn.alpinelinux.org`, or whatever `/etc/apk/repositories` names) and takes longer: for `ghostscript` plus `icu-data-full`, about 16 packages and 65 MB, roughly 15-20 seconds. With `caBundle` set, the init container trusts it too. Behind a proxy, set `systemPackages.extraEnvVars`; with a mirror of your own, set `systemPackages.repositories`. With `networkPolicy.enabled` and `allowExternalEgress: false` the init container cannot reach the mirror: open egress to it, or use a derived image. Without a way out, every start waits out apk's network timeouts and, with `required: false`, starts without the packages.
 - Package revisions are not pinned. An Alpine branch serves only its latest builds, so security fixes arrive on their own and two pods can differ. The packages always match the running image's Alpine release.
 
-**Images that already ship Ghostscript.** The `erseco/alpine-moodle` image added Alpine's `ghostscript` package (`/usr/bin/gs`, see erseco/alpine-moodle#197). On an image that has it, leave `ghostscript` out of `packages` and set `pathtogs: /usr/bin/gs`; `icu-data-full` is still needed, because the image ships `icu-data-en` only.
+**Images that already ship Ghostscript.** The `erseco/alpine-moodle` image added Alpine's `ghostscript` package (`/usr/bin/gs`, see erseco/alpine-moodle#197). On an image that has it you can leave `ghostscript` out of `packages` and set `pathtogs: /usr/bin/gs`, or keep it listed and `pathtogs: /opt/system-packages/bin/gs` still works, because a package the image already has is exported as is. `icu-data-full` is still needed, because the image ships `icu-data-en` only.
 
 Two related settings need no chart change. Moodle's PDF export font defaults to FreeSans, which has no Thai glyphs; set `moodle.config.core.pdfexportfont: freeserif` for sites that export Thai PDFs. OS locales are irrelevant on musl: do not install them.
 
@@ -559,7 +563,7 @@ Configure storage for Moodle data directory (user uploads, course files, etc.).
 
 **Note:** Moodle's node-local cache lives inside `moodledata` by default, which is Moodle's own default. Above one pod the chart mounts a per-pod `emptyDir` over it, because a shared local cache corrupts across pods. Set `persistence.localcache` to give it its own volume or change that volume's size.
 
-**Note:** Several keys (for example `moodle` and `moodledata`) may name the same `existingClaim`, splitting one claim by `subPath`. The chart renders one pod volume per claim, named after the first key (`moodledata`, then the rest alphabetically), and every mount of that claim uses it, including the `volume-permissions` mount and any `extraVolumeMounts` that name a key. Two volumes on one claim leave kubelet's volume setup hanging on some node versions. Keys that share a claim must set `subPath`: if two set none, the chart refuses to render.
+**Note:** Several keys (for example `moodle` and `moodledata`) may name the same `existingClaim`, splitting one claim by `subPath`. The chart renders one pod volume per claim, named after the first key (`moodledata`, then the rest alphabetically), and every mount of that claim uses it, including the `volume-permissions` mount and any `extraVolumeMounts` that name a key. Two volumes on one claim leave kubelet's volume setup hanging on some node versions. Every key that shares a claim must set `subPath`, and no key's `subPath` may be inside another's: a key with none owns the claim root, and the image's code sync deletes what it does not ship from the code tree, which would delete the other keys' directories. The chart refuses to render otherwise. `extraVolumes` and `readOnlyDirroot.volume` may not name a claim a persistence key already mounts; mount it through the key instead. On a shared claim `volume-permissions` also chowns each other key's `subPath` directory (not recursively), which kubelet creates owned by root.
 
 #### Using EmptyDir (Testing Only)
 
@@ -857,7 +861,7 @@ containerSecurityContext:
 - Drops all Linux capabilities
 - Prevents privilege escalation
 - Uses seccomp runtime default profile
-- Compatible with restricted Pod Security Standards, except the opt-in `systemPackages` init container, which runs as root (see System Packages)
+- Compatible with restricted Pod Security Standards, except the root init containers: `volume-permissions` (rendered when `persistence.moodle` or `readOnlyDirroot` is enabled; set `volumePermissions.enabled=false` where the storage already hands the container a writable volume) and the opt-in `systemPackages` one (see System Packages)
 - FSGroup ownership changes applied to volumes
 
 ### Network Policy

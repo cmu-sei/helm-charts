@@ -27,9 +27,10 @@ run() { # script file -> exit code; volume sp-test-vol holds /pkgroot
 }
 vol() { docker run --rm --entrypoint sh -v sp-test-vol:/p:ro "$IMAGE" -c "$1"; }
 
-render --set 'systemPackages.packages={ghostscript,icu-data-full}' > "$WORK/good.sh"
+render --set 'systemPackages.packages={ghostscript}' --set 'systemPackages.dataPackages={icu-data-full}' > "$WORK/good.sh"
 run "$WORK/good.sh"; check "install succeeds" $?
 vol 'test -x /p/bin/gs && test -d /p/root/usr/share/icu && ! test -e /p/.orig'; check "install exports gs and the icu path, and removes the pristine copy" $?
+vol 'ls -l /p/root/usr/share/icu/*/icudt*.dat | awk "{ if (\$5 < 20000000) exit 1 }"'; check "the unpacked data package replaced the small en-only data file" $?
 
 render --set 'systemPackages.packages={no-such-pkg-xyz}' > "$WORK/bad.sh"
 run "$WORK/bad.sh"; check "bogus package with required=false exits 0" $?
@@ -43,6 +44,18 @@ sed 's#^comm -13 /tmp/before.v /tmp/after.v | sed#false; comm -13 /tmp/before.v 
 grep -q '^ *false; comm' "$WORK/post.sh"; check "post-install failure script was built" $?
 run "$WORK/post.sh"; check "failure after the install exits 0 with required=false" $?
 vol 'test -f /p/root/usr/share/icu/*/icudt*.dat && ! test -e /p/bin/gs && ! test -e /p/.orig'; check "failure after the install restores the image's files" $?
+
+# a package the image already has is exported as is, so mountPath/bin and lib hold it on any image
+render --set 'systemPackages.packages={libxml2}' > "$WORK/have.sh"
+run "$WORK/have.sh"; check "asking for a package the image has succeeds" $?
+grep -q "libxml2 is already in the image" "$WORK/have.sh.log"; check "it says the package is already in the image" $?
+vol 'ls /p/lib/libxml2.so* >/dev/null 2>&1'; check "it exports that package's libraries" $?
+
+# a failing apk info must not leave an empty list that makes every image package look new
+sed 's#^apk info | sort > /tmp/before$#false | sort > /tmp/before#' "$WORK/good.sh" > "$WORK/pipe.sh"
+grep -q '^false | sort' "$WORK/pipe.sh"; check "pipefail script was built" $?
+run "$WORK/pipe.sh"; check "a failing apk info falls back with required=false" $?
+vol '! test -e /p/bin/gs && ! test -e /p/.orig && test -z "$(ls /p/lib)"'; check "a failing apk info exports nothing" $?
 
 # an image package the install upgrades must be refused
 sed 's#^apk info -v | sort > /tmp/before.v#apk info -v | sort | sed "s/^busybox-1.*/busybox-0.9-r0/" > /tmp/before.v#' "$WORK/good.sh" > "$WORK/upg.sh"
