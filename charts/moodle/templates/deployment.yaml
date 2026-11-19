@@ -379,6 +379,10 @@ spec:
               # Seed first: if the install fails, the mounts over these paths still hold the
               # image's own files. ICU without its data file makes every intl call throw.
               {{- range $sysPkgs.paths }}
+              if [ -e "{{ . }}" ] && [ ! -d "{{ . }}" ]; then
+                echo "[ERROR] systemPackages.paths entry {{ . }} is a file in the image; list its directory" >&2
+                exit 1
+              fi
               mkdir -p "$ROOT{{ . }}"
               [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
