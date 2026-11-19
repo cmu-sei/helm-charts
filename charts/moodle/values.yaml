@@ -19,9 +19,12 @@ image:
   digest: "" # If set, also set image.tag: the chart reads the 5.0/5.1 web-root layout from the tag, not the digest
   pullPolicy: IfNotPresent
 
-## CA bundle mounted over /etc/ssl/certs/ca-certificates.crt when outbound TLS is intercepted.
-## Optional: leave both sources empty and nothing is mounted. Set one only if a proxy re-signs
-## outbound HTTPS, or plugin downloads fail with 'unable to get local issuer certificate'.
+## Private CA certificates to trust, added to the image's own bundle. An init container appends
+## them to /etc/ssl/certs/ca-certificates.crt from the image at every pod start, and that file is
+## what PHP's curl and OpenSSL read on Alpine. Optional: leave both sources empty and nothing is
+## added. Set one when a proxy re-signs outbound HTTPS, or a service Moodle calls (the OIDC
+## provider, Alloy or another Crucible app, a plugin URL) uses a private CA. One key may hold
+## several PEM certificates; a full bundle also works, its public roots just appear twice.
 caBundle:
   existingConfigMap: ""
   existingSecret: ""
@@ -107,12 +110,6 @@ moodle:
     ## OIDC provider readiness wait configuration (seconds)
     waitTimeout: 300
     waitInterval: 5
-    ## Custom CA certificate for OIDC provider HTTPS (optional)
-    caCert:
-      existingSecret: "" ## Secret containing the CA certificate
-      existingConfigMap: "" ## ConfigMap containing the CA certificate
-      key: "ca.crt"
-      path: "/opt/sei/certs/oidc-ca.crt" ## Where the certificate is mounted, ignored when no file is there
 
   ## PHP/Upload Limits Configuration
   php:
@@ -160,6 +157,12 @@ moodle:
   ##     - name: qtype_mojomatch
   ##       url: https://example.org/moodle-plugins/qtype_mojomatch_2026060800.zip
   ##       version: "2026060800"
+  ##
+  ## A failed fetch falls back, in order, to: the tree already on disk (floating plugins only);
+  ## the last archive placed, from the plugin cache (see persistence.plugincache); skipping the
+  ## plugin if it is marked optional: true and not yet installed. Anything else stops the pod.
+  ## A plugin depending on a skipped one is skipped too if optional, else the pod stops.
+  ##     - {name: block_example, url: https://plugins.example.org/block_example.zip, version: "2026010100", optional: true}
   ##
   ## The list installs, it never removes. Deleting an entry drops the code and leaves
   ## the database rows. Finish a removal by hand, never with --purge-missing:
@@ -498,6 +501,19 @@ persistence:
     type: persistentVolumeClaim
     size: 8Gi
     # mountPath: /var/www/html   # default
+
+  ## Plugin cache: the last archives placed for moodle.plugins, read only when a fetch fails at
+  ## boot. Off: the cache lives in moodledata/.chart-plugin-cache and lasts as long as dataroot,
+  ## so not past a replaced pod on the default emptyDir. On: its own volume, so it outlives an
+  ## emptyDir dataroot. Above one pod the claim must be ReadWriteMany (the chart refuses otherwise).
+  plugincache:
+    enabled: false
+    type: persistentVolumeClaim
+    size: 1Gi
+    # accessMode: ReadWriteOnce   # ReadWriteMany above one pod
+    # storageClass: ""
+    # existingClaim: ""           # Set size: null with it
+    # mountPath: /var/www/plugin-cache   # default
 
 ## Extra volumes to add to the deployment
 extraVolumes: []

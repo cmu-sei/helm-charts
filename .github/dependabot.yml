@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # GitHub Actions used by .github/workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Wait before taking new releases: hijacked versions are usually caught and pulled within days.
+    cooldown:
+      default-days: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore(deps)
+

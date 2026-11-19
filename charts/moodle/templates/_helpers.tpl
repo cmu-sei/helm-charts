@@ -328,6 +328,11 @@ Validate required values for Moodle deployment
 {{- end }}
 {{- end }}
 
+{{/* Validate Removed OIDC CA Certificate */}}
+{{- if ($moodle.oidc | default dict).caCert }}
+{{- fail "ERROR: moodle.oidc.caCert was removed in chart 0.4.0. It reached only the OIDC setup script. Plugin downloads, and plugins that verify TLS such as the Crucible ones, read /etc/ssl/certs/ca-certificates.crt and never trusted it.\n  Either:\n  1. Put the provider's CA in a ConfigMap or Secret, name it in caBundle, and remove moodle.oidc.caCert. The chart adds it to the image's bundle\n  2. Remove moodle.oidc.caCert if the provider's certificate already chains to a public root" }}
+{{- end }}
+
 {{/* Validate Preset Source */}}
 {{- $preset := $moodle.preset | default dict -}}
 {{- if not (kindIs "map" $preset) }}
@@ -466,9 +471,9 @@ Validate required values for Moodle deployment
 {{- fail (printf "ERROR: persistence.%s.name is required when type is 'secret'" $name) }}
 {{- end }}
 {{- end }}
-{{- $knownKeys := list "moodledata" "moodle" "localcache" }}
+{{- $knownKeys := list "moodledata" "moodle" "localcache" "plugincache" }}
 {{- if and (not $config.mountPath) (not (has $name $knownKeys)) }}
-{{- fail (printf "ERROR: persistence.%s.mountPath is required for custom volume names.\n  Standard volumes (moodledata, moodle, localcache) have default mount paths." $name) }}
+{{- fail (printf "ERROR: persistence.%s.mountPath is required for custom volume names.\n  Standard volumes (moodledata, moodle, localcache, plugincache) have default mount paths." $name) }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -549,6 +554,10 @@ Validate required values for Moodle deployment
 {{- if eq ($moodledata.accessMode | default "") "ReadWriteOnce" }}
 {{- fail "ERROR: replicaCount > 1 with persistence.moodledata.accessMode=ReadWriteOnce. dataroot must be shared; use ReadWriteMany." }}
 {{- end }}
+{{- end }}
+{{- $pluginCacheVol := $persistence.plugincache | default dict }}
+{{- if and $multiPod $pluginCacheVol.enabled (eq ($pluginCacheVol.type | default "persistentVolumeClaim") "persistentVolumeClaim") (ne ($pluginCacheVol.accessMode | default "ReadWriteOnce") "ReadWriteMany") }}
+{{- fail "ERROR: replicaCount > 1 (or autoscaling.enabled) with persistence.plugincache on a ReadWriteOnce claim.\n  Every pod mounts the plugin cache, and a ReadWriteOnce claim attaches to one node, so pods scheduled elsewhere never start.\n  Either:\n  1. Set persistence.plugincache.accessMode=ReadWriteMany\n  2. Set persistence.plugincache.enabled=false to keep the cache inside the shared dataroot" }}
 {{- end }}
 
 {{/* Validate Rollout Dataroot */}}
@@ -669,6 +678,9 @@ Validate required values for Moodle deployment
 {{- $version := ternary (printf "%.15g" ($plugin.version | float64)) ($plugin.version | toString) (kindIs "float64" $plugin.version) }}
 {{- if and $plugin.version (not (regexMatch "^[0-9]+$" $version)) }}
 {{- fail (printf "ERROR: moodle.plugins[%d].version '%s' is not a Moodle version stamp, and the plugins directory resolves an unrecognised one to the oldest release it has.\n  Example: version: 2026042006" $index $version) }}
+{{- end }}
+{{- if and (hasKey $plugin "optional") (not (kindIs "bool" $plugin.optional)) }}
+{{- fail (printf "ERROR: moodle.plugins[%d].optional is %s, not a boolean, and a quoted \"false\" would read as true.\n  Example: optional: true" $index ($plugin.optional | toString)) }}
 {{- end }}
 {{- end }}
 

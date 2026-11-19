@@ -12,17 +12,6 @@ LOG_FILE="/tmp/oidc_script.log"
 MOODLE_DIR="/var/www/html"
 OAUTH2_ISSUER_ID=""
 
-PHP_CA_FLAGS=""
-if [ -n "$OIDC_CA_CERT_PATH" ] && [ -f "$OIDC_CA_CERT_PATH" ]; then
-  PHP_CA_FLAGS="-d curl.cainfo=${OIDC_CA_CERT_PATH} -d openssl.cafile=${OIDC_CA_CERT_PATH}"
-  export CURL_CA_BUNDLE="$OIDC_CA_CERT_PATH"
-  export SSL_CERT_FILE="$OIDC_CA_CERT_PATH"
-fi
-
-php_exec() {
-  php $PHP_CA_FLAGS "$@"
-}
-
 wait_for_oidc() {
   local url="$1"
   local timeout="${OIDC_WAIT_TIMEOUT:-300}"
@@ -37,7 +26,7 @@ wait_for_oidc() {
 
     local output
     output=$(OIDC_CHECK_URL="$url" OIDC_CHECK_TIMEOUT="$interval" \
-      php_exec -r '
+      php -r '
         $url = getenv("OIDC_CHECK_URL");
         $timeout = (int)getenv("OIDC_CHECK_TIMEOUT");
         $ch = curl_init($url);
@@ -81,7 +70,7 @@ wait_for_oidc() {
 
 fetch_discovery_document() {
   local url="$1"
-  OIDC_DOC_URL="$url" php_exec -r '
+  OIDC_DOC_URL="$url" php -r '
     $url = getenv("OIDC_DOC_URL");
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -104,7 +93,7 @@ fetch_discovery_document() {
 }
 
 list_issuers() {
-  php_exec /opt/sei/custom-scripts/setup_environment.php \
+  php /opt/sei/custom-scripts/setup_environment.php \
       --step=manage_oauth \
       --list \
       --json=1 2>/dev/null
@@ -133,7 +122,7 @@ user_field_mapping_exists() {
   local internal="$3"
 
   local output
-  output=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+  output=$(php /opt/sei/custom-scripts/setup_environment.php \
     --step=manage_oauth \
     --check-user-field \
     --id="$issuer_id" \
@@ -287,7 +276,6 @@ configure_oauth2() {
   log "OIDC provider base URL: ${PROVIDER_BASEURL}"
   log "OIDC token endpoint: ${OIDC_TOKEN_ENDPOINT}"
   log "OIDC userinfo endpoint: ${OIDC_USERINFO_ENDPOINT}"
-  log "CA cert path: ${OIDC_CA_CERT_PATH:-<not set>}"
 
   # Check if issuer already exists
   log "Checking for existing OAuth2 provider named '$OIDC_NAME'..."
@@ -302,7 +290,7 @@ configure_oauth2() {
 
       # The chart owns the provider record, so every boot rewrites it from the values
       log "Updating provider $EXISTING_ID from the chart values..."
-      php_exec /opt/sei/custom-scripts/setup_environment.php \
+      php /opt/sei/custom-scripts/setup_environment.php \
         --step=manage_oauth \
         --id="$EXISTING_ID" \
         --baseurl="$PROVIDER_BASEURL" \
@@ -317,7 +305,7 @@ configure_oauth2() {
   else
       log "No existing provider found. Creating a new one..."
 
-      PROVIDER_OUTPUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+      PROVIDER_OUTPUT=$(php /opt/sei/custom-scripts/setup_environment.php \
         --step=manage_oauth \
         --baseurl="$PROVIDER_BASEURL" \
         --clientid="$OIDC_CLIENT_ID" \
@@ -375,7 +363,7 @@ configure_user_field_mappings() {
 
     while true; do
       log "Creating user field mapping ($external -> $internal) for provider ID: $OAUTH2_ISSUER_ID (attempt ${local_attempt}/${max_attempts})..."
-      MAP_OUT=$(php_exec /opt/sei/custom-scripts/setup_environment.php \
+      MAP_OUT=$(php /opt/sei/custom-scripts/setup_environment.php \
         --step=manage_oauth \
         --create-user-field \
         --id="$OAUTH2_ISSUER_ID" \
@@ -426,7 +414,7 @@ configure_user_field_mappings() {
 enable_oauth2_plugin() {
   section="Enable OAuth2 Plugin"
   log "Enabling OAuth2 auth plugin..."
-  out="$(php_exec /opt/sei/custom-scripts/setup_environment.php --step=enable_auth_oauth2 2>&1)"
+  out="$(php /opt/sei/custom-scripts/setup_environment.php --step=enable_auth_oauth2 2>&1)"
   rc=$?
   if [ "$rc" -ne 0 ]; then
     error "$section" "Failed to enable OAuth2 auth plugin: $out"
@@ -442,8 +430,8 @@ configure_site() {
   if [ "$OIDC_DISABLE_CURL_SECURITY" = "true" ]; then
     log "Disabling CURL security restrictions for internal OIDC provider communication..."
 
-    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
-    php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
+    php /var/www/html/admin/cli/cfg.php --name=curlsecurityblockedhosts --set='' || error "$section" "Failed to set curlsecurityblockedhosts"
+    php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set='' || error "$section" "Failed to set curlsecurityallowedport"
 
     log "CURL security restrictions disabled."
   else
@@ -461,13 +449,13 @@ configure_site() {
       esac
     fi
 
-    CURRENT_PORTS=$(php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport 2>/dev/null) || CURRENT_PORTS=""
+    CURRENT_PORTS=$(php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport 2>/dev/null) || CURRENT_PORTS=""
 
     if printf '%s\n' "$CURRENT_PORTS" | grep -qx "$OIDC_PORT"; then
       log "Port $OIDC_PORT is already in curlsecurityallowedport."
     else
       NEW_PORTS=$(printf '%s\n%s' "$CURRENT_PORTS" "$OIDC_PORT" | grep -v "^$")
-      php_exec /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set="$NEW_PORTS" || error "$section" "Failed to set curlsecurityallowedport"
+      php /var/www/html/admin/cli/cfg.php --name=curlsecurityallowedport --set="$NEW_PORTS" || error "$section" "Failed to set curlsecurityallowedport"
       log "Port $OIDC_PORT added to curlsecurityallowedport."
     fi
 
@@ -513,7 +501,7 @@ execute_section "Enable OAuth2 Plugin" enable_oauth2_plugin
 ADMINUSERID=$(moosh -n user-list 2>/dev/null | grep "$MOODLE_EMAIL" | sed -n 's/^[^(]*(\([0-9][0-9]*\)).*/\1/p' | head -1)
 if [ -n "$ADMINUSERID" ]; then
     log "Found user $MOODLE_EMAIL with ID: $ADMINUSERID and adding it to the siteadmins list"
-    CURRENT_ADMINS=$(php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins 2>/dev/null | grep -v "^$" | tail -1 || echo "")
+    CURRENT_ADMINS=$(php /var/www/html/admin/cli/cfg.php --name=siteadmins 2>/dev/null | grep -v "^$" | tail -1 || echo "")
     if [ -z "$CURRENT_ADMINS" ] || [ "$CURRENT_ADMINS" = "siteadmins" ]; then
         NEW_ADMINS="$ADMINUSERID"
     elif echo ",$CURRENT_ADMINS," | grep -q ",$ADMINUSERID,"; then
@@ -521,7 +509,7 @@ if [ -n "$ADMINUSERID" ]; then
     else
         NEW_ADMINS="$CURRENT_ADMINS,$ADMINUSERID"
     fi
-    php_exec /var/www/html/admin/cli/cfg.php --name=siteadmins --set="$NEW_ADMINS"
+    php /var/www/html/admin/cli/cfg.php --name=siteadmins --set="$NEW_ADMINS"
 fi
 
 if [ "$STAGE" = "all" ]; then

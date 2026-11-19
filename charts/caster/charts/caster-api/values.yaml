@@ -266,10 +266,39 @@ env:
   Terraform__OutputSaveInterval: 5000
   Terraform__StateRetryCount: 12
   Terraform__StateRetryIntervalSeconds: 5
-  Terraform__EnvironmentVariables__InheritAll: "true"
-  # Terraform__EnvironmentVariables__Inherit__0: "^SEI"
-  # Terraform__EnvironmentVariables__Inherit__Direct__0__Name: "SSL_CERT_DIR"
-  # Terraform__EnvironmentVariables__Inherit__Direct__0__Value: "/usr/local/share/ca-certificates/:/etc/ssl/certs/"
+  # Read each successful plan's machines and networks for the Topology view: one extra
+  # "terraform show -json" per plan (one more pod when Runs execute as k8s jobs).
+  Terraform__GenerateTopology: "true"
+  # Environment variables Terraform runs get from the API container.
+  # InheritAll "true" passes every one of them to every run, including the API's own
+  # database connection string, OIDC client secret and GitLab token. Leave it "false"
+  # and list what runs need: Inherit takes case-sensitive regexes, Direct sets values.
+  # The chart already passes the GIT_CONFIG_SYSTEM, SSL_CERT_DIR and TF_CLI_CONFIG_FILE
+  # it sets for gitcredentials, certificateMap and terraformrc.
+  Terraform__EnvironmentVariables__InheritAll: "false"
+  # Terraform__EnvironmentVariables__Inherit__0: "^(VSPHERE_SERVER|HTTPS?_PROXY|NO_PROXY)$"
+  # Terraform__EnvironmentVariables__Direct__VSPHERE_ALLOW_UNVERIFIED_SSL: "false"
+
+  # API environment variables whose names match these regexes are secrets: they never
+  # reach runs through Inherit or InheritAll, only the projects an admin assigns them to
+  # with an Environment Set. Supply them through existingSecret or extraEnvFrom, e.g.
+  # CASTER_SECRET_VSPHERE_PASSWORD. Anchor patterns, and never match the API's own
+  # settings (ConnectionStrings__*, Authorization__*, Terraform__GitlabToken).
+  Terraform__Secrets__Patterns__0: "^CASTER_SECRET_"
+  # A secret shorter than this fails the run before Terraform starts: masking a short value
+  # would also replace ordinary output and corrupt what Caster reads from Terraform.
+  Terraform__Secrets__MinimumMaskedLength: 8
+
+  # Infrastructure inventory: lists a hypervisor's templates, ISOs, networks, datastores and
+  # hosts in Caster. Settings under Infrastructure__ never reach Terraform runs; a run gets a
+  # connection's settings only through Environment Set connection entries. Supply the
+  # password or token through existingSecret or extraEnvFrom, e.g.
+  # Infrastructure__Connections__0__ApiToken. See the chart README.
+  # Infrastructure__Connections__0__Name: "lab-proxmox"
+  # Infrastructure__Connections__0__Provider: "proxmox"
+  # Infrastructure__Connections__0__Url: "https://pve.example.com:8006"
+  # Infrastructure__Connections__0__IsoLocations__0: "iso-stock"
+  # Infrastructure__Connections__0__Inventory__Enabled: "true"
 
   # Enable to execute Runs as k8s jobs
   Terraform__KubernetesJobs__Enabled: "false"

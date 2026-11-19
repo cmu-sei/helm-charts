@@ -13,6 +13,9 @@ on:
           - minor
           - major
 
+permissions:
+  contents: read
+
 jobs:
   update-charts:
     runs-on: ubuntu-latest
@@ -22,14 +25,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
         with:
-          version: "latest"
+          version: "v4.3.1"
 
       - name: Install dependencies
         run: |
@@ -48,16 +51,18 @@ jobs:
 
           # Check if there were any changes
           if git diff --quiet charts/crucible-apps/Chart.yaml charts/crucible-apps/Chart.lock; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "No changes detected"
           else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
             echo "Changes detected"
           fi
 
       - name: Increment chart version
         if: steps.update.outputs.has_changes == 'true'
         id: version
+        env:
+          VERSION_BUMP: ${{ inputs.version_bump }}
         run: |
           cd charts/crucible-apps
 
@@ -72,7 +77,7 @@ jobs:
           PATCH="${version_parts[2]}"
 
           # Increment based on input
-          case "${{ github.event.inputs.version_bump }}" in
+          case "$VERSION_BUMP" in
             major)
               MAJOR=$((MAJOR + 1))
               MINOR=0
@@ -89,27 +94,41 @@ jobs:
 
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "New version: $NEW_VERSION"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
           # Update Chart.yaml version
           sed -i "s/^version: .*/version: $NEW_VERSION/" Chart.yaml
 
+      # Push the update to a branch named for the new version, then open a PR
+      # for it. If that PR is already open, the force-push updates it instead.
       - name: Create Pull Request
         if: steps.update.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v8
-        with:
-          commit-message: update crucible umbrella chart to ${{ steps.version.outputs.new_version }}
-          branch: crucible-umbrella-${{ steps.version.outputs.new_version }}
-          delete-branch: true
-          title: "Crucible Umbrella to ${{ steps.version.outputs.new_version }}"
-          body: |
-            Automated update of Crucible umbrella chart to version ${{ steps.version.outputs.new_version }}.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          VERSION_BUMP: ${{ inputs.version_bump }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          BRANCH="crucible-umbrella-$NEW_VERSION"
+          TITLE="Crucible Umbrella to $NEW_VERSION"
+          BODY="Automated update of Crucible umbrella chart to version $NEW_VERSION.
 
-            - Updated all CMU SEI chart dependencies to latest versions
-            - Bumped umbrella chart version (${{ github.event.inputs.version_bump }} bump)
-            - Regenerated Chart.lock file
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          - Updated all CMU SEI chart dependencies to latest versions
+          - Bumped umbrella chart version ($VERSION_BUMP bump)
+          - Regenerated Chart.lock file"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add charts/crucible-apps/Chart.yaml charts/crucible-apps/Chart.lock
+          git commit -m "update crucible umbrella chart to $NEW_VERSION"
+          git push --force-with-lease origin "$BRANCH"
+
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base "$BASE_BRANCH" --head "$BRANCH" --title "$TITLE" --body "$BODY"
+          else
+            echo "PR for $BRANCH already open; the push updated it."
+          fi
 
       - name: No changes needed
         if: steps.update.outputs.has_changes == 'false'

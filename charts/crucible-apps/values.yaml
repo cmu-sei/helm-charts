@@ -1138,35 +1138,13 @@ moodle:
         - "email:email"
         - "sub:idnumber"
       disableCurlSecurityBlockedHosts: true
-      ## Optional: Custom CA certificate for OIDC provider HTTPS
-      ## Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
-      ## You must create the ConfigMap separately before enabling this
-      ## Uncomment the section below to enable
-      # caCert:
-      #   key: "crucible-dev.crt"
-      #   path: "/opt/sei/certs/crucible-dev.crt"
-  ## Optional: Extra environment variables to trust a custom CA certificate system-wide
-  ## Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
-  ## Uncomment the section below to enable (must match caCert paths above)
-  # extraEnvVars:
-  #   - name: SSL_CERT_FILE
-  #     value: /opt/sei/certs/crucible-dev.crt
-  #   - name: SSL_CERT_DIR
-  #     value: /opt/sei/certs
-  #   - name: CURL_CA_BUNDLE
-  #     value: /opt/sei/certs/crucible-dev.crt
-  ## Optional: Mount a custom CA certificate ConfigMap
-  ## Only needed if you use self-signed certificates or corporate proxies (e.g., Zscaler)
-  ## You must create the ConfigMap "crucible-ca-cert" separately before enabling this
-  ## Uncomment the sections below to enable (must match caCert paths above)
-  # extraVolumes:
-  #   - name: crucible-ca-cert
-  #     configMap:
-  #       name: crucible-ca-cert
-  # extraVolumeMounts:
-  #   - name: crucible-ca-cert
-  #     mountPath: /opt/sei/certs
-  #     readOnly: true
+  ## Optional: private CA certificates (self-signed certificates, or a proxy such as Zscaler)
+  ## Moodle chart 0.4 and later add the ConfigMap's certificates to the image's bundle, so your
+  ## CA alone is enough. Chart 0.3, the version Chart.yaml pins today, mounts the file in place of the
+  ## image's bundle, so there it must hold the public roots plus your CA. Create it first.
+  # caBundle:
+  #   existingConfigMap: "moodle-ca-bundle"
+  #   key: "ca-certificates.crt"
   ingress:
     hostname: "{{ .Values.global.domain }}"
     path: /

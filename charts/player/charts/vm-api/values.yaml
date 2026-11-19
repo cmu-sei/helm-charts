@@ -233,7 +233,8 @@ env:
 
   # The shared ISO upload pipeline. Where the bytes end up is per-provider: Vsphere__IsoRoot /
   # Vsphere__IsoUploadViaApi below, and Proxmox__IsoRoot / Proxmox__IsoUploadViaApi.
-  IsoUpload__MaxFileSize: 6000000000
+  # Quoted: Helm renders an unquoted number of 1e6 or more as 6e+09, which .NET can't read as a long.
+  IsoUpload__MaxFileSize: "6000000000"
   # Where IsoUploadViaApi stages its local copy of each ISO. Empty means the system temp directory,
   # which is the pod's own filesystem; see extraVolumes above for mounting scratch space instead.
   IsoUpload__TempStagingPath: ""
@@ -328,9 +329,16 @@ env:
   Proxmox__Token: ""
   Proxmox__ValidateCertificate: true
   Proxmox__StateRefreshIntervalSeconds: 5
+  # How often to read each Vm's snapshot and IP state, beside the power-state passes so they never
+  # wait on it. 0 or less reads again as soon as the last read has finished.
+  Proxmox__GuestStateRefreshIntervalSeconds: 30
+  # How many Vms that read runs for at once
+  Proxmox__GuestStateParallelism: 8
   Proxmox__CheckTaskProgressIntervalMilliseconds: 5000
   Proxmox__ReCheckTaskProgressIntervalMilliseconds: 1000
   Proxmox__FileUploadMaxBytes: 61440
+  # How long to wait on a guest-agent query (ping, network interfaces) before treating it as unanswered
+  Proxmox__GuestAgentTimeoutMilliseconds: 2000
   Proxmox__GuestProcessPollMs: 500
   Proxmox__GuestProcessDefaultTimeoutSeconds: 300
   # View/team-scoped ISO storage. Set IsoStorage to turn Proxmox ISO support on; clear it to turn it off.
