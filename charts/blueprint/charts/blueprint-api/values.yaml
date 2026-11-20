@@ -214,7 +214,8 @@ env:
   # Automation__ActiveSecretKeyId: k1
   # Hosts an http task may reach (wildcards like *.example.com); the Crucible APIs Blueprint is configured with when none
   # Automation__Http__AllowedHosts__0: ""
-  # Hosts an http task sends Blueprint's service account token to; none when unset. Blueprint's own API never gets it.
+  # Hosts an http task sends Blueprint's service account token to; none when unset. Never to Blueprint's own API, by the
+  # host and base path of ClientSettings__BlueprintApiUrl, which should be set to it.
   # Automation__Http__TokenHosts__0: ""
   Automation__Http__AllowLoopbackAddresses: false
   Automation__Http__TimeoutSeconds: 90

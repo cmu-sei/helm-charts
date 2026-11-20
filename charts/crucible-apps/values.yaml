@@ -230,6 +230,8 @@ blueprint:
       ClientSettings__CiteApiUrl: https://{{ .Values.global.domain }}/cite
       ClientSettings__GalleryApiUrl: https://{{ .Values.global.domain }}/gallery
       ClientSettings__PlayerApiUrl: https://{{ .Values.global.domain }}/player
+      # Blueprint's own API, by host and base path, which an http task never calls with Blueprint's service token
+      ClientSettings__BlueprintApiUrl: https://{{ .Values.global.domain }}/blueprint/
       # Player VM API, for automation tasks' VM actions
       ClientSettings__PlayerVmApiUrl: https://{{ .Values.global.domain }}/vm/
       ClientSettings__CasterApiUrl: https://{{ .Values.global.domain }}/caster

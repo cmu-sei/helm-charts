@@ -7,7 +7,7 @@ global:
 blueprint:
   blueprint-api:
     automation:
-      secretKey: "Y2ktb25seS1rZXktbm90LWZvci1hbnktZGVwbG95bWVudCE="
+      secretKey: "Y2ktb25seSBrZXksIGZvciBubyBkZXBsb3ltZW50ISE="
 moodle:
   moodle:
     database:
