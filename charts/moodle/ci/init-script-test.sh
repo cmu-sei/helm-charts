@@ -2,7 +2,8 @@
 # Runs the system-packages init script, as the chart renders it, on the real Moodle image under
 # Docker with the init container's capabilities, and checks the paths that matter: install,
 # fallback to the image's files, required=true, a package the install upgrades, and a path that is
-# a file. Needs docker, helm and python3 with PyYAML, and the Alpine mirror. Not run in CI.
+# a file, and a data package whose ICU version differs from the image's. Needs docker, helm and
+# python3 with PyYAML, and the Alpine mirror; lint-charts.sh runs it, and it skips without docker.
 set -u
 CHART="$(cd "$(dirname "$0")/.." && pwd)"
 IMAGE="${IMAGE:-erseco/alpine-moodle:v5.2.4}"
@@ -31,6 +32,18 @@ render --set 'systemPackages.packages={ghostscript}' --set 'systemPackages.dataP
 run "$WORK/good.sh"; check "install succeeds" $?
 vol 'test -x /p/bin/gs && test -d /p/root/usr/share/icu && ! test -e /p/.orig'; check "install exports gs and the icu path, and removes the pristine copy" $?
 vol 'ls -l /p/root/usr/share/icu/*/icudt*.dat | awk "{ if (\$5 < 20000000) exit 1 }"'; check "the unpacked data package replaced the small en-only data file" $?
+
+# a data package from a newer patch release unpacks into a directory ICU does not read; the data
+# must still land in the image's own directory, and a different major must fail
+sed 's#^for f in /tmp/dl/\*\.apk; do apk extract.*#&; for d in /tmp/data/usr/share/icu/*; do mv "$d" "${d%/*}/99.9"; done#' "$WORK/good.sh" > "$WORK/patch.sh"
+grep -q '/99\.9' "$WORK/patch.sh"; check "newer-patch script was built" $?
+run "$WORK/patch.sh"; check "data from a newer ICU patch release installs" $?
+vol 'for f in /p/root/usr/share/icu/*/icudt*.dat; do case "$f" in */99.9/*) ;; *) test "$(stat -c %s "$f")" -gt 20000000 || exit 1 ;; esac; done'; check "the image's own ICU directory got the full data" $?
+sed 's#^for f in /tmp/dl/\*\.apk; do apk extract.*#&; for f in /tmp/data/usr/share/icu/*/icudt*.dat; do mv "$f" "${f%/*}/icudt99l.dat"; done#' "$WORK/good.sh" > "$WORK/major.sh"
+grep -q 'icudt99l' "$WORK/major.sh"; check "other-major script was built" $?
+run "$WORK/major.sh"; check "data of another ICU major falls back with required=false" $?
+grep -q "was not replaced" "$WORK/major.sh.log"; check "it says the image's data file was not replaced" $?
+vol 'test -f /p/root/usr/share/icu/*/icudt*.dat && ! test -e /p/.orig'; check "the fallback keeps the image's ICU data" $?
 
 render --set 'systemPackages.packages={no-such-pkg-xyz}' > "$WORK/bad.sh"
 run "$WORK/bad.sh"; check "bogus package with required=false exits 0" $?

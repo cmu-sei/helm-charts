@@ -125,6 +125,15 @@ out=$(render --set persistence.moodle.enabled=true --set persistence.moodle.type
   --set persistence.moodledata.type=emptyDir "${NOCREATE[@]}" --set persistence.plugincache.size=null --set persistence.plugincache.storageClass=null)
 grep -q 'mountPath: /shared/plugincache' <<<"$out" && grep -q 'chown 65534:65534 /shared/plugincache' <<<"$out"
 check "volume-permissions chowns the other key's directory when the shared volume is named moodle" $?
+out=$(render --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data \
+  --set persistence.plugincache.enabled=true --set persistence.plugincache.type=persistentVolumeClaim --set persistence.plugincache.existingClaim=shared --set persistence.plugincache.subPath=plugins \
+  "${NOCREATE[@]}" --set persistence.plugincache.size=null --set persistence.plugincache.storageClass=null)
+grep -q 'name: volume-permissions' <<<"$out" && grep -q 'chown 65534:65534 /shared/moodledata' <<<"$out" && grep -q 'chown 65534:65534 /shared/plugincache' <<<"$out" && ! grep -q 'chown -R 65534:65534 /var/www/html' <<<"$out"
+check "volume-permissions chowns every key's directory on a shared claim that does not include moodle" $?
+out=$(render --set persistence.moodledata.type=persistentVolumeClaim --set persistence.moodledata.existingClaim=shared --set persistence.moodledata.subPath=data \
+  --set persistence.plugincache.enabled=true --set persistence.plugincache.type=persistentVolumeClaim --set persistence.plugincache.existingClaim=shared --set persistence.plugincache.subPath=plugins \
+  --set volumePermissions.enabled=false "${NOCREATE[@]}" --set persistence.plugincache.size=null --set persistence.plugincache.storageClass=null)
+! grep -q 'name: volume-permissions' <<<"$out"; check "volumePermissions.enabled=false still turns the shared-claim chown off" $?
 renders "a disabled readOnlyDirroot volume does not count as a claim" "${SHARED[@]}" --set readOnlyDirroot.volume.persistentVolumeClaim.claimName=shared
 renders "shared claim with a dot-prefixed subPath renders" --set persistence.moodle.enabled=true \
   --set persistence.moodle.type=persistentVolumeClaim --set persistence.moodle.existingClaim=shared --set persistence.moodle.subPath=.moodle \

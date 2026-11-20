@@ -163,7 +163,19 @@ spec:
       {{- $vpGid = $psc.runAsGroup }}
       {{- end }}
       {{- $vpWanted := ternary $volPerm.enabled true (hasKey $volPerm "enabled") }}
-      {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol) }}
+      {{- /* Keys that share a claim with another key: kubelet creates their subPath directories owned by root, whether or not persistence.moodle is one of them. */}}
+      {{- $nameCount := dict }}
+      {{- range $key, $name := $volNames }}
+      {{- $nameCount = set $nameCount $name (add1 (index $nameCount $name | default 0)) }}
+      {{- end }}
+      {{- $sharedKeys := list }}
+      {{- range $key, $name := $volNames }}
+      {{- if and (ne $key "moodle") (gt (index $nameCount $name | int) 1) }}
+      {{- $sharedKeys = append $sharedKeys $key }}
+      {{- end }}
+      {{- end }}
+      {{- $sharedKeys = sortAlpha $sharedKeys }}
+      {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol $sharedKeys) }}
       {{- if or .Values.initContainers $codeVolume $needsChown $caBundleMount $sysPkgsOn }}
       initContainers:
         {{- if $needsChown }}
@@ -186,12 +198,10 @@ spec:
               {{- if $moodleVol }}
               echo "[volperm] chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html"
               chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html
-              {{- range $key, $name := $volNames }}
-              {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) }}
+              {{- end }}
+              {{- range $key := $sharedKeys }}
               echo "[volperm] chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}"
               chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}
-              {{- end }}
-              {{- end }}
               {{- end }}
               echo "[volperm] done"
           volumeMounts:
@@ -205,14 +215,11 @@ spec:
               {{- with ($persistence.moodle).subPath }}
               subPath: {{ . }}
               {{- end }}
-            {{- /* The other keys on the same claim: kubelet creates their subPath directories owned by root. */}}
-            {{- range $key, $name := $volNames }}
-            {{- if and (ne $key "moodle") (eq $name (index $volNames "moodle")) }}
-            - name: {{ $name }}
+            {{- end }}
+            {{- range $key := $sharedKeys }}
+            - name: {{ index $volNames $key }}
               mountPath: /shared/{{ $key }}
               subPath: {{ (index $persistence $key).subPath }}
-            {{- end }}
-            {{- end }}
             {{- end }}
         {{- end }}
         {{- if $caBundleMount }}
@@ -484,6 +491,31 @@ spec:
               {{- range $sysPkgs.paths }}
               [ ! -d "/tmp/data{{ . }}" ] || cp -a "/tmp/data{{ . }}/." "$ROOT{{ . }}/"
               {{- end }}
+              # ICU reads its data from the directory named for its own full version (the image's
+              # libicuuc reads usr/share/icu/78.1 only), and a newer patch release unpacks into
+              # a directory of its own, which ICU ignores. Put each data file of the same major
+              # over the image's one, and fail if the image's directory still holds another.
+              for new in /tmp/data/usr/share/icu/*/icudt*.dat; do
+                [ -f "$new" ] || continue
+                base=${new##*/}
+                for old in "$ROOT"/usr/share/icu/*/"$base"; do
+                  [ -f "$old" ] || continue
+                  cmp -s "$new" "$old" || cp -f "$new" "$old"
+                done
+              done
+              if ls /tmp/data/usr/share/icu/*/icudt*.dat >/dev/null 2>&1; then
+                for old in "$ROOT"/usr/share/icu/*/icudt*.dat; do
+                  [ -f "$old" ] || continue
+                  same=
+                  for new in /tmp/data/usr/share/icu/*/icudt*.dat; do
+                    if cmp -s "$new" "$old"; then same=1; fi
+                  done
+                  if [ -z "$same" ]; then
+                    echo "[ERROR] $old was not replaced: the data package has no file of that name, so its ICU major version differs from the image's" >&2
+                    exit 1
+                  fi
+                done
+              fi
               (cd /tmp/data && find . -type f | sed 's#^\./##') > /tmp/files
               while read -r f; do
                 if in_paths "$f"; then continue; fi
