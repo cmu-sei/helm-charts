@@ -3,6 +3,11 @@
 # deployment to supply, so fill them with placeholders.
 global:
   domain: crucible.example.com
+# CI renders without a cluster, where the chart cannot generate and keep Blueprint's automation key
+blueprint:
+  blueprint-api:
+    automation:
+      secretKey: "Y2ktb25seS1rZXktbm90LWZvci1hbnktZGVwbG95bWVudCE="
 moodle:
   moodle:
     database:

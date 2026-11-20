@@ -191,7 +191,8 @@ env:
   ClientSettings__CasterApplyMaxWaitMinutes: 120
   ClientSettings__CasterDestroyMaxWaitMinutes: 60
   # Automation tasks: Blueprint runs a MSEL's automation tasks itself (it no longer pushes them to Steamfitter)
-  # Base URL of the Player VM API, for VM actions
+  # Base URL of the Player VM API, for VM actions, ending in a slash (https://crucible.example.com/vm/): without one
+  # its last path segment is dropped
   ClientSettings__PlayerVmApiUrl: ""
   # Run tasks on this replica. The SignalR hub is not shared between replicas, so run them on one only.
   Automation__WorkerEnabled: true
@@ -213,7 +214,7 @@ env:
   # Automation__ActiveSecretKeyId: k1
   # Hosts an http task may reach (wildcards like *.example.com); the Crucible APIs Blueprint is configured with when none
   # Automation__Http__AllowedHosts__0: ""
-  # Hosts an http task sends Blueprint's service account token to; the Crucible APIs when none
+  # Hosts an http task sends Blueprint's service account token to; none when unset. Blueprint's own API never gets it.
   # Automation__Http__TokenHosts__0: ""
   Automation__Http__AllowLoopbackAddresses: false
   Automation__Http__TimeoutSeconds: 90

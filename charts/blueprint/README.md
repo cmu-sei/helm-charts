@@ -117,7 +117,7 @@ Blueprint runs a MSEL's automation tasks itself; it no longer pushes them to Ste
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `ClientSettings__PlayerVmApiUrl` | Base URL of the Player VM API, for VM actions | `""` |
+| `ClientSettings__PlayerVmApiUrl` | Base URL of the Player VM API, for VM actions, ending in a slash (`https://crucible.example.com/vm/`): without one, its last path segment is dropped | `""` |
 | `Automation__WorkerEnabled` | Run tasks on this replica. The SignalR hub is not shared between replicas, so enable it on one only | `true` |
 | `Automation__MaxConcurrentRuns` | Runs at once on this replica | `8` |
 | `Automation__MaxConcurrentVmOperationsPerRun` | VMs one run works on at once | `8` |
@@ -132,7 +132,7 @@ Blueprint runs a MSEL's automation tasks itself; it no longer pushes them to Ste
 | `Automation__SecretKeys__<id>` | A key that encrypts task secrets: 32 random bytes, base64 (`openssl rand -base64 32`). Without one, a task with a secret cannot be saved | unset |
 | `Automation__ActiveSecretKeyId` | The key new secrets use; the first key id in order when unset. Keep old keys while secrets written with them remain | unset |
 | `Automation__Http__AllowedHosts__<n>` | Hosts an http task may reach, wildcards allowed; the Crucible APIs Blueprint is configured with when none | unset |
-| `Automation__Http__TokenHosts__<n>` | Hosts an http task sends Blueprint's service account token to; the Crucible APIs when none | unset |
+| `Automation__Http__TokenHosts__<n>` | Hosts an http task sends Blueprint's service account token to; none when unset, and never Blueprint's own API | unset |
 | `Automation__Http__AllowLoopbackAddresses` | Let http tasks reach loopback addresses, as a development stack needs. Link-local and metadata addresses are always refused | `false` |
 | `Automation__Http__TimeoutSeconds` | Timeout of an http task's request | `90` |
 | `Automation__Ssh__AllowedHosts__<n>` | Hosts an SSH task may reach; SSH tasks are off when none are set | unset |

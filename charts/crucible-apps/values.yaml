@@ -201,11 +201,16 @@ blueprint:
       userName: "" # Service account username
       password: "" # Service account password
     # Key that encrypts automation task secrets (passwords, private keys, http headers): 32 random bytes, base64
-    # (openssl rand -base64 32). When empty, one is generated and kept on upgrade by reading the existing secret.
-    # Set it when the chart is rendered without cluster access (helm template, Argo CD), where a generated key would
-    # change on every render and the stored secrets could no longer be read.
+    # (openssl rand -base64 32). When empty, one is generated on install and kept on upgrade by reading the existing
+    # secret. A render without cluster access (helm template, Argo CD) cannot keep a generated key, so there it must be
+    # set, and the render fails until it is. A render that would replace a stored key fails too.
     automation:
       secretKey: ""
+      # The id of the key new secrets are written with. To rotate: set a new id here and the new key in secretKey; the
+      # stored keys are kept, so the secrets written with them stay readable.
+      activeKeyId: k1
+      # Earlier keys by id, for a render that cannot read the cluster to keep them (helm template, Argo CD)
+      previousKeys: {}
     env:
       PathBase: /blueprint
       # CORS policy settings
