@@ -2,7 +2,8 @@ name: Validate Charts
 
 on:
   # Every PR, with no paths filter: a required check whose workflow never runs
-  # leaves the PR waiting on it. Jobs with no changed charts pass quickly.
+  # leaves the PR waiting on it. With no changed charts the jobs pass without
+  # checking anything; the dry-run job still starts its kind cluster first.
   pull_request:
     branches:
       - main
