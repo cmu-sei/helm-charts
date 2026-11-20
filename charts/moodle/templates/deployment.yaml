@@ -30,11 +30,15 @@
 {{- if and (or $multiPod $rollingUpdate) (not ($persistence.localcache | default dict).enabled) }}
 {{- $_ := set $persistence "localcache" (dict "enabled" true "type" "emptyDir" "sizeLimit" "1Gi") }}
 {{- end }}
+{{- $volNames := fromYaml (include "moodle.persistence.volumeNames" (dict "root" $ "persistence" $persistence "codeVolume" $codeVolume)) }}
 {{- $secretConfig := $readOnlyDirroot.secret | default dict }}
 {{- $configKey := $secretConfig.key | default "config.php" }}
 {{- $caBundle := .Values.caBundle | default dict }}
 {{- $caBundleMount := or $caBundle.existingSecret $caBundle.existingConfigMap }}
 {{- $caBundleKey := $caBundle.key | default "ca-certificates.crt" }}
+{{- $sysPkgs := .Values.systemPackages | default dict }}
+{{- $sysPkgsOn := $sysPkgs.enabled | default false }}
+{{- $sysPkgsMount := $sysPkgs.mountPath | default "/opt/system-packages" }}
 {{/* The plugin cache: its own volume when persistence.plugincache is on, else inside dataroot.
      The seed init container has no dataroot unless one is mounted, so it may have no cache. */}}
 {{- $pluginCache := $persistence.plugincache | default dict }}
@@ -56,6 +60,9 @@ metadata:
     {{- include "moodle.tplvalues.render" (dict "value" $.Values.commonAnnotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
+  {{- with .Values.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
   {{- if not $autoscaling.enabled }}
   replicas: {{ .Values.replicaCount | default 1 }}
   {{- end }}
@@ -156,8 +163,20 @@ spec:
       {{- $vpGid = $psc.runAsGroup }}
       {{- end }}
       {{- $vpWanted := ternary $volPerm.enabled true (hasKey $volPerm "enabled") }}
-      {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol) }}
-      {{- if or .Values.initContainers $codeVolume $needsChown $caBundleMount }}
+      {{- /* Keys that share a claim with another key: kubelet creates their subPath directories owned by root, whether or not persistence.moodle is one of them. */}}
+      {{- $nameCount := dict }}
+      {{- range $key, $name := $volNames }}
+      {{- $nameCount = set $nameCount $name (add1 (index $nameCount $name | default 0)) }}
+      {{- end }}
+      {{- $sharedKeys := list }}
+      {{- range $key, $name := $volNames }}
+      {{- if and (ne $key "moodle") (gt (index $nameCount $name | int) 1) }}
+      {{- $sharedKeys = append $sharedKeys $key }}
+      {{- end }}
+      {{- end }}
+      {{- $sharedKeys = sortAlpha $sharedKeys }}
+      {{- $needsChown := and $vpWanted (or $codeVolume $moodleVol $sharedKeys) }}
+      {{- if or .Values.initContainers $codeVolume $needsChown $caBundleMount $sysPkgsOn }}
       initContainers:
         {{- if $needsChown }}
         - name: volume-permissions
@@ -180,6 +199,10 @@ spec:
               echo "[volperm] chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html"
               chown -R {{ $vpUid }}:{{ $vpGid }} /var/www/html
               {{- end }}
+              {{- range $key := $sharedKeys }}
+              echo "[volperm] chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}"
+              chown {{ $vpUid }}:{{ $vpGid }} /shared/{{ $key }}
+              {{- end }}
               echo "[volperm] done"
           volumeMounts:
             {{- if $codeVolume }}
@@ -187,8 +210,16 @@ spec:
               mountPath: /seed
             {{- end }}
             {{- if $moodleVol }}
-            - name: moodle
+            - name: {{ index $volNames "moodle" }}
               mountPath: /var/www/html
+              {{- with ($persistence.moodle).subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- range $key := $sharedKeys }}
+            - name: {{ index $volNames $key }}
+              mountPath: /shared/{{ $key }}
+              subPath: {{ (index $persistence $key).subPath }}
             {{- end }}
         {{- end }}
         {{- if $caBundleMount }}
@@ -304,13 +335,13 @@ spec:
             {{- if $seedCache }}
             # Only for the plugin cache, which outlives the seeded tree.
             {{- if $pluginCache.enabled }}
-            - name: plugincache
+            - name: {{ index $volNames "plugincache" }}
               mountPath: {{ $pluginCacheDir }}
               {{- if $pluginCache.subPath }}
               subPath: {{ $pluginCache.subPath }}
               {{- end }}
             {{- else }}
-            - name: moodledata
+            - name: {{ index $volNames "moodledata" }}
               mountPath: /var/www/moodledata
               {{- if $seedData.subPath }}
               subPath: {{ $seedData.subPath }}
@@ -329,11 +360,209 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
-            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- include "moodle.extraVolumeMounts" (dict "root" $ "names" $volNames) | nindent 12 }}
+            {{- end }}
+        {{- end }}
+        {{- if $sysPkgsOn }}
+        # Root, because apk add needs it; the Moodle container cannot run apk. It copies only
+        # what the packages add into /pkgroot, and never touches a PVC. Capabilities are cut to
+        # what apk's installs of root-owned files use.
+        - name: system-packages
+          image: {{ include "moodle.image" . }}
+          imagePullPolicy: {{ include "moodle.imagePullPolicy" . }}
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - DAC_OVERRIDE
+                - FOWNER
+                - FSETID
+                - SETFCAP
+            seccompProfile:
+              type: RuntimeDefault
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -e
+              ROOT=/pkgroot/root
+              ORIG=/pkgroot/.orig
+              # A restarted container finds the previous attempt's output; start clean.
+              find /pkgroot -mindepth 1 -delete
+              mkdir -p "$ROOT" /pkgroot/lib /pkgroot/bin
+
+              # Seed first: if the install fails, the mounts over these paths still hold the
+              # image's own files. ICU without its data file makes every intl call throw.
+              {{- range $sysPkgs.paths }}
+              if [ -e "{{ . }}" ] && [ ! -d "{{ . }}" ]; then
+                echo "[ERROR] systemPackages.paths entry {{ . }} is a file in the image; list its directory" >&2
+                exit 1
+              fi
+              mkdir -p "$ROOT{{ . }}"
+              [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
+              {{- end }}
+
+              # Pristine copy, kept inside the volume so sizeLimit covers it, to fall back to
+              # if anything after this point fails.
+              cp -a "$ROOT" "$ORIG"
+
+              # The install and export run in a child shell: set -e is ignored inside an if.
+              cat > /tmp/install.sh <<'INSTALL'
+              set -o pipefail
+              {{- if $sysPkgs.repositories }}
+              printf '%s\n'{{ range $sysPkgs.repositories }} {{ . | quote }}{{ end }} > /etc/apk/repositories
+              {{- end }}
+              apk info | sort > /tmp/before
+              apk info -v | sort > /tmp/before.v
+              {{- if $sysPkgs.packages }}
+              apk add --no-cache{{ range $sysPkgs.packages }} {{ . | quote }}{{ end }}
+              {{- end }}
+              apk info | sort > /tmp/after
+              apk info -v | sort > /tmp/after.v
+
+              # A package the image has, upgraded here, would leave the new binaries meeting the
+              # image's older libraries in the Moodle container, which only gets new packages.
+              comm -13 /tmp/before.v /tmp/after.v | sed -E 's/-[0-9][^-]*-r[0-9]+$//' | sort > /tmp/changed
+              comm -12 /tmp/before /tmp/changed > /tmp/upgraded
+              if [ -s /tmp/upgraded ]; then
+                echo "[ERROR] apk upgraded packages the image already has: $(tr '\n' ' ' < /tmp/upgraded)" >&2
+                echo "[ERROR] their new libraries would not reach the Moodle container; use a newer image.tag or a derived image" >&2
+                exit 1
+              fi
+              {{- range $sysPkgs.paths }}
+              [ ! -d "{{ . }}" ] || cp -a "{{ . }}/." "$ROOT{{ . }}/"
+              {{- end }}
+
+              in_paths() {
+                case "/$1" in
+                  {{- range $sysPkgs.paths }}
+                  "{{ . }}"/*) return 0 ;;
+                  {{- end }}
+                  *) return 1 ;;
+                esac
+              }
+
+              # Packages the install added, so nothing here shadows an image library, and the ones
+              # asked for that the image already has: their files are the image's own, so the
+              # same paths (pathtogs under mountPath/bin, for one) hold whichever image runs.
+              : > /tmp/skipped
+              comm -13 /tmp/before /tmp/after > /tmp/export
+              for want in{{ range $sysPkgs.packages }} {{ regexFind "^[A-Za-z0-9][A-Za-z0-9._+-]*" . | quote }}{{ end }}; do
+                if grep -qx -- "$want" /tmp/before; then
+                  echo "[system-packages] $want is already in the image; exporting its own files"
+                  echo "$want" >> /tmp/export
+                fi
+              done
+              for pkg in $(sort -u /tmp/export); do
+                apk info -qL "$pkg" > /tmp/files
+                while read -r f; do
+                  [ -f "/$f" ] || [ -L "/$f" ] || continue
+                  if in_paths "$f"; then continue; fi
+                  case "$f" in
+                    usr/lib/*.so*|lib/*.so*)
+                      case "${f#*lib/}" in
+                        */*) echo "$f" >> /tmp/skipped ;;
+                        *) cp -a "/$f" /pkgroot/lib/ ;;
+                      esac ;;
+                    usr/bin/*)
+                      cp -a "/$f" /pkgroot/bin/ ;;
+                    usr/share/doc/*|usr/share/man/*|usr/share/info/*|usr/share/licenses/*|usr/share/locale/*) ;;
+                    usr/share/bash-completion/*|usr/share/zsh/*|usr/share/fish/*|usr/share/pkgconfig/*) ;;
+                    usr/share/aclocal/*|usr/share/gtk-doc/*|usr/lib/pkgconfig/*|usr/lib/cmake/*|usr/include/*) ;;
+                    usr/lib/*.a|usr/lib/*.la|lib/apk/*|var/lib/apk/*|etc/apk/*) ;;
+                    *) echo "$f" >> /tmp/skipped ;;
+                  esac
+                done < /tmp/files
+              done
+              {{- if $sysPkgs.dataPackages }}
+
+              # Data-only packages are unpacked, not installed, so a mirror that has moved past
+              # the image's exact build cannot refuse them over a version lock. Signatures are
+              # checked by apk; dependencies are not resolved; only files under paths are used.
+              mkdir -p /tmp/dl /tmp/data
+              (cd /tmp/dl && apk fetch --no-cache{{ range $sysPkgs.dataPackages }} {{ . | quote }}{{ end }})
+              for f in /tmp/dl/*.apk; do apk extract --no-cache --destination /tmp/data "$f"; done
+              {{- range $sysPkgs.paths }}
+              [ ! -d "/tmp/data{{ . }}" ] || cp -a "/tmp/data{{ . }}/." "$ROOT{{ . }}/"
+              {{- end }}
+              # ICU reads its data from the directory named for its own full version (the image's
+              # libicuuc reads usr/share/icu/78.1 only), and a newer patch release unpacks into
+              # a directory of its own, which ICU ignores. Put each data file of the same major
+              # over the image's one, and fail if the image's directory still holds another.
+              for new in /tmp/data/usr/share/icu/*/icudt*.dat; do
+                [ -f "$new" ] || continue
+                base=${new##*/}
+                for old in "$ROOT"/usr/share/icu/*/"$base"; do
+                  [ -f "$old" ] || continue
+                  cmp -s "$new" "$old" || cp -f "$new" "$old"
+                done
+              done
+              if ls /tmp/data/usr/share/icu/*/icudt*.dat >/dev/null 2>&1; then
+                for old in "$ROOT"/usr/share/icu/*/icudt*.dat; do
+                  [ -f "$old" ] || continue
+                  same=
+                  for new in /tmp/data/usr/share/icu/*/icudt*.dat; do
+                    if cmp -s "$new" "$old"; then same=1; fi
+                  done
+                  if [ -z "$same" ]; then
+                    echo "[ERROR] $old was not replaced: the data package has no file of that name, so its ICU major version differs from the image's" >&2
+                    exit 1
+                  fi
+                done
+              fi
+              (cd /tmp/data && find . -type f | sed 's#^\./##') > /tmp/files
+              while read -r f; do
+                if in_paths "$f"; then continue; fi
+                echo "$f" >> /tmp/skipped
+              done < /tmp/files
+              echo "[system-packages] unpacked: {{ join " " $sysPkgs.dataPackages }}"
+              {{- end }}
+              echo "[system-packages] installed: $(comm -13 /tmp/before /tmp/after | tr '\n' ' ')"
+              if [ -s /tmp/skipped ]; then
+                echo "[WARN] $(wc -l < /tmp/skipped) installed files are outside lib/, bin/ and systemPackages.paths and are not available to Moodle; add their directory to systemPackages.paths if it needs them. First 25:" >&2
+                head -25 /tmp/skipped | sed 's/^/  /' >&2
+              fi
+              INSTALL
+              if ROOT="$ROOT" sh -e /tmp/install.sh; then
+                rm -rf "$ORIG"
+              else
+                {{- if $sysPkgs.required }}
+                echo "[ERROR] installing the system packages failed and systemPackages.required=true" >&2
+                exit 1
+                {{- else }}
+                echo "[WARN] installing the system packages failed; starting without them" >&2
+                find /pkgroot -mindepth 1 -maxdepth 1 ! -name .orig -exec rm -rf {} +
+                mkdir -p /pkgroot/lib /pkgroot/bin
+                cp -a "$ORIG" "$ROOT"
+                rm -rf "$ORIG"
+                {{- end }}
+              fi
+          {{- with $sysPkgs.extraEnvVars }}
+          env:
+            {{- include "moodle.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $sysPkgs.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: system-packages
+              mountPath: /pkgroot
+            {{- if $caBundleMount }}
+            - name: ca-bundle
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              subPath: ca-certificates.crt
+              readOnly: true
             {{- end }}
         {{- end }}
         {{- if .Values.initContainers }}
-        {{- include "moodle.tplvalues.render" (dict "value" $.Values.initContainers "context" $) | nindent 8 }}
+        {{- include "moodle.containers" (dict "root" $ "value" $.Values.initContainers "names" $volNames) | nindent 8 }}
         {{- end }}
       {{- end }}
       containers:
@@ -610,6 +839,10 @@ spec:
                   key: {{ .key }}
           {{- end }}
           {{- end }}
+          {{- if $sysPkgsOn }}
+            - name: LD_LIBRARY_PATH
+              value: {{ $sysPkgsMount }}/lib
+          {{- end }}
           {{- if .Values.extraEnvVars }}
             {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -725,7 +958,7 @@ spec:
             {{- else if eq $key "plugincache" }}
             {{- $defaultMountPath = "/var/www/plugin-cache" }}
             {{- end }}
-            - name: {{ $key }}
+            - name: {{ index $volNames $key }}
               mountPath: {{ $value.mountPath | default $defaultMountPath }}
               {{- if $value.subPath }}
               subPath: {{ $value.subPath }}
@@ -757,11 +990,22 @@ spec:
               subPath: ca-certificates.crt
               readOnly: true
             {{- end }}
+            {{- if $sysPkgsOn }}
+            - name: system-packages
+              mountPath: {{ $sysPkgsMount }}
+              readOnly: true
+            {{- range $sysPkgs.paths }}
+            - name: system-packages
+              mountPath: {{ . }}
+              subPath: root{{ . }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
             {{- if $.Values.extraVolumeMounts }}
-            {{- include "moodle.tplvalues.render" (dict "value" $.Values.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- include "moodle.extraVolumeMounts" (dict "root" $ "names" $volNames) | nindent 12 }}
             {{- end }}
         {{- if .Values.sidecars }}
-        {{- include "moodle.tplvalues.render" (dict "value" $.Values.sidecars "context" $) | nindent 8 }}
+        {{- include "moodle.containers" (dict "root" $ "value" $.Values.sidecars "names" $volNames) | nindent 8 }}
         {{- end }}
       volumes:
         {{- if $codeVolume }}
@@ -785,7 +1029,7 @@ spec:
         {{- end }}
         {{- range $key, $value := $persistence }}
         {{- if $value.enabled }}
-        {{- if not (and $codeVolume (or (eq $key "dirroot") (eq $key "moodle"))) }}
+        {{- if and (not (and $codeVolume (or (eq $key "dirroot") (eq $key "moodle")))) (eq (index $volNames $key) $key) }}
         {{- $type := $value.type | default "persistentVolumeClaim" }}
         - name: {{ $key }}
           {{- if eq $type "persistentVolumeClaim" }}
@@ -833,6 +1077,11 @@ spec:
         - name: ca-bundle
           emptyDir:
             sizeLimit: 10Mi
+        {{- end }}
+        {{- if $sysPkgsOn }}
+        - name: system-packages
+          emptyDir:
+            sizeLimit: {{ $sysPkgs.sizeLimit | default "1Gi" }}
         {{- end }}
         {{- if $scripts }}
         - name: chart-scripts

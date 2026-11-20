@@ -413,11 +413,60 @@ readinessProbe:
 resourcesPreset: "small"
 resources: {}
 
+## Seconds the Deployment may go without progress before it reports ProgressDeadlineExceeded.
+## Empty keeps Kubernetes' default (600). Moodle's install or upgrade runs before the pod is Ready,
+## so on a large site keep this above the startup probe's total budget:
+## initialDelaySeconds + failureThreshold x periodSeconds.
+progressDeadlineSeconds: ""
+
 # Extra container ports
 extraContainerPorts: []
 
 # Init containers
 initContainers: []
+
+## Alpine packages the image lacks, installed at pod start by a root init container that runs the
+## Moodle image itself, then made visible to the Moodle container, which cannot run apk.
+## Needs the Alpine mirror at every pod start (egress to it, through a proxy or a mirror of your
+## own if the cluster restricts egress) and adds seconds to it (ghostscript plus icu-data-full is
+## about 16 packages and 65 MB). Revisions are not pinned: an Alpine branch serves only its latest
+## builds, so security fixes arrive on their own and two pods can differ. For production, a
+## derived image (FROM the Moodle image, RUN apk add ...) does the same once, reproducibly.
+## Example: full ICU locale data and Ghostscript for PDF annotation.
+##   systemPackages:
+##     enabled: true
+##     packages: [ghostscript]
+##     dataPackages: [icu-data-full]
+##     paths: [/usr/share/icu, /usr/share/ghostscript, /usr/share/fontconfig, /etc/fonts]
+##   moodle:
+##     config:
+##       core:
+##         pathtogs: /opt/system-packages/bin/gs
+systemPackages:
+  enabled: false
+  packages: [] # Alpine package names, as apk add takes them. A package the image already has is exported as is
+  ## Data-only Alpine packages (icu-data-full) unpacked instead of installed: no dependencies are
+  ## resolved and only files under paths are used. They survive a mirror that has moved past the
+  ## image's exact build, which apk add of icu-data-full does not (it is locked to the image's icu).
+  dataPackages: []
+  ## Image directories the packages install into. Each is mounted read-only over the image's own,
+  ## seeded with the image's original contents first, so a failed install changes nothing.
+  paths: []
+  ## Where the new shared libraries (lib/) and executables (bin/) are mounted. The chart sets
+  ## LD_LIBRARY_PATH to mountPath/lib; it holds only libraries the image lacks.
+  mountPath: /opt/system-packages
+  ## true: a failed install stops the pod. false: warn and start without the packages.
+  required: false
+  ## Size limit of the volume that holds the packages, the seeded copies of paths and one pristine
+  ## copy of them. Beyond it the pod is evicted.
+  sizeLimit: 1Gi
+  ## Environment for the init container only (extraEnvVars goes to the Moodle container), for
+  ## example HTTP_PROXY, HTTPS_PROXY and NO_PROXY to reach the mirror through a proxy.
+  extraEnvVars: []
+  ## Replaces /etc/apk/repositories in the init container: http(s) URLs of a mirror other than the
+  ## image's own. Leave empty to use the image's repositories.
+  repositories: []
+  resources: {}
 
 ## Root init container that chowns a mounted code volume to the container user.
 ## Rendered only when a volume is mounted over the code tree, because storage normally
