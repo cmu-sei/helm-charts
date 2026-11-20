@@ -58,7 +58,7 @@ ports: []
 #     name: mail
 #     subPath: mail
 volumeMounts: []
-    
+
 # Volumes for the pod (each a PersistentVolumeClaim), for example:
 #   - name: mail
 #     persistentVolumeClaim:

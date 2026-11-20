@@ -1,11 +1,11 @@
 name: Validate Charts
 
 on:
+  # Every PR, with no paths filter: a required check whose workflow never runs
+  # leaves the PR waiting on it. Jobs with no changed charts pass quickly.
   pull_request:
     branches:
       - main
-    paths:
-      - "charts/**"
 
 permissions:
   contents: read

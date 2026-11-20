@@ -13,6 +13,9 @@
 # real first, so custom resources validate even when the chart that ships
 # their CRD didn't change.
 #
+# A change to this script, add-helm-repos.sh or validate-charts.yaml checks
+# every chart, so a change to the check itself is tested too.
+#
 # Charts are rendered the same way as in lint-charts.sh: once per
 # ci/*-values.yaml file, or with default values if there are none. Remote
 # dependencies are fetched with `helm dependency build --skip-refresh`, so the
@@ -39,6 +42,10 @@ else
     # charts that still exist.
     charts=$(echo "$changed_files" | grep -E '^charts/[^/]+/' | cut -d/ -f1-2 | sort -u |
         while read -r dir; do [[ -f "$dir/Chart.yaml" ]] && echo "$dir"; done)
+    if echo "$changed_files" | grep -qE '^\.github/(scripts/(dry-run-charts|add-helm-repos)\.sh|workflows/validate-charts\.yaml)$'; then
+        echo "The dry-run tooling changed, so checking every chart"
+        charts="$all_charts"
+    fi
 fi
 echo "=============================================="
 
@@ -67,19 +74,36 @@ render() {
 }
 
 # Splits rendered YAML on document separators and keeps either the CRDs
-# (`crds`) or everything else (`objects`). The kind may be quoted, as in the
-# Keycloak operator's generated CRDs.
+# (`crds`) or everything else (`objects`). Only blank or comment-only
+# documents are dropped, so a malformed one (no kind, say) still reaches
+# kubectl and fails there. The kind may be quoted, as in the Keycloak
+# operator's generated CRDs.
 select_docs() {
     awk -v want="$1" '
         function flush() {
-            if (has_kind && ((want == "crds") == is_crd)) printf "%s---\n", doc
-            doc = ""; has_kind = 0; is_crd = 0
+            if (has_content && ((want == "crds") == is_crd)) printf "%s---\n", doc
+            doc = ""; has_content = 0; is_crd = 0
         }
         /^---[[:space:]]*$/ { flush(); next }
         { doc = doc $0 "\n" }
-        /^kind:/ { has_kind = 1 }
+        !/^[[:space:]]*(#.*)?$/ { has_content = 1 }
         /^kind:[[:space:]]*["\047]?CustomResourceDefinition["\047]?[[:space:]]*$/ { is_crd = 1 }
         END { flush() }'
+}
+
+# dry_run <namespace> <crds|objects> <rendered YAML>: sends one kind
+# of document to the API server. CRDs go through server-side apply, because
+# the larger ones exceed the annotation size limit of client-side apply.
+dry_run() {
+    local docs
+    docs=$(select_docs "$2" <<< "$3")
+    [[ -n "$docs" ]] || return 0
+    if [[ "$2" == "crds" ]]; then
+        kubectl apply --server-side --force-conflicts --dry-run=server -f - <<< "$docs" > /dev/null
+    else
+        # kubectl applies every object and reports all errors at the end.
+        kubectl apply --dry-run=server -n "$1" -f - <<< "$docs" > /dev/null
+    fi
 }
 
 # A namespace name for a chart and values file: dr-<chart>-<values name>.
@@ -98,20 +122,26 @@ build_deps() {
 }
 
 # Custom resources only validate once their CRD exists, and a dry-run never
-# creates one, so apply the CRDs of every chart for real first. A chart that
-# fails here is reported by its own check below if it changed.
+# creates one, so apply the CRDs of every chart for real first. The changed
+# charts go last, so their copy wins if two charts ship the same CRD. A failure
+# here is only a warning: each changed chart's CRDs are dry-run again below,
+# where a bad one fails that chart.
 echo "::group::Apply CRDs from all charts"
 crd_file=$(mktemp)
 trap 'rm -f "$crd_file"' EXIT
-for chart_dir in $all_charts; do
+unchanged=$(comm -23 <(echo "$all_charts") <(echo "$charts" | sort))
+for chart_dir in $unchanged $charts; do
     build_deps "$chart_dir" > /dev/null 2>&1 || { echo "skip $chart_dir: dependency build failed"; continue; }
     while IFS= read -r values; do
         render "$chart_dir" "$values" default 2>/dev/null | select_docs crds >> "$crd_file"
     done < <(values_files "$chart_dir")
 done
-if grep -q '^kind:' "$crd_file"; then
-    kubectl apply --server-side --force-conflicts -f "$crd_file" &&
-        kubectl wait --for=condition=Established crd --all --timeout=120s
+if [[ -s "$crd_file" ]]; then
+    kubectl apply --server-side --force-conflicts -f "$crd_file" ||
+        echo "::warning::some CRDs could not be applied; custom resources that use them will fail"
+    # Wait even after a partial failure, for the CRDs that did apply.
+    kubectl wait --for=condition=Established crd --all --timeout=120s ||
+        echo "::warning::some CRDs did not become Established"
 fi
 echo "::endgroup::"
 
@@ -139,11 +169,12 @@ for chart_dir in $charts; do
             fi
 
             kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f - > /dev/null
-            # kubectl applies every object and reports all errors at the end.
-            if ! select_docs objects <<< "$rendered" | kubectl apply --dry-run=server -n "$ns" -f - > /dev/null; then
-                echo "::error file=$chart_dir/Chart.yaml::server-side dry-run failed for $chart_dir ($label)"
-                chart_failed=true
-            fi
+            for kind in crds objects; do
+                if ! dry_run "$ns" "$kind" "$rendered"; then
+                    echo "::error file=$chart_dir/Chart.yaml::server-side dry-run of $kind failed for $chart_dir ($label)"
+                    chart_failed=true
+                fi
+            done
         done < <(values_files "$chart_dir")
     fi
 
