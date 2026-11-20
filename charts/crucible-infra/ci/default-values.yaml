@@ -1,0 +1,5 @@
+# Values for CI (helm lint, helm template and the server-side dry-run). The
+# chart leaves global.domain empty for the deployment to supply, and the
+# Ingress TLS host it builds from that is invalid when empty.
+global:
+  domain: crucible.example.com

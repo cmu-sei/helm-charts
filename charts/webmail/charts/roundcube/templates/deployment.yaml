@@ -45,9 +45,9 @@ spec:
       - name: {{ .name }}
         persistentVolumeClaim:
           claimName: {{ .persistentVolumeClaim.claimName }}
+      {{- end }}
       - emptyDir: {}
         name: temp-data
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

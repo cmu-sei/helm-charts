@@ -48,19 +48,22 @@ resources:
     cpu: 10m
     memory: 32Mi
 
-ports:
-  - containerPort:
-    name:
+# Container ports to declare, for example:
+#   - containerPort: 25
+#     name: smtp
+ports: []
 
-volumeMounts:
-  - mountPath:
-    name:
-    subPath: 
-    
-volumes:
-  - name: 
-    persistentVolumeClaim:
-      claimName: 
+# Volumes to mount in the container, for example:
+#   - mountPath: /var/mail
+#     name: mail
+#     subPath: mail
+volumeMounts: []
+
+# Volumes for the pod (each a PersistentVolumeClaim), for example:
+#   - name: mail
+#     persistentVolumeClaim:
+#       claimName: webmail-mail
+volumes: []
 
 autoscaling:
   enabled: false
