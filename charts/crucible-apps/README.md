@@ -476,7 +476,7 @@ alloy:
 
 #### Blueprint Service Account
 
-Blueprint requires a service account to communicate with CITE, Gallery, Player, and Steamfitter.
+Blueprint requires a service account to communicate with CITE, Gallery, Player, Player VM API, and Caster.
 
 ```yaml
 blueprint:
@@ -487,6 +487,23 @@ blueprint:
       clientSecret: "" # Required: OAuth client secret from Keycloak
       userName: "" # Required: Service account username
       password: "" # Required: Service account password
+```
+
+Blueprint runs a MSEL's automation tasks itself and no longer uses Steamfitter. It encrypts the tasks' secrets (passwords, private keys, http headers) with the keys in the `blueprint-api-custom` secret, `Automation__SecretKeys__<id>`, writing new ones with `Automation__ActiveSecretKeyId`.
+
+- On install, the chart generates a key, and on upgrade it keeps the keys the secret holds by reading it.
+- A render without cluster access (`helm template`, Argo CD) cannot keep a generated key, so set `secretKey` there. The render fails until you do.
+- A render that would replace a stored key it can see fails rather than leave the task secrets written with it unreadable, and so does an upgrade that cannot read the secret. Where the chart cannot read the cluster, it sees only the keys in `previousKeys`: never change `secretKey` under the same `activeKeyId` there.
+- Each key must be 32 bytes, base64 encoded. With Blueprint disabled, the stored keys, `previousKeys` and a given `secretKey` are kept, and no key is asked for.
+- To rotate, give the new key a new id: the stored keys are kept. Where the chart cannot read the cluster, list them in `previousKeys`.
+
+```yaml
+blueprint:
+  blueprint-api:
+    automation:
+      secretKey: "" # openssl rand -base64 32
+      activeKeyId: k1 # a new id, with a new secretKey, to rotate
+      previousKeys: {} # e.g. k1: "<the old key>", where the chart cannot read the cluster
 ```
 
 #### Caster Service Account

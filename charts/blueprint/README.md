@@ -111,11 +111,36 @@ Blueprint can deploy infrastructure for an event through Caster. The URLs defaul
 | `ClientSettings__CasterApplyMaxWaitMinutes` | Minutes to wait for a Caster apply to finish | `120` |
 | `ClientSettings__CasterDestroyMaxWaitMinutes` | Minutes to wait for a Caster destroy to finish | `60` |
 
-### Steamfitter Integration
+### Automation Tasks
+
+Blueprint runs a MSEL's automation tasks itself; it no longer pushes them to Steamfitter, and needs no Steamfitter settings or `steamfitter` scope. Facilitators run them from the Facilitator View, they run at their event's time or after another task, and participants run the ones marked for them on the MSEL's Tasks page (add `{blueprintUrl}/msel/{blueprintMselId}/tasks` as a Player application). Put the secret keys in `existingSecret`.
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `ClientSettings__SteamfitterStartCheckSeconds` | Seconds between checks for pushed MSELs whose Steamfitter scenario is set to start at the MSEL start time | `30` |
+| `ClientSettings__PlayerVmApiUrl` | Base URL of the Player VM API, for VM actions, ending in a slash (`https://crucible.example.com/vm/`): without one, its last path segment is dropped | `""` |
+| `Automation__WorkerEnabled` | Run tasks on this replica. The SignalR hub is not shared between replicas, so enable it on one only | `true` |
+| `Automation__MaxConcurrentRuns` | Runs at once on this replica | `8` |
+| `Automation__MaxConcurrentVmOperationsPerRun` | VMs one run works on at once | `8` |
+| `Automation__SchedulerIntervalSeconds` | Seconds between scheduling passes | `2` |
+| `Automation__LeaseSeconds` | Seconds a replica holds a run before another may take it over | `60` |
+| `Automation__DefaultExpirationSeconds` | Expiration of a task that sets none | `300` |
+| `Automation__MaxExpirationSeconds` | Longest expiration a task may set | `3600` |
+| `Automation__MissedScheduleGraceSeconds` | A task at its event time that could not start within this is recorded as skipped | `300` |
+| `Automation__MaxOutputBytes` | Output kept per result | `65536` |
+| `Automation__MaxVmsPerTask` | Most VMs one task runs on | `50` |
+| `Automation__TestRunsKeptPerTask` | Test runs kept per task | `20` |
+| `Automation__SecretKeys__<id>` | A key that encrypts task secrets: 32 random bytes, base64 (`openssl rand -base64 32`). Without one, a task with a secret cannot be saved | unset |
+| `Automation__ActiveSecretKeyId` | The key new secrets use; the first key id in order when unset. Keep old keys while secrets written with them remain | unset |
+| `Automation__Http__AllowedHosts__<n>` | Hosts an http task may reach, wildcards allowed; the Crucible APIs Blueprint is configured with when none | unset |
+| `Automation__Http__TokenHosts__<n>` | Hosts an http task sends Blueprint's service account token to; none when unset. Never to Blueprint's own API, recognized by the host and base path of `ClientSettings__BlueprintApiUrl`, so set that to Blueprint's API URL | unset |
+| `Automation__Http__AllowLoopbackAddresses` | Let http tasks reach loopback addresses, as a development stack needs. Link-local and metadata addresses are always refused | `false` |
+| `Automation__Http__TimeoutSeconds` | Timeout of an http task's request | `90` |
+| `Automation__Ssh__AllowedHosts__<n>` | Hosts an SSH task may reach; SSH tasks are off when none are set | unset |
+| `Automation__Ssh__CommandTimeoutSeconds` | Timeout of an SSH command | `60` |
+| `Automation__Email__SmtpHost`, `SmtpPort`, `UseStartTls`, `SmtpUsername`, `SmtpPassword`, `DefaultFromAddress` | The mail server email tasks send through; put the password in `existingSecret` | `""`, `587`, `true`, `""`, unset, `""` |
+| `Automation__Files__LocalDirectory` | The directory a file upload task reads from; uploads are off when unset | `""` |
+
+The service account Blueprint uses (`ResourceOwnerAuthorization__Scope`) needs `player-vm` for VM actions; it no longer needs `steamfitter`. Pull deployed MSELs from Steamfitter before upgrading, or their Steamfitter scenarios are left behind; the upgrade converts each MSEL's Steamfitter tasks to automation tasks.
 
 ### Claims Transformation
 

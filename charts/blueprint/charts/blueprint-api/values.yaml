@@ -190,5 +190,43 @@ env:
   ClientSettings__CasterPlanMaxWaitMinutes: 15
   ClientSettings__CasterApplyMaxWaitMinutes: 120
   ClientSettings__CasterDestroyMaxWaitMinutes: 60
-  # Seconds between checks for pushed MSELs whose Steamfitter scenario starts at the MSEL start time
-  ClientSettings__SteamfitterStartCheckSeconds: 30
+  # Automation tasks: Blueprint runs a MSEL's automation tasks itself (it no longer pushes them to Steamfitter)
+  # Base URL of the Player VM API, for VM actions, ending in a slash (https://crucible.example.com/vm/): without one
+  # its last path segment is dropped
+  ClientSettings__PlayerVmApiUrl: ""
+  # Run tasks on this replica. The SignalR hub is not shared between replicas, so run them on one only.
+  Automation__WorkerEnabled: true
+  Automation__MaxConcurrentRuns: 8
+  Automation__MaxConcurrentVmOperationsPerRun: 8
+  Automation__SchedulerIntervalSeconds: 2
+  Automation__LeaseSeconds: 60
+  Automation__DefaultExpirationSeconds: 300
+  Automation__MaxExpirationSeconds: 3600
+  # A task at its event time that could not start within this many seconds is recorded as skipped
+  Automation__MissedScheduleGraceSeconds: 300
+  Automation__MaxOutputBytes: 65536
+  Automation__MaxVmsPerTask: 50
+  Automation__TestRunsKeptPerTask: 20
+  # Keys that encrypt task secrets (passwords, private keys, http headers): an id and 32 random bytes, base64
+  # (openssl rand -base64 32). Set them in existingSecret, not here. Without one, a task with a secret cannot be saved.
+  # Automation__SecretKeys__k1: ""
+  # The key new secrets use; the first key id in order when unset. Keep old keys while secrets written with them remain.
+  # Automation__ActiveSecretKeyId: k1
+  # Hosts an http task may reach (wildcards like *.example.com); the Crucible APIs Blueprint is configured with when none
+  # Automation__Http__AllowedHosts__0: ""
+  # Hosts an http task sends Blueprint's service account token to; none when unset. Never to Blueprint's own API, by the
+  # host and base path of ClientSettings__BlueprintApiUrl, which should be set to it.
+  # Automation__Http__TokenHosts__0: ""
+  Automation__Http__AllowLoopbackAddresses: false
+  Automation__Http__TimeoutSeconds: 90
+  # Hosts an SSH task may reach; none are allowed when none are set
+  # Automation__Ssh__AllowedHosts__0: ""
+  Automation__Ssh__CommandTimeoutSeconds: 60
+  # The mail server email tasks send through
+  Automation__Email__SmtpHost: ""
+  Automation__Email__SmtpPort: 587
+  Automation__Email__UseStartTls: true
+  Automation__Email__SmtpUsername: ""
+  Automation__Email__DefaultFromAddress: ""
+  # The directory a file upload task reads from; uploads are refused when it is unset
+  Automation__Files__LocalDirectory: ""
