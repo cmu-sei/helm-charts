@@ -494,7 +494,7 @@ Blueprint runs a MSEL's automation tasks itself and no longer uses Steamfitter. 
 - On install, the chart generates a key, and on upgrade it keeps the keys the secret holds by reading it.
 - A render without cluster access (`helm template`, Argo CD) cannot keep a generated key, so set `secretKey` there. The render fails until you do.
 - A render that would replace a stored key it can see fails rather than leave the task secrets written with it unreadable, and so does an upgrade that cannot read the secret. Where the chart cannot read the cluster, it sees only the keys in `previousKeys`: never change `secretKey` under the same `activeKeyId` there.
-- Each key must be 32 bytes, base64 encoded. With Blueprint disabled, the stored keys are kept and no key is asked for.
+- Each key must be 32 bytes, base64 encoded. With Blueprint disabled, the stored keys, `previousKeys` and a given `secretKey` are kept, and no key is asked for.
 - To rotate, give the new key a new id: the stored keys are kept. Where the chart cannot read the cluster, list them in `previousKeys`.
 
 ```yaml
