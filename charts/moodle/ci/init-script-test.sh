@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Runs the system-packages init script, as the chart renders it, on the real Moodle image under
+# Docker with the init container's capabilities, and checks the paths that matter: install,
+# fallback to the image's files, required=true, a package the install upgrades, and a path that is
+# a file, and a data package whose ICU version differs from the image's. Needs docker, helm and
+# python3 with PyYAML, and the Alpine mirror; lint-charts.sh runs it, and it skips without docker.
+set -u
+CHART="$(cd "$(dirname "$0")/.." && pwd)"
+IMAGE="${IMAGE:-erseco/alpine-moodle:v5.2.4}"
+command -v docker >/dev/null && docker info >/dev/null 2>&1 || { echo "skip: docker is not available"; exit 0; }
+WORK=$(mktemp -d); trap 'rm -rf "$WORK"; docker volume rm -f sp-test-vol >/dev/null 2>&1' EXIT
+fail=0
+check() { if [ "$2" -eq 0 ]; then echo "ok   $1"; else echo "FAIL $1"; fail=1; fi; }
+
+render() { # extra helm args -> script on stdout
+  helm template t "$CHART" -f "$CHART/ci/default-values.yaml" --set systemPackages.enabled=true \
+    --set 'systemPackages.paths={/usr/share/icu,/usr/share/ghostscript,/usr/share/fontconfig,/etc/fonts}' "$@" |
+  python3 -c "
+import yaml,sys
+d=[x for x in yaml.safe_load_all(sys.stdin) if x and x.get('kind')=='Deployment'][0]
+print([c for c in d['spec']['template']['spec']['initContainers'] if c['name']=='system-packages'][0]['args'][0])"
+}
+run() { # script file -> exit code; volume sp-test-vol holds /pkgroot
+  docker volume rm -f sp-test-vol >/dev/null; docker volume create sp-test-vol >/dev/null
+  docker run --rm --user 0 --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+    --cap-add FSETID --cap-add SETFCAP --security-opt no-new-privileges --entrypoint sh \
+    -v sp-test-vol:/pkgroot -v "$1":/init.sh:ro "$IMAGE" /init.sh >"$1.log" 2>&1
+}
+vol() { docker run --rm --entrypoint sh -v sp-test-vol:/p:ro "$IMAGE" -c "$1"; }
+
+render --set 'systemPackages.packages={ghostscript}' --set 'systemPackages.dataPackages={icu-data-full}' > "$WORK/good.sh"
+run "$WORK/good.sh"; check "install succeeds" $?
+vol 'test -x /p/bin/gs && test -d /p/root/usr/share/icu && ! test -e /p/.orig'; check "install exports gs and the icu path, and removes the pristine copy" $?
+vol 'ls -l /p/root/usr/share/icu/*/icudt*.dat | awk "{ if (\$5 < 20000000) exit 1 }"'; check "the unpacked data package replaced the small en-only data file" $?
+
+# a data package from a newer patch release unpacks into a directory ICU does not read; the data
+# must still land in the image's own directory, and a different major must fail
+sed 's#^for f in /tmp/dl/\*\.apk; do apk extract.*#&; for d in /tmp/data/usr/share/icu/*; do mv "$d" "${d%/*}/99.9"; done#' "$WORK/good.sh" > "$WORK/patch.sh"
+grep -q '/99\.9' "$WORK/patch.sh"; check "newer-patch script was built" $?
+run "$WORK/patch.sh"; check "data from a newer ICU patch release installs" $?
+vol 'for f in /p/root/usr/share/icu/*/icudt*.dat; do case "$f" in */99.9/*) ;; *) test "$(stat -c %s "$f")" -gt 20000000 || exit 1 ;; esac; done'; check "the image's own ICU directory got the full data" $?
+sed 's#^for f in /tmp/dl/\*\.apk; do apk extract.*#&; for f in /tmp/data/usr/share/icu/*/icudt*.dat; do mv "$f" "${f%/*}/icudt99l.dat"; done#' "$WORK/good.sh" > "$WORK/major.sh"
+grep -q 'icudt99l' "$WORK/major.sh"; check "other-major script was built" $?
+run "$WORK/major.sh"; check "data of another ICU major falls back with required=false" $?
+grep -q "was not replaced" "$WORK/major.sh.log"; check "it says the image's data file was not replaced" $?
+vol 'test -f /p/root/usr/share/icu/*/icudt*.dat && ! test -e /p/.orig'; check "the fallback keeps the image's ICU data" $?
+
+render --set 'systemPackages.packages={no-such-pkg-xyz}' > "$WORK/bad.sh"
+run "$WORK/bad.sh"; check "bogus package with required=false exits 0" $?
+vol 'test -f /p/root/usr/share/icu/*/icudt*.dat && ! test -e /p/bin/gs && ! test -e /p/.orig'; check "fallback leaves the image's own icu data and no gs" $?
+
+render --set 'systemPackages.packages={no-such-pkg-xyz}' --set systemPackages.required=true > "$WORK/req.sh"
+run "$WORK/req.sh"; [ $? -ne 0 ]; check "bogus package with required=true fails" $?
+
+# a failure after the install, in the export step, must also fall back
+sed 's#^comm -13 /tmp/before.v /tmp/after.v | sed#false; comm -13 /tmp/before.v /tmp/after.v | sed#' "$WORK/good.sh" > "$WORK/post.sh"
+grep -q '^ *false; comm' "$WORK/post.sh"; check "post-install failure script was built" $?
+run "$WORK/post.sh"; check "failure after the install exits 0 with required=false" $?
+vol 'test -f /p/root/usr/share/icu/*/icudt*.dat && ! test -e /p/bin/gs && ! test -e /p/.orig'; check "failure after the install restores the image's files" $?
+
+# a package the image already has is exported as is, so mountPath/bin and lib hold it on any image
+render --set 'systemPackages.packages={libxml2}' > "$WORK/have.sh"
+run "$WORK/have.sh"; check "asking for a package the image has succeeds" $?
+grep -q "libxml2 is already in the image" "$WORK/have.sh.log"; check "it says the package is already in the image" $?
+vol 'ls /p/lib/libxml2.so* >/dev/null 2>&1'; check "it exports that package's libraries" $?
+
+# a failing apk info must not leave an empty list that makes every image package look new
+sed 's#^apk info | sort > /tmp/before$#false | sort > /tmp/before#' "$WORK/good.sh" > "$WORK/pipe.sh"
+grep -q '^false | sort' "$WORK/pipe.sh"; check "pipefail script was built" $?
+run "$WORK/pipe.sh"; check "a failing apk info falls back with required=false" $?
+vol '! test -e /p/bin/gs && ! test -e /p/.orig && test -z "$(ls /p/lib)"'; check "a failing apk info exports nothing" $?
+
+# an image package the install upgrades must be refused
+sed 's#^apk info -v | sort > /tmp/before.v#apk info -v | sort | sed "s/^busybox-1.*/busybox-0.9-r0/" > /tmp/before.v#' "$WORK/good.sh" > "$WORK/upg.sh"
+run "$WORK/upg.sh"; grep -q "upgraded packages the image already has" "$WORK/upg.sh.log"; check "an upgraded image package is detected" $?
+vol '! test -e /p/bin/gs'; check "an upgraded image package triggers the fallback" $?
+
+render --set 'systemPackages.packages={ghostscript}' --set 'systemPackages.paths={/etc/hostname}' > "$WORK/file.sh"
+run "$WORK/file.sh"; [ $? -ne 0 ] && grep -q "is a file in the image" "$WORK/file.sh.log"; check "a path that is a file in the image is refused" $?
+
+exit $fail

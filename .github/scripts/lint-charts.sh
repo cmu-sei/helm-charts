@@ -84,6 +84,24 @@ for chart_dir in $charts; do
         done
     fi
 
+    # A chart may ship render tests that assert more than a plain render can.
+    if [[ "$chart_failed" == "false" && -x "$chart_dir/ci/render-tests.sh" ]]; then
+        echo "--- render tests"
+        if ! "$chart_dir/ci/render-tests.sh"; then
+            echo "::error file=$chart_dir/ci/render-tests.sh::render tests failed for $chart_dir"
+            chart_failed=true
+        fi
+    fi
+
+    # A chart may also ship a script that runs its init scripts on the real image under Docker.
+    if [[ "$chart_failed" == "false" && -x "$chart_dir/ci/init-script-test.sh" ]]; then
+        echo "--- init script tests"
+        if ! "$chart_dir/ci/init-script-test.sh"; then
+            echo "::error file=$chart_dir/ci/init-script-test.sh::init script tests failed for $chart_dir"
+            chart_failed=true
+        fi
+    fi
+
     echo "::endgroup::"
     [[ "$chart_failed" == "true" ]] && failed_charts+=("$chart_dir")
 done
