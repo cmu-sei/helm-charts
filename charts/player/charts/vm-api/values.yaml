@@ -233,7 +233,8 @@ env:
 
   # The shared ISO upload pipeline. Where the bytes end up is per-provider: Vsphere__IsoRoot /
   # Vsphere__IsoUploadViaApi below, and Proxmox__IsoRoot / Proxmox__IsoUploadViaApi.
-  IsoUpload__MaxFileSize: 6000000000
+  # Quoted: Helm renders an unquoted number of 1e6 or more as 6e+09, which .NET can't read as a long.
+  IsoUpload__MaxFileSize: "6000000000"
   # Where IsoUploadViaApi stages its local copy of each ISO. Empty means the system temp directory,
   # which is the pod's own filesystem; see extraVolumes above for mounting scratch space instead.
   IsoUpload__TempStagingPath: ""
