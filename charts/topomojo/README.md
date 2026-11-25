@@ -464,13 +464,13 @@ For custom initialization (e.g., trusting CA certificates):
 topomojo-api:
   customStart:
     command: ['/bin/sh']
-    args: ['/start/start.sh']
+    args: ['/home/app/start/start.sh']
     files:
       start.sh: |
         #!/bin/sh
-        cp /start/*.crt /usr/local/share/ca-certificates
+        cp /home/app/start/*.crt /usr/local/share/ca-certificates
         update-ca-certificates
-        cd /app && dotnet TopoMojo.Api.dll
+        cd /home/app && exec ./TopoMojo.Api
       custom-ca.crt: |
         -----BEGIN CERTIFICATE-----
         ...
