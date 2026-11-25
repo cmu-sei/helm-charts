@@ -5430,6 +5430,27 @@ entries:
     version: 0.1.0
   gallery:
   - apiVersion: v2
+    created: "2026-11-25T19:51:35.66171713Z"
+    dependencies:
+    - name: gallery-api
+      repository: file://charts/gallery-api
+      version: '*'
+    - name: gallery-ui
+      repository: file://charts/gallery-ui
+      version: '*'
+    description: Gallery enables participants to review cyber incident data by source
+      type.
+    digest: 1233788541b0426f4657cbf622553b472c4fc7a9a0c36e18aec9a89fb184bdbe
+    home: https://cmu-sei.github.io/crucible/gallery/
+    name: gallery
+    sources:
+    - https://github.com/cmu-sei/Gallery.Api/
+    - https://github.com/cmu-sei/Gallery.Ui/
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/gallery-1.17.0/gallery-1.17.0.tgz
+    version: 1.17.0
+  - apiVersion: v2
     created: "2026-11-25T19:02:58.005611366Z"
     dependencies:
     - name: gallery-api
@@ -9251,6 +9272,27 @@ entries:
     version: 0.1.1
   steamfitter:
   - apiVersion: v2
+    created: "2026-11-25T19:51:35.819277715Z"
+    dependencies:
+    - name: steamfitter-api
+      repository: file://charts/steamfitter-api
+      version: '*'
+    - name: steamfitter-ui
+      repository: file://charts/steamfitter-ui
+      version: '*'
+    description: Steamfitter enables the organization and execution of scenario tasks
+      on virtual machines.
+    digest: 3d0ace45656e06bbd97038bbe4173af055b4647993f4fdc8dfa9179ad766c5c1
+    home: https://cmu-sei.github.io/crucible/steamfitter
+    name: steamfitter
+    sources:
+    - https://github.com/cmu-sei/steamfitter.api
+    - https://github.com/cmu-sei/steamfitter.ui
+    type: application
+    urls:
+    - https://github.com/cmu-sei/helm-charts/releases/download/steamfitter-1.13.0/steamfitter-1.13.0.tgz
+    version: 1.13.0
+  - apiVersion: v2
     created: "2026-11-25T19:02:58.386081136Z"
     dependencies:
     - name: steamfitter-api
@@ -10900,4 +10942,4 @@ entries:
     urls:
     - https://github.com/cmu-sei/helm-charts/releases/download/webmail-0.1.0/webmail-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-25T19:02:58.567413416Z"
+generated: "2026-11-25T19:51:35.819875547Z"
