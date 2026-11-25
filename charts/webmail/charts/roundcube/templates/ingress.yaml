@@ -1,5 +1,4 @@
 {{- if .Values.ingress.enabled -}}
-{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -24,7 +23,7 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
-            pathType: {{ .pathType }}
+            pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
                 name: roundcubemail
@@ -32,3 +31,4 @@ spec:
                   number: 9000
           {{- end }}
     {{- end }}
+{{- end }}

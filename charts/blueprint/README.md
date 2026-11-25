@@ -218,12 +218,15 @@ blueprint-api:
       nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
       nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "256m"
     hosts:
       - host: blueprint.example.com
         paths:
           - path: /(api|swagger|hubs)
             pathType: ImplementationSpecific
 ```
+
+Blueprint.Api accepts MSEL uploads up to 100 MiB and technique release imports up to 256 MiB (from 1.10.0). ingress-nginx limits request bodies to 1m by default, so set `nginx.ingress.kubernetes.io/proxy-body-size` to allow them, as above.
 
 ### OpenTelemetry
 

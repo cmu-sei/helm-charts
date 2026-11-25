@@ -80,6 +80,9 @@ blueprint-api:
     annotations:
       # nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
       # nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+      # MSEL uploads accept up to 100 MiB and technique release imports up to 256 MiB, but ingress-nginx
+      # limits request bodies to 1m by default. Raise the limit to allow them:
+      # nginx.ingress.kubernetes.io/proxy-body-size: "256m"
       nginx.ingress.kubernetes.io/use-regex: "true"
     hosts:
       - host: chart-example.local

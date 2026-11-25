@@ -44,6 +44,7 @@ ingress:
     - host: chat-example.local
       paths:
         - path: /
+          pathType: Prefix
   tls:
   #  - hosts:
   #    - chart-example.local
@@ -62,15 +63,17 @@ resources:
     #cpu:  200m
     #memory: 256Mi
 
-volumeMounts:
-  - mountPath:
-    name:
-    subPath: 
+# Volumes to mount in the container, for example:
+#   - mountPath: /var/mail
+#     name: mail
+#     subPath: mail
+volumeMounts: []
 
-volumes:
-  - name: 
-    persistentVolumeClaim:
-      claimName: 
+# Volumes for the pod (each a PersistentVolumeClaim), for example:
+#   - name: mail
+#     persistentVolumeClaim:
+#       claimName: webmail-mail
+volumes: []
 
 autoscaling:
   enabled: false
